@@ -554,6 +554,28 @@ describe('economia da vila (Fase A)', () => {
     expect(world.citizens[0]!.happiness).toBe(58);
   });
 
+  it('peste, eclipse e visita lendária entram no rodízio sazonal', () => {
+    const world = createWorld(53);
+    world.town.event = { id: 'peste', year: 1, season: 1, tick: 0 };
+    world.town.treasury = 100;
+    for (const c of world.citizens) c.happiness = 50;
+    const before = world.town.treasury;
+    expect(resolveSeasonalEvent(world, 'tratar')).toEqual({ ok: true });
+    expect(world.town.treasury).toBe(before - 60);
+    expect(world.citizens[0]!.happiness).toBe(55);
+
+    world.town.event = { id: 'eclipse', year: 1, season: 1, tick: 0 };
+    const corruption = world.acts[0]!.corruption;
+    expect(resolveSeasonalEvent(world, 'observar')).toEqual({ ok: true });
+    expect(world.acts[0]!.corruption).toBeGreaterThan(corruption);
+
+    world.town.event = { id: 'visita-lendaria', year: 2, season: 3, tick: 0 };
+    world.town.treasury = 200;
+    const reputation = world.town.reputation;
+    expect(resolveSeasonalEvent(world, 'hospedar')).toEqual({ ok: true });
+    expect(world.town.reputation).toBeGreaterThan(reputation);
+  });
+
   it('a caravana troca ouro por materiais dos atos abertos', () => {
     const world = createWorld(48);
     world.tick = 0;

@@ -183,17 +183,17 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 - [x] **Entrada e câmera:** portão de madeira com o berrante grande montado sobre a viga, no centro-esquerdo. A câmera fixa em 1,5× acompanha o prefeito; o zoom por roda/pinça saiu.
 - [x] **Save v3 → v4** migra sozinho (moradores, crescimento, incursões).
 
-## M3: salários, decretos e eventos (primeiros blocos)
+## M3: vila viva (concluído)
 
 - [x] **Salários dos guardas.** A milícia recebe por dia e o Cofre mostra o custo separado; a defesa noturna continua somando guardas, heróis em casa e aposentados.
 - [x] **Três decretos com trade-off:** taxa de guerra (+25% de imposto, −humor), toque de recolher (+20% de defesa, −humor) e funeral com honras (custa ouro, alivia luto e melhora o humor). No máximo dois ficam ativos.
 - [x] **Cofre atualizado** com impostos, manutenção, pensões, salários, decretos e saldo diário.
 - [x] **Save v4 → v5** migra sozinho (lista de decretos).
-- [x] **Eventos sazonais:** primavera traz a caravana, outono o festival da colheita e inverno o cobrador do rei. Cada um pausa o jogo e oferece escolhas com custo; verão fica sem evento nesta fatia.
+- [x] **Eventos sazonais:** primavera traz a caravana; verão alterna peste e eclipse; outono tem o festival da colheita; inverno alterna cobrador do rei e visita lendária. Cada um pausa o jogo e oferece escolhas com custo.
 - [x] **Save v5 → v6** migra sozinho (evento pendente e chave do último evento).
 - [x] **Expansão sul:** limpar a floresta abre três lotes de moradia; o jogador escolhe em qual lote construir. Cada casa aumenta a capacidade populacional em 6 e as vagas de herói em 1.
 - [x] **Save v6 → v7** migra sozinho (distrito sul e casas).
 
-## Próximo: resto do M3
+## Próximo: M4 — Profundidade
 
-Eventos sazonais restantes (peste, eclipse, visita lendária) e outros distritos de moradia. Mudança de local dos prédios de produção ficou de fora: não trouxe vantagem clara. Ver a seção 9 do [GDD.md](GDD.md).
+Visualizador de dungeon (acompanhar heróis, monstros, dano, vida e ouro em tempo real), itens nomeados, fabricação e especializações de nível 3. Mudança de local dos prédios ficou de fora. Ver a seção 9 do [GDD.md](GDD.md).

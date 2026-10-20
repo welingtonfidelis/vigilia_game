@@ -61,7 +61,7 @@ export type CitizenJob = 'lavrador' | 'pedreiro' | 'copeiro' | 'ferreiro' | 'aco
 export type DecreeId = 'taxa-guerra' | 'toque-recolher' | 'funeral-honras';
 
 /** Eventos sazonais do M3. */
-export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador';
+export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador' | 'peste' | 'eclipse' | 'visita-lendaria';
 
 export interface PendingEvent {
   id: SeasonalEventId;

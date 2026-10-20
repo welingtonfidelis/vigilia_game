@@ -21,7 +21,8 @@ export function maybeSeasonalEvent(world: World): void {
   const key = `${year}:${season}`;
   if (world.town.lastEventKey === key) return;
   if (world.town.event) return;
-  const id = SEASON_EVENTS[season] ?? null;
+  const pool = SEASON_EVENTS[season] ?? [];
+  const id = pool.length ? pool[(year - 1) % pool.length] ?? null : null;
   if (!id) {
     world.town.lastEventKey = key;
     return;
@@ -85,6 +86,39 @@ export function resolveSeasonalEvent(world: World, choiceId: string): CommandRes
       world.town.reputation = bump(world.town.reputation, -6);
       for (const hero of heroes) hero.loyalty = bump(hero.loyalty, -4);
       for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, -6);
+      break;
+    case 'peste:tratar':
+      for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, 5);
+      applyMood(2, 5);
+      break;
+    case 'peste:quarentena':
+      for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, -3);
+      break;
+    case 'peste:ignorar':
+      for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, -8);
+      applyMood(-2, 0);
+      break;
+    case 'eclipse:conter':
+      for (const act of world.acts) if (act.unlocked) act.corruption = Math.max(0, act.corruption - 4);
+      for (const hero of heroes) hero.morale = bump(hero.morale, -3);
+      break;
+    case 'eclipse:rezar':
+      for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, 3);
+      for (const act of world.acts) if (act.unlocked) act.corruption = Math.min(100, act.corruption + 2);
+      break;
+    case 'eclipse:observar':
+      for (const act of world.acts) if (act.unlocked) act.corruption = Math.min(100, act.corruption + 7);
+      for (const hero of heroes) hero.morale = bump(hero.morale, -6);
+      break;
+    case 'visita-lendaria:hospedar':
+      applyMood(6, 6);
+      world.town.reputation = bump(world.town.reputation, 6);
+      break;
+    case 'visita-lendaria:ouvir':
+      applyMood(4, 3);
+      break;
+    case 'visita-lendaria:recusar':
+      world.town.reputation = bump(world.town.reputation, -3);
       break;
     default:
       return fail('Efeito de evento não implementado.');
