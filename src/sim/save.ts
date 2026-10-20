@@ -21,6 +21,7 @@ function migrate(world: World): World {
   if (world.version < 3) migrateToV3(world);
   if (world.version < 4) migrateToV4(world);
   if (world.version < 5) migrateToV5(world);
+  if (world.version < 6) migrateToV6(world);
   return world;
 }
 
@@ -51,6 +52,15 @@ function migrateToV4(world: World): void {
     seedCitizens(world, target);
   }
   world.version = 4;
+}
+
+/** v5 → v6 (M3): eventos sazonais pendentes. */
+function migrateToV6(world: World): void {
+  type Loose<T> = { [K in keyof T]?: T[K] };
+  const town = world.town as Loose<World['town']> & World['town'];
+  town.event ??= null;
+  town.lastEventKey ??= '';
+  world.version = 6;
 }
 
 /** v4 → v5 (M3): decretos e salários. Saves antigos começam sem decreto. */

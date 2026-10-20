@@ -8,6 +8,8 @@ export { autoMayor } from './bot.ts';
 export { JOB_NAMES, JOB_ORDER, citizenMood, guardDefense, guardTarget } from './citizens.ts';
 export { DECREES, DECREE_IDS, activeDecreeDefs, activeDecreeIds, decreeCitizenMoodPenalty, decreeDailyCost, decreeDefenseMultiplier, decreeTaxMultiplier, hasDecree } from './decrees.ts';
 export { defensePower, raidPower, resolveRaid, threatOf, maybeRaid, type Threat } from './raids.ts';
+export { maybeSeasonalEvent, resolveSeasonalEvent } from './events.ts';
+export { SEASONAL_EVENTS, SEASON_EVENTS, type SeasonalChoiceDef, type SeasonalEventDef } from '../data/seasonal-events.ts';
 export { formatDate, dayOf, hourOf, yearOf, seasonOf, isNight } from './calendar.ts';
 export { describeHero, heroStats, type HeroStats } from './hero.ts';
 export * from './config.ts';

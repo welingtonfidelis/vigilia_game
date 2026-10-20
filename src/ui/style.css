@@ -1753,3 +1753,31 @@ kbd {
     background-position: var(--monster-to) 0;
   }
 }
+
+/* Evento sazonal (M3): painel obrigatório, com escolhas e custos. */
+.event-intro {
+  font-size: 0.95rem;
+  color: #d8ccb4;
+  border-left: 2px solid var(--gold);
+  padding-left: 0.7rem;
+  margin-bottom: 0.8rem;
+}
+.event-choices {
+  display: grid;
+  gap: 0.55rem;
+}
+.event-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.5rem;
+  background: rgba(30, 24, 18, 0.55);
+  color: var(--text);
+  cursor: pointer;
+}
+.event-choice strong { display: block; color: #e8d6a8; font-family: var(--serif); font-weight: normal; }
+.event-choice span { display: block; font-size: 0.86rem; margin-top: 0.15rem; }
+.event-choice em { display: block; font-style: normal; color: var(--gold); font-size: 0.78rem; margin-top: 0.3rem; }
+.event-choice:disabled { opacity: 0.45; cursor: not-allowed; }

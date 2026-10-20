@@ -50,12 +50,12 @@ export function Bar(props: {
   );
 }
 
-export function PanelShell(props: { title: ComponentChildren; subtitle?: ComponentChildren; children: ComponentChildren; wide?: boolean }) {
+export function PanelShell(props: { title: ComponentChildren; subtitle?: ComponentChildren; children: ComponentChildren; wide?: boolean; closeable?: boolean }) {
   const { ui } = useContext(GameContext);
   return (
     <section class={`panel${props.wide ? ' wide' : ''}`} role="dialog" aria-label={typeof props.title === 'string' ? props.title : undefined}>
       <header class="panel-head">
-        {ui.back && (
+        {ui.back && props.closeable !== false && (
           <button class="icon-btn" onClick={() => ui.goBack()} aria-label="Voltar" title="Voltar">
             ‹
           </button>
@@ -64,9 +64,11 @@ export function PanelShell(props: { title: ComponentChildren; subtitle?: Compone
           <h2>{props.title}</h2>
           {props.subtitle && <p class="sub">{props.subtitle}</p>}
         </div>
-        <button class="icon-btn" onClick={() => ui.close()} aria-label="Fechar" title="Fechar (Esc)">
-          ×
-        </button>
+        {props.closeable !== false && (
+          <button class="icon-btn" onClick={() => ui.close()} aria-label="Fechar" title="Fechar (Esc)">
+            ×
+          </button>
+        )}
       </header>
       <div class="panel-body">{props.children}</div>
     </section>

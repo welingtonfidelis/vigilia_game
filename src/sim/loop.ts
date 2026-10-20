@@ -3,6 +3,7 @@ import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
 import { dailyCorruption } from './dungeon.ts';
 import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
+import { maybeSeasonalEvent } from './events.ts';
 import { formParties } from './party.ts';
 import { dailyPeople } from './people.ts';
 import { dailyCitizens } from './citizens.ts';
@@ -48,6 +49,7 @@ function daily(world: World): void {
   strayArrivals(world);
   trackIdle(world);
   sample(world);
+  maybeSeasonalEvent(world);
 }
 
 /** Rede de segurança: uma vila sem heróis e sem ouro recebe andarilhos de graça. */

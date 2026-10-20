@@ -60,6 +60,16 @@ export type CitizenJob = 'lavrador' | 'pedreiro' | 'copeiro' | 'ferreiro' | 'aco
 /** Políticas permanentes do prefeito (M3). */
 export type DecreeId = 'taxa-guerra' | 'toque-recolher' | 'funeral-honras';
 
+/** Eventos sazonais do M3. */
+export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador';
+
+export interface PendingEvent {
+  id: SeasonalEventId;
+  year: number;
+  season: number;
+  tick: number;
+}
+
 /** Morador nomeado da vila. A população total continua em Town.population. */
 export interface Citizen {
   id: number;
@@ -308,6 +318,10 @@ export interface Town {
   lastRaidDay: number;
   /** Decretos ativos (no máximo maxActiveDecrees). */
   decrees: DecreeId[];
+  /** Evento sazonal aguardando escolha do prefeito (null = nenhum). */
+  event: PendingEvent | null;
+  /** Chave `ano:estação` do último evento criado, para não repetir. */
+  lastEventKey: string;
 }
 
 export type ChronicleKind =
@@ -334,6 +348,7 @@ export type ChronicleKind =
   | 'contrato'
   | 'corrupcao'
   | 'decreto'
+  | 'evento'
   | 'eco'
   | 'lesao'
   | 'cicatriz'

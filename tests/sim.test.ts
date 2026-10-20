@@ -10,6 +10,8 @@ import {
   festivalCost,
   guardSalaryPerDay,
   honorFuneral,
+  maybeSeasonalEvent,
+  resolveSeasonalEvent,
   pensionPerDay,
   runDays,
   runTicks,
@@ -416,7 +418,7 @@ describe('pessoas (M2)', () => {
     for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths', 'raids', 'citizenDeaths', 'citizensLeft']) delete v1.metrics[k];
     for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
     const loaded = deserialize(JSON.stringify(v1));
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.town.buildings.casa).toBe(0);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.children).toEqual([]);
@@ -535,6 +537,33 @@ describe('economia da vila (Fase A)', () => {
     expect(world.citizens[0]!.happiness).toBe(52);
   });
 
+  it('a virada de estação abre um evento sazonal e a escolha aplica o efeito', () => {
+    const world = createWorld(47);
+    world.tick = 2 * DAYS_PER_SEASON * TICKS_PER_DAY;
+    maybeSeasonalEvent(world);
+    expect(world.town.event?.id).toBe('festival-colheita');
+    expect(world.chronicle.some((e) => e.kind === 'evento')).toBe(true);
+    world.town.treasury = 1000;
+    for (const c of world.citizens) c.happiness = 50;
+    const before = world.town.treasury;
+    expect(resolveSeasonalEvent(world, 'financiar')).toEqual({ ok: true });
+    expect(world.town.treasury).toBe(before - 50);
+    expect(world.town.event).toBeNull();
+    expect(world.citizens[0]!.happiness).toBe(58);
+  });
+
+  it('a caravana troca ouro por materiais dos atos abertos', () => {
+    const world = createWorld(48);
+    world.tick = 0;
+    world.town.event = { id: 'caravana', year: 1, season: 0, tick: 0 };
+    world.town.treasury = 100;
+    const bones = world.town.materials.ossos;
+    expect(resolveSeasonalEvent(world, 'materiais')).toEqual({ ok: true });
+    expect(world.town.treasury).toBe(60);
+    expect(world.town.materials.ossos).toBe(bones + 6);
+    expect(world.town.event).toBeNull();
+  });
+
   it('a fonte termal cura vida, ânimo, luto e lesão', () => {
     const world = createWorld(36);
     const hero = createHero(world);
@@ -572,7 +601,7 @@ describe('economia da vila (Fase A)', () => {
     delete v2.raids;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v2.metrics[k];
     const loaded = deserialize(JSON.stringify(v2));
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.town.lastRaidDay).toBe(-1);
     expect(loaded.citizens.length).toBeGreaterThan(0);
@@ -633,13 +662,25 @@ describe('vila e incursões (M3)', () => {
     expect(world.chronicle.some((e) => e.kind === 'incursao')).toBe(true);
   });
 
+  it('save v5 ganha evento sazonal vazio ao carregar', () => {
+    const world = createWorld(46);
+    const v5 = JSON.parse(serialize(world));
+    v5.version = 5;
+    delete v5.town.event;
+    delete v5.town.lastEventKey;
+    const loaded = deserialize(JSON.stringify(v5));
+    expect(loaded.version).toBe(6);
+    expect(loaded.town.event).toBeNull();
+    expect(loaded.town.lastEventKey).toBe('');
+  });
+
   it('save v4 ganha a lista de decretos ao carregar', () => {
     const world = createWorld(45);
     const v4 = JSON.parse(serialize(world));
     v4.version = 4;
     delete v4.town.decrees;
     const loaded = deserialize(JSON.stringify(v4));
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.town.decrees).toEqual([]);
   });
 
@@ -653,7 +694,7 @@ describe('vila e incursões (M3)', () => {
     delete v3.town.lastRaidDay;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v3.metrics[k];
     const loaded = deserialize(JSON.stringify(v3));
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.citizens.length).toBe(BALANCE.citizenStart);
     expect(loaded.raids).toEqual([]);
     expect(loaded.town.lastRaidDay).toBe(-1);

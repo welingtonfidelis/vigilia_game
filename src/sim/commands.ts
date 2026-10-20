@@ -5,6 +5,7 @@ import { BUILDINGS } from '../data/buildings.ts';
 import { dayOf } from './calendar.ts';
 import { record, floorLabel, heroLabel } from './chronicle.ts';
 import { DECREES, DECREE_IDS } from './decrees.ts';
+import { resolveSeasonalEvent as resolveSeasonalEventImpl } from './events.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
 import {
   canAfford,
@@ -330,3 +331,6 @@ export function assignRole(world: World, heroId: number, role: RetiredRole): Com
   record(world, 'funcao', [hero.id], `${hero.name} agora é ${r[hero.gender]} ${r.where}.`);
   return OK;
 }
+
+/** Evento sazonal: mantém a mesma porta de entrada das outras alavancas. */
+export const resolveSeasonalEvent = resolveSeasonalEventImpl;

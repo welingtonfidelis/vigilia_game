@@ -10,6 +10,7 @@ import { clockOf, fmt } from './format.ts';
 import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconShield, IconSound, IconSun, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
+import { EventPanel } from './panels/EventPanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
@@ -63,6 +64,13 @@ function Hud() {
   const muted = ui.prefs.muted;
   const town = world.town;
   const mats = (Object.keys(town.materials) as MaterialId[]).filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked);
+  // Evento sazonal pendente: abre o painel e pausa a simulação até a escolha.
+  useEffect(() => {
+    if (!world.town.event) return;
+    if (ui.panel?.kind !== 'event') ui.open({ kind: 'event' });
+    if (!session.paused) session.setPaused(true);
+  }, [world.town.event, ui.rev, session]);
+
   return (
     <div class="hud-bar">
       <span class="brand">Vigília</span>
@@ -211,6 +219,8 @@ function PanelHost() {
       return <CofferPanel />;
     case 'thermal':
       return <ThermalPanel />;
+    case 'event':
+      return <EventPanel />;
     case 'village':
       return <VillagePanel />;
     case 'dungeon':

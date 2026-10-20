@@ -68,6 +68,8 @@ export function createWorld(seed: number): World {
       popGrowth: 0,
       lastRaidDay: -1,
       decrees: [],
+      event: null,
+      lastEventKey: '',
     },
     acts: ACTS.map((_, i) => ({
       unlocked: i === 0,

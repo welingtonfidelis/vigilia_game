@@ -17,6 +17,7 @@ export type Panel =
   | { kind: 'menu' }
   | { kind: 'welcome' }
   | { kind: 'thermal' }
+  | { kind: 'event' }
   | { kind: 'village' }
   | { kind: 'campaignEnd' }
   | { kind: 'actEnd'; act: number };

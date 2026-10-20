@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), o primeiro bloco do M3 (salários e decretos) e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), os primeiros blocos do M3 (salários, decretos e eventos sazonais) e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -183,13 +183,15 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 - [x] **Entrada e câmera:** portão de madeira com o berrante grande montado sobre a viga, no centro-esquerdo. A câmera fixa em 1,5× acompanha o prefeito; o zoom por roda/pinça saiu.
 - [x] **Save v3 → v4** migra sozinho (moradores, crescimento, incursões).
 
-## M3: salários e decretos (primeiro bloco)
+## M3: salários, decretos e eventos (primeiros blocos)
 
 - [x] **Salários dos guardas.** A milícia recebe por dia e o Cofre mostra o custo separado; a defesa noturna continua somando guardas, heróis em casa e aposentados.
 - [x] **Três decretos com trade-off:** taxa de guerra (+25% de imposto, −humor), toque de recolher (+20% de defesa, −humor) e funeral com honras (custa ouro, alivia luto e melhora o humor). No máximo dois ficam ativos.
 - [x] **Cofre atualizado** com impostos, manutenção, pensões, salários, decretos e saldo diário.
 - [x] **Save v4 → v5** migra sozinho (lista de decretos).
+- [x] **Eventos sazonais:** primavera traz a caravana, outono o festival da colheita e inverno o cobrador do rei. Cada um pausa o jogo e oferece escolhas com custo; verão fica sem evento nesta fatia.
+- [x] **Save v5 → v6** migra sozinho (evento pendente e chave do último evento).
 
 ## Próximo: resto do M3
 
-Eventos sazonais e lotes/expansão. Ver a seção 9 do [GDD.md](GDD.md).
+Lotes/expansão e os eventos sazonais restantes (peste, eclipse, visita lendária). Ver a seção 9 do [GDD.md](GDD.md).
