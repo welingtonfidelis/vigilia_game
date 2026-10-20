@@ -5,8 +5,10 @@ import {
   BALANCE,
   BUILDINGS,
   commands,
+  activeHeroes,
   citizenMood,
   formatDate,
+  heroCapacity,
   JOB_NAMES,
   JOB_ORDER,
   populationCap,
@@ -67,6 +69,7 @@ export function VillagePanel() {
     <PanelShell title="Vila" subtitle="Quem mora aqui, quem guarda e o que o abismo já levou.">
       <div class="stats">
         <Stat label="População" value={`${fmt(world.town.population)} / ${fmt(populationCap(world))}`} />
+        <Stat label="Heróis" value={`${activeHeroes(world).length} / ${heroCapacity(world)}`} hint="Estalagem e casas do sul aumentam as vagas" />
         <Stat label="Humor" value={`${Math.round(mood)}%`} hint="O humor médio regula o imposto dos moradores" />
         <Stat label="Guardas" value={guards} hint="A milícia de moradores que defende a vila" />
         <Stat
@@ -85,7 +88,7 @@ export function VillagePanel() {
       <h3>Distrito Sul <span class="sub">({builtHouses}/3 casas)</span></h3>
       <p class="sub">
         A floresta ao sul esconde três lotes de moradia. Limpar a área custa {fmt(BALANCE.expansionClearCost)} de ouro; cada casa custa{' '}
-        {fmt(BALANCE.expansionHouseCost)} e aumenta a capacidade da vila em {BALANCE.expansionHouseCapacity}.
+        {fmt(BALANCE.expansionHouseCost)} e aumenta a capacidade da vila em {BALANCE.expansionHouseCapacity}, além de abrir {BALANCE.expansionHouseHeroSlots} vaga de herói.
       </p>
       {!expansion.cleared ? (
         <button class="btn" disabled={world.town.treasury < BALANCE.expansionClearCost} onClick={() => command(commands.clearSouthExpansion)}>
@@ -100,7 +103,7 @@ export function VillagePanel() {
               <button key={i} class={`expansion-lot${built ? ' built' : ''}`} disabled={blocked} onClick={() => command(commands.buildExpansionHouse, i)}>
                 <strong>Lote {i + 1}</strong>
                 <span>{built ? 'Casa construída' : `Construir casa (${fmt(BALANCE.expansionHouseCost)})`}</span>
-                <small>{built ? `+${BALANCE.expansionHouseCapacity} de capacidade` : 'Lote aberto'}</small>
+                <small>{built ? `+${BALANCE.expansionHouseCapacity} pop · +${BALANCE.expansionHouseHeroSlots} herói` : 'Lote aberto'}</small>
               </button>
             );
           })}

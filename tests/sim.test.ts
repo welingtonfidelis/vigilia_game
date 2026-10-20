@@ -9,6 +9,7 @@ import {
   citizenTaxesPerDay,
   festivalCost,
   guardSalaryPerDay,
+  heroCapacity,
   honorFuneral,
   maybeSeasonalEvent,
   resolveSeasonalEvent,
@@ -569,6 +570,7 @@ describe('economia da vila (Fase A)', () => {
     const world = createWorld(50);
     world.town.treasury = 500;
     const cap = populationCap(world);
+    const heroes = heroCapacity(world);
     expect(commands.clearSouthExpansion(world)).toEqual({ ok: true });
     expect(world.town.expansion.cleared).toBe(true);
     expect(world.town.treasury).toBe(500 - BALANCE.expansionClearCost);
@@ -576,22 +578,13 @@ describe('economia da vila (Fase A)', () => {
     expect(world.town.expansion.houses[0]).toBe(true);
     expect(world.town.treasury).toBe(500 - BALANCE.expansionClearCost - BALANCE.expansionHouseCost);
     expect(populationCap(world)).toBe(cap + BALANCE.expansionHouseCapacity);
+    expect(heroCapacity(world)).toBe(heroes + BALANCE.expansionHouseHeroSlots);
     expect(commands.buildExpansionHouse(world, 0).ok).toBe(false);
     expect(commands.buildExpansionHouse(world, 1)).toEqual({ ok: true });
     expect(world.town.expansion.houses.filter(Boolean)).toHaveLength(2);
   });
 
-  it('o campo pode ser movido para o lote de produção e perde a adjacência', () => {
-    const world = createWorld(52);
-    world.town.treasury = 200;
-    world.town.expansion.cleared = true;
-    expect(world.town.campoAdjacent).toBe(true);
-    expect(commands.moveCampo(world)).toEqual({ ok: true });
-    expect(world.town.treasury).toBe(200 - BALANCE.campoMoveCost);
-    expect(world.town.campoMoved).toBe(true);
-    expect(world.town.campoAdjacent).toBe(false);
-    expect(commands.moveCampo(world).ok).toBe(false);
-  });
+
 
   it('a fonte termal cura vida, ânimo, luto e lesão', () => {
     const world = createWorld(36);
@@ -691,16 +684,12 @@ describe('vila e incursões (M3)', () => {
     expect(world.chronicle.some((e) => e.kind === 'incursao')).toBe(true);
   });
 
-  it('save v7 ganha o estado do campo ao carregar', () => {
+  it('save v7 carrega na versão 8', () => {
     const world = createWorld(51);
     const v7 = JSON.parse(serialize(world));
     v7.version = 7;
-    delete v7.town.campoMoved;
-    delete v7.town.campoAdjacent;
     const loaded = deserialize(JSON.stringify(v7));
     expect(loaded.version).toBe(8);
-    expect(loaded.town.campoMoved).toBe(false);
-    expect(loaded.town.campoAdjacent).toBe(true);
   });
 
   it('save v6 ganha a expansão sul vazia ao carregar', () => {

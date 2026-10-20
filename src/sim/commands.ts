@@ -110,19 +110,6 @@ export function setLootTax(world: World, rate: number): CommandResult {
 }
 
 /** Abre os três lotes do distrito sul, cobrindo a limpeza da floresta. */
-/** Move o campo de treino do lote original para o lote de produção do sul. */
-export function moveCampo(world: World): CommandResult {
-  const town = world.town;
-  if (town.campoMoved) return fail('O campo já está no distrito sul.');
-  if (!town.expansion.cleared) return fail('Limpe os lotes do distrito sul primeiro.');
-  const cost = B.campoMoveCost;
-  if (town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - town.treasury)} de ouro para mover o campo.`);
-  town.treasury -= cost;
-  town.campoMoved = true;
-  town.campoAdjacent = false;
-  record(world, 'construcao', [], 'O campo de treino foi movido para o lote de produção do distrito sul. O ferreiro ficou longe.');
-  return OK;
-}
 
 export function clearSouthExpansion(world: World): CommandResult {
   const expansion = world.town.expansion;

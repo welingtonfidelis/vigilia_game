@@ -56,12 +56,7 @@ function migrateToV4(world: World): void {
   world.version = 4;
 }
 
-/** v7 → v8 (M3): lote de produção e movimento do campo. */
 function migrateToV8(world: World): void {
-  type Loose<T> = { [K in keyof T]?: T[K] };
-  const town = world.town as Loose<World['town']> & World['town'];
-  town.campoMoved ??= false;
-  town.campoAdjacent ??= !town.campoMoved;
   world.version = 8;
 }
 

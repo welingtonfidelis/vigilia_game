@@ -34,7 +34,10 @@ export function pay(world: World, cost: LevelCost): void {
 
 // ── Efeitos dos prédios ───────────────────────────────────────────────────
 
-export const heroCapacity = (world: World): number => 6 + 4 * level(world, 'estalagem');
+export const heroCapacity = (world: World): number => {
+  const houses = world.town.expansion.houses.filter(Boolean).length;
+  return 6 + 4 * level(world, 'estalagem') + houses * B.expansionHouseHeroSlots;
+};
 export const maxParties = (world: World): number => 1 + level(world, 'guilda');
 export const maxPartySize = (world: World): number => (level(world, 'guilda') >= 2 ? 5 : 4);
 export const maxGearTier = (world: World): number => 4 * level(world, 'ferreiro');

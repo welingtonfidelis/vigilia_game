@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), os primeiros blocos do M3 (salários, decretos, eventos sazonais, expansão sul e lote de produção) e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), os primeiros blocos do M3 (salários, decretos, eventos sazonais e expansão sul) e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -191,11 +191,9 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 - [x] **Save v4 → v5** migra sozinho (lista de decretos).
 - [x] **Eventos sazonais:** primavera traz a caravana, outono o festival da colheita e inverno o cobrador do rei. Cada um pausa o jogo e oferece escolhas com custo; verão fica sem evento nesta fatia.
 - [x] **Save v5 → v6** migra sozinho (evento pendente e chave do último evento).
-- [x] **Expansão sul:** limpar a floresta abre três lotes de moradia; cada casa custa ouro e aumenta a capacidade da vila. O jogador escolhe em qual lote construir.
+- [x] **Expansão sul:** limpar a floresta abre três lotes de moradia; o jogador escolhe em qual lote construir. Cada casa aumenta a capacidade populacional em 6 e as vagas de herói em 1.
 - [x] **Save v6 → v7** migra sozinho (distrito sul e casas).
-- [x] **Lote de produção sul:** depois de limpar o distrito, o campo de treino pode ser movido por 80 de ouro. Ao lado do ferreiro ele dava +10% de XP; no sul perde a adjacência. A posição é atualizada no mapa e no save.
-- [x] **Save v7 → v8** migra sozinho (posição do campo e adjacência).
 
 ## Próximo: resto do M3
 
-Colocação dos demais prédios de produção, adjacências gerais e os eventos sazonais restantes (peste, eclipse, visita lendária). Ver a seção 9 do [GDD.md](GDD.md).
+Eventos sazonais restantes (peste, eclipse, visita lendária) e outros distritos de moradia. Mudança de local dos prédios de produção ficou de fora: não trouxe vantagem clara. Ver a seção 9 do [GDD.md](GDD.md).

@@ -23,7 +23,6 @@ import {
   ABYSS_EDGE_Y,
   CEMETERY_TILES,
   EXPANSION_LOTS,
-  applyCampoLayout,
   citizenSpot,
   door,
   gravePoint,
@@ -119,7 +118,6 @@ export class VillageScene extends Phaser.Scene {
   private propLights: Phaser.GameObjects.Image[] = [];
   private expansionHouses: (Phaser.GameObjects.Image | undefined)[] = [];
   private expansionLights: (Phaser.GameObjects.Image | undefined)[] = [];
-  private campoLayoutMoved = false;
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
   private mayor!: Mayor;
@@ -171,8 +169,6 @@ export class VillageScene extends Phaser.Scene {
 
   create(): void {
     this.registerArt();
-    applyCampoLayout(this.world.town.campoMoved);
-    this.campoLayoutMoved = this.world.town.campoMoved;
     const mask = buildGround(this);
     // O chão já foi assado; daqui para baixo, todo tile-imagem (prédios, cercas,
     // portão, quadro, árvores) usa UVs um pouco para dentro contra o vazamento do atlas.
@@ -393,26 +389,7 @@ export class VillageScene extends Phaser.Scene {
     }
   }
 
-  /** Reposiciona o campo de treino quando o prefeito o move para o distrito sul. */
-  private syncCampoLayout(): void {
-    if (this.world.town.campoMoved === this.campoLayoutMoved) return;
-    this.campoLayoutMoved = this.world.town.campoMoved;
-    applyCampoLayout(this.campoLayoutMoved);
-    const lot = LOTS.campo;
-    const y = lot.y + lot.h / 2;
-    const view = this.buildings.get('campo');
-    if (view) {
-      view.base.setPosition(lot.x, y).setDepth(y - 2);
-      view.lights.setPosition(lot.x, y);
-      view.sign.setPosition(lot.x, y + 2);
-    }
-    const it = this.interactables.find((entry) => entry.id === 'campo');
-    if (it) {
-      it.point = { x: lot.x, y: y + TILE / 2 };
-      it.hit = { x: lot.x - lot.w / 2, y: lot.y - lot.h / 2, w: lot.w, h: lot.h };
-    }
-    this.layoutSigns();
-  }
+
 
   /** Casas do distrito sul aparecem conforme o prefeito constrói cada lote. */
   private syncExpansion(): void {
@@ -655,7 +632,6 @@ export class VillageScene extends Phaser.Scene {
   // ── Sincronização com o World ──────────────────────────────────────────
 
   private syncAll(initial: boolean, dt = 0): void {
-    this.syncCampoLayout();
     const world = this.world;
     for (const id of BUILDING_IDS) this.syncBuilding(id, !initial);
     this.syncGraves(initial);

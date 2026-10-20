@@ -56,7 +56,7 @@ export const BALANCE = {
   expansionClearCost: 120,
   expansionHouseCost: 60,
   expansionHouseCapacity: 6,
-  campoMoveCost: 80,
+  expansionHouseHeroSlots: 1,
   // Vila viva (M3): moradores nomeados, humor e incursões
   citizenStart: 6,
   citizenRoster: 8,

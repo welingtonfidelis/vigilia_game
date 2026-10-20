@@ -331,10 +331,6 @@ export interface Town {
   lastEventKey: string;
   /** Expansão sul: limpeza e casas construídas. */
   expansion: ExpansionState;
-  /** O campo de treino foi movido para o lote de produção do sul. */
-  campoMoved: boolean;
-  /** O campo está adjacente ao ferreiro (bônus de XP de treino). */
-  campoAdjacent: boolean;
 }
 
 export type ChronicleKind =
