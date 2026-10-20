@@ -6,6 +6,7 @@ import { NAMES_F, NAMES_M } from '../data/names.ts';
 import { dayOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import { BALANCE as B } from './config.ts';
+import { decreeCitizenMoodPenalty } from './decrees.ts';
 import { chance, int, pick } from './rng.ts';
 import type { BuildingId, Citizen, CitizenJob, Gender, World } from './types.ts';
 
@@ -135,8 +136,9 @@ export function dailyCitizens(world: World): void {
     15,
     90,
   );
+  const decreePenalty = decreeCitizenMoodPenalty(world);
   for (const citizen of [...world.citizens]) {
-    citizen.happiness = clamp(citizen.happiness + (base - citizen.happiness) * 0.15);
+    citizen.happiness = clamp(citizen.happiness + (base - citizen.happiness) * 0.15 - decreePenalty);
     if (citizen.happiness >= B.citizenLeaveBelow) continue;
     if (!chance(world.rng, B.citizenLeaveChance)) continue;
     leaveCitizen(world, citizen, 'sem ânimo para viver à beira do abismo');

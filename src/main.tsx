@@ -43,6 +43,7 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   aposentadoria: 'info',
   corrupcao: 'warn',
   contrato: 'info',
+  decreto: 'info',
   lesao: 'warn',
   cicatriz: 'grief',
   casamento: 'good',

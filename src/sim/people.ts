@@ -7,6 +7,7 @@ import { EXCLUSIVE_TRAITS, INNATE_TRAITS, TRAITS } from '../data/traits.ts';
 import { dayOf } from './calendar.ts';
 import { record, className, g, heroLabel, listNames } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_SEASON, DAYS_PER_YEAR } from './config.ts';
+import { DECREES, hasDecree } from './decrees.ts';
 import { gearPrice, level } from './economy.ts';
 import { addBond, addTrait, ageYears, createHero, getBond, heroStats, rollRank, WOUNDS } from './hero.ts';
 import { chance, int, pick } from './rng.ts';
@@ -214,6 +215,23 @@ function comingOfAge(world: World): void {
   }
 }
 
+/** Enterro com honras: política que gasta ouro para aliviar o luto da vila. */
+export function honorFuneral(world: World, dead: Hero): boolean {
+  if (!hasDecree(world, 'funeral-honras')) return false;
+  const def = DECREES['funeral-honras'];
+  const cost = def.funeralCost ?? 0;
+  if (world.town.treasury < cost) return false;
+  world.town.treasury -= cost;
+  const relief = def.funeralGriefRelief ?? 0;
+  for (const hero of world.heroes) {
+    if (hero.status !== 'dead' && hero.grief > 0) hero.grief = Math.max(0, hero.grief - relief);
+  }
+  const mood = def.funeralCitizenMood ?? 0;
+  for (const citizen of world.citizens) citizen.happiness = Math.min(100, citizen.happiness + mood);
+  record(world, 'decreto', [dead.id], `A vila sepultou ${heroLabel(dead)} com honras. O luto pesa menos e os moradores agradecem.`);
+  return true;
+}
+
 // ── Velhice ──────────────────────────────────────────────────────────────
 
 function oldAge(world: World): void {
@@ -232,6 +250,7 @@ function oldAge(world: World): void {
       friend.griefFor = hero.id;
     }
     widow(world, hero);
+    honorFuneral(world, hero);
   }
 }
 

@@ -57,6 +57,9 @@ export type RetiredRole = 'mentor' | 'ferreiro' | 'contador' | 'curandeiro';
 /** Ofícios dos moradores que aparecem na vila. */
 export type CitizenJob = 'lavrador' | 'pedreiro' | 'copeiro' | 'ferreiro' | 'acolito' | 'guarda';
 
+/** Políticas permanentes do prefeito (M3). */
+export type DecreeId = 'taxa-guerra' | 'toque-recolher' | 'funeral-honras';
+
 /** Morador nomeado da vila. A população total continua em Town.population. */
 export interface Citizen {
   id: number;
@@ -303,6 +306,8 @@ export interface Town {
   popGrowth: number;
   /** Último dia de incursão (−1 = nunca). */
   lastRaidDay: number;
+  /** Decretos ativos (no máximo maxActiveDecrees). */
+  decrees: DecreeId[];
 }
 
 export type ChronicleKind =
@@ -328,6 +333,7 @@ export type ChronicleKind =
   | 'berrante'
   | 'contrato'
   | 'corrupcao'
+  | 'decreto'
   | 'eco'
   | 'lesao'
   | 'cicatriz'

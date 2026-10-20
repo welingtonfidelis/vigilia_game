@@ -19,7 +19,7 @@ import {
   revealTrait,
   traitSum,
 } from './hero.ts';
-import { maybeInjure } from './people.ts';
+import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
 import { chance, int } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, World } from './types.ts';
@@ -346,6 +346,7 @@ function mourn(world: World, party: Party): void {
       if (!closest || bond > getBond(world, closest.id, deadId)) closest = h;
     }
     if (closest) record(world, 'luto', [closest.id, deadId], `${closest.name} chora a morte de ${lost.name}.`);
+    honorFuneral(world, lost);
   }
 }
 

@@ -4,6 +4,7 @@ import { ACTS } from '../data/acts.ts';
 import { BUILDINGS } from '../data/buildings.ts';
 import { dayOf } from './calendar.ts';
 import { record, floorLabel, heroLabel } from './chronicle.ts';
+import { DECREES, DECREE_IDS } from './decrees.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
 import {
   canAfford,
@@ -22,7 +23,7 @@ import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
 import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import { chance, int } from './rng.ts';
-import type { BuildingId, Doctrine, GiftKind, Hero, RetiredRole, World } from './types.ts';
+import type { BuildingId, DecreeId, Doctrine, GiftKind, Hero, RetiredRole, World } from './types.ts';
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
@@ -104,6 +105,23 @@ export function setDoctrine(world: World, doctrine: Doctrine): CommandResult {
 export function setLootTax(world: World, rate: number): CommandResult {
   if (rate < 0 || rate > 0.5) return fail('O imposto vai de 0% a 50%.');
   world.town.lootTax = rate;
+  return OK;
+}
+
+export function toggleDecree(world: World, id: DecreeId): CommandResult {
+  if (!DECREE_IDS.includes(id)) return fail('Decreto desconhecido.');
+  const def = DECREES[id];
+  const active = world.town.decrees.includes(id);
+  if (active) {
+    world.town.decrees = world.town.decrees.filter((d) => d !== id);
+    record(world, 'decreto', [], `O prefeito revogou o decreto "${def.name}".`);
+    return OK;
+  }
+  if (world.town.decrees.length >= B.maxActiveDecrees) return fail(`Só cabem ${B.maxActiveDecrees} decretos ativos.`);
+  if (world.town.treasury < def.enactCost) return fail(`Faltam ${Math.ceil(def.enactCost - world.town.treasury)} de ouro para promulgar.`);
+  world.town.treasury -= def.enactCost;
+  world.town.decrees.push(id);
+  record(world, 'decreto', [], `O prefeito promulgou o decreto "${def.name}": ${def.description}`);
   return OK;
 }
 

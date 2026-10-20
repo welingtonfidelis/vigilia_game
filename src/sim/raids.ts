@@ -9,6 +9,7 @@ import { dayOf, hourOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import { citizenNames, guardDefense, raidCitizenLoss, refreshJobs } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
+import { decreeDefenseMultiplier } from './decrees.ts';
 import { heroStrength } from './hero.ts';
 import { maybeInjure } from './people.ts';
 import { chance, int, pick } from './rng.ts';
@@ -43,7 +44,7 @@ export function defensePower(world: World): number {
     const s = heroStrength(world, hero);
     power += Math.sqrt(s.ehp * s.dps) * 0.3;
   }
-  return Math.round(power);
+  return Math.round(power * decreeDefenseMultiplier(world));
 }
 
 export function raidPower(act: number, corruption: number): number {

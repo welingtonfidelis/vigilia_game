@@ -7,8 +7,14 @@ import {
   BUILDINGS,
   buildingLevel,
   canAfford,
+  citizenTaxesPerDay,
   commands,
   dayOf,
+  DECREES,
+  DECREE_IDS,
+  decreeDailyCost,
+  guardCount,
+  guardSalaryPerDay,
   festivalCost,
   floorLabel,
   heroCapacity,
@@ -307,9 +313,14 @@ export function CofferPanel() {
   const command = useCommand();
   const town = world.town;
   const daily = world.metrics.daily.slice(-30);
-  const taxes = town.population * BALANCE.citizenTaxPerDay;
+  const taxes = citizenTaxesPerDay(world);
   const upkeep = totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay;
   const pensions = pensionPerDay(world);
+  const payroll = guardSalaryPerDay(world);
+  const guards = guardCount(world);
+  const decreeCost = decreeDailyCost(world);
+  const activeDecrees = town.decrees.length;
+  const net = taxes - upkeep - pensions - payroll - decreeCost;
   const festival = festivalCost(world);
   const festivalWait = town.festivalDay >= 0 ? Math.max(0, town.festivalDay + BALANCE.festivalCooldownDays - dayOf(world.tick)) : 0;
   const rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
@@ -321,6 +332,9 @@ export function CofferPanel() {
         <Stat label="Impostos/dia" value={`+${taxes.toFixed(1)}`} hint="Cidadãos pagam um pouco por dia" />
         <Stat label="Manutenção/dia" value={`−${upkeep.toFixed(1)}`} hint="Cada nível de prédio custa manutenção" />
         <Stat label="Pensões/dia" value={`−${pensions.toFixed(1)}`} hint="Cada aposentado recebe uma pensão da vila" />
+        <Stat label="Salários/dia" value={`−${payroll.toFixed(1)}`} hint={`${guards} guarda${guards === 1 ? '' : 's'} na milícia`} />
+        <Stat label="Decretos/dia" value={`−${decreeCost.toFixed(1)}`} hint={`${activeDecrees} de ${BALANCE.maxActiveDecrees} decretos ativos`} />
+        <Stat label="Saldo/dia" value={`${net >= 0 ? '+' : ''}${net.toFixed(1)}`} hint="Impostos menos manutenção, pensões, salários e decretos" />
         <Stat label="Reputação" value={Math.round(town.reputation)} hint="Atrai heróis de rank maior" />
       </div>
       {daily.length > 1 && (
@@ -337,6 +351,31 @@ export function CofferPanel() {
             {pct(r)}
           </button>
         ))}
+      </div>
+      <h3>Decretos da vila <span class="sub">({activeDecrees}/{BALANCE.maxActiveDecrees})</span></h3>
+      <p class="sub">
+        Políticas permanentes com custo e trade-off. Promulgar custa ouro; revogar é grátis. No máximo {BALANCE.maxActiveDecrees} ficam ativos.
+      </p>
+      <div class="decrees">
+        {DECREE_IDS.map((id) => {
+          const def = DECREES[id];
+          const on = town.decrees.includes(id);
+          const blocked = !on && (activeDecrees >= BALANCE.maxActiveDecrees || town.treasury < def.enactCost);
+          return (
+            <button
+              key={id}
+              class={`decree${on ? ' active' : ''}`}
+              aria-pressed={on}
+              disabled={blocked}
+              onClick={() => command(commands.toggleDecree, id)}
+            >
+              <strong>{def.name}</strong>
+              <span>{def.description}</span>
+              <small>{def.detail}</small>
+              <em>{on ? 'Ativo · revogar' : `Promulgar · ${def.enactCost} de ouro${def.dailyCost ? ` · ${def.dailyCost}/dia` : ''}`}</em>
+            </button>
+          );
+        })}
       </div>
       <h3>Festa na praça</h3>
       <p class="sub">

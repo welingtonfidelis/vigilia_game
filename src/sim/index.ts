@@ -6,18 +6,23 @@ export type { CommandResult } from './commands.ts';
 export { serialize, deserialize, checksum } from './save.ts';
 export { autoMayor } from './bot.ts';
 export { JOB_NAMES, JOB_ORDER, citizenMood, guardDefense, guardTarget } from './citizens.ts';
+export { DECREES, DECREE_IDS, activeDecreeDefs, activeDecreeIds, decreeCitizenMoodPenalty, decreeDailyCost, decreeDefenseMultiplier, decreeTaxMultiplier, hasDecree } from './decrees.ts';
 export { defensePower, raidPower, resolveRaid, threatOf, maybeRaid, type Threat } from './raids.ts';
 export { formatDate, dayOf, hourOf, yearOf, seasonOf, isNight } from './calendar.ts';
 export { describeHero, heroStats, type HeroStats } from './hero.ts';
 export * from './config.ts';
 export type * from './types.ts';
+export type { DecreeDef } from '../data/decrees.ts';
 
 // Consultas somente-leitura para a tela. Nenhuma delas muda o mundo.
 export {
   averageCorruption,
   canAfford,
+  citizenTaxesPerDay,
   festivalCost,
   gearPrice,
+  guardCount,
+  guardSalaryPerDay,
   heroCapacity,
   hornCost,
   level as buildingLevel,
@@ -36,7 +41,7 @@ export { busyParties } from './party.ts';
 export { floorPower, isBossFloor, partyRooms, travelTicks } from './dungeon.ts';
 export { byWhom, floorLabel, heroLabel } from './chronicle.ts';
 // Pessoas (M2): funções dos aposentados, recuperação, filhos e penalidades de lesão.
-export { childAge, defaultRole, forgePrice, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';
+export { childAge, defaultRole, forgePrice, honorFuneral, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';
 export { WOUNDS, woundEffects } from './hero.ts';
 
 // Dados do jogo (nomes, custos, descrições).

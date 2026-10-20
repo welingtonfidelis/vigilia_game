@@ -6,7 +6,10 @@ import {
   commands,
   createWorld,
   deserialize,
+  citizenTaxesPerDay,
   festivalCost,
+  guardSalaryPerDay,
+  honorFuneral,
   pensionPerDay,
   runDays,
   runTicks,
@@ -413,7 +416,7 @@ describe('pessoas (M2)', () => {
     for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths', 'raids', 'citizenDeaths', 'citizensLeft']) delete v1.metrics[k];
     for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
     const loaded = deserialize(JSON.stringify(v1));
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
     expect(loaded.town.buildings.casa).toBe(0);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.children).toEqual([]);
@@ -463,9 +466,73 @@ describe('economia da vila (Fase A)', () => {
     expect(pensionPerDay(world)).toBeCloseTo(BALANCE.pensionPerRetiredPerDay);
     const before = world.town.treasury;
     dailyEconomy(world);
-    const tax = world.town.population * BALANCE.citizenTaxPerDay * (0.8 + (BALANCE.citizenTaxMood * citizenMood(world)) / 100);
-    const expected = before + tax - totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay - pensionPerDay(world);
+    const tax = citizenTaxesPerDay(world);
+    const expected =
+      before +
+      tax -
+      totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay -
+      pensionPerDay(world) -
+      guardSalaryPerDay(world);
     expect(world.town.treasury).toBeCloseTo(Math.max(0, expected), 5);
+  });
+
+  it('cada guarda custa um salário diário no tesouro', () => {
+    const world = createWorld(37);
+    const guards = world.citizens.filter((c) => c.job === 'guarda').length;
+    expect(guards).toBeGreaterThan(0);
+    expect(guardSalaryPerDay(world)).toBeCloseTo(guards * BALANCE.guardSalaryPerDay);
+    const before = world.town.treasury;
+    dailyEconomy(world);
+    expect(world.town.treasury).toBeCloseTo(
+      Math.max(0, before + citizenTaxesPerDay(world) - totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay - pensionPerDay(world) - guardSalaryPerDay(world)),
+      5,
+    );
+  });
+
+  it('a taxa de guerra aumenta o imposto e custa humor', () => {
+    const world = createWorld(38);
+    const tax = citizenTaxesPerDay(world);
+    expect(commands.toggleDecree(world, 'taxa-guerra')).toEqual({ ok: true });
+    expect(world.town.decrees).toEqual(['taxa-guerra']);
+    expect(citizenTaxesPerDay(world)).toBeCloseTo(tax * 1.25);
+    const afterEnact = world.town.treasury;
+    dailyEconomy(world);
+    const expected =
+      afterEnact +
+      tax * 1.25 -
+      totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay -
+      pensionPerDay(world) -
+      guardSalaryPerDay(world);
+    expect(world.town.treasury).toBeCloseTo(Math.max(0, expected), 5);
+    const mood = citizenMood(world);
+    dailyCitizens(world);
+    expect(citizenMood(world)).toBeLessThan(mood);
+  });
+
+  it('o toque de recolher aumenta a defesa e limita a dois decretos', () => {
+    const world = createWorld(39);
+    const before = defensePower(world);
+    expect(commands.toggleDecree(world, 'toque-recolher')).toEqual({ ok: true });
+    expect(defensePower(world)).toBe(Math.round(before * 1.2));
+    expect(commands.toggleDecree(world, 'funeral-honras').ok).toBe(true);
+    expect(commands.toggleDecree(world, 'taxa-guerra').ok).toBe(false);
+    expect(world.town.decrees.length).toBe(2);
+  });
+
+  it('funeral com honras gasta ouro, alivia o luto e levanta o humor', () => {
+    const world = createWorld(40);
+    const dead = createHero(world);
+    const mourner = createHero(world);
+    dead.status = 'dead';
+    mourner.grief = 40;
+    for (const c of world.citizens) c.happiness = 50;
+    world.town.treasury = 100;
+    expect(commands.toggleDecree(world, 'funeral-honras')).toEqual({ ok: true });
+    const before = world.town.treasury;
+    expect(honorFuneral(world, dead)).toBe(true);
+    expect(world.town.treasury).toBe(before - 25);
+    expect(mourner.grief).toBe(30);
+    expect(world.citizens[0]!.happiness).toBe(52);
   });
 
   it('a fonte termal cura vida, ânimo, luto e lesão', () => {
@@ -505,7 +572,7 @@ describe('economia da vila (Fase A)', () => {
     delete v2.raids;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v2.metrics[k];
     const loaded = deserialize(JSON.stringify(v2));
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.town.lastRaidDay).toBe(-1);
     expect(loaded.citizens.length).toBeGreaterThan(0);
@@ -566,6 +633,16 @@ describe('vila e incursões (M3)', () => {
     expect(world.chronicle.some((e) => e.kind === 'incursao')).toBe(true);
   });
 
+  it('save v4 ganha a lista de decretos ao carregar', () => {
+    const world = createWorld(45);
+    const v4 = JSON.parse(serialize(world));
+    v4.version = 4;
+    delete v4.town.decrees;
+    const loaded = deserialize(JSON.stringify(v4));
+    expect(loaded.version).toBe(5);
+    expect(loaded.town.decrees).toEqual([]);
+  });
+
   it('save v3 ganha moradores e campos de incursão ao carregar', () => {
     const world = createWorld(44);
     const v3 = JSON.parse(serialize(world));
@@ -576,7 +653,7 @@ describe('vila e incursões (M3)', () => {
     delete v3.town.lastRaidDay;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v3.metrics[k];
     const loaded = deserialize(JSON.stringify(v3));
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
     expect(loaded.citizens.length).toBe(BALANCE.citizenStart);
     expect(loaded.raids).toEqual([]);
     expect(loaded.town.lastRaidDay).toBe(-1);

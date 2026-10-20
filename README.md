@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões) e o pack de arte Vigília 1.4 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), o primeiro bloco do M3 (salários e decretos) e o pack de arte Vigília 1.4 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -95,7 +95,7 @@ A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pin
 - **Pessoas, por campanha:** ~71 lesões, ~6 cicatrizes, ~17 casamentos, ~16 filhos e ~6 deles chegando à maioridade como heróis.
 - **Vila (M3), por campanha:** ~33 incursões, ~34 moradores mortos e ~0,3 que deixa a vila; a população termina no teto (~136, abstrata) com **8 aldeões visíveis**, o humor médio fica em ~59 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
 - **Expedições:** ~89 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro fica entre ~0,8 e 4,6 mil e o ouro dos heróis entre ~13 e 52 mil. **Festa**, **pensão**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
+- **Ouro:** o tesouro fica entre ~0,8 e 4,6 mil e o ouro dos heróis entre ~13 e 52 mil. **Festa**, **pensão**, **salários dos guardas**, **decretos**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
 - **Desempenho:** ~0,7 s para simular uma campanha de 30 anos.
 
 ## O que o M0 entrega
@@ -178,11 +178,18 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 - [x] **Humor e imposto.** O humor médio (0–100) puxa o imposto dos moradores e decide quem fica: abaixo de 30, o morador pode deixar a vila. Festa na praça e pouca corrupção levantam o humor; incursões derrubam.
 - [x] **Incursões noturnas.** Às 22h, o ato mais corrompido (≥55) pode subir à vila. A defesa soma heróis em casa, aposentados e guardas; o resultado é **repelida**, **segurada com custo** ou **saqueada**. No pior caso, prédios voltam a ruínas, moradores morrem, heróis se ferem e o tesouro sangra — a campanha nunca acaba. Aviso na crônica, no toast, no mapa (vultos saindo do abismo) e na navegação.
 - [x] **Painel da Vila** com população, humor, guardas, ameaça, ofícios, a lista de moradores com a barra de humor e as últimas incursões.
-- [x] **Sprites de morador:** quatro ofícios — lavrador, artesã, acólito e guarda — em dois gêneros, agora com a arte do pack 1.1 em perfil; heróis e moradores não dividem o mesmo corpo.
+- [x] **Sprites de morador:** quatro ofícios — lavrador, artesã, acólito e guarda — em dois gêneros, agora com a arte do pack 1.4 de frente; heróis e moradores não dividem o mesmo corpo.
 - [x] **Casinhas e noite:** cinco casas na borda sul, com caminhos de terra. À noite a maioria entra em casa e some; os guardas ficam no portão e copeiros/alguns noctívagos, na taverna.
 - [x] **Entrada e câmera:** portão de madeira com o berrante grande montado sobre a viga, no centro-esquerdo. A câmera fixa em 1,5× acompanha o prefeito; o zoom por roda/pinça saiu.
 - [x] **Save v3 → v4** migra sozinho (moradores, crescimento, incursões).
 
+## M3: salários e decretos (primeiro bloco)
+
+- [x] **Salários dos guardas.** A milícia recebe por dia e o Cofre mostra o custo separado; a defesa noturna continua somando guardas, heróis em casa e aposentados.
+- [x] **Três decretos com trade-off:** taxa de guerra (+25% de imposto, −humor), toque de recolher (+20% de defesa, −humor) e funeral com honras (custa ouro, alivia luto e melhora o humor). No máximo dois ficam ativos.
+- [x] **Cofre atualizado** com impostos, manutenção, pensões, salários, decretos e saldo diário.
+- [x] **Save v4 → v5** migra sozinho (lista de decretos).
+
 ## Próximo: resto do M3
 
-Decretos e salários, eventos sazonais, lotes e expansão. Ver a seção 9 do [GDD.md](GDD.md).
+Eventos sazonais e lotes/expansão. Ver a seção 9 do [GDD.md](GDD.md).

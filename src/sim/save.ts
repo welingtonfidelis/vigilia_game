@@ -1,4 +1,5 @@
 import { BALANCE, SAVE_VERSION } from './config.ts';
+import { DECREE_IDS } from './decrees.ts';
 import { defaultRole, epitaph } from './people.ts';
 import { seedCitizens } from './citizens.ts';
 import type { World } from './types.ts';
@@ -19,6 +20,7 @@ function migrate(world: World): World {
   if (world.version < 2) migrateToV2(world);
   if (world.version < 3) migrateToV3(world);
   if (world.version < 4) migrateToV4(world);
+  if (world.version < 5) migrateToV5(world);
   return world;
 }
 
@@ -49,6 +51,14 @@ function migrateToV4(world: World): void {
     seedCitizens(world, target);
   }
   world.version = 4;
+}
+
+/** v4 → v5 (M3): decretos e salários. Saves antigos começam sem decreto. */
+function migrateToV5(world: World): void {
+  type Loose<T> = { [K in keyof T]?: T[K] };
+  const town = world.town as Loose<World['town']> & World['town'];
+  town.decrees = (town.decrees ?? []).filter((id) => (DECREE_IDS as string[]).includes(id));
+  world.version = 5;
 }
 
 /** v1 → v2 (M2, Pessoas): lesões, casais, filhos, aposentados com função, epitáfios e prefeito. */

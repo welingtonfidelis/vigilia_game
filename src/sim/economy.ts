@@ -3,6 +3,7 @@ import { BUILDING_IDS, BUILDINGS, MAX_BUILDING_LEVEL, type LevelCost } from '../
 import { record } from './chronicle.ts';
 import { citizenMood } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
+import { decreeDailyCost, decreeTaxMultiplier } from './decrees.ts';
 import type { BuildingId, MaterialId, World } from './types.ts';
 
 export const level = (world: World, id: BuildingId): number => world.town.buildings[id];
@@ -57,6 +58,16 @@ export function pensionPerDay(world: World): number {
   return world.heroes.filter((h) => h.status === 'retired').length * B.pensionPerRetiredPerDay;
 }
 
+/** Quantos guardas a milícia mantém hoje. */
+export const guardCount = (world: World): number => world.citizens.filter((c) => c.job === 'guarda').length;
+
+/** Salário diário da milícia; o tesouro paga a defesa antes de qualquer outra coisa. */
+export const guardSalaryPerDay = (world: World): number => guardCount(world) * B.guardSalaryPerDay;
+
+/** Imposto diário dos moradores, já com humor e taxa de guerra. */
+export const citizenTaxesPerDay = (world: World): number =>
+  world.town.population * B.citizenTaxPerDay * (0.8 + (B.citizenTaxMood * citizenMood(world)) / 100) * decreeTaxMultiplier(world);
+
 /** A festa cresce com a população: mais gente, mais mesa, mais ouro. */
 export function festivalCost(world: World): number {
   return Math.round(B.festivalBaseCost + B.festivalCostPerCitizen * world.town.population);
@@ -93,10 +104,12 @@ export function dailyEconomy(world: World): void {
       record(world, 'corrupcao', [], 'A corrupção do abismo assusta a vila: famílias fazem as malas.');
     }
   }
-  // O humor dos moradores regula quanto eles pagam de imposto.
-  town.treasury += town.population * B.citizenTaxPerDay * (0.8 + (B.citizenTaxMood * citizenMood(world)) / 100);
+  // O humor dos moradores regula quanto eles pagam; a taxa de guerra soma.
+  town.treasury += citizenTaxesPerDay(world);
   town.treasury -= totalBuildingLevels(world) * B.upkeepPerLevelPerDay;
   town.treasury -= pensionPerDay(world);
+  town.treasury -= guardSalaryPerDay(world);
+  town.treasury -= decreeDailyCost(world);
   if (town.treasury < 0) town.treasury = 0;
 }
 

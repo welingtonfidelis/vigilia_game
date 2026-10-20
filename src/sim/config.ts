@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -60,6 +60,10 @@ export const BALANCE = {
   citizenPerPop: 4,
   /** Quanto o humor médio mexe no imposto (0,8 + citizenTaxMood × humor/100). */
   citizenTaxMood: 0.4,
+  /** Salário diário de cada guarda da milícia. */
+  guardSalaryPerDay: 2.5,
+  /** No máximo dois decretos ativos por vez. */
+  maxActiveDecrees: 2,
   citizenHappinessBase: 55,
   citizenLeaveBelow: 30,
   citizenLeaveChance: 0.15,

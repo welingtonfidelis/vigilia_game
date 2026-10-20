@@ -1709,3 +1709,27 @@ kbd {
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: contain;
 }
+
+/* Decretos do prefeito (M3): cartões com custo e trade-off. */
+.decrees {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.8rem;
+}
+.decree {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.5rem;
+  background: rgba(30, 24, 18, 0.55);
+  color: var(--text);
+  cursor: pointer;
+}
+.decree strong { display: block; color: #e8d6a8; font-family: var(--serif); font-weight: normal; }
+.decree span { display: block; font-size: 0.86rem; margin-top: 0.15rem; }
+.decree small { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.2rem; }
+.decree em { display: block; font-style: normal; color: var(--gold); font-size: 0.76rem; margin-top: 0.3rem; }
+.decree.active { border-color: var(--gold); background: rgba(94, 70, 28, 0.25); }
+.decree:disabled { opacity: 0.45; cursor: not-allowed; }
