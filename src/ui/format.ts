@@ -158,7 +158,9 @@ export function buildingEffects(id: keyof typeof BUILDINGS, level: number): stri
     case 'ferreiro':
       return l === 0 ? ['Sem ferreiro, ninguém compra equipamento'] : [`Equipamento até o tier ${4 * l}`];
     case 'templo':
-      return l === 0 ? ['Sem templo, ninguém reza (fé e luto)'] : ['Fé, ânimo e consolo para quem está de luto', `Descanso cura +${5 * l}% a mais`];
+      return l === 0
+        ? ['Sem templo, ninguém reza (fé e luto)']
+        : ['Fé, ânimo e consolo para quem está de luto', `Descanso cura +${5 * l}% a mais`, 'Quem juntou fortuna deixa ofertas no altar'];
     case 'guilda':
       return [`Grupos ao mesmo tempo: ${1 + l}`, `Tamanho do grupo: até ${l >= 2 ? 5 : 4}`, l === 0 ? 'Sem contratos nem doutrina' : `Contratos no quadro: até ${l}`];
     case 'campo':

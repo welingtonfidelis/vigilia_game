@@ -9,6 +9,7 @@ import {
   canAfford,
   commands,
   dayOf,
+  festivalCost,
   floorLabel,
   heroCapacity,
   hornCost,
@@ -16,6 +17,7 @@ import {
   MAX_BUILDING_LEVEL,
   maxParties,
   nextLevelCost,
+  pensionPerDay,
   populationCap,
   recruitsPerHorn,
   totalBuildingLevels,
@@ -307,14 +309,18 @@ export function CofferPanel() {
   const daily = world.metrics.daily.slice(-30);
   const taxes = town.population * BALANCE.citizenTaxPerDay;
   const upkeep = totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay;
+  const pensions = pensionPerDay(world);
+  const festival = festivalCost(world);
+  const festivalWait = town.festivalDay >= 0 ? Math.max(0, town.festivalDay + BALANCE.festivalCooldownDays - dayOf(world.tick)) : 0;
   const rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
   return (
-    <PanelShell title="Cofre da vila" subtitle="O tesouro paga prédios, contratos e o berrante.">
+    <PanelShell title="Cofre da vila" subtitle="O tesouro paga prédios, contratos, pensões e festas.">
       <div class="stats">
         <Stat label="Tesouro" value={fmt(town.treasury)} />
         <Stat label="População" value={`${fmt(town.population)} / ${fmt(populationCap(world))}`} />
         <Stat label="Impostos/dia" value={`+${taxes.toFixed(1)}`} hint="Cidadãos pagam um pouco por dia" />
         <Stat label="Manutenção/dia" value={`−${upkeep.toFixed(1)}`} hint="Cada nível de prédio custa manutenção" />
+        <Stat label="Pensões/dia" value={`−${pensions.toFixed(1)}`} hint="Cada aposentado recebe uma pensão da vila" />
         <Stat label="Reputação" value={Math.round(town.reputation)} hint="Atrai heróis de rank maior" />
       </div>
       {daily.length > 1 && (
@@ -332,6 +338,19 @@ export function CofferPanel() {
           </button>
         ))}
       </div>
+      <h3>Festa na praça</h3>
+      <p class="sub">
+        Custa {fmt(festival)} de ouro (a conta cresce com a população). Em troca: ânimo, lealdade, reputação e duas almas novas na vila. O tempo
+        também cura um pouco do luto.
+      </p>
+      {festivalWait > 0 ? (
+        <p class="tag">A última festa ainda ecoa: a próxima em {plural(festivalWait, 'dia', 'dias')}.</p>
+      ) : (
+        <button class="btn primary" disabled={town.treasury < festival} onClick={() => command(commands.holdFestival)}>
+          Fazer a festa ({fmt(festival)})
+        </button>
+      )}
+      <p class="sub">Os heróis que juntam fortuna também deixam ofertas no templo: o ouro deles volta para a vila.</p>
       <h3>Materiais</h3>
       <div class="stats">
         {(Object.keys(town.materials) as MaterialId[])

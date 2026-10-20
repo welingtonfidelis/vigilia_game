@@ -50,6 +50,8 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   maioridade: 'gold',
   prefeito: 'info',
   funcao: 'info',
+  festival: 'good',
+  doacao: 'gold',
 };
 
 let bossesSeen = new Set(session.world.acts.flatMap((a, i) => (a.bossDefeated ? [i] : [])));
@@ -73,7 +75,9 @@ session.subscribe((event) => {
     if (!act.bossDefeated || bossesSeen.has(i)) return;
     bossesSeen.add(i);
     session.setPaused(true);
-    ui.open({ kind: 'actEnd', act: i });
+    // O último chefe não abre "fim de ato": abre o fim da campanha.
+    if (i === ACTS.length - 1) ui.open({ kind: 'campaignEnd' });
+    else ui.open({ kind: 'actEnd', act: i });
   });
 });
 

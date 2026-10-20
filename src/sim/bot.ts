@@ -4,8 +4,8 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { blowHorn, build, comfort, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
-import { canAfford, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
+import { blowHorn, build, comfort, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { canAfford, festivalCost, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
 import { BALANCE as B } from './config.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import type { BuildingId, World } from './types.ts';
@@ -51,6 +51,13 @@ export function autoMayor(world: World): void {
     if (!materialsOk) continue;
     if (town.treasury - cost.gold >= reserve) build(world, id);
     break;
+  }
+
+  // Fim de jogo sem ouro morto: quando o tesouro sobra, a vila faz festa.
+  if (hourOf(world.tick) === 14) {
+    const cost = festivalCost(world);
+    const lowMorale = townHeroes(world).some((h) => h.morale < 45);
+    if (town.treasury > cost + (lowMorale ? 300 : 900)) holdFestival(world);
   }
 
   // Contratos para todos os andares da fronteira, até o limite do quadro.

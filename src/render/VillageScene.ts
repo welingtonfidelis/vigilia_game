@@ -48,6 +48,7 @@ import {
   buildHornTower,
   buildProps,
   DEPTH,
+  insetTownFrames,
   label,
   scatterTrees,
   smooth,
@@ -128,6 +129,7 @@ export class VillageScene extends Phaser.Scene {
   private treasurySeen = 0;
   private treasuryCheckAt = 0;
   private hoverCursor = '';
+  private hoverHeroId: number | null = null;
   private downOnMap = false;
   private walkClock = 0;
   private unsubscribe: (() => void) | null = null;
@@ -150,6 +152,9 @@ export class VillageScene extends Phaser.Scene {
   create(): void {
     this.registerArt();
     const mask = buildGround(this);
+    // O chão já foi assado; daqui para baixo, todo tile-imagem (prédios, cercas,
+    // portão, quadro, árvores) usa UVs um pouco para dentro contra o vazamento do atlas.
+    insetTownFrames(this);
     this.abyss = buildAbyss(this);
     scatterTrees(this, mask);
     buildCemetery(this);
@@ -161,6 +166,7 @@ export class VillageScene extends Phaser.Scene {
     this.coffer = buildCoffer(this);
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createInteractables();
+    this.layoutSigns();
 
     this.night = this.add
       .rectangle(-400, -400, WORLD_W + 800, WORLD_H + 800, 0x0b0f24, 0)
@@ -234,6 +240,7 @@ export class VillageScene extends Phaser.Scene {
     }
     for (const b of this.buildings.values()) b.sign.setScale(this.labelScale);
     for (const grave of this.graves.values()) grave.name.setScale(Math.min(this.labelScale, 1.4));
+    this.layoutSigns();
   }
 
   /** Roda do mouse ou pinça: anda um passo na lista de zooms inteiros. */
@@ -312,6 +319,70 @@ export class VillageScene extends Phaser.Scene {
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
     if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y + lot.h / 4);
     view.level = level;
+    this.layoutSigns();
+  }
+
+  /**
+   * Placa de cada prédio logo abaixo do lote. Quando dois lotes vizinhos têm nomes
+   * largos (Estalagem e Casa de cura), a segunda placa desce uma linha em vez de
+   * encostar na primeira. Elas são fixas, então isto só roda quando algo muda.
+   */
+  private layoutSigns(): void {
+    const placed: Phaser.Geom.Rectangle[] = [];
+    const signs: { sign: Phaser.GameObjects.Text; lot: (typeof LOTS)[BuildingId] }[] = [];
+    for (const id of BUILDING_IDS) {
+      const view = this.buildings.get(id);
+      if (view) signs.push({ sign: view.sign, lot: LOTS[id] });
+    }
+    signs.sort((a, b) => a.lot.x - b.lot.x);
+    for (const { sign, lot } of signs) {
+      const baseY = lot.y + lot.h / 2 + 2;
+      sign.setY(baseY);
+      let rect = sign.getBounds();
+      for (let tries = 0; tries < 3; tries++) {
+        const padded = new Phaser.Geom.Rectangle(rect.x - 6, rect.y - 1, rect.width + 12, rect.height + 2);
+        if (!placed.some((other) => Phaser.Geom.Intersects.RectangleToRectangle(other, padded))) break;
+        sign.setY(sign.y + rect.height + 3);
+        rect = sign.getBounds();
+      }
+      placed.push(rect);
+    }
+  }
+
+  /**
+   * Nomes no mapa sem um por cima do outro: o selecionado e o que está sob o
+   * ponteiro sempre aparecem; o resto entra por prioridade (prefeito, prédios,
+   * heróis, crianças, túmulos) enquanto couber. A medalha de rank continua
+   * visível mesmo quando o nome é escondido.
+   */
+  private layoutLabels(): void {
+    const entries: { obj: Phaser.GameObjects.Text; force: boolean; priority: number }[] = [];
+    if (this.mayor) entries.push({ obj: this.mayor.label, force: true, priority: 0 });
+    for (const b of this.buildings.values()) entries.push({ obj: b.sign, force: true, priority: 1 });
+    const walkers = [...this.heroes.values()].filter((s) => !s.hidden);
+    for (const sprite of walkers) {
+      const selected = this.ui.selectedHeroId === sprite.id;
+      const forced = selected || this.hoverHeroId === sprite.id;
+      // Numa multidão (festa, taverna cheia) os nomes viram uma pilha ilegível:
+      // só o herói sob o ponteiro ou selecionado mantém o nome. As medalhas ficam.
+      const crowd = walkers.filter((other) => other !== sprite && Math.abs(other.x - sprite.x) < 46 && Math.abs(other.y - sprite.y) < 42).length;
+      if (!forced && crowd >= 3) {
+        sprite.label.setVisible(false);
+        continue;
+      }
+      entries.push({ obj: sprite.label, force: forced, priority: 2 });
+    }
+    for (const kid of this.kids.values()) if (!kid.hidden) entries.push({ obj: kid.label, force: false, priority: 3 });
+    for (const grave of this.graves.values()) entries.push({ obj: grave.name, force: false, priority: 4 });
+    entries.sort((a, b) => Number(b.force) - Number(a.force) || a.priority - b.priority || a.obj.y - b.obj.y);
+    const taken: Phaser.Geom.Rectangle[] = [];
+    for (const entry of entries) {
+      const bounds = entry.obj.getBounds();
+      const rect = new Phaser.Geom.Rectangle(bounds.x - 4, bounds.y - 1, bounds.width + 8, bounds.height + 2);
+      const visible = entry.force || !taken.some((other) => Phaser.Geom.Intersects.RectangleToRectangle(other, rect));
+      entry.obj.setVisible(visible);
+      if (visible) taken.push(rect);
+    }
   }
 
   private createInteractables(): void {
@@ -497,7 +568,9 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private onHover(p: Phaser.Input.Pointer): void {
-    const over = this.heroAt(p.worldX, p.worldY) || this.graveAt(p.worldX, p.worldY) !== null || this.interactableAt(p.worldX, p.worldY);
+    const hero = this.heroAt(p.worldX, p.worldY);
+    this.hoverHeroId = hero?.id ?? null;
+    const over = hero || this.graveAt(p.worldX, p.worldY) !== null || this.interactableAt(p.worldX, p.worldY);
     const cursor = over ? 'pointer' : 'default';
     if (cursor !== this.hoverCursor) {
       this.hoverCursor = cursor;
@@ -542,6 +615,7 @@ export class VillageScene extends Phaser.Scene {
       if (!initial && gain >= 5) this.floatText(LANDMARKS.cofre.x + 16, LANDMARKS.cofre.y - 44, `+${Math.round(gain)} ouro`, '#ffd86a');
       this.treasurySeen = town.treasury;
     }
+    this.layoutLabels();
   }
 
   private syncHeroes(initial: boolean, dt: number): void {

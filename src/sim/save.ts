@@ -16,7 +16,15 @@ export function deserialize(json: string): World {
 /** Ponto único para migrar saves antigos quando o formato mudar. */
 function migrate(world: World): World {
   if (world.version < 2) migrateToV2(world);
+  if (world.version < 3) migrateToV3(world);
   return world;
+}
+
+/** v2 → v3 (Fase A): a data da última festa na praça. */
+function migrateToV3(world: World): void {
+  const town = world.town as unknown as { festivalDay?: number };
+  town.festivalDay ??= -1;
+  world.version = 3;
 }
 
 /** v1 → v2 (M2, Pessoas): lesões, casais, filhos, aposentados com função, epitáfios e prefeito. */

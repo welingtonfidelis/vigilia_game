@@ -216,5 +216,6 @@ export function confidence(world: World, heroes: Hero[], act: number, floor: num
     const bossConf = Math.sqrt(party / bossFight);
     conf = Math.min(conf, rooms > 0 ? bossConf * 1.3 : bossConf);
   }
-  return conf * Math.sqrt(weakest);
+  // Viés de excesso de confiança: o grupo desce um degrau além do que aguenta.
+  return conf * Math.sqrt(weakest) * B.confidenceBias;
 }

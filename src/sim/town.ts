@@ -229,12 +229,17 @@ function finishActivity(world: World, hero: Hero): void {
       break;
     }
     case 'rezar': {
-      const gift = Math.min(hero.gold, B.donation);
+      // Quem juntou fortuna deixa uma oferta no altar: é o ouro dos heróis voltando para a vila.
+      const tithe = hero.gold > B.templeTitheFrom ? Math.floor(hero.gold * B.templeTithe) : 0;
+      const gift = Math.min(hero.gold, B.donation + tithe);
       hero.gold -= gift;
       town.treasury += gift;
       hero.needs.faith = clamp(hero.needs.faith + 40);
       hero.morale = clamp(hero.morale + (hasTrait(hero, 'devoto') ? 15 : 5));
       hero.grief = Math.max(0, hero.grief - 10);
+      if (gift >= 50) {
+        record(world, 'doacao', [hero.id], `${hero.name} deixou ${gift} de ouro no templo e acendeu uma vela por quem ficou no abismo.`);
+      }
       break;
     }
     case 'comprar': {

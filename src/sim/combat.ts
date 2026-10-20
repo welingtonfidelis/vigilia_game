@@ -331,7 +331,7 @@ function shouldRetreat(world: World, party: Party, c: Combat): boolean {
   const heroes = activeHeroUnits(c);
   if (party.startMemberIds.length >= 3 && heroes.length <= 1 && aliveEnemies(c).length > 1) return true;
   const avgHp = heroes.reduce((s, u) => s + u.hp / u.maxHp, 0) / heroes.length;
-  const threshold = { cautelosa: 0.45, equilibrada: 0.3, agressiva: 0.15 }[world.town.doctrine];
+  const threshold = B.retreatHp[world.town.doctrine];
   return avgHp < threshold;
 }
 

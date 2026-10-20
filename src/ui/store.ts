@@ -16,6 +16,7 @@ export type Panel =
   | { kind: 'memorial' }
   | { kind: 'menu' }
   | { kind: 'welcome' }
+  | { kind: 'campaignEnd' }
   | { kind: 'actEnd'; act: number };
 
 export type PanelKind = Panel['kind'];

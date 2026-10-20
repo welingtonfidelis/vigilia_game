@@ -1,7 +1,7 @@
 # Vigília — Game Design Document v0.1
 
 > Codinome provisório. Versão expandida e **original** inspirada na proposta de *Tristram* (Bippinbits, Ludum Dare 55).
-> Status: decidido **fantasia sombria original + web/TypeScript**. M0 (núcleo de simulação) concluído e M1 (fatia vertical jogável no navegador) implementado, faltando playtest; ver [README.md](README.md).
+> Status: decidido **fantasia sombria original + web/TypeScript**. M0 (núcleo), M1 (fatia vertical) e M2 (pessoas) concluídos; a Fase A de polimento entrou (rótulos, celular, tensão, fim de campanha e sumidouros de ouro), faltando playtest; ver [README.md](README.md).
 
 ---
 

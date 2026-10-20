@@ -12,7 +12,7 @@ import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
-import { ActEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
+import { ActEndPanel, CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel } from './panels/TownPanels.tsx';
 import type { Panel, UiStore } from './store.ts';
 
@@ -71,9 +71,9 @@ function Hud() {
       <span class="hud-item date" title={formatDate(world.tick)}>
         {isNight(world.tick) ? <IconMoon /> : <IconSun />}
         <span class="date-long">{formatDate(world.tick)}</span>
-        <span class="date-short">{formatDate(world.tick).replace(/^Ano (\d+) · /, 'A$1 · ')}</span> · {clockOf(world.tick)}
+        <span class="date-short">{formatDate(world.tick).replace(/^Ano (\d+) · .+, dia (\d+)$/, 'A$1 · dia $2')}</span> · {clockOf(world.tick)}
       </span>
-      <span class="hud-item" title="População">
+      <span class="hud-item pop" title="População">
         <IconPeople /> {fmt(town.population)}
       </span>
       <span class="hud-item" title="Heróis na vila / vagas">
@@ -111,7 +111,7 @@ function Hud() {
 
 function Objectives() {
   const { world, ui } = useGame();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => window.innerWidth > 720);
   const list = objectives(world);
   if (list.length === 0 || (ui.panel && ui.panel.kind === 'welcome')) return null;
   return (
@@ -215,6 +215,8 @@ function PanelHost() {
       return <MenuPanel />;
     case 'welcome':
       return <WelcomePanel />;
+    case 'campaignEnd':
+      return <CampaignEndPanel />;
     case 'actEnd':
       return <ActEndPanel act={p.act} />;
   }

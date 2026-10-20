@@ -1,11 +1,11 @@
 // Elenco, cemitério, menu, boas-vindas e fim de ato.
 
 import { useState } from 'preact/hooks';
-import { ACTS, BALANCE, byWhom, childAge, createWorld, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS } from '../../sim/index.ts';
+import { ACTS, BALANCE, byWhom, childAge, createWorld, dayOf, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS, yearOf } from '../../sim/index.ts';
 import type { Hero, HeroStatus, RetiredRole } from '../../sim/index.ts';
 import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../../game/storage.ts';
-import { Bar, HeroLink, PanelShell, useGame } from '../components.tsx';
-import { activityText, className, liveHp, plural } from '../format.ts';
+import { Bar, HeroLink, PanelShell, Stat, useGame } from '../components.tsx';
+import { activityText, className, fmt, liveHp, plural } from '../format.ts';
 import { graveOrder } from '../../render/layout.ts';
 import { HeroPortrait, PixelSprite } from '../PixelSprite.tsx';
 import { heroSprite } from '../../render/assets.ts';
@@ -182,8 +182,55 @@ export function MemorialPanel() {
   );
 }
 
+export function CampaignEndPanel() {
+  const { world, ui, session } = useGame();
+  const fallen = graveOrder(world).slice(-6).reverse();
+  const years = yearOf(dayOf(world.tick));
+  return (
+    <PanelShell wide title="Aquilo que Vigia foi silenciado" subtitle={`Fim da campanha · ${formatDate(world.tick)}`}>
+      <p>
+        Pela primeira vez em séculos a vila dorme sem medo. O abismo está quieto, e quem desceu até o fundo voltou com uma história que ninguém
+        vai esquecer.
+      </p>
+      <div class="stats">
+        <Stat label="Anos de vila" value={years} />
+        <Stat label="Chefes derrotados" value={`${world.metrics.bossKills.length} de ${ACTS.length}`} />
+        <Stat label="Expedições" value={fmt(world.metrics.expeditions)} />
+        <Stat label="Heróis caídos" value={fmt(world.metrics.deaths)} />
+        <Stat label="Ouro saqueado" value={fmt(world.metrics.goldLooted)} />
+        <Stat label="População" value={fmt(world.town.population)} />
+      </div>
+      <div class="row">
+        <button class="btn primary big" onClick={() => { session.setPaused(false); ui.close(); }}>
+          Continuar jogando
+        </button>
+        <button class="btn" onClick={() => ui.open({ kind: 'chronicle' })}>
+          Ler a crônica
+        </button>
+      </div>
+      <h3>Quem não voltou</h3>
+      {fallen.length === 0 ? (
+        <p class="sub">Ninguém morreu nesta campanha. A vila inteira viu o abismo se calar.</p>
+      ) : (
+        <ul class="graves">
+          {fallen.map((h) => (
+            <li key={h.id}>
+              <HeroLink id={h.id} />
+              <small>
+                {className(h)} {h.rank}, nível {h.level} · {h.stats.expeditions} {h.stats.expeditions === 1 ? 'expedição' : 'expedições'}
+              </small>
+              {h.epitaph && <blockquote class="epitaph">{h.epitaph}</blockquote>}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p class="sub">A vila segue viva: dá para continuar tocando o berrante, construindo e descendo enquanto quiser.</p>
+    </PanelShell>
+  );
+}
+
 export function MenuPanel() {
-  const { session, ui } = useGame();
+  const { session, ui, world } = useGame();
   const store = browserStore();
   const meta = readSaveMeta(store);
   const [confirmNew, setConfirmNew] = useState(false);
@@ -218,6 +265,11 @@ export function MenuPanel() {
         </button>
       </div>
       <p class="sub">{meta ? `Último save: ${meta.label} (salvo em ${new Date(meta.savedAt).toLocaleString('pt-BR')})` : 'Nenhum jogo salvo neste navegador.'}</p>
+      {world.endedTick !== null && (
+        <button class="btn" onClick={() => ui.open({ kind: 'campaignEnd' })}>
+          Ver o fim da campanha
+        </button>
+      )}
       <label class="check">
         <input type="checkbox" checked={prefs.autosave} onChange={(e) => ui.setPrefs({ autosave: (e.target as HTMLInputElement).checked })} /> Salvar sozinho a cada dia do jogo
       </label>

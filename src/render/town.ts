@@ -11,6 +11,7 @@ import {
   PLAZA_TILES,
   ROWS,
   TILE,
+  WORLD_H,
   WORLD_W,
   type TileRect,
 } from './layout.ts';
@@ -73,6 +74,15 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
       else if (autumn) decor.putTileAt(nine(T.autumnForest, autumn, x, y), x, y);
     }
   }
+  // O chão é estático. Assar as duas camadas numa textura única resolve a emenda de
+  // 1 px que aparece entre tiles quando a câmera rola em zoom fracionário (1,5×/2,5×):
+  // sem quads vizinhos, não há borda de tile para rasgar. Também é um desenho só por quadro.
+  const baked = scene.add.renderTexture(0, 0, WORLD_W, WORLD_H).setOrigin(0, 0).setDepth(DEPTH.ground);
+  baked.draw(ground, 0, 0);
+  baked.draw(decor, 0, 0);
+  baked.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  ground.setActive(false).setVisible(false);
+  decor.setActive(false).setVisible(false);
   return mask;
 }
 
@@ -220,6 +230,31 @@ export function smooth<T extends Phaser.GameObjects.Text>(text: T): T {
   text.setResolution(2);
   text.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
   return text;
+}
+
+/**
+ * Puxa as UVs de cada moldura meio texel para dentro. Em zoom fracionário (1,5×/2,5×)
+ * a borda de um tile cai em meio pixel e a GPU amostra o pixel da moldura vizinha do
+ * atlas: é a linha vertical que aparece ao lado de portão, quadro e prédios. Meio texel
+ * basta para a amostra continuar dentro do próprio tile, sem mudar o desenho em 1×.
+ * O chão já foi assado antes disto, então a textura estática não é afetada.
+ */
+export function insetTownFrames(scene: Phaser.Scene, texels = 0.5): void {
+  const texture = scene.textures.get('town');
+  const source = texture.getSourceImage() as { width: number; height: number };
+  const tw = source.width;
+  const th = source.height;
+  for (const frame of Object.values(texture.frames)) {
+    if (!frame || frame.name === '__BASE') continue;
+    frame.setUVs(
+      frame.width,
+      frame.height,
+      frame.cutX / tw + texels / tw,
+      frame.cutY / th + texels / th,
+      (frame.cutX + frame.width) / tw - texels / tw,
+      (frame.cutY + frame.height) / th - texels / th,
+    );
+  }
 }
 
 export function label(scene: Phaser.Scene, x: number, y: number, text: string, size = 14, color = '#f0e6d0'): Phaser.GameObjects.Text {

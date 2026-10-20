@@ -51,6 +51,16 @@ export function hornCost(world: World): number {
   return Math.min(B.hornMaxCost, Math.round(B.hornBaseCost * (1 + B.hornCostGrowth * world.town.hornUses)));
 }
 
+/** Pensão diária dos aposentados: o tesouro sustenta quem já pendurou as armas. */
+export function pensionPerDay(world: World): number {
+  return world.heroes.filter((h) => h.status === 'retired').length * B.pensionPerRetiredPerDay;
+}
+
+/** A festa cresce com a população: mais gente, mais mesa, mais ouro. */
+export function festivalCost(world: World): number {
+  return Math.round(B.festivalBaseCost + B.festivalCostPerCitizen * world.town.population);
+}
+
 // ── Diário ────────────────────────────────────────────────────────────────
 
 export function populationCap(world: World): number {
@@ -72,6 +82,7 @@ export function dailyEconomy(world: World): void {
   }
   town.treasury += town.population * B.citizenTaxPerDay;
   town.treasury -= totalBuildingLevels(world) * B.upkeepPerLevelPerDay;
+  town.treasury -= pensionPerDay(world);
   if (town.treasury < 0) town.treasury = 0;
 }
 

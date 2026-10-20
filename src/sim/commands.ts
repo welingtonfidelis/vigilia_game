@@ -5,7 +5,18 @@ import { BUILDINGS } from '../data/buildings.ts';
 import { dayOf } from './calendar.ts';
 import { record, floorLabel, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
-import { canAfford, heroCapacity, hornCost, level, maxGearTier, nextLevelCost, pay, recruitsPerHorn } from './economy.ts';
+import {
+  canAfford,
+  festivalCost,
+  heroCapacity,
+  hornCost,
+  level,
+  maxGearTier,
+  nextLevelCost,
+  pay,
+  populationCap,
+  recruitsPerHorn,
+} from './economy.ts';
 import { getBond, hasTrait, revealTrait } from './hero.ts';
 import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
 import { activeHeroes, townHeroes } from './town.ts';
@@ -254,6 +265,37 @@ export function retire(world: World, heroId: number, role?: RetiredRole): Comman
   const hero = heroInTown(world, heroId);
   if (typeof hero === 'string') return fail(hero);
   retireHero(world, hero, 'com honras, por decisão do prefeito', role ?? defaultRole(hero, world));
+  return OK;
+}
+
+/** Festa na praça: o tesouro vira ânimo, lealdade e reputação. Some do cofre e volta como história. */
+export function holdFestival(world: World): CommandResult {
+  const town = world.town;
+  const today = dayOf(world.tick);
+  if (town.festivalDay >= 0 && today < town.festivalDay + B.festivalCooldownDays) {
+    const wait = town.festivalDay + B.festivalCooldownDays - today;
+    return fail(`A última festa ainda está na memória: espere ${wait} ${wait === 1 ? 'dia' : 'dias'}.`);
+  }
+  const listeners = townHeroes(world);
+  if (listeners.length === 0) return fail('Não há ninguém na vila para festejar.');
+  const cost = festivalCost(world);
+  if (town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - town.treasury)} de ouro para a festa.`);
+  town.treasury -= cost;
+  town.festivalDay = today;
+  town.reputation = Math.min(100, town.reputation + B.festivalReputation);
+  town.population = Math.min(populationCap(world), town.population + 2);
+  for (const hero of listeners) {
+    hero.morale = Math.min(100, hero.morale + B.festivalMorale);
+    hero.loyalty = Math.min(100, hero.loyalty + B.festivalLoyalty);
+    hero.grief = Math.max(0, hero.grief - 15);
+    hero.needs.fun = Math.min(100, hero.needs.fun + 30);
+  }
+  record(
+    world,
+    'festival',
+    listeners.map((h) => h.id),
+    `A vila fechou as portas e abriu as mesas: a festa na praça custou ${cost} de ouro e levantou o ânimo de ${listeners.length} heróis.`,
+  );
   return OK;
 }
 

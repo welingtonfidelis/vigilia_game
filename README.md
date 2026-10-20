@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Pessoas.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar o Ato I do zero até o Guardião das Urnas, com heróis que se ferem, casam, têm filhos, se aposentam com uma função na vila e ganham epitáfio quando morrem.
+**Estado atual: M2, Pessoas, mais a Fase A de polimento.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar o Ato I do zero até o Guardião das Urnas, com heróis que se ferem, casam, têm filhos, se aposentam com uma função na vila e ganham epitáfio quando morrem. O abismo agora cobra mais caro, o mapa não vira uma pilha de nomes, o fim da campanha tem tela e o ouro tem para onde ir.
 
 ## Jogar
 
@@ -22,7 +22,7 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 71 testes (núcleo, pessoas, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm test                                        # 76 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
@@ -42,8 +42,8 @@ src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
 src/render/ Phaser: só lê o World a cada quadro
   VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
-  town.ts, ground.ts  vila em tiles do Tiny Town (autotile de terra, florestas, abismo, cemitério, marcos)
-  buildings.ts   os 6 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
+  town.ts, ground.ts  vila em tiles do Tiny Town (autotile de terra, florestas, abismo, cemitério, marcos); o chão é assado numa textura única e as UVs dos tiles recuam meio texel, para não vazar o tile vizinho do atlas em zoom fracionário
+  buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
   sprites.ts     heróis e prefeito do 0x72 (parado/correndo), assets.ts e atlas0x72.ts mapeiam classes e monstros
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
@@ -82,18 +82,18 @@ A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da 
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 0,9 | 0,5 h | 0,6–1,6 | 100% |
-| Minas Inundadas | 3,4 | 1,8 h | 2,0–5,7 | 100% |
-| Jardim de Fungos | 5,5 | 2,9 h | 3,9–8,3 | 100% |
-| Cidade Afogada | 9,6 | 5,1 h | 6,4–13,9 | 100% |
-| Forja Abissal | 17,4 | 9,3 h | 11,3–29,9 | 100% |
-| Coração do Abismo | 17,4 | 9,3 h | 13,1–20,6 | 50% |
+| Catacumbas | 0,9 | 0,5 h | 0,5–1,3 | 100% |
+| Minas Inundadas | 3,1 | 1,7 h | 1,8–4,6 | 100% |
+| Jardim de Fungos | 6,0 | 3,2 h | 2,3–9,7 | 100% |
+| Cidade Afogada | 9,2 | 4,9 h | 4,4–13,7 | 100% |
+| Forja Abissal | 15,2 | 8,1 h | 10,7–21,6 | 100% |
+| Coração do Abismo | 19,1 | 10,2 h | 13,5–25,0 | 80% |
 
-- **Mortalidade:** 2,8 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 20 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~56 lesões, ~5 cicatrizes, ~20 casamentos, ~17 filhos e ~8 deles chegando à maioridade como heróis.
-- **Expedições:** ~94 por ano, com zero impasses de combate e no máximo 1 dia seguido sem expedição.
-- **Ouro:** o tesouro sobe até ~15–17 mil no meio do jogo e volta a cair com patrocínios e contratos. O ouro dos heróis acumula no fim (economizando para os tiers 11–12). Faltam sumidouros de fim de jogo, que entram no M3 (decretos, defesa, festivais).
-- **Desempenho:** ~0,5 s para simular uma campanha de 30 anos.
+- **Mortalidade:** 4,6 mortes/ano com elenco de ~18 (antes da Fase A: 2,8). Ninguém é mais dispensado: são cerca de 17 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~77 lesões, ~7 cicatrizes, ~18 casamentos, ~16 filhos e ~7 deles chegando à maioridade como heróis.
+- **Expedições:** ~89 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **5% de retiradas** (antes: 3%). A confiança ao descer agora separa o risco: ≥0,5 → 0,28 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro fica entre ~0,4 e 4,3 mil e o ouro dos heróis entre ~15 e 37 mil (antes: 24–50 mil). **Festa na praça**, **pensão dos aposentados** e **ofertas no templo** puxam o ouro para fora do bolso dos heróis. Ainda faltam sumidouros de fim de jogo (relíquias e propriedades), que entram na Fase B/M3.
+- **Desempenho:** ~1 s para simular uma campanha de 30 anos.
 
 ## O que o M0 entrega
 
@@ -153,6 +153,15 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
   - família e crianças brincando na praça; aposentados no posto de trabalho;
   - epitáfio ao clicar na lápide;
   - discurso na fogueira da praça.
+
+## O que a Fase A entrega (polimento pós-M2)
+
+- [x] **Rótulos do mapa com prioridade:** nomes de heróis não se empilham; em multidão só o nome sob o ponteiro/selecionado aparece (a medalha de rank fica); as placas de prédios vizinhos descem uma linha em vez de encostar uma na outra.
+- [x] **Celular:** HUD compacto, objetivos recolhidos por padrão, avisos acima do botão de interação e prompt acima da barra de navegação.
+- [x] **Tensão calibrada:** o grupo se acha mais capaz do que é (`confidenceBias`), o que leva as mortes de 2,8 para 4,6 por ano, aumenta retiradas e lesões e faz a confiança ao descer prever o risco de verdade. Massacres continuam raros por desenho (fuga individual + retirada), o que é proposital.
+- [x] **Fim de campanha:** painel com anos de vila, chefes, expedições, ouro saqueado, população e os epitáfios de quem não voltou; dá para continuar jogando. O menu reabre o resumo.
+- [x] **Sumidouros de ouro:** festa na praça (no Cofre), pensão diária dos aposentados e ofertas que os heróis ricos deixam no templo.
+- [x] **Save v2 → v3** migra sozinho (data da última festa).
 
 ## Próximo: M3 (vila viva)
 

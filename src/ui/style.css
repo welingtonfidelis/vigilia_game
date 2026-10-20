@@ -1493,3 +1493,69 @@ kbd {
     display: none;
   }
 }
+
+/* Fase A: no celular o HUD encolhe, os objetivos começam recolhidos e os avisos
+   sobem para não cobrir o botão de interação nem a barra de navegação. */
+@media (max-width: 720px) {
+  #hud {
+    padding: 0.25rem max(0.45rem, env(safe-area-inset-right)) 0.25rem max(0.45rem, env(safe-area-inset-left));
+    padding-top: max(0.25rem, env(safe-area-inset-top));
+  }
+
+  .hud-bar {
+    gap: 0.15rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .hud-item {
+    gap: 0.25rem;
+  }
+
+  .hud-item.pop {
+    display: none;
+  }
+
+  .hud-mute {
+    min-width: 2rem;
+    min-height: 1.9rem;
+  }
+
+  .spd {
+    min-width: 2rem;
+    min-height: 1.9rem;
+    padding: 0.2rem 0.35rem;
+  }
+
+  .objectives {
+    top: 0.35rem;
+    left: 0.35rem;
+    max-width: calc(100% - 0.7rem);
+    font-size: 0.78rem;
+  }
+
+  .obj-toggle {
+    padding: 0.3rem 0.55rem;
+  }
+
+  .prompt {
+    left: 0.45rem;
+    right: 0.45rem;
+    bottom: calc(3.9rem + env(safe-area-inset-bottom));
+    transform: none;
+    text-align: center;
+    font-size: 0.9rem;
+    white-space: normal;
+  }
+
+  .toasts {
+    left: 0.45rem;
+    right: 0.45rem;
+    width: auto;
+    bottom: calc(7.2rem + env(safe-area-inset-bottom));
+  }
+
+  .toast {
+    font-size: 0.76rem;
+    padding: 0.3rem 0.5rem;
+  }
+}

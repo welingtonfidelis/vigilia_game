@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
   autoMayor,
+  BALANCE,
   checksum,
   commands,
   createWorld,
   deserialize,
+  festivalCost,
+  pensionPerDay,
   runDays,
   runTicks,
   serialize,
+  totalBuildingLevels,
   dayOf,
   DAYS_PER_SEASON,
   DAYS_PER_YEAR,
@@ -15,8 +19,9 @@ import {
 } from '../src/sim/index.ts';
 import { startCombat, combatTick } from '../src/sim/combat.ts';
 import { addBond, createHero, getBond } from '../src/sim/hero.ts';
+import { dailyEconomy } from '../src/sim/economy.ts';
 import { dailyPeople, epitaph, maybeInjure } from '../src/sim/people.ts';
-import { scoreActivities } from '../src/sim/town.ts';
+import { scoreActivities, updateTownHeroes } from '../src/sim/town.ts';
 import { formParties } from '../src/sim/party.ts';
 import type { Party, World } from '../src/sim/index.ts';
 
@@ -396,17 +401,84 @@ describe('pessoas (M2)', () => {
     delete v1.children;
     delete v1.town.mayorEnergy;
     delete v1.town.speechDay;
+    delete v1.town.festivalDay;
     delete v1.town.buildings.casa;
     for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths']) delete v1.metrics[k];
     for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
     const loaded = deserialize(JSON.stringify(v1));
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.town.buildings.casa).toBe(0);
+    expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.children).toEqual([]);
     expect(loaded.heroes.every((h) => Array.isArray(h.scars) && h.injury === null)).toBe(true);
     const dead = loaded.heroes.filter((h) => h.status === 'dead');
     expect(dead.every((h) => typeof h.epitaph === 'string' && h.epitaph.length > 0)).toBe(true);
     runDays(loaded, 30, bot); // e o jogo segue
     expect(loaded.metrics.stalemates).toBe(0);
+  });
+});
+
+describe('economia da vila (Fase A)', () => {
+  it('a festa custa ouro, levanta a vila e respeita a carência', () => {
+    const world = createWorld(31);
+    const a = createHero(world);
+    const b = createHero(world);
+    a.morale = b.morale = 40;
+    a.loyalty = b.loyalty = 50;
+    world.town.treasury = 5000;
+    const cost = festivalCost(world);
+    expect(commands.holdFestival(world)).toEqual({ ok: true });
+    expect(world.town.treasury).toBe(5000 - cost);
+    expect(a.morale).toBe(40 + BALANCE.festivalMorale);
+    expect(b.loyalty).toBe(50 + BALANCE.festivalLoyalty);
+    expect(world.town.reputation).toBe(BALANCE.festivalReputation);
+    expect(world.chronicle.some((e) => e.kind === 'festival')).toBe(true);
+    // Carência: a festa seguinte só depois de dez dias.
+    expect(commands.holdFestival(world).ok).toBe(false);
+    world.tick += BALANCE.festivalCooldownDays * TICKS_PER_DAY;
+    expect(commands.holdFestival(world)).toEqual({ ok: true });
+  });
+
+  it('sem ouro ou sem herói na vila, a festa é recusada', () => {
+    const world = createWorld(32);
+    expect(commands.holdFestival(world).ok).toBe(false); // vila vazia
+    createHero(world);
+    world.town.treasury = 0;
+    expect(commands.holdFestival(world).ok).toBe(false); // sem ouro
+    expect(world.town.festivalDay).toBe(-1);
+  });
+
+  it('cada aposentado custa uma pensão por dia no tesouro', () => {
+    const world = createWorld(33);
+    const hero = createHero(world);
+    expect(pensionPerDay(world)).toBe(0);
+    commands.retire(world, hero.id);
+    expect(pensionPerDay(world)).toBeCloseTo(BALANCE.pensionPerRetiredPerDay);
+    const before = world.town.treasury;
+    dailyEconomy(world);
+    const expected = before + world.town.population * BALANCE.citizenTaxPerDay - totalBuildingLevels(world) * BALANCE.upkeepPerLevelPerDay - pensionPerDay(world);
+    expect(world.town.treasury).toBeCloseTo(Math.max(0, expected), 5);
+  });
+
+  it('quem tem fortuna deixa uma oferta no templo', () => {
+    const world = createWorld(34);
+    const hero = createHero(world);
+    hero.gold = 1000;
+    const before = world.town.treasury;
+    hero.activity = { kind: 'rezar', startedAt: world.tick, endsAt: world.tick - 1 };
+    updateTownHeroes(world);
+    expect(world.town.treasury - before).toBeGreaterThanOrEqual(50);
+    expect(hero.gold).toBeLessThan(950);
+    expect(world.chronicle.some((e) => e.kind === 'doacao')).toBe(true);
+  });
+
+  it('save da versão 2 ganha a data da festa ao carregar', () => {
+    const world = createWorld(35);
+    const v2 = JSON.parse(serialize(world));
+    v2.version = 2;
+    delete v2.town.festivalDay;
+    const loaded = deserialize(JSON.stringify(v2));
+    expect(loaded.version).toBe(3);
+    expect(loaded.town.festivalDay).toBe(-1);
   });
 });

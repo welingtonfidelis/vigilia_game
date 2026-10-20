@@ -60,6 +60,7 @@ export function createWorld(seed: number): World {
       emptySinceDay: null,
       mayorEnergy: B.mayorEnergy,
       speechDay: -1,
+      festivalDay: -1,
     },
     acts: ACTS.map((_, i) => ({
       unlocked: i === 0,

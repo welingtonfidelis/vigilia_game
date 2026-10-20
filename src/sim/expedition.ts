@@ -208,7 +208,7 @@ function shouldContinue(world: World, party: Party, nextRoom: Room): 'seguir' | 
   if (heroes.some((h) => h.injury)) return 'retirada';
   const avgHp = heroes.reduce((s, h) => s + h.hp / heroStats(world, h).maxHp, 0) / heroes.length;
   const avgMorale = heroes.reduce((s, h) => s + h.morale, 0) / heroes.length;
-  let threshold = { cautelosa: 0.6, equilibrada: 0.45, agressiva: 0.3 }[world.town.doctrine];
+  let threshold = B.continueHp[world.town.doctrine];
   threshold -= 0.05 * heroes.filter((h) => hasTrait(h, 'ganancioso')).length;
   if (nextRoom.kind === 'chefe') threshold += 0.25;
   if (nextRoom.cleared) threshold -= 0.15;

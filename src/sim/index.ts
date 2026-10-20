@@ -14,6 +14,7 @@ export type * from './types.ts';
 export {
   averageCorruption,
   canAfford,
+  festivalCost,
   gearPrice,
   heroCapacity,
   hornCost,
@@ -22,6 +23,7 @@ export {
   maxParties,
   maxPartySize,
   nextLevelCost,
+  pensionPerDay,
   populationCap,
   recruitsPerHorn,
   totalBuildingLevels,

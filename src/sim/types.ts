@@ -265,6 +265,8 @@ export interface Town {
   mayorEnergy: number;
   /** Último dia em que o prefeito discursou (um discurso por dia). */
   speechDay: number;
+  /** Último dia em que houve festa na praça (−1 = nunca). */
+  festivalDay: number;
 }
 
 export type ChronicleKind =
@@ -299,6 +301,8 @@ export type ChronicleKind =
   | 'prefeito'
   | 'funcao'
   | 'vinculo'
+  | 'festival'
+  | 'doacao'
   | 'fim';
 
 export interface ChronicleEntry {
