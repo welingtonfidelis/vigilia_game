@@ -238,6 +238,29 @@ function ArenaProp(props: { id: string; x: number; y: number }) {
   return <img class="arena-prop" src={packUrl(asset.file)} style={{ left: `${props.x - w / 2}px`, top: `${props.y - h}px`, width: `${w}px`, height: `${h}px` }} alt="" aria-hidden="true" />;
 }
 
+function ArenaFx(props: { assetId: string }) {
+  const asset = packAsset(props.assetId);
+  if (!asset) return null;
+  const frames = asset.animations?.play?.frames ?? [0];
+  const fps = asset.animations?.play?.fps ?? 14;
+  const [w, h] = asset.frameSize ?? asset.size ?? [64, 64];
+  const columns = asset.columns ?? frames.length;
+  const from = frames[0] ?? 0;
+  const to = (frames[frames.length - 1] ?? from) + 1;
+  const style: Record<string, string> = {
+    width: `${w}px`,
+    height: `${h}px`,
+    backgroundImage: `url(${packUrl(asset.file)})`,
+    backgroundSize: `${w * columns}px ${h}px`,
+    backgroundPosition: `${-from * w}px 0`,
+    '--sprite-from': `${-from * w}px`,
+    '--sprite-to': `${-to * w}px`,
+    '--sprite-steps': String(frames.length),
+    '--sprite-duration': `${frames.length / fps}s`,
+  };
+  return <span key={props.assetId} class="arena-fx" style={style} aria-hidden="true" />;
+}
+
 function HpBar(props: { hp: number; max: number }) {
   const pct = props.max > 0 ? Math.max(0, Math.min(100, (props.hp / props.max) * 100)) : 0;
   return <span class="arena-hp" title={`${Math.ceil(props.hp)} / ${props.max}`}><i style={{ width: `${pct}%` }} /></span>;
@@ -250,8 +273,8 @@ function damageAnim(dead: boolean, hit: boolean, attacking: boolean): 'idle' | '
   return 'idle';
 }
 
-function HeroUnit(props: { world: ReturnType<typeof useGame>['world']; hero: Hero; unit: Unit | null; x: number; y: number; floats: FloatItem[]; attacking: boolean }) {
-  const { world, hero, unit, x, y, floats, attacking } = props;
+function HeroUnit(props: { world: ReturnType<typeof useGame>['world']; hero: Hero; unit: Unit | null; x: number; y: number; floats: FloatItem[]; attacking: boolean; fxAsset: string | null }) {
+  const { world, hero, unit, x, y, floats, attacking, fxAsset } = props;
   const live = liveHp(world, hero);
   const hp = unit ? Math.max(0, unit.hp) : live.hp;
   const max = unit ? unit.maxHp : live.max;
@@ -261,6 +284,7 @@ function HeroUnit(props: { world: ReturnType<typeof useGame>['world']; hero: Her
   return (
     <div class={`arena-unit hero${dead ? ' down' : ''}`} style={{ left: `${x}px`, bottom: `${192 - y}px` }}>
       <ArenaSprite assetId={`char/hero/${hero.classId}/${hero.gender}`} anim={anim} />
+      {hits.length > 0 && fxAsset && <ArenaFx assetId={fxAsset} />}
       <span class="arena-unit-floats">{hits.map((f) => <b key={f.id}>−{f.amount}</b>)}</span>
       <span class="arena-name" title={hero.name}>{hero.name}</span>
       <HpBar hp={hp} max={max} />
@@ -268,8 +292,8 @@ function HeroUnit(props: { world: ReturnType<typeof useGame>['world']; hero: Her
   );
 }
 
-function EnemyUnit(props: { world: ReturnType<typeof useGame>['world']; party: Party; unit: Unit; x: number; y: number; floats: FloatItem[]; attacking: boolean }) {
-  const { world, party, unit, x, y, floats, attacking } = props;
+function EnemyUnit(props: { world: ReturnType<typeof useGame>['world']; party: Party; unit: Unit; x: number; y: number; floats: FloatItem[]; attacking: boolean; fxAsset: string | null }) {
+  const { world, party, unit, x, y, floats, attacking, fxAsset } = props;
   const look = monsterBase(world, unit, party.act);
   const boss = unit.tags.includes('boss');
   let assetId = look.asset;
@@ -290,6 +314,7 @@ function EnemyUnit(props: { world: ReturnType<typeof useGame>['world']; party: P
   return (
     <div class={`arena-unit enemy${unit.alive ? '' : ' down'}${boss ? ' boss' : ''}${unit.elite ? ' elite' : ''}`} style={{ left: `${x}px`, bottom: `${192 - y}px` }}>
       {assetId ? <ArenaSprite assetId={assetId} anim={anim} /> : <PixelSprite base={look.base ?? 'skelet'} scale={1} crop={look.ghost ? HERO_CROP : 0} ghost={look.ghost} animate={unit.alive} />}
+      {hits.length > 0 && fxAsset && <ArenaFx assetId={fxAsset} />}
       <span class="arena-unit-floats">{hits.map((f) => <b key={f.id}>−{f.amount}</b>)}</span>
       <span class="arena-name" title={unit.name}>{unit.name}</span>
       <HpBar hp={unit.hp} max={unit.maxHp} />
@@ -303,6 +328,7 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
   const [floats, setFloats] = useState<FloatItem[]>([]);
   const [banner, setBanner] = useState<string | null>(null);
   const [attacking, setAttacking] = useState<'hero' | 'enemy' | null>(null);
+  const [fxAsset, setFxAsset] = useState<string | null>(null);
   const prevHp = useRef(new Map<number, number>());
   const prevGold = useRef(0);
   const goldInit = useRef(false);
@@ -339,7 +365,9 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
       const damagedEnemy = (party.combat?.units ?? []).some((u) => u.side === 'enemy' && items.some((i) => i.unitUid === u.uid));
       if (damagedEnemy || damagedHero) {
         setAttacking(damagedEnemy ? 'hero' : 'enemy');
-        const timer = window.setTimeout(() => setAttacking(null), 360);
+        const roman = ROMAN[party.act] ?? 'I';
+        setFxAsset(`fx/${roman}/${damagedEnemy ? 'slash' : 'impact'}`);
+        const timer = window.setTimeout(() => { setAttacking(null); setFxAsset(null); }, 420);
         timers.current.push(timer);
       }
     }
@@ -391,10 +419,10 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
           <ArenaProp id="prop/arena/torch" x={13} y={150} />
           <ArenaProp id="prop/arena/brazier" x={306} y={152} />
           {bossGate && floorIndex === 3 && <img class="arena-boss-gate" src={packUrl(bossGate.file)} width={96} height={96} alt="" />}
-          {heroes.map((hero, i) => <HeroUnit key={hero.id} world={world} hero={hero} unit={unitsByHero.get(hero.id) ?? null} x={heroX[i] ?? 150} y={i % 2 === 0 ? 166 : 152} floats={floats} attacking={attacking === 'hero'} />)}
+          {heroes.map((hero, i) => <HeroUnit key={hero.id} world={world} hero={hero} unit={unitsByHero.get(hero.id) ?? null} x={heroX[i] ?? 150} y={i % 2 === 0 ? 166 : 152} floats={floats} attacking={attacking === 'hero'} fxAsset={fxAsset} />)}
           {enemies.map((unit, i) => {
             const boss = unit.tags.includes('boss');
-            return <EnemyUnit key={unit.uid} world={world} party={party} unit={unit} x={boss ? 252 : (enemyX[i] ?? 250)} y={boss ? 152 : (i % 2 === 0 ? 166 : 152)} floats={floats} attacking={attacking === 'enemy'} />;
+            return <EnemyUnit key={unit.uid} world={world} party={party} unit={unit} x={boss ? 252 : (enemyX[i] ?? 250)} y={boss ? 152 : (i % 2 === 0 ? 166 : 152)} floats={floats} attacking={attacking === 'enemy'} fxAsset={fxAsset} />;
           })}
           {fore && <img class="arena-fore" src={packUrl(fore.file)} width={320} height={64} alt="" />}
           {bossBanner && combat?.isBoss && <img class="arena-boss-banner" src={packUrl(bossBanner.file)} width={320} height={48} alt="" />}

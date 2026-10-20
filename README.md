@@ -197,6 +197,7 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 ## M4 — Profundidade (primeira fatia)
 
 - [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela usa as **arenas em camadas do pack 1.9** (fundo por ato e por andar, piso, primeiro plano, props e moldura), heróis e monstros com animações de idle/ataque/dano/morte, variantes de profundidade dos monstros, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste. Até três expedições aparecem empilhadas e, ao terminar, cada uma gera um relatório com XP, ouro, salas, andar vencido, heróis caídos e heróis que subiram de nível.
+- [x] **Efeitos e retratos:** impacto/corte do ato no alvo e retratos 32×36 dos monstros no painel do Abismo.
 - [ ] Itens nomeados e afixos.
 - [ ] Fabricação no ferreiro.
 - [ ] Especializações de nível 3 dos prédios.

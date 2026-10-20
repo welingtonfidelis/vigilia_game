@@ -62,6 +62,18 @@ export function MonsterSprite(props: { asset: string; boss: boolean; animate: bo
   return <span class={`monster-sprite${props.boss ? ' boss' : ''}${props.animate ? ' animate' : ''}`} style={style} aria-hidden="true" />;
 }
 
+/** Retrato 32x36 do pack 1.9 para a lista de inimigos do Abismo. */
+export function MonsterPortrait(props: { asset: string; scale?: number }) {
+  const base = props.asset
+    .replace(/^char\/monster\//, 'ui/portrait/monster/')
+    .replace(/^char\/boss\//, 'ui/portrait/boss/')
+    .replace(/-(deep|core|phase2)$/, '');
+  const asset = packAsset(base);
+  if (!asset) return <MonsterSprite asset={props.asset} boss={props.asset.startsWith('char/boss/')} animate={false} />;
+  const scale = props.scale ?? 1;
+  return <img class="monster-portrait" src={`${PACK_BASE}${asset.file}`} width={32 * scale} height={36 * scale} alt="" aria-hidden="true" />;
+}
+
 export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: boolean; variant?: 'detail' | 'small' }) => {
   const detail = props.variant === 'detail';
   return (

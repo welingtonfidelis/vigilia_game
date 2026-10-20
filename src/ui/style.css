@@ -2306,3 +2306,22 @@ kbd {
   .arena-card-loot { display: none; }
   .battle-report { padding: 0.5rem; }
 }
+
+.monster-portrait {
+  display: block;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.arena-fx {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 9;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  animation: arena-sprite-play var(--sprite-duration) steps(var(--sprite-steps)) 1;
+  animation-fill-mode: forwards;
+}
