@@ -1,0 +1,86 @@
+{
+ "frames": {
+  "fx-impact-iii-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-impact-iii-01": {
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-impact-iii-02": {
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-impact-iii-03": {
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-impact-iii-04": {
+   "frame": {
+    "x": 256,
+    "y": 0,
+    "w": 64,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "fx-impact-iii.png",
+  "size": {
+   "w": 320,
+   "h": 64
+  },
+  "frameSize": {
+   "w": 64,
+   "h": 64
+  },
+  "columns": 5,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "play",
+    "from": 0,
+    "to": 4,
+    "fps": 14
+   }
+  ]
+ }
+}

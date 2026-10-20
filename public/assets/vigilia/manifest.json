@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "pack": "vigilia-art",
-  "version": "1.7.0",
+  "version": "1.9.0",
   "status": "review",
   "skeleton": false,
   "updated": "2026-10-20",
@@ -2004,9 +2004,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2016,12 +2035,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2061,9 +2080,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2073,12 +2111,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2118,9 +2156,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2130,12 +2187,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2175,9 +2232,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2187,12 +2263,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2232,9 +2308,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2244,12 +2339,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2289,9 +2384,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2301,12 +2415,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2346,9 +2460,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2358,12 +2491,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2403,9 +2536,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2415,12 +2567,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2460,9 +2612,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2472,12 +2643,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2517,9 +2688,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2529,12 +2719,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2574,9 +2764,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2586,12 +2795,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -2631,9 +2840,28 @@
             8
           ],
           "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px. Quadros 0-8 iguais a 1.8; ataque 9-12 e morte 13-17 (Lote C).",
       "size": [
         16,
         28
@@ -2643,12 +2871,12 @@
         28
       ],
       "sheetSize": [
-        144,
+        288,
         28
       ],
-      "columns": 9,
+      "columns": 18,
       "rows": 1,
-      "frames": 9,
+      "frames": 18,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -3873,10 +4101,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -3886,12 +4140,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -3927,10 +4181,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -3940,12 +4220,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -3981,10 +4261,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -3994,12 +4300,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4035,10 +4341,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4048,12 +4380,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4089,10 +4421,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -4102,12 +4460,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4143,10 +4501,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4156,12 +4540,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4197,10 +4581,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -4210,12 +4620,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4251,10 +4661,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4264,12 +4700,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4305,10 +4741,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -4318,12 +4780,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4359,10 +4821,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4372,12 +4860,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4413,10 +4901,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -4426,12 +4940,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4467,10 +4981,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4480,12 +5020,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4521,10 +5061,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4534,12 +5100,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4575,10 +5141,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         16
@@ -4588,12 +5180,12 @@
         16
       ],
       "sheetSize": [
-        128,
+        304,
         16
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4629,10 +5221,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4642,12 +5260,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4683,10 +5301,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4696,12 +5340,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4737,10 +5381,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4750,12 +5420,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4791,10 +5461,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 2,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
         16,
         23
@@ -4804,12 +5500,12 @@
         23
       ],
       "sheetSize": [
-        128,
+        304,
         23
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4845,10 +5541,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 1,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
         32,
         36
@@ -4858,12 +5580,12 @@
         36
       ],
       "sheetSize": [
-        256,
+        608,
         36
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4899,10 +5621,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 1,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
         32,
         36
@@ -4912,12 +5660,12 @@
         36
       ],
       "sheetSize": [
-        256,
+        608,
         36
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -4953,10 +5701,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 1,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
         32,
         36
@@ -4966,12 +5740,12 @@
         36
       ],
       "sheetSize": [
-        256,
+        608,
         36
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -5007,10 +5781,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 1,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
         32,
         36
@@ -5020,12 +5820,12 @@
         36
       ],
       "sheetSize": [
-        256,
+        608,
         36
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -5061,10 +5861,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 1,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
         32,
         36
@@ -5074,12 +5900,12 @@
         36
       ],
       "sheetSize": [
-        256,
+        608,
         36
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -5115,10 +5941,36 @@
             7
           ],
           "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
         }
       },
       "panelScale": 1,
-      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
         32,
         36
@@ -5128,12 +5980,12 @@
         36
       ],
       "sheetSize": [
-        256,
+        608,
         36
       ],
-      "columns": 8,
+      "columns": 19,
       "rows": 1,
-      "frames": 8,
+      "frames": 19,
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -5359,6 +6211,7041 @@
       "notes": "Base apagada (dia) + overlay -lights (vidro aceso + halo), igual aos predios.",
       "license": "CC0-1.0",
       "status": "review"
+    },
+    {
+      "id": "arena/I/back",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "I",
+      "actName": "Catacumbas",
+      "file": "export/arena/arena-i-catacumbas-back.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "opaque": true,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/mid",
+      "type": "arena-layer",
+      "layer": "mid",
+      "act": "I",
+      "actName": "Catacumbas",
+      "file": "export/arena/arena-i-catacumbas-mid.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "parallax": 0.5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/floor",
+      "type": "arena-layer",
+      "layer": "floor",
+      "act": "I",
+      "actName": "Catacumbas",
+      "file": "export/arena/arena-i-catacumbas-floor.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "tileX": true,
+      "stageY": 128,
+      "feetRows": [
+        22,
+        38
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/fore",
+      "type": "arena-layer",
+      "layer": "fore",
+      "act": "I",
+      "actName": "Catacumbas",
+      "file": "export/arena/arena-i-catacumbas-fore.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "stageY": 128,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/back-1",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "I",
+      "floor": 1,
+      "file": "export/arena/arena-i-catacumbas-back-1-entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/back-2",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "I",
+      "floor": 2,
+      "file": "export/arena/arena-i-catacumbas-back-2-descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/back-3",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "I",
+      "floor": 3,
+      "file": "export/arena/arena-i-catacumbas-back-3-core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/I/back-4",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "I",
+      "floor": 4,
+      "file": "export/arena/arena-i-catacumbas-back-4-boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/I/boss-gate",
+      "type": "prop",
+      "act": "I",
+      "file": "export/arena/props/prop-arena-i-boss-gate.png",
+      "size": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: portao/altar do chefe; atras do chefe, base na fileira de tras (y=150).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/back",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "file": "export/arena/arena-ii-minas-inundadas-back.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "opaque": true,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/mid",
+      "type": "arena-layer",
+      "layer": "mid",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "file": "export/arena/arena-ii-minas-inundadas-mid.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "parallax": 0.5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/floor",
+      "type": "arena-layer",
+      "layer": "floor",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "file": "export/arena/arena-ii-minas-inundadas-floor.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "tileX": true,
+      "stageY": 128,
+      "feetRows": [
+        22,
+        38
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/fore",
+      "type": "arena-layer",
+      "layer": "fore",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "file": "export/arena/arena-ii-minas-inundadas-fore.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "stageY": 128,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/back-1",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "II",
+      "floor": 1,
+      "file": "export/arena/arena-ii-minas-inundadas-back-1-entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/back-2",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "II",
+      "floor": 2,
+      "file": "export/arena/arena-ii-minas-inundadas-back-2-descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/back-3",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "II",
+      "floor": 3,
+      "file": "export/arena/arena-ii-minas-inundadas-back-3-core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/II/back-4",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "II",
+      "floor": 4,
+      "file": "export/arena/arena-ii-minas-inundadas-back-4-boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/II/boss-gate",
+      "type": "prop",
+      "act": "II",
+      "file": "export/arena/props/prop-arena-ii-boss-gate.png",
+      "size": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: portao/altar do chefe; atras do chefe, base na fileira de tras (y=150).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/back",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "file": "export/arena/arena-iii-jardim-fungos-back.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "opaque": true,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/mid",
+      "type": "arena-layer",
+      "layer": "mid",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "file": "export/arena/arena-iii-jardim-fungos-mid.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "parallax": 0.5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/floor",
+      "type": "arena-layer",
+      "layer": "floor",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "file": "export/arena/arena-iii-jardim-fungos-floor.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "tileX": true,
+      "stageY": 128,
+      "feetRows": [
+        22,
+        38
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/fore",
+      "type": "arena-layer",
+      "layer": "fore",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "file": "export/arena/arena-iii-jardim-fungos-fore.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "stageY": 128,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/back-1",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "III",
+      "floor": 1,
+      "file": "export/arena/arena-iii-jardim-fungos-back-1-entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/back-2",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "III",
+      "floor": 2,
+      "file": "export/arena/arena-iii-jardim-fungos-back-2-descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/back-3",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "III",
+      "floor": 3,
+      "file": "export/arena/arena-iii-jardim-fungos-back-3-core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/III/back-4",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "III",
+      "floor": 4,
+      "file": "export/arena/arena-iii-jardim-fungos-back-4-boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/III/boss-gate",
+      "type": "prop",
+      "act": "III",
+      "file": "export/arena/props/prop-arena-iii-boss-gate.png",
+      "size": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: portao/altar do chefe; atras do chefe, base na fileira de tras (y=150).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/back",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "file": "export/arena/arena-iv-cidade-afogada-back.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "opaque": true,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/mid",
+      "type": "arena-layer",
+      "layer": "mid",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "file": "export/arena/arena-iv-cidade-afogada-mid.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "parallax": 0.5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/floor",
+      "type": "arena-layer",
+      "layer": "floor",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "file": "export/arena/arena-iv-cidade-afogada-floor.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "tileX": true,
+      "stageY": 128,
+      "feetRows": [
+        22,
+        38
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/fore",
+      "type": "arena-layer",
+      "layer": "fore",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "file": "export/arena/arena-iv-cidade-afogada-fore.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "stageY": 128,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/back-1",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "IV",
+      "floor": 1,
+      "file": "export/arena/arena-iv-cidade-afogada-back-1-entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/back-2",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "IV",
+      "floor": 2,
+      "file": "export/arena/arena-iv-cidade-afogada-back-2-descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/back-3",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "IV",
+      "floor": 3,
+      "file": "export/arena/arena-iv-cidade-afogada-back-3-core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/IV/back-4",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "IV",
+      "floor": 4,
+      "file": "export/arena/arena-iv-cidade-afogada-back-4-boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/IV/boss-gate",
+      "type": "prop",
+      "act": "IV",
+      "file": "export/arena/props/prop-arena-iv-boss-gate.png",
+      "size": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: portao/altar do chefe; atras do chefe, base na fileira de tras (y=150).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/back",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "file": "export/arena/arena-v-forja-abissal-back.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "opaque": true,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/mid",
+      "type": "arena-layer",
+      "layer": "mid",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "file": "export/arena/arena-v-forja-abissal-mid.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "parallax": 0.5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/floor",
+      "type": "arena-layer",
+      "layer": "floor",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "file": "export/arena/arena-v-forja-abissal-floor.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "tileX": true,
+      "stageY": 128,
+      "feetRows": [
+        22,
+        38
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/fore",
+      "type": "arena-layer",
+      "layer": "fore",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "file": "export/arena/arena-v-forja-abissal-fore.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "stageY": 128,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/back-1",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "V",
+      "floor": 1,
+      "file": "export/arena/arena-v-forja-abissal-back-1-entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/back-2",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "V",
+      "floor": 2,
+      "file": "export/arena/arena-v-forja-abissal-back-2-descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/back-3",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "V",
+      "floor": 3,
+      "file": "export/arena/arena-v-forja-abissal-back-3-core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/V/back-4",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "V",
+      "floor": 4,
+      "file": "export/arena/arena-v-forja-abissal-back-4-boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/V/boss-gate",
+      "type": "prop",
+      "act": "V",
+      "file": "export/arena/props/prop-arena-v-boss-gate.png",
+      "size": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: portao/altar do chefe; atras do chefe, base na fileira de tras (y=150).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/back",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "file": "export/arena/arena-vi-coracao-abismo-back.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "opaque": true,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/mid",
+      "type": "arena-layer",
+      "layer": "mid",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "file": "export/arena/arena-vi-coracao-abismo-mid.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "parallax": 0.5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/floor",
+      "type": "arena-layer",
+      "layer": "floor",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "file": "export/arena/arena-vi-coracao-abismo-floor.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "tileX": true,
+      "stageY": 128,
+      "feetRows": [
+        22,
+        38
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/fore",
+      "type": "arena-layer",
+      "layer": "fore",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "file": "export/arena/arena-vi-coracao-abismo-fore.png",
+      "size": [
+        320,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "gradiente + arco da caverna",
+      "notes": "Palco 320x192 na MESMA escala dos personagens (heroi 16x28 em 1x). No jogo, escale palco e personagens pelo mesmo fator (4x = 1280x768; 16:9 seguro = y 6..186). Ordem: back + mid + depth + floor (y=128) + props + personagens + fore (y=128) + fx + HUD. Pes: fileira de tras y=150, da frente y=166.",
+      "stageY": 128,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/back-1",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "VI",
+      "floor": 1,
+      "file": "export/arena/arena-vi-coracao-abismo-back-1-entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/back-2",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "VI",
+      "floor": 2,
+      "file": "export/arena/arena-vi-coracao-abismo-back-2-descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/back-3",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "VI",
+      "floor": 3,
+      "file": "export/arena/arena-vi-coracao-abismo-back-3-core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/VI/back-4",
+      "type": "arena-layer",
+      "layer": "back",
+      "act": "VI",
+      "floor": 4,
+      "file": "export/arena/arena-vi-coracao-abismo-back-4-boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "opaque": true,
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: fundo pronto do andar (back + depth ja tingido + escurecimento). Use no lugar de back + depth.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/VI/boss-gate",
+      "type": "prop",
+      "act": "VI",
+      "file": "export/arena/props/prop-arena-vi-boss-gate.png",
+      "size": [
+        96,
+        96
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: portao/altar do chefe; atras do chefe, base na fileira de tras (y=150).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/depth/entrance",
+      "type": "arena-layer",
+      "layer": "depth",
+      "floor": 1,
+      "file": "export/arena/depth/entrance.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tint": true,
+      "priority": "P2",
+      "current": "todo",
+      "notes": "andar 1: escada, arco de entrada, tochas apagadas e nevoa baixa.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/depth/descent",
+      "type": "arena-layer",
+      "layer": "depth",
+      "floor": 2,
+      "file": "export/arena/depth/descent.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tint": true,
+      "priority": "P2",
+      "current": "todo",
+      "notes": "andar 2: correntes, raizes, vigas, escombros e pocas.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/depth/core",
+      "type": "arena-layer",
+      "layer": "depth",
+      "floor": 3,
+      "file": "export/arena/depth/core.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tint": true,
+      "priority": "P2",
+      "current": "todo",
+      "notes": "andar 3: rachaduras e olhos (cor DL, tingir com a enfase do ato), cantos pesados.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "arena/depth/boss",
+      "type": "arena-layer",
+      "layer": "depth",
+      "floor": 4,
+      "file": "export/arena/depth/boss.png",
+      "size": [
+        320,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tint": true,
+      "priority": "P2",
+      "current": "todo",
+      "notes": "andar 4: portao, estatuas e bases de braseiro (centro x 46 e 274, topo em y 132).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "decal/arena/ritual-circle",
+      "type": "decal",
+      "file": "export/arena/ritual-circle.png",
+      "size": [
+        160,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "stagePos": [
+        160,
+        158
+      ],
+      "tint": true,
+      "priority": "P2",
+      "current": "todo",
+      "notes": "Andar 4: depois do floor, centro em (160, 158) do palco.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/torch",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-torch.png",
+      "meta": "export/arena/props/prop-arena-torch.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "animations": {
+        "loop": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        16,
+        32
+      ],
+      "frameSize": [
+        16,
+        32
+      ],
+      "sheetSize": [
+        64,
+        32
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/brazier",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-brazier.png",
+      "meta": "export/arena/props/prop-arena-brazier.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "animations": {
+        "loop": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 8
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        32,
+        32
+      ],
+      "frameSize": [
+        32,
+        32
+      ],
+      "sheetSize": [
+        128,
+        32
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/chain",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-chain.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/bones",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-bones.png",
+      "size": [
+        32,
+        16
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/rubble",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-rubble.png",
+      "size": [
+        32,
+        16
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/stalagmite",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-stalagmite.png",
+      "size": [
+        16,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/column-broken",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-column-broken.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/roots",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-roots.png",
+      "size": [
+        48,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/mushroom",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-mushroom.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/altar",
+      "type": "prop",
+      "file": "export/arena/props/prop-arena-altar.png",
+      "size": [
+        64,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/I/urn",
+      "type": "prop",
+      "act": "I",
+      "file": "export/arena/props/prop-arena-i-urn.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/I/candle",
+      "type": "prop",
+      "act": "I",
+      "file": "export/arena/props/prop-arena-i-candle.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/I/skull-pile",
+      "type": "prop",
+      "act": "I",
+      "file": "export/arena/props/prop-arena-i-skull-pile.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/I/web",
+      "type": "prop",
+      "act": "I",
+      "file": "export/arena/props/prop-arena-i-web.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": "Teia: pendurar no canto do teto (ancora em cima).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/II/beam",
+      "type": "prop",
+      "act": "II",
+      "file": "export/arena/props/prop-arena-ii-beam.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/II/rail",
+      "type": "prop",
+      "act": "II",
+      "file": "export/arena/props/prop-arena-ii-rail.png",
+      "size": [
+        64,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/II/drowned-lantern",
+      "type": "prop",
+      "act": "II",
+      "file": "export/arena/props/prop-arena-ii-drowned-lantern.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/II/pipe",
+      "type": "prop",
+      "act": "II",
+      "file": "export/arena/props/prop-arena-ii-pipe.png",
+      "size": [
+        64,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/III/spore-pod",
+      "type": "prop",
+      "act": "III",
+      "file": "export/arena/props/prop-arena-iii-spore-pod.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/III/giant-mushroom",
+      "type": "prop",
+      "act": "III",
+      "file": "export/arena/props/prop-arena-iii-giant-mushroom.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/III/glowing-pool",
+      "type": "prop",
+      "act": "III",
+      "file": "export/arena/props/prop-arena-iii-glowing-pool.png",
+      "size": [
+        64,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/III/root",
+      "type": "prop",
+      "act": "III",
+      "file": "export/arena/props/prop-arena-iii-root.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/IV/coral",
+      "type": "prop",
+      "act": "IV",
+      "file": "export/arena/props/prop-arena-iv-coral.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/IV/pearl",
+      "type": "prop",
+      "act": "IV",
+      "file": "export/arena/props/prop-arena-iv-pearl.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/IV/statue",
+      "type": "prop",
+      "act": "IV",
+      "file": "export/arena/props/prop-arena-iv-statue.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/IV/broken-window",
+      "type": "prop",
+      "act": "IV",
+      "file": "export/arena/props/prop-arena-iv-broken-window.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/V/anvil",
+      "type": "prop",
+      "act": "V",
+      "file": "export/arena/props/prop-arena-v-anvil.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/V/lava-crack",
+      "type": "prop",
+      "act": "V",
+      "file": "export/arena/props/prop-arena-v-lava-crack.png",
+      "size": [
+        64,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/V/heavy-chain",
+      "type": "prop",
+      "act": "V",
+      "file": "export/arena/props/prop-arena-v-heavy-chain.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/V/slag",
+      "type": "prop",
+      "act": "V",
+      "file": "export/arena/props/prop-arena-v-slag.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/VI/vein",
+      "type": "prop",
+      "act": "VI",
+      "file": "export/arena/props/prop-arena-vi-vein.png",
+      "size": [
+        32,
+        64
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/VI/eye",
+      "type": "prop",
+      "act": "VI",
+      "file": "export/arena/props/prop-arena-vi-eye.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/VI/floating-shard",
+      "type": "prop",
+      "act": "VI",
+      "file": "export/arena/props/prop-arena-vi-floating-shard.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/arena/VI/bone-pedestal",
+      "type": "prop",
+      "act": "VI",
+      "file": "export/arena/props/prop-arena-vi-bone-pedestal.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/slash",
+      "type": "fx",
+      "file": "export/fx/fx-slash.png",
+      "meta": "export/fx/fx-slash.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/impact",
+      "type": "fx",
+      "file": "export/fx/fx-impact.png",
+      "meta": "export/fx/fx-impact.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/poison",
+      "type": "fx",
+      "file": "export/fx/fx-poison.png",
+      "meta": "export/fx/fx-poison.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 10
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/heal",
+      "type": "fx",
+      "file": "export/fx/fx-heal.png",
+      "meta": "export/fx/fx-heal.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 10
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/ember",
+      "type": "fx",
+      "file": "export/fx/fx-ember.png",
+      "meta": "export/fx/fx-ember.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 12
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/void",
+      "type": "fx",
+      "file": "export/fx/fx-void.png",
+      "meta": "export/fx/fx-void.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 12
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/water",
+      "type": "fx",
+      "file": "export/fx/fx-water.png",
+      "meta": "export/fx/fx-water.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P2",
+      "current": "todo",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/I/slash",
+      "type": "fx",
+      "act": "I",
+      "file": "export/fx/fx-slash-i.png",
+      "meta": "export/fx/fx-slash-i.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/I/impact",
+      "type": "fx",
+      "act": "I",
+      "file": "export/fx/fx-impact-i.png",
+      "meta": "export/fx/fx-impact-i.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/II/slash",
+      "type": "fx",
+      "act": "II",
+      "file": "export/fx/fx-slash-ii.png",
+      "meta": "export/fx/fx-slash-ii.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/II/impact",
+      "type": "fx",
+      "act": "II",
+      "file": "export/fx/fx-impact-ii.png",
+      "meta": "export/fx/fx-impact-ii.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/III/slash",
+      "type": "fx",
+      "act": "III",
+      "file": "export/fx/fx-slash-iii.png",
+      "meta": "export/fx/fx-slash-iii.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/III/impact",
+      "type": "fx",
+      "act": "III",
+      "file": "export/fx/fx-impact-iii.png",
+      "meta": "export/fx/fx-impact-iii.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/IV/slash",
+      "type": "fx",
+      "act": "IV",
+      "file": "export/fx/fx-slash-iv.png",
+      "meta": "export/fx/fx-slash-iv.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/IV/impact",
+      "type": "fx",
+      "act": "IV",
+      "file": "export/fx/fx-impact-iv.png",
+      "meta": "export/fx/fx-impact-iv.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/V/slash",
+      "type": "fx",
+      "act": "V",
+      "file": "export/fx/fx-slash-v.png",
+      "meta": "export/fx/fx-slash-v.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/V/impact",
+      "type": "fx",
+      "act": "V",
+      "file": "export/fx/fx-impact-v.png",
+      "meta": "export/fx/fx-impact-v.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/VI/slash",
+      "type": "fx",
+      "act": "VI",
+      "file": "export/fx/fx-slash-vi.png",
+      "meta": "export/fx/fx-slash-vi.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 18
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/VI/impact",
+      "type": "fx",
+      "act": "VI",
+      "file": "export/fx/fx-impact-vi.png",
+      "meta": "export/fx/fx-impact-vi.json",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "loop": false,
+      "animations": {
+        "play": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 14
+        }
+      },
+      "priority": "P3",
+      "current": "todo",
+      "notes": "Lote C: cor de enfase do ato.",
+      "size": [
+        64,
+        64
+      ],
+      "frameSize": [
+        64,
+        64
+      ],
+      "sheetSize": [
+        320,
+        64
+      ],
+      "columns": 5,
+      "rows": 1,
+      "frames": 5,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/dungeon-frame",
+      "type": "ui",
+      "file": "export/ui/ui-dungeon-frame.png",
+      "size": [
+        64,
+        64
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "CSS",
+      "notes": "moldura 9-slice, cantos 16 px",
+      "nineSlice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/hp-frame",
+      "type": "ui",
+      "file": "export/ui/ui-hp-frame.png",
+      "size": [
+        64,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "CSS",
+      "notes": "moldura 9-slice, cantos 4 px; janela interna 56x6 transparente",
+      "nineSlice": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "fillRect": [
+        4,
+        5,
+        56,
+        6
+      ],
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/boss-banner",
+      "type": "ui",
+      "file": "export/ui/ui-boss-banner.png",
+      "size": [
+        320,
+        48
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "CSS",
+      "notes": "faixa 320x48; nome escrito pelo jogo no centro (x 30..290)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/room-node",
+      "type": "ui",
+      "file": "export/ui/ui-room-node.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "CSS",
+      "notes": "3 estados 16x16: normal, atual, limpo",
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        48,
+        16
+      ],
+      "columns": 3,
+      "rows": 1,
+      "frames": 3,
+      "states": {
+        "normal": 0,
+        "atual": 1,
+        "limpo": 2
+      },
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/esqueleto-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/esqueleto",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-esqueleto-deep.png",
+      "meta": "export/png/char-monster-esqueleto-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "Esqueleto Rangente",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/esqueleto-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/esqueleto",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-esqueleto-core.png",
+      "meta": "export/png/char-monster-esqueleto-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "Esqueleto Rangente",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/esqueleto",
+      "type": "portrait",
+      "act": "I",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-esqueleto.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/rato-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/rato",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-rato-deep.png",
+      "meta": "export/png/char-monster-rato-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "Rato-de-ossuário",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/rato-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/rato",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-rato-core.png",
+      "meta": "export/png/char-monster-rato-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "Rato-de-ossuário",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/rato",
+      "type": "portrait",
+      "act": "I",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-rato.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/acolito-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/acolito",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-acolito-deep.png",
+      "meta": "export/png/char-monster-acolito-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "Acólito Caído",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/acolito-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/acolito",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-acolito-core.png",
+      "meta": "export/png/char-monster-acolito-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "Acólito Caído",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/acolito",
+      "type": "portrait",
+      "act": "I",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-acolito.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/mineiro-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/mineiro",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-mineiro-deep.png",
+      "meta": "export/png/char-monster-mineiro-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "Mineiro Afogado",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/mineiro-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/mineiro",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-mineiro-core.png",
+      "meta": "export/png/char-monster-mineiro-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "Mineiro Afogado",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/mineiro",
+      "type": "portrait",
+      "act": "II",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-mineiro.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/enguia-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/enguia",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-enguia-deep.png",
+      "meta": "export/png/char-monster-enguia-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "Enguia de Breu",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/enguia-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/enguia",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-enguia-core.png",
+      "meta": "export/png/char-monster-enguia-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "Enguia de Breu",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/enguia",
+      "type": "portrait",
+      "act": "II",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-enguia.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/golem-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/golem",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-golem-deep.png",
+      "meta": "export/png/char-monster-golem-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "Golem de Ferro-negro",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/golem-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/golem",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-golem-core.png",
+      "meta": "export/png/char-monster-golem-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "Golem de Ferro-negro",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/golem",
+      "type": "portrait",
+      "act": "II",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-golem.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/esporento-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/esporento",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-esporento-deep.png",
+      "meta": "export/png/char-monster-esporento-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "Esporento",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/esporento-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/esporento",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-esporento-core.png",
+      "meta": "export/png/char-monster-esporento-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "Esporento",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/esporento",
+      "type": "portrait",
+      "act": "III",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-esporento.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/aranha-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/aranha",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-aranha-deep.png",
+      "meta": "export/png/char-monster-aranha-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "Aranha-de-micélio",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/aranha-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/aranha",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-aranha-core.png",
+      "meta": "export/png/char-monster-aranha-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "Aranha-de-micélio",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/aranha",
+      "type": "portrait",
+      "act": "III",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-aranha.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/brotado-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/brotado",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-brotado-deep.png",
+      "meta": "export/png/char-monster-brotado-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "Brotado",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/brotado-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/brotado",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-brotado-core.png",
+      "meta": "export/png/char-monster-brotado-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "Brotado",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/brotado",
+      "type": "portrait",
+      "act": "III",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-brotado.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sacerdote-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/sacerdote",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-sacerdote-deep.png",
+      "meta": "export/png/char-monster-sacerdote-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "Sacerdote Afogado",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sacerdote-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/sacerdote",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-sacerdote-core.png",
+      "meta": "export/png/char-monster-sacerdote-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "Sacerdote Afogado",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/sacerdote",
+      "type": "portrait",
+      "act": "IV",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-sacerdote.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sereia-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/sereia",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-sereia-deep.png",
+      "meta": "export/png/char-monster-sereia-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "Sereia de Lodo",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sereia-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/sereia",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-sereia-core.png",
+      "meta": "export/png/char-monster-sereia-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "Sereia de Lodo",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/sereia",
+      "type": "portrait",
+      "act": "IV",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-sereia.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/cavaleiroSalobro-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/cavaleiroSalobro",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-cavaleiro-salobro-deep.png",
+      "meta": "export/png/char-monster-cavaleiro-salobro-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "Cavaleiro Salobro",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/cavaleiroSalobro-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/cavaleiroSalobro",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-cavaleiro-salobro-core.png",
+      "meta": "export/png/char-monster-cavaleiro-salobro-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "Cavaleiro Salobro",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/cavaleiroSalobro",
+      "type": "portrait",
+      "act": "IV",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-cavaleiro-salobro.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/ferreiroCinzento-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/ferreiroCinzento",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-ferreiro-cinzento-deep.png",
+      "meta": "export/png/char-monster-ferreiro-cinzento-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "Ferreiro Cinzento",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/ferreiroCinzento-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/ferreiroCinzento",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-ferreiro-cinzento-core.png",
+      "meta": "export/png/char-monster-ferreiro-cinzento-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "Ferreiro Cinzento",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/ferreiroCinzento",
+      "type": "portrait",
+      "act": "V",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-ferreiro-cinzento.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/caoBrasa-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/caoBrasa",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-cao-brasa-deep.png",
+      "meta": "export/png/char-monster-cao-brasa-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "Cão de Brasa",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/caoBrasa-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/caoBrasa",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-cao-brasa-core.png",
+      "meta": "export/png/char-monster-cao-brasa-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "Cão de Brasa",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        304,
+        16
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/caoBrasa",
+      "type": "portrait",
+      "act": "V",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-cao-brasa.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/escravoForja-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/escravoForja",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-escravo-forja-deep.png",
+      "meta": "export/png/char-monster-escravo-forja-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "Escravo da Forja",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/escravoForja-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/escravoForja",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-escravo-forja-core.png",
+      "meta": "export/png/char-monster-escravo-forja-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "Escravo da Forja",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/escravoForja",
+      "type": "portrait",
+      "act": "V",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-escravo-forja.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sombra-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/sombra",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-sombra-deep.png",
+      "meta": "export/png/char-monster-sombra-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Sombra Faminta",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sombra-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/sombra",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-sombra-core.png",
+      "meta": "export/png/char-monster-sombra-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Sombra Faminta",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/sombra",
+      "type": "portrait",
+      "act": "VI",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-sombra.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/lamento-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/lamento",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-lamento-deep.png",
+      "meta": "export/png/char-monster-lamento-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Lamento",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/lamento-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/lamento",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-lamento-core.png",
+      "meta": "export/png/char-monster-lamento-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Lamento",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/lamento",
+      "type": "portrait",
+      "act": "VI",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-lamento.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/arauto-deep",
+      "type": "character",
+      "variant": "deep",
+      "baseId": "char/monster/arauto",
+      "floors": [
+        2,
+        3
+      ],
+      "file": "export/png/char-monster-arauto-deep.png",
+      "meta": "export/png/char-monster-arauto-deep.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Arauto do Fundo",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/arauto-core",
+      "type": "character",
+      "variant": "core",
+      "baseId": "char/monster/arauto",
+      "floors": [
+        3
+      ],
+      "file": "export/png/char-monster-arauto-core.png",
+      "meta": "export/png/char-monster-arauto-core.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Arauto do Fundo",
+      "tint": null,
+      "panelScale": 2,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        304,
+        23
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/monster/arauto",
+      "type": "portrait",
+      "act": "VI",
+      "file": "export/ui/portrait-monster/ui-portrait-monster-arauto.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: busto em 2x (mesma escala do painel) sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/guardiaoUrnas-phase2",
+      "type": "character",
+      "variant": "phase2",
+      "baseId": "char/boss/guardiaoUrnas",
+      "floors": [
+        4
+      ],
+      "file": "export/png/char-boss-guardiao-urnas-phase2.png",
+      "meta": "export/png/char-boss-guardiao-urnas-phase2.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "I",
+      "name": "O Guardião das Urnas",
+      "tint": null,
+      "panelScale": 1,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        608,
+        36
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/boss/guardiaoUrnas",
+      "type": "portrait",
+      "act": "I",
+      "file": "export/ui/portrait-monster/ui-portrait-boss-guardiao-urnas.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: corpo inteiro em 1x sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/couraca-phase2",
+      "type": "character",
+      "variant": "phase2",
+      "baseId": "char/boss/couraca",
+      "floors": [
+        4
+      ],
+      "file": "export/png/char-boss-couraca-phase2.png",
+      "meta": "export/png/char-boss-couraca-phase2.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "II",
+      "name": "A Couraça Submersa",
+      "tint": null,
+      "panelScale": 1,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        608,
+        36
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/boss/couraca",
+      "type": "portrait",
+      "act": "II",
+      "file": "export/ui/portrait-monster/ui-portrait-boss-couraca.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: corpo inteiro em 1x sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/maeBolor-phase2",
+      "type": "character",
+      "variant": "phase2",
+      "baseId": "char/boss/maeBolor",
+      "floors": [
+        4
+      ],
+      "file": "export/png/char-boss-mae-bolor-phase2.png",
+      "meta": "export/png/char-boss-mae-bolor-phase2.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "III",
+      "name": "A Mãe-Bolor",
+      "tint": null,
+      "panelScale": 1,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        608,
+        36
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/boss/maeBolor",
+      "type": "portrait",
+      "act": "III",
+      "file": "export/ui/portrait-monster/ui-portrait-boss-mae-bolor.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: corpo inteiro em 1x sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/arcebispo-phase2",
+      "type": "character",
+      "variant": "phase2",
+      "baseId": "char/boss/arcebispo",
+      "floors": [
+        4
+      ],
+      "file": "export/png/char-boss-arcebispo-phase2.png",
+      "meta": "export/png/char-boss-arcebispo-phase2.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "IV",
+      "name": "O Arcebispo Sem Fôlego",
+      "tint": null,
+      "panelScale": 1,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        608,
+        36
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/boss/arcebispo",
+      "type": "portrait",
+      "act": "IV",
+      "file": "export/ui/portrait-monster/ui-portrait-boss-arcebispo.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: corpo inteiro em 1x sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/martelo-phase2",
+      "type": "character",
+      "variant": "phase2",
+      "baseId": "char/boss/martelo",
+      "floors": [
+        4
+      ],
+      "file": "export/png/char-boss-martelo-phase2.png",
+      "meta": "export/png/char-boss-martelo-phase2.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "V",
+      "name": "O Martelo Que Não Dorme",
+      "tint": null,
+      "panelScale": 1,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        608,
+        36
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/boss/martelo",
+      "type": "portrait",
+      "act": "V",
+      "file": "export/ui/portrait-monster/ui-portrait-boss-martelo.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: corpo inteiro em 1x sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/aquiloQueVigia-phase2",
+      "type": "character",
+      "variant": "phase2",
+      "baseId": "char/boss/aquiloQueVigia",
+      "floors": [
+        4
+      ],
+      "file": "export/png/char-boss-aquilo-que-vigia-phase2.png",
+      "meta": "export/png/char-boss-aquilo-que-vigia-phase2.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "act": "VI",
+      "name": "Aquilo que Vigia",
+      "tint": null,
+      "panelScale": 1,
+      "priority": "P2",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "attack": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fps": 12
+        },
+        "hit": {
+          "frames": [
+            12,
+            13
+          ],
+          "fps": 10
+        },
+        "death": {
+          "frames": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "fps": 8
+        }
+      },
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        608,
+        36
+      ],
+      "columns": 19,
+      "rows": 1,
+      "frames": 19,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/boss/aquiloQueVigia",
+      "type": "portrait",
+      "act": "VI",
+      "file": "export/ui/portrait-monster/ui-portrait-boss-aquilo-que-vigia.png",
+      "size": [
+        32,
+        36
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P3",
+      "current": "sprite idle",
+      "notes": "Lote C: corpo inteiro em 1x sobre o fundo do bioma.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/favicon",
+      "type": "web-icon",
+      "file": "export/web/favicon.ico",
+      "size": [
+        48,
+        48
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": "favicon.ico traz 16, 32 e 48 desenhados.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/favicon-16",
+      "type": "web-icon",
+      "file": "export/web/favicon-16.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/favicon-32",
+      "type": "web-icon",
+      "file": "export/web/favicon-32.png",
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/favicon-48",
+      "type": "web-icon",
+      "file": "export/web/favicon-48.png",
+      "size": [
+        48,
+        48
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/apple-touch-icon",
+      "type": "web-icon",
+      "file": "export/web/apple-touch-icon.png",
+      "size": [
+        180,
+        180
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/icon-192",
+      "type": "web-icon",
+      "file": "export/web/icon-192.png",
+      "size": [
+        192,
+        192
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "web/icon-512",
+      "type": "web-icon",
+      "file": "export/web/icon-512.png",
+      "size": [
+        512,
+        512
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": null,
+      "license": "CC0-1.0",
+      "status": "review"
     }
   ],
   "planned": {
@@ -5479,6 +13366,11 @@
     "simNight": "preview/sim-town-night.png",
     "simCameraDesktop": "preview/sim-camera-desktop.png",
     "simCameraMobile": "preview/sim-camera-mobile.png",
-    "ingameScreenshots": "PENDENTE: capturas do jogo real 1370x1289 e 390x844 (feitas pelo projeto)"
+    "arenaContact": "preview/arena-contact.png",
+    "arenaStages": "preview/arena/arena-<ato>-<andar>-<fase>.png (4x)",
+    "monsterVariants": "preview/monster-variants.png",
+    "ingameScreenshots": "PENDENTE: capturas do jogo real 1370x1289 e 390x844 (feitas pelo projeto)",
+    "combatFrames": "preview/combat-frames.png",
+    "reference": "docs/REFERENCIA-DUNGEON.gif"
   }
 }

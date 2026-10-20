@@ -1,0 +1,278 @@
+{
+ "frames": {
+  "char-monster-aranha-deep-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-01": {
+   "frame": {
+    "x": 16,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-02": {
+   "frame": {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-03": {
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-04": {
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-05": {
+   "frame": {
+    "x": 80,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-06": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-07": {
+   "frame": {
+    "x": 112,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-08": {
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-09": {
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-10": {
+   "frame": {
+    "x": 160,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-11": {
+   "frame": {
+    "x": 176,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-12": {
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-13": {
+   "frame": {
+    "x": 208,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-14": {
+   "frame": {
+    "x": 224,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-15": {
+   "frame": {
+    "x": 240,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-16": {
+   "frame": {
+    "x": 256,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-17": {
+   "frame": {
+    "x": 272,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-aranha-deep-18": {
+   "frame": {
+    "x": 288,
+    "y": 0,
+    "w": 16,
+    "h": 23
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "char-monster-aranha-deep.png",
+  "size": {
+   "w": 304,
+   "h": 23
+  },
+  "frameSize": {
+   "w": 16,
+   "h": 23
+  },
+  "columns": 19,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "idle",
+    "from": 0,
+    "to": 3,
+    "fps": 6
+   },
+   {
+    "name": "run",
+    "from": 4,
+    "to": 7,
+    "fps": 10
+   },
+   {
+    "name": "attack",
+    "from": 8,
+    "to": 11,
+    "fps": 12
+   },
+   {
+    "name": "hit",
+    "from": 12,
+    "to": 13,
+    "fps": 10
+   },
+   {
+    "name": "death",
+    "from": 14,
+    "to": 18,
+    "fps": 8
+   }
+  ]
+ }
+}

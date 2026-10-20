@@ -152,7 +152,7 @@ export class VillageScene extends Phaser.Scene {
     this.load.image('dungeon', DUNGEON_URL);
     for (const a of PACK_ASSETS) {
       // UI/retratos são DOM (SVG/PNG), não texturas do Phaser.
-      if (a.type === 'ui-icon' || a.type === 'portrait') continue;
+      if (a.type === 'ui-icon' || a.type === 'portrait' || a.type === 'arena-layer' || a.type === 'ui' || a.type === 'web-icon') continue;
       const url = packUrl(a.file);
       const fence = a.id === 'tile/town/cemetery-fence' || a.id === 'tile/town/wood-fence';
       if (a.type === 'character' || a.type === 'fx' || fence) {

@@ -1,0 +1,74 @@
+{
+ "frames": {
+  "prop-arena-brazier-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "prop-arena-brazier-01": {
+   "frame": {
+    "x": 32,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "prop-arena-brazier-02": {
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "prop-arena-brazier-03": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "prop-arena-brazier.png",
+  "size": {
+   "w": 128,
+   "h": 32
+  },
+  "frameSize": {
+   "w": 32,
+   "h": 32
+  },
+  "columns": 4,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "loop",
+    "from": 0,
+    "to": 3,
+    "fps": 8
+   }
+  ]
+ }
+}

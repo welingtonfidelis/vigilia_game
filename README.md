@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), o M3 fechado (salários, decretos, eventos sazonais e expansão sul) e o visualizador de dungeon do M4 e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), o M3 fechado (salários, decretos, eventos sazonais e expansão sul) e o visualizador de dungeon do M4 com arenas e o pack de arte Vigília 1.9 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -42,9 +42,9 @@ src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
 src/render/ Phaser: só lê o World a cada quadro
   VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
-  town.ts, ground.ts  vila no tileset do pack Vigília 1.7 (autotile de terra/trilha, abismo, marcos e casas); o chão é assado numa textura única para não vazar tile em zoom fracionário
+  town.ts, ground.ts  vila no tileset do pack Vigília 1.9 (autotile de terra/trilha, abismo, marcos e casas); o chão é assado numa textura única para não vazar tile em zoom fracionário
   buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
-  sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.7; o 0x72 fica só para ecos de herói
+  sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
 src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
@@ -123,7 +123,7 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 
 As duas licenças são CC0 (domínio público), com uso livre inclusive comercial. Creditamos por gentileza:
 
-- **Vigília Art Pack 1.7** (Equipe Vigília, CC0 1.0): terreno, 7 prédios × 3 níveis + ruína, casas, portão/berrante, termas, props, FX, moradores, prefeito, crianças, heróis, retratos, 18 inimigos + 6 chefes, outono, lamparinas, bancos e carroças. Fica em `public/assets/vigilia/`, com `licenses/LICENSE.md` e o gerador no pacote original.
+- **Vigília Art Pack 1.9** (Equipe Vigília, CC0 1.0): terreno, 7 prédios × 3 níveis + ruína, casas, portão/berrante, termas, props, FX, moradores, prefeito, crianças, heróis com ataque/morte, retratos, 18 inimigos + 6 chefes, variantes de profundidade, 6 arenas de dungeon em camadas, 24 fundos por andar, UI de dungeon, outono, lamparinas, bancos e carroças. Fica em `public/assets/vigilia/`, com `licenses/LICENSE.md` e o gerador no pacote original.
 - **[Tiny Town](https://kenney.nl/assets/tiny-town)**, de Kenney (kenney.nl): legado da vila/prédios antigos; permanece em `public/assets/kenney-tiny-town/` com o `License.txt` original.
 - **[16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)**, de Robert (0x72): fallback dos ecos de herói no painel da masmorra; fica em `public/assets/0x72-dungeontileset-ii/`, com o `LICENSE.txt` e a origem do arquivo.
 
@@ -136,7 +136,7 @@ As duas licenças são CC0 (domínio público), com uso livre inclusive comercia
 - [x] HUD (tesouro, data e hora, população, heróis/vagas, materiais, velocidade), objetivos abertos, avisos da crônica e fim de ato
 - [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
 - [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
-- [x] Pixel art CC0: pack Vigília 1.7 no cenário/prédios/moradores, heróis e retratos do pack 1.4, câmera fixa que acompanha o prefeito e cena dessaturada para a fantasia sombria
+- [x] Pixel art CC0: pack Vigília 1.9 no cenário/prédios/moradores, heróis e retratos do pack 1.4, câmera fixa que acompanha o prefeito e cena dessaturada para a fantasia sombria
 - [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
 
 ## O que o M2 entrega
@@ -196,7 +196,7 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 
 ## M4 — Profundidade (primeira fatia)
 
-- [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela mostra heróis e monstros na sala, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste.
+- [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela usa as **arenas em camadas do pack 1.9** (fundo por ato e por andar, piso, primeiro plano, props e moldura), heróis e monstros com animações de idle/ataque/dano/morte, variantes de profundidade dos monstros, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste.
 - [ ] Itens nomeados e afixos.
 - [ ] Fabricação no ferreiro.
 - [ ] Especializações de nível 3 dos prédios.

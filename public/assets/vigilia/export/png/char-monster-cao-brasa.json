@@ -95,19 +95,151 @@
     "x": 0.5,
     "y": 1
    }
+  },
+  "char-monster-cao-brasa-08": {
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-09": {
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-10": {
+   "frame": {
+    "x": 160,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-11": {
+   "frame": {
+    "x": 176,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-12": {
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-13": {
+   "frame": {
+    "x": 208,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-14": {
+   "frame": {
+    "x": 224,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-15": {
+   "frame": {
+    "x": 240,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-16": {
+   "frame": {
+    "x": 256,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-17": {
+   "frame": {
+    "x": 272,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-monster-cao-brasa-18": {
+   "frame": {
+    "x": 288,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
   }
  },
  "meta": {
   "image": "char-monster-cao-brasa.png",
   "size": {
-   "w": 128,
+   "w": 304,
    "h": 16
   },
   "frameSize": {
    "w": 16,
    "h": 16
   },
-  "columns": 8,
+  "columns": 19,
   "rows": 1,
   "scale": "1",
   "frameTags": [
@@ -122,6 +254,24 @@
     "from": 4,
     "to": 7,
     "fps": 10
+   },
+   {
+    "name": "attack",
+    "from": 8,
+    "to": 11,
+    "fps": 12
+   },
+   {
+    "name": "hit",
+    "from": 12,
+    "to": 13,
+    "fps": 10
+   },
+   {
+    "name": "death",
+    "from": 14,
+    "to": 18,
+    "fps": 8
    }
   ]
  }

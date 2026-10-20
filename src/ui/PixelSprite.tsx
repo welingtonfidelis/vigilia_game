@@ -55,7 +55,7 @@ export function MonsterSprite(props: { asset: string; boss: boolean; animate: bo
     width: `${w * scale}px`,
     height: `${h * scale}px`,
     backgroundImage: `url(${PACK_BASE}${asset.file})`,
-    backgroundSize: `${w * 8 * scale}px ${h * scale}px`,
+    backgroundSize: `${w * (asset.columns ?? 8) * scale}px ${h * scale}px`,
     backgroundPosition: '0 0',
     '--monster-to': `${-w * 4 * scale}px`,
   };
