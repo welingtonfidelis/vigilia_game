@@ -91,12 +91,12 @@ A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pin
 | Forja Abissal | 16,4 | 8,7 h | 10,8–24,3 | 100% |
 | Coração do Abismo | 20,4 | 10,9 h | 14,8–25,1 | 70% |
 
-- **Mortalidade:** 4,6 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 18 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~85 lesões, ~7 cicatrizes, ~19 casamentos, ~17 filhos e ~7 deles chegando à maioridade como heróis.
-- **Vila (M3), por campanha:** ~33 incursões, ~31 moradores mortos e ~1 que deixa a vila; a população termina no teto (~136), o humor médio fica em ~59 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
-- **Expedições:** ~90 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,40 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,02.
-- **Ouro:** o tesouro fica entre ~1 e 3,7 mil e o ouro dos heróis entre ~11 e 35 mil. **Festa**, **pensão**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
-- **Desempenho:** ~0,8 s para simular uma campanha de 30 anos.
+- **Mortalidade:** 4,2 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 16 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~71 lesões, ~6 cicatrizes, ~17 casamentos, ~16 filhos e ~6 deles chegando à maioridade como heróis.
+- **Vila (M3), por campanha:** ~33 incursões, ~34 moradores mortos e ~0,3 que deixa a vila; a população termina no teto (~136, abstrata) com **8 aldeões visíveis**, o humor médio fica em ~59 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
+- **Expedições:** ~89 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro fica entre ~0,8 e 4,6 mil e o ouro dos heróis entre ~13 e 52 mil. **Festa**, **pensão**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
+- **Desempenho:** ~0,7 s para simular uma campanha de 30 anos.
 
 ## O que o M0 entrega
 
@@ -161,7 +161,7 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 
 - [x] **Rótulos do mapa com prioridade:** nomes de heróis não se empilham; em multidão só o nome sob o ponteiro/selecionado aparece (a medalha de rank fica); as placas de prédios vizinhos descem uma linha em vez de encostar uma na outra.
 - [x] **Celular:** HUD compacto, objetivos recolhidos por padrão, avisos acima do botão de interação e prompt acima da barra de navegação.
-- [x] **Tensão calibrada:** o grupo se acha mais capaz do que é (`confidenceBias`), o que leva as mortes de 2,8 para 4,6 por ano (4,3 com a fonte termal), aumenta retiradas e lesões e faz a confiança ao descer prever o risco de verdade. Massacres continuam raros por desenho (fuga individual + retirada), o que é proposital.
+- [x] **Tensão calibrada:** o grupo se acha mais capaz do que é (`confidenceBias`), o que leva as mortes de 2,8 para 4,2 por ano, aumenta retiradas e lesões e faz a confiança ao descer prever o risco de verdade. Massacres continuam raros por desenho (fuga individual + retirada), o que é proposital.
 - [x] **Fim de campanha:** painel com anos de vila, chefes, expedições, ouro saqueado, população e os epitáfios de quem não voltou; dá para continuar jogando. O menu reabre o resumo.
 - [x] **Sumidouros de ouro:** festa na praça (no Cofre), pensão diária dos aposentados e ofertas que os heróis ricos deixam no templo.
 - [x] **Save v2 → v3** migra sozinho (data da última festa).
@@ -173,7 +173,7 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 
 ## O que a Fase B entrega (primeira fatia: vila viva)
 
-- [x] **Cidadãos nomeados.** A vila começa com 6 moradores e chega a 24 nomes (um a cada 4 de população), com ofícios que saem dos prédios reconstruídos: guarda, copeiro, ferreiro, acólito, pedreiro e lavrador. Eles andam pela vila (trabalho de dia, praça no meio do dia, estalagem ou fogueira à noite), aparecem no mapa sem rótulo e abrem o painel da Vila quando clicados. **Lavradores**, que não têm prédio próprio, circulam entre a praça, as estradas e a fonte; o campo de treino fica para os heróis.
+- [x] **Cidadãos nomeados.** A vila começa com 6 moradores e chega a 8 nomes (um a cada 4 de população, até 8), com ofícios que saem dos prédios reconstruídos: guarda, copeiro, ferreiro, acólito, pedreiro e lavrador. Eles andam pela vila (trabalho de dia, praça no meio do dia, estalagem ou fogueira à noite), aparecem no mapa sem rótulo e abrem o painel da Vila quando clicados. **Lavradores**, que não têm prédio próprio, circulam entre a praça, as estradas e a fonte; o campo de treino fica para os heróis.
 - [x] **Humor e imposto.** O humor médio (0–100) puxa o imposto dos moradores e decide quem fica: abaixo de 30, o morador pode deixar a vila. Festa na praça e pouca corrupção levantam o humor; incursões derrubam.
 - [x] **Incursões noturnas.** Às 22h, o ato mais corrompido (≥55) pode subir à vila. A defesa soma heróis em casa, aposentados e guardas; o resultado é **repelida**, **segurada com custo** ou **saqueada**. No pior caso, prédios voltam a ruínas, moradores morrem, heróis se ferem e o tesouro sangra — a campanha nunca acaba. Aviso na crônica, no toast, no mapa (vultos saindo do abismo) e na navegação.
 - [x] **Painel da Vila** com população, humor, guardas, ameaça, ofícios, a lista de moradores com a barra de humor e as últimas incursões.

@@ -55,7 +55,7 @@ export const BALANCE = {
   startPopulation: 10,
   // Vila viva (M3): moradores nomeados, humor e incursões
   citizenStart: 6,
-  citizenRoster: 24,
+  citizenRoster: 8,
   /** Um morador nomeado a cada N de população (até citizenRoster). */
   citizenPerPop: 4,
   /** Quanto o humor médio mexe no imposto (0,8 + citizenTaxMood × humor/100). */
@@ -63,7 +63,7 @@ export const BALANCE = {
   citizenHappinessBase: 55,
   citizenLeaveBelow: 30,
   citizenLeaveChance: 0.15,
-  citizenGuardPerPop: 25,
+  citizenGuardPerPop: 4,
   citizenGuardMax: 6,
   /** Incursões noturnas: disparam quando um ato passa deste limiar de corrupção. */
   raidMinCorruption: 55,

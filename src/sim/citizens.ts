@@ -64,7 +64,7 @@ export function createCitizen(world: World, job: CitizenJob = 'lavrador'): Citiz
 
 /** Quantos guardas a vila mantém segundo o tamanho da população. */
 export const guardTarget = (world: World): number =>
-  Math.min(B.citizenGuardMax, Math.max(1, Math.floor(world.town.population / B.citizenGuardPerPop)));
+  Math.min(B.citizenGuardMax, Math.max(1, Math.floor(world.citizens.length / B.citizenGuardPerPop)));
 
 /** Vagas de trabalho abertas pelos prédios (mais os guardas da milícia). */
 function jobSlots(world: World): CitizenJob[] {
@@ -77,7 +77,7 @@ function jobSlots(world: World): CitizenJob[] {
     ['pedreiro', 'casa'],
   ];
   for (const [job, id] of buildings) {
-    for (let lvl = 0; lvl < world.town.buildings[id]; lvl++) slots.push(job);
+    if (world.town.buildings[id] > 0) slots.push(job);
   }
   return slots;
 }
