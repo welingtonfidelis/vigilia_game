@@ -2325,3 +2325,14 @@ kbd {
   animation: arena-sprite-play var(--sprite-duration) steps(var(--sprite-steps)) 1;
   animation-fill-mode: forwards;
 }
+
+.arena-bell {
+  flex: none;
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.62rem;
+  line-height: 1.2;
+}
+@media (max-width: 620px) {
+  .arena-bell { font-size: 0.58rem; padding: 0.12rem 0.3rem; }
+}

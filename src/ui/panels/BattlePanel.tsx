@@ -1,12 +1,12 @@
 // Visualizador de dungeon do M4: várias expedições empilhadas e relatório ao fim.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { RefObject } from 'preact';
-import { floorLabel, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
+import { commands, floorLabel, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
 import type { Hero, MaterialId, Party, Unit } from '../../sim/index.ts';
 import { packAsset, packUrl } from '../../render/pack.ts';
 import { fmt, heroById, liveHp, phaseText, ROOM_LABELS } from '../format.ts';
 import { HeroPortrait, HERO_CROP, monsterBase, PixelSprite } from '../PixelSprite.tsx';
-import { useGame } from '../components.tsx';
+import { useCommand, useGame } from '../components.tsx';
 import { RoomIcon } from '../icons.tsx';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'] as const;
@@ -324,6 +324,7 @@ function EnemyUnit(props: { world: ReturnType<typeof useGame>['world']; party: P
 
 function ArenaCard(props: { party: Party; selected: boolean }) {
   const { world, session } = useGame();
+  const command = useCommand();
   const { ref, scale } = useArenaScale();
   const [floats, setFloats] = useState<FloatItem[]>([]);
   const [banner, setBanner] = useState<string | null>(null);
@@ -402,6 +403,7 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
   const heroX = [36, 62, 88, 114, 140];
   const enemyX = [292, 262, 232, 202, 172];
   const fighting = party.phase === 'combate' && !!combat;
+  const canRecall = party.phase !== 'voltando' && !party.recallRequested;
 
   return (
     <section class={`arena-card${props.selected ? ' selected' : ''}`}>
@@ -409,6 +411,14 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
         <strong>Ato {party.act + 1} · {floorLabel(party.act, party.floor)}</strong>
         <span>{phaseText(world, party)}{party.rooms.length > 0 ? ` · sala ${Math.min(party.roomIndex + 1, party.rooms.length)}/${party.rooms.length}` : ''}{room ? ` · ${ROOM_LABELS[room.kind]}` : ''}{combat?.isBoss ? ' · CHEFE' : ''}</span>
         <span class="arena-card-loot">{fmt(party.loot.gold)} ouro · {fmt(party.loot.xp)} XP</span>
+        <button
+          class="btn bell arena-bell"
+          disabled={!canRecall}
+          onClick={() => command(commands.recall, party.id)}
+          title="Chama este grupo de volta. Custa 1 de reputação; os vingativos ignoram."
+        >
+          {party.recallRequested ? 'Sino tocado' : 'Tocar o sino'}
+        </button>
       </header>
       <div class="arena-card-stage" ref={ref}>
         <div class="arena-shell" style={{ width: '320px', height: '192px', transform: `scale(${scale})` }}>
