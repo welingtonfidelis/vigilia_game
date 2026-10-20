@@ -112,6 +112,25 @@ export function BuildingPanel(props: { id: BuildingId }) {
         </>
       )}
       {!cost && <p class="tag gold">Nível máximo.</p>}
+      {id === 'campo' && lvl >= 1 && (
+        <>
+          <h3>Lote do campo</h3>
+          <p class="sub">
+            {world.town.campoMoved
+              ? 'O campo está no distrito sul. Longe do ferreiro, o treino perde o bônus de adjacência.'
+              : 'O campo está ao lado do ferreiro: +10% de XP no treino.'}
+          </p>
+          {!world.town.campoMoved && (
+            <button
+              class="btn"
+              disabled={!world.town.expansion.cleared || world.town.treasury < BALANCE.campoMoveCost}
+              onClick={() => command(commands.moveCampo)}
+            >
+              {world.town.expansion.cleared ? `Mover para o distrito sul (${fmt(BALANCE.campoMoveCost)})` : 'Limpe o distrito sul primeiro'}
+            </button>
+          )}
+        </>
+      )}
       {id === 'guilda' && lvl >= 1 && <DoctrinePicker world={world} />}
       {id === 'guilda' && (
         <button class="btn" onClick={() => ui.open({ kind: 'board' })}>

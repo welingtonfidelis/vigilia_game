@@ -23,6 +23,7 @@ function migrate(world: World): World {
   if (world.version < 5) migrateToV5(world);
   if (world.version < 6) migrateToV6(world);
   if (world.version < 7) migrateToV7(world);
+  if (world.version < 8) migrateToV8(world);
   return world;
 }
 
@@ -53,6 +54,15 @@ function migrateToV4(world: World): void {
     seedCitizens(world, target);
   }
   world.version = 4;
+}
+
+/** v7 → v8 (M3): lote de produção e movimento do campo. */
+function migrateToV8(world: World): void {
+  type Loose<T> = { [K in keyof T]?: T[K] };
+  const town = world.town as Loose<World['town']> & World['town'];
+  town.campoMoved ??= false;
+  town.campoAdjacent ??= !town.campoMoved;
+  world.version = 8;
 }
 
 /** v6 → v7 (M3): expansão sul com três lotes de moradia. */

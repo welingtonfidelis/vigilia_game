@@ -32,13 +32,17 @@ export interface TileRect {
 const lotOf = (r: TileRect): Lot => ({ x: (r.tx + r.tw / 2) * TILE, y: (r.ty + r.th / 2) * TILE, w: r.tw * TILE, h: r.th * TILE });
 
 /** Lotes em tiles. O prédio fica encostado na borda de baixo, com a porta no centro. */
+export const DEFAULT_CAMPO_LOT: TileRect = { tx: 29, ty: 20, tw: 9, th: 6 };
+/** Lote de produção no distrito sul: o campo de treino pode mudar para cá. */
+export const PRODUCTION_LOT: TileRect = { tx: 20, ty: 33, tw: 9, th: 6 };
+
 export const LOT_TILES: Record<BuildingId, TileRect> = {
   templo: { tx: 7, ty: 9, tw: 7, th: 6 },
   taverna: { tx: 15, ty: 9, tw: 7, th: 6 },
   guilda: { tx: 29, ty: 9, tw: 7, th: 6 },
   estalagem: { tx: 8, ty: 20, tw: 7, th: 6 },
   casa: { tx: 15, ty: 20, tw: 7, th: 6 },
-  campo: { tx: 29, ty: 20, tw: 9, th: 6 },
+  campo: DEFAULT_CAMPO_LOT,
   ferreiro: { tx: 39, ty: 20, tw: 7, th: 6 },
 };
 
@@ -46,6 +50,14 @@ export const LOT_TILES: Record<BuildingId, TileRect> = {
 export const LOTS: Record<BuildingId, Lot> = Object.fromEntries(
   Object.entries(LOT_TILES).map(([id, r]) => [id, lotOf(r)]),
 ) as Record<BuildingId, Lot>;
+
+/** Move apenas o campo de treino para o lote de produção do sul. */
+export function applyCampoLayout(moved: boolean): void {
+  const r = moved ? PRODUCTION_LOT : DEFAULT_CAMPO_LOT;
+  LOT_TILES.campo = { ...r };
+  const lot = lotOf(r);
+  Object.assign(LOTS.campo, lot);
+}
 
 export const PLAZA_TILES: TileRect = { tx: 20, ty: 15, tw: 10, th: 6 };
 export const PLAZA = { x: 25 * TILE, y: 18 * TILE, r: 150 };
@@ -96,6 +108,7 @@ export const EXPANSION_ROADS: TileRect[] = [
   { tx: 9, ty: 34, tw: 2, th: 1 },
   { tx: 16, ty: 34, tw: 2, th: 1 },
   { tx: 30, ty: 34, tw: 2, th: 1 },
+  { tx: 24, ty: 32, tw: 2, th: 2 },
 ];
 
 export const citizenHome = (citizen: Citizen): Point => HOMES[Math.abs(citizen.id) % HOMES.length]!.door;

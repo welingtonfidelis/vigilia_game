@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -56,6 +56,7 @@ export const BALANCE = {
   expansionClearCost: 120,
   expansionHouseCost: 60,
   expansionHouseCapacity: 6,
+  campoMoveCost: 80,
   // Vila viva (M3): moradores nomeados, humor e incursões
   citizenStart: 6,
   citizenRoster: 8,

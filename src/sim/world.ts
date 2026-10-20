@@ -71,6 +71,8 @@ export function createWorld(seed: number): World {
       event: null,
       lastEventKey: '',
       expansion: { cleared: false, houses: [false, false, false] },
+      campoMoved: false,
+      campoAdjacent: true,
     },
     acts: ACTS.map((_, i) => ({
       unlocked: i === 0,

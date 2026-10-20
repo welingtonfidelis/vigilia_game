@@ -419,7 +419,7 @@ describe('pessoas (M2)', () => {
     for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths', 'raids', 'citizenDeaths', 'citizensLeft']) delete v1.metrics[k];
     for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
     const loaded = deserialize(JSON.stringify(v1));
-    expect(loaded.version).toBe(7);
+    expect(loaded.version).toBe(8);
     expect(loaded.town.buildings.casa).toBe(0);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.children).toEqual([]);
@@ -581,6 +581,18 @@ describe('economia da vila (Fase A)', () => {
     expect(world.town.expansion.houses.filter(Boolean)).toHaveLength(2);
   });
 
+  it('o campo pode ser movido para o lote de produção e perde a adjacência', () => {
+    const world = createWorld(52);
+    world.town.treasury = 200;
+    world.town.expansion.cleared = true;
+    expect(world.town.campoAdjacent).toBe(true);
+    expect(commands.moveCampo(world)).toEqual({ ok: true });
+    expect(world.town.treasury).toBe(200 - BALANCE.campoMoveCost);
+    expect(world.town.campoMoved).toBe(true);
+    expect(world.town.campoAdjacent).toBe(false);
+    expect(commands.moveCampo(world).ok).toBe(false);
+  });
+
   it('a fonte termal cura vida, ânimo, luto e lesão', () => {
     const world = createWorld(36);
     const hero = createHero(world);
@@ -618,7 +630,7 @@ describe('economia da vila (Fase A)', () => {
     delete v2.raids;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v2.metrics[k];
     const loaded = deserialize(JSON.stringify(v2));
-    expect(loaded.version).toBe(7);
+    expect(loaded.version).toBe(8);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.town.lastRaidDay).toBe(-1);
     expect(loaded.citizens.length).toBeGreaterThan(0);
@@ -679,13 +691,25 @@ describe('vila e incursões (M3)', () => {
     expect(world.chronicle.some((e) => e.kind === 'incursao')).toBe(true);
   });
 
+  it('save v7 ganha o estado do campo ao carregar', () => {
+    const world = createWorld(51);
+    const v7 = JSON.parse(serialize(world));
+    v7.version = 7;
+    delete v7.town.campoMoved;
+    delete v7.town.campoAdjacent;
+    const loaded = deserialize(JSON.stringify(v7));
+    expect(loaded.version).toBe(8);
+    expect(loaded.town.campoMoved).toBe(false);
+    expect(loaded.town.campoAdjacent).toBe(true);
+  });
+
   it('save v6 ganha a expansão sul vazia ao carregar', () => {
     const world = createWorld(49);
     const v6 = JSON.parse(serialize(world));
     v6.version = 6;
     delete v6.town.expansion;
     const loaded = deserialize(JSON.stringify(v6));
-    expect(loaded.version).toBe(7);
+    expect(loaded.version).toBe(8);
     expect(loaded.town.expansion).toEqual({ cleared: false, houses: [false, false, false] });
   });
 
@@ -696,7 +720,7 @@ describe('vila e incursões (M3)', () => {
     delete v5.town.event;
     delete v5.town.lastEventKey;
     const loaded = deserialize(JSON.stringify(v5));
-    expect(loaded.version).toBe(7);
+    expect(loaded.version).toBe(8);
     expect(loaded.town.event).toBeNull();
     expect(loaded.town.lastEventKey).toBe('');
   });
@@ -707,7 +731,7 @@ describe('vila e incursões (M3)', () => {
     v4.version = 4;
     delete v4.town.decrees;
     const loaded = deserialize(JSON.stringify(v4));
-    expect(loaded.version).toBe(7);
+    expect(loaded.version).toBe(8);
     expect(loaded.town.decrees).toEqual([]);
   });
 
@@ -721,7 +745,7 @@ describe('vila e incursões (M3)', () => {
     delete v3.town.lastRaidDay;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v3.metrics[k];
     const loaded = deserialize(JSON.stringify(v3));
-    expect(loaded.version).toBe(7);
+    expect(loaded.version).toBe(8);
     expect(loaded.citizens.length).toBe(BALANCE.citizenStart);
     expect(loaded.raids).toEqual([]);
     expect(loaded.town.lastRaidDay).toBe(-1);

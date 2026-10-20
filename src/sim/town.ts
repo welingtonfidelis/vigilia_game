@@ -264,7 +264,7 @@ function finishActivity(world: World, hero: Hero): void {
       const price = trainPrice(world);
       hero.gold -= price;
       town.treasury += price * 0.5;
-      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo') * (1 + 0.5 * roleCount(world, 'mentor')));
+      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo') * (1 + 0.5 * roleCount(world, 'mentor')) * (world.town.campoAdjacent ? 1.1 : 1));
       hero.needs.energy = clamp(hero.needs.energy - 10);
       break;
     }
