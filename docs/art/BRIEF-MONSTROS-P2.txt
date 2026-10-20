@@ -1,0 +1,218 @@
+BRIEF DE ARTE — MONSTROS DO ABISMO E PENDÊNCIAS DO P2
+Jogo: Vigília
+Pack atual: Vigília Art Pack 1.4.0
+Data: 2026-10-20
+
+Este é o pedido para substituir os monstros que ainda usam o DungeonTileset II (0x72).
+O objetivo é ter 18 inimigos normais + 6 chefes no mesmo estilo sombrio do pack 1.4,
+sem retrabalho de IDs, quadros ou animações no jogo.
+
+O jogo NÃO tem monstros andando no mapa. Eles aparecem apenas no painel de combate
+do Abismo. O painel usa o sprite parado (idle), não usa run, ataque, morte, direção
+ou flip. Hoje também não existe retrato separado de monstro: o próprio sprite idle
+ocupa o lugar do retrato.
+
+================================================================================
+1. COMO O JOGO DESENHA OS MONSTROS HOJE
+================================================================================
+
+- Inimigo normal: sprite em 2x no painel.
+- Chefe: sprite em 1x no painel.
+- Slot do painel: aproximadamente 38 px de largura.
+- Animação usada: SOMENTE idle, 4 quadros, ~6 fps.
+- Run existe no 0x72, mas NÃO é usado no painel. Pode ser entregue como opcional.
+- Ataque, hit e morte NÃO são usados. Não é necessário entregar.
+- O painel não vira o sprite para a esquerda/direita.
+- Não há retrato de monstro no jogo hoje.
+
+Portanto, para o pack novo:
+- Obrigatório: 4 quadros de idle.
+- Opcional: 4 quadros de run (ficam prontos para o futuro).
+- Não é necessário: ataque, hit, morte, direções, flip, retrato.
+
+================================================================================
+2. IDs E ANIMAÇÕES — CHEFES (6)
+================================================================================
+
+Use o ID de dados exatamente como está na coluna "ID DE DADOS".
+Asset ID sugerido: char/boss/<ID DE DADOS>.
+O arquivo pode ter nome kebab-case, mas o ID do manifesto deve ser o asset ID.
+
+ATO | NOME | ID DE DADOS | ASSET ID | BASE 0x72 | QUADRO | ANIMAÇÃO | TINT ATUAL
+I   | O Guardião das Urnas | guardiaoUrnas | char/boss/guardiaoUrnas | big_zombie | 32x36 | idle 4 + run 4 | 0xd8c8a8
+II  | A Couraça Submersa | couraca | char/boss/couraca | ogre | 32x36 | idle 4 + run 4 | 0x6a8aa8
+III | A Mãe-Bolor | maeBolor | char/boss/maeBolor | big_zombie | 32x36 | idle 4 + run 4 | 0x9ac87a
+IV  | O Arcebispo Sem Fôlego | arcebispo | char/boss/arcebispo | big_demon | 32x36 | idle 4 + run 4 | 0x7aa0d8
+V   | O Martelo Que Não Dorme | martelo | char/boss/martelo | big_demon | 32x36 | idle 4 + run 4 | —
+VI  | Aquilo que Vigia | aquiloQueVigia | char/boss/aquiloQueVigia | big_demon | 32x36 | idle 4 + run 4 | 0x6a4a8a
+
+Observação: arcebispo, martelo e aquiloQueVigia usam a mesma base 0x72 hoje.
+No pack novo, devem ser três desenhos distintos.
+
+================================================================================
+3. IDs E ANIMAÇÕES — INIMIGOS NORMAIS (18)
+================================================================================
+
+Use o ID de dados exatamente como está na coluna "ID DE DADOS".
+Asset ID sugerido: char/monster/<ID DE DADOS>.
+O arquivo pode ter nome kebab-case, mas o ID do manifesto deve ser o asset ID.
+
+ATO | NOME | ID DE DADOS | ASSET ID | BASE 0x72 | QUADRO | ANIMAÇÃO | TINT ATUAL
+I   | Esqueleto Rangente | esqueleto | char/monster/esqueleto | skelet | 16x16 | idle 4 + run 4 | —
+I   | Rato-de-ossuário | rato | char/monster/rato | tiny_zombie | 16x16 | idle 4 + run 4 | —
+I   | Acólito Caído | acolito | char/monster/acolito | necromancer | 16x23 | 4 (série única) | —
+II  | Mineiro Afogado | mineiro | char/monster/mineiro | zombie | 32x36* | idle 4 + run 4 | —
+II  | Enguia de Breu | enguia | char/monster/enguia | muddy | 16x16 | 4 (série única) | —
+II  | Golem de Ferro-negro | golem | char/monster/golem | ogre | 32x36* | idle 4 + run 4 | 0x8a90a0
+III | Esporento | esporento | char/monster/esporento | swampy | 16x16 | 4 (série única) | —
+III | Aranha-de-micélio | aranha | char/monster/aranha | slug | 16x23 | 4 (série única) | —
+III | Brotado | brotado | char/monster/brotado | goblin | 16x16 | idle 4 + run 4 | —
+IV  | Sacerdote Afogado | sacerdote | char/monster/sacerdote | orc_shaman | 16x23 | idle 4 + run 4 | —
+IV  | Sereia de Lodo | sereia | char/monster/sereia | ice_zombie | 16x16 | 4 (série única) | —
+IV  | Cavaleiro Salobro | cavaleiroSalobro | char/monster/cavaleiroSalobro | masked_orc | 16x23 | idle 4 + run 4 | —
+V   | Ferreiro Cinzento | ferreiroCinzento | char/monster/ferreiroCinzento | orc_warrior | 16x23 | idle 4 + run 4 | —
+V   | Cão de Brasa | caoBrasa | char/monster/caoBrasa | imp | 16x16 | idle 4 + run 4 | —
+V   | Escravo da Forja | escravoForja | char/monster/escravoForja | chort | 16x23 | idle 4 + run 4 | —
+VI  | Sombra Faminta | sombra | char/monster/sombra | wogol | 16x23 | idle 4 + run 4 | —
+VI  | Lamento | lamento | char/monster/lamento | big_zombie | 32x36* | idle 4 + run 4 | 0x8a7aa8
+VI  | Arauto do Fundo | arauto | char/monster/arauto | big_demon | 32x36* | idle 4 + run 4 | 0x9a80c0
+
+* Mineiro, Golem, Lamento e Arauto são inimigos NORMAIS, mas hoje usam base de
+  chefe (32x36) e aparecem grandes demais no painel. No pack novo, trate-os como
+  normais: 16x23, não 32x36.
+
+"4 (série única)" significa que o 0x72 tem quatro quadros únicos
+(base_anim_f0..f3), sem separar idle e run. No pack novo, o ideal é padronizar
+como idle 4; run é opcional.
+
+================================================================================
+4. TAMANHOS E FORMATO DE ENTREGA
+================================================================================
+
+INIMIGO NORMAL PEQUENO: 16x16
+INIMIGO NORMAL HUMANOIDE: 16x23
+CHEFE: 32x36
+
+Todos os quadros do mesmo canvas. PNG-32 RGBA, transparente, 1x, sem sombra
+projetada, sem texto, sem glow e sem antialias. Pés na base do quadro.
+
+Spritesheet horizontal:
+- 4 quadros de idle: 64x16 / 64x23 / 128x36.
+- 4 idle + 4 run: 128x16 / 128x23 / 256x36.
+- Run, se entregue, vem depois do idle (frames 4–7).
+
+No manifesto, cada entrada deve ter:
+- id: o asset ID da tabela;
+- type: "character";
+- file: caminho do PNG;
+- frameSize: [largura, altura];
+- sheetSize, columns, rows, frames;
+- animations:
+  "idle": { "frames": [0,1,2,3], "fps": 6 }
+  "run" (opcional): { "frames": [4,5,6,7], "fps": 10 }
+
+O jogo atual usa somente idle; run fica pronto para o futuro.
+Não é necessário JSON separado se o manifesto já trouxer os campos acima.
+
+ID de arquivo sugerido:
+- char-monster-esqueleto.png
+- char-monster-cavaleiro-salobro.png
+- char-boss-guardiao-urnas.png
+
+Mas o ID do manifesto deve ser exatamente:
+char/monster/esqueleto
+char/monster/cavaleiroSalobro
+char/boss/guardiaoUrnas
+
+================================================================================
+5. TINT E DIREÇÃO DE ARTE
+================================================================================
+
+Os tints da tabela são do 0x72 atual. Se os desenhos novos já tiverem cor própria,
+NÃO usar tint: eu removo o tint do jogo. O ideal é cada inimigo/chefe ter sua
+própria paleta, silhueta e arma/marca, sem reutilizar a mesma base para vários.
+
+Direção: mesma fantasia sombria do pack 1.4 — silhuetas distintas por ato,
+materiais do bioma (ossos, ferro, esporos, água, brasa, alma), pouca saturação.
+
+Não usar:
+- ataque, hit ou morte;
+- direções ou flip;
+- texto, sombra ou glow;
+- retrato separado (ver seção 6).
+
+================================================================================
+6. RETRATOS DE MONSTROS
+================================================================================
+
+Hoje o painel do Abismo NÃO tem retrato de monstro. Ele desenha o sprite idle
+dentro de um slot de aproximadamente 38 px.
+
+Se quiser entregar retratos separados mesmo assim:
+- o tamanho que encaixa sem mudar o layout é 32x36 (mesmo para normais);
+- 48x48 é possível, mas exige ajuste de CSS e não é necessário para o P2;
+- retratos 48x84 são dos HERÓIS, não dos monstros.
+
+Para o P2, o pedido principal são os sprites idle. Retratos de monstro ficam
+opcionais e para depois.
+
+================================================================================
+7. PENDÊNCIAS DO P2 (ALÉM DOS MONSTROS)
+================================================================================
+
+Confirmado que ainda faltam:
+
+A) VARIANTE DE OUTONO
+- Grama de outono em tiles 16x16 (variações equivalentes à grama atual).
+- Árvore de outono: 32x48 (equivalente ao pinheiro) e, se possível, uma pequena
+  32x32.
+- IDs sugeridos no manifesto:
+  tile/town/autumn-grass-0..3
+  prop/tree/autumn
+  prop/tree/autumn-small
+
+B) PROPS EXTRAS
+- Lamparina: 16x32 (poste + luz).
+- Banco: 32x16.
+- Carroça: 48x32.
+- IDs sugeridos:
+  prop/lamp
+  prop/bench
+  prop/cart
+
+Esses itens não bloqueiam os monstros. Se vierem no mesmo lote, ótimo.
+
+================================================================================
+8. CHECKLIST DE ENTREGA
+================================================================================
+
+[ ] 18 inimigos normais, com os IDs exatos da seção 3.
+[ ] 6 chefes, com os IDs exatos da seção 2.
+[ ] 4 quadros de idle por personagem, no canvas correto.
+[ ] Run opcional, 4 quadros, depois do idle.
+[ ] PNG-32 transparente, 1x, sem sombra/texto/antialias.
+[ ] Spritesheet + campos de frame/animations no manifesto.
+[ ] Nenhum tint aplicado na arte nova.
+[ ] Lamento, Arauto, Mineiro e Golem como normais 16x23, não 32x36.
+[ ] Chefes únicos (não repetir big_demon em três).
+[ ] Folha de contato mostrando cada inimigo/chefe no tamanho do painel.
+[ ] Outono, lamparina, banco e carroça, se entrarem no lote.
+
+================================================================================
+9. O QUE O JOGO JÁ TEM (PARA CONTEXTO)
+================================================================================
+
+- Heróis redesenhados no pack 1.4, em 16x28, 9 quadros.
+- Retratos de herói 48x84.
+- Cenário, prédios, casas, props, crianças, cercas e ícones de UI do pack 1.4.
+- Monstros ainda no 0x72; este pedido substitui só essa parte.
+- A vila e o painel do Abismo já estão integrados; o novo pack não precisa mexer
+  no mapa.
+
+Dúvidas de integração podem voltar com:
+- o ID exato que você usou;
+- o frameSize e a quantidade de quadros;
+- se o idle tem 4 quadros;
+- se o run foi incluído.
+
+Com esses dados, a troca no jogo é direta.

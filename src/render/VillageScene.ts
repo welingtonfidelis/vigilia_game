@@ -393,7 +393,7 @@ export class VillageScene extends Phaser.Scene {
       {
         id: 'berrante',
         point: { x: berrante.x, y: berrante.y + 8 },
-        hit: { x: HORN_TOWER.tx * TILE, y: HORN_TOWER.ty * TILE, w: HORN_TOWER.tw * TILE, h: 3 * TILE },
+        hit: { x: HORN_TOWER.tx * TILE, y: HORN_TOWER.ty * TILE, w: HORN_TOWER.tw * TILE, h: HORN_TOWER.th * TILE },
         label: () => 'Tocar o berrante',
         open: open({ kind: 'horn' }),
       },
@@ -414,7 +414,7 @@ export class VillageScene extends Phaser.Scene {
       {
         id: 'abismo',
         point: { x: abismo.x, y: abismo.y + 40 },
-        hit: { x: 21 * TILE, y: 2 * TILE, w: 8 * TILE, h: 5 * TILE },
+        hit: { x: abismo.x - 2.5 * TILE, y: abismo.y - 4 * TILE, w: 5 * TILE, h: 5 * TILE },
         label: () => 'Olhar o abismo',
         open: open({ kind: 'dungeon' }),
       },
