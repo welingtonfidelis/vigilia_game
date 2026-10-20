@@ -34,13 +34,19 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
     sfx: ui.prefs.sfxVolume,
   });
 
+  // Música e ambiente guardam nós do contexto: num contexto novo, nascem de novo.
+  let playersGen = -1;
+  const ensurePlayers = () => {
+    if (!engine.ctx || playersGen === engine.generation) return;
+    music = new MusicPlayer(engine.ctx, engine.out('music')!);
+    ambience = new AmbiencePlayer(engine.ctx, engine.out('ambient')!);
+    playersGen = engine.generation;
+  };
+
   installUnlock(window, () => document.hidden, () => {
-    if (!engine.unlock() || !engine.ctx) return;
+    if (!engine.wake()) return;
     engine.setLevels(levels());
-    if (!music) {
-      music = new MusicPlayer(engine.ctx, engine.out('music')!);
-      ambience = new AmbiencePlayer(engine.ctx, engine.out('ambient')!);
-    }
+    ensurePlayers();
   });
 
   const play = (sfx: SfxName, delay = 0) => {
@@ -73,6 +79,7 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
 
   let lastMood = 0;
   window.setInterval(() => {
+    if (!document.hidden) engine.watch();
     if (!engine.running || !music || !ambience || ui.prefs.muted) return;
     const now = performance.now();
     if (now - lastMood >= MOOD_MS) {
@@ -85,7 +92,20 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
     ambience.schedule();
   }, SCHEDULE_MS);
 
-  document.addEventListener('visibilitychange', () => (document.hidden ? engine.suspend() : engine.resume()));
+  // Ao voltar para o app, tenta retomar sozinho; se o navegador exigir um toque
+  // (Safari do iPhone), avisa o jogador.
+  let hint = 0;
+  document.addEventListener('visibilitychange', () => {
+    window.clearTimeout(hint);
+    if (document.hidden) {
+      engine.sleep();
+      return;
+    }
+    engine.resumeQuietly();
+    hint = window.setTimeout(() => {
+      if (!document.hidden && engine.needsGesture && !ui.prefs.muted) ui.toast('Toque na tela para religar o som.', 'info');
+    }, 800);
+  });
 
   return { engine, play, music: () => music };
 }

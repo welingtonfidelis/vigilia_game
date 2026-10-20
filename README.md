@@ -22,7 +22,7 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 54 testes (núcleo, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm test                                        # 59 testes (núcleo, sessão, save, planta e tiles da vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes

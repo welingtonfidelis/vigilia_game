@@ -22,36 +22,116 @@ interface Channel {
 
 export class AudioEngine {
   ctx: AudioContext | null = null;
+  /** Sobe a cada contexto novo: quem guarda nós do contexto antigo precisa recriá-los. */
+  generation = 0;
   private master: GainNode | null = null;
   private channels = new Map<Bus, Channel>();
   private levels: Levels = { muted: false, master: 0.8, music: 0.4, ambient: 0.5, sfx: 0.9 };
   private readonly create: () => AudioContext;
+  /** Safari do iPhone/iPad: ao voltar do segundo plano o contexto antigo pode ficar mudo. */
+  private readonly recreateOnReturn: boolean;
+  /** Um gesto já pediu para retomar e o contexto ainda não voltou a rodar. */
+  private resumePending = false;
+  /** O relógio do áudio parou com o contexto "rodando" (contexto morto). */
+  private stale = false;
+  /** A página foi para o segundo plano desde o último gesto. */
+  private wasHidden = false;
+  private clock: { audio: number; wall: number } | null = null;
 
-  constructor(create: () => AudioContext = createContext) {
+  constructor(create: () => AudioContext = createContext, recreateOnReturn = isAppleTouch()) {
     this.create = create;
+    this.recreateOnReturn = recreateOnReturn;
   }
 
   /**
-   * Cria o contexto (se preciso) e tenta retomá-lo. Só dá certo dentro de um gesto
-   * que o navegador aceita como ativação; por isso é chamado a cada toque até tocar.
+   * Chamado a cada gesto do jogador. Cria o contexto na primeira vez e depois retoma
+   * o que estiver parado. Quando retomar não basta (Safari ao voltar do segundo plano:
+   * contexto "interrupted", ou "running" mas mudo e congelado), descarta o contexto e
+   * cria outro dentro do gesto, que é o único momento em que o navegador permite.
    */
-  unlock(): boolean {
+  wake(): boolean {
+    const state = this.ctx?.state;
+    const broken = state === 'closed' || this.stale || this.resumePending || (this.wasHidden && this.recreateOnReturn);
+    this.wasHidden = false;
+    if (this.ctx && broken) this.dispose();
     if (!this.ctx) {
+      let ctx: AudioContext;
       try {
-        this.ctx = this.create();
+        ctx = this.create();
       } catch {
         return false;
       }
-      this.build(this.ctx);
+      this.ctx = ctx;
+      this.generation++;
+      ctx.addEventListener?.('statechange', () => {
+        if (ctx.state === 'running') this.resumePending = false;
+      });
+      this.build(ctx);
     }
-    // 'interrupted' existe no Safari (ligação, troca de app).
-    const state = this.ctx.state as AudioContextState | 'interrupted';
-    if (state !== 'running' && state !== 'closed') void this.ctx.resume().catch(() => {});
+    if (this.ctx.state !== 'running') {
+      const ctx = this.ctx;
+      this.resumePending = true;
+      void ctx
+        .resume()
+        .then(() => {
+          if (ctx.state === 'running') this.resumePending = false;
+        })
+        .catch(() => {});
+    }
     return true;
   }
 
+  /** Tenta retomar sem gesto (ao voltar para a aba). Chrome/Android aceitam; o Safari às vezes não. */
+  resumeQuietly(): void {
+    const state = this.ctx?.state;
+    if (this.ctx && state !== 'running' && state !== 'closed') void this.ctx.resume().catch(() => {});
+  }
+
+  /** A página foi para o segundo plano: pausa o áudio e marca que voltou de lá. */
+  sleep(): void {
+    this.wasHidden = true;
+    this.clock = null;
+    if (this.ctx?.state === 'running') void this.ctx.suspend().catch(() => {});
+  }
+
   get running(): boolean {
-    return this.ctx?.state === 'running';
+    return this.ctx?.state === 'running' && !this.stale;
+  }
+
+  /** O som só volta com um toque (para avisar o jogador). */
+  get needsGesture(): boolean {
+    return !!this.ctx && (!this.running || (this.wasHidden && this.recreateOnReturn));
+  }
+
+  /**
+   * Vigia o relógio do áudio com a página visível: se o contexto diz "running" mas o
+   * tempo não anda, ele morreu e o próximo gesto cria outro.
+   */
+  watch(): void {
+    const ctx = this.ctx;
+    if (!ctx || ctx.state !== 'running') {
+      this.clock = null;
+      return;
+    }
+    const wall = performance.now();
+    if (!this.clock) {
+      this.clock = { audio: ctx.currentTime, wall };
+      return;
+    }
+    if (wall - this.clock.wall < 1500) return;
+    this.stale = ctx.currentTime - this.clock.audio < 0.2;
+    this.clock = { audio: ctx.currentTime, wall };
+  }
+
+  private dispose(): void {
+    const old = this.ctx;
+    this.ctx = null;
+    this.master = null;
+    this.channels.clear();
+    this.stale = false;
+    this.resumePending = false;
+    this.clock = null;
+    void old?.close().catch(() => {});
   }
 
   /** Entrada de um canal, onde os instrumentos se conectam. */
@@ -71,14 +151,6 @@ export class AudioEngine {
     const now = this.ctx.currentTime;
     this.master.gain.setTargetAtTime(this.levels.muted ? 0 : this.levels.master, now, 0.05);
     for (const [bus, ch] of this.channels) ch.volume.gain.setTargetAtTime(this.levels[bus], now, 0.05);
-  }
-
-  suspend(): void {
-    if (this.ctx?.state === 'running') void this.ctx.suspend().catch(() => {});
-  }
-
-  resume(): void {
-    if (this.ctx?.state === 'suspended') void this.ctx.resume().catch(() => {});
   }
 
   private build(ctx: AudioContext): void {
@@ -126,4 +198,11 @@ function createContext(): AudioContext {
     // Navegador sem a API de sessão de áudio: segue sem ela.
   }
   return new AudioContext({ latencyHint: 'balanced' });
+}
+
+/** iPhone, iPod e iPad (o iPadOS se apresenta como Mac, mas tem toque). */
+function isAppleTouch(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
 }

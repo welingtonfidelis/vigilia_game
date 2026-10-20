@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CuePlanner, cuesFor, moodOf, MOURNING_TICKS, STAGGER_S } from '../src/audio/director.ts';
 import { AudioEngine } from '../src/audio/engine.ts';
 import { ACTIVATION_EVENTS, installUnlock } from '../src/audio/index.ts';
@@ -113,6 +113,58 @@ describe('preferências de som', () => {
   });
 });
 
+/** Contexto de áudio falso: estado controlável e registro do que o motor pediu. */
+function fakeContext(opts: { resumeWorks?: boolean } = {}) {
+  const log = { resumes: 0, closes: 0, gains: [] as number[] };
+  const gain = () => ({ connect: (n: unknown) => n, gain: { value: 1, setTargetAtTime: (v: number) => log.gains.push(v) } });
+  const ctx = {
+    state: 'suspended' as string,
+    currentTime: 0,
+    sampleRate: 8000,
+    destination: {},
+    log,
+    resume() {
+      log.resumes++;
+      if (opts.resumeWorks !== false) ctx.state = 'running';
+      return Promise.resolve();
+    },
+    suspend() {
+      ctx.state = 'suspended';
+      return Promise.resolve();
+    },
+    close() {
+      log.closes++;
+      ctx.state = 'closed';
+      return Promise.resolve();
+    },
+    createGain: gain,
+    createConvolver: () => ({ connect: (n: unknown) => n, buffer: null }),
+    createDynamicsCompressor: () => ({
+      connect: (n: unknown) => n,
+      threshold: { value: 0 },
+      knee: { value: 0 },
+      ratio: { value: 0 },
+      attack: { value: 0 },
+      release: { value: 0 },
+    }),
+    createBuffer: (ch: number, len: number) => ({ getChannelData: () => new Float32Array(len), numberOfChannels: ch }),
+  };
+  return ctx;
+}
+
+type Fake = ReturnType<typeof fakeContext>;
+const tick = () => new Promise((r) => setTimeout(r, 0));
+
+function engineWith(factory: () => Fake, recreateOnReturn = false) {
+  const made: Fake[] = [];
+  const engine = new AudioEngine(() => {
+    const ctx = factory();
+    made.push(ctx);
+    return ctx as unknown as AudioContext;
+  }, recreateOnReturn);
+  return { engine, made };
+}
+
 describe('destravar o som (celular)', () => {
   it('toque no celular conta no pointerup/touchend e os ouvintes continuam ligados', () => {
     const target = new EventTarget();
@@ -130,75 +182,101 @@ describe('destravar o som (celular)', () => {
     expect(wakes).toBe(3); // com a aba oculta não tenta
   });
 
-  it('o motor insiste em retomar até o contexto rodar (inclusive depois de "interrupted")', () => {
-    let state = 'suspended';
-    let resumes = 0;
-    const node = () => ({ connect: (n: unknown) => n, gain: { value: 1, setTargetAtTime: () => {} } });
-    const fake = {
-      get state() {
-        return state;
-      },
-      currentTime: 0,
-      sampleRate: 8000,
-      destination: {},
-      resume: () => {
-        resumes++;
-        return Promise.resolve();
-      },
-      createGain: node,
-      createConvolver: () => ({ connect: (n: unknown) => n, buffer: null }),
-      createDynamicsCompressor: () => ({
-        connect: (n: unknown) => n,
-        threshold: { value: 0 },
-        knee: { value: 0 },
-        ratio: { value: 0 },
-        attack: { value: 0 },
-        release: { value: 0 },
-      }),
-      createBuffer: (ch: number, len: number) => ({ getChannelData: () => new Float32Array(len), numberOfChannels: ch }),
-    };
-    const engine = new AudioEngine(() => fake as unknown as AudioContext);
-    engine.unlock();
-    expect(resumes).toBe(1);
-    state = 'running';
-    engine.unlock();
-    expect(resumes).toBe(1); // rodando: nada a fazer
-    state = 'interrupted';
-    engine.unlock();
-    expect(resumes).toBe(2);
+  it('um gesto retoma; se o próximo gesto ainda achar o contexto parado, cria outro', async () => {
+    const { engine, made } = engineWith(() => fakeContext({ resumeWorks: false }));
+    engine.wake();
+    await tick();
+    expect(made).toHaveLength(1);
+    expect(made[0]!.log.resumes).toBe(1);
+    expect(engine.running).toBe(false);
+    engine.wake(); // o resume do gesto anterior não pegou: contexto novo
+    expect(made).toHaveLength(2);
+    expect(made[0]!.log.closes).toBe(1);
+    expect(engine.generation).toBe(2);
+  });
+
+  it('com o contexto rodando, gestos não fazem nada', async () => {
+    const { engine, made } = engineWith(() => fakeContext());
+    engine.wake();
+    await tick();
+    expect(engine.running).toBe(true);
+    engine.wake();
+    engine.wake();
+    expect(made).toHaveLength(1);
+    expect(engine.generation).toBe(1);
+  });
+
+  it('iPhone: ao voltar do segundo plano, o primeiro toque recria o contexto', async () => {
+    const { engine, made } = engineWith(() => fakeContext(), true);
+    engine.wake();
+    await tick();
+    engine.sleep();
+    engine.resumeQuietly(); // volta para a aba: retoma "rodando", mas no Safari pode estar mudo
+    await tick();
+    expect(engine.needsGesture).toBe(true); // por isso o aviso "toque para religar"
+    engine.wake();
+    await tick();
+    expect(made).toHaveLength(2);
+    expect(engine.running).toBe(true);
+    expect(engine.needsGesture).toBe(false);
+  });
+
+  it('fora do iPhone, voltar do segundo plano só retoma o mesmo contexto', async () => {
+    const { engine, made } = engineWith(() => fakeContext(), false);
+    engine.wake();
+    await tick();
+    engine.sleep();
+    expect(engine.running).toBe(false);
+    engine.resumeQuietly();
+    await tick();
+    expect(engine.running).toBe(true);
+    engine.wake();
+    expect(made).toHaveLength(1);
+  });
+
+  it('relógio do áudio parado com o contexto "rodando" = contexto morto, recriado no toque', async () => {
+    const now = vi.spyOn(performance, 'now');
+    try {
+      const { engine, made } = engineWith(() => fakeContext());
+      engine.wake();
+      await tick();
+      now.mockReturnValue(1000);
+      engine.watch();
+      now.mockReturnValue(3000); // 2 s de relógio de parede, currentTime não andou
+      engine.watch();
+      expect(engine.running).toBe(false);
+      expect(engine.needsGesture).toBe(true);
+      engine.wake();
+      await tick();
+      expect(made).toHaveLength(2);
+      expect(engine.running).toBe(true);
+    } finally {
+      now.mockRestore();
+    }
   });
 });
 
 describe('volumes do motor', () => {
   it('aplica os volumes padrão já na criação e só reaplica quando mudam', () => {
-    const calls: number[] = [];
-    const gain = () => ({ connect: (n: unknown) => n, gain: { value: 1, setTargetAtTime: (v: number) => calls.push(v) } });
-    const fake = {
-      state: 'running',
-      currentTime: 0,
-      sampleRate: 8000,
-      destination: {},
-      resume: () => Promise.resolve(),
-      createGain: gain,
-      createConvolver: () => ({ connect: (n: unknown) => n, buffer: null }),
-      createDynamicsCompressor: () => ({
-        connect: (n: unknown) => n,
-        threshold: { value: 0 },
-        knee: { value: 0 },
-        ratio: { value: 0 },
-        attack: { value: 0 },
-        release: { value: 0 },
-      }),
-      createBuffer: (ch: number, len: number) => ({ getChannelData: () => new Float32Array(len), numberOfChannels: ch }),
-    };
-    const engine = new AudioEngine(() => fake as unknown as AudioContext);
+    const { engine, made } = engineWith(() => fakeContext());
     const defaults = { muted: false, master: 0.8, music: 0.4, ambient: 0.5, sfx: 0.9 };
     engine.setLevels(defaults); // antes do contexto: só guarda
-    engine.unlock();
-    expect(calls).toEqual([0.8, 0.4, 0.5, 0.9]); // geral, música, ambiente, efeitos
+    engine.wake();
+    const gains = made[0]!.log.gains;
+    expect(gains).toEqual([0.8, 0.4, 0.5, 0.9]); // geral, música, ambiente, efeitos
     engine.setLevels({ ...defaults });
-    expect(calls).toHaveLength(4); // nada mudou: não reaplica
+    expect(gains).toHaveLength(4); // nada mudou: não reaplica
     engine.setLevels({ ...defaults, muted: true });
-    expect(calls.slice(4, 5)).toEqual([0]);
+    expect(gains.slice(4, 5)).toEqual([0]);
+  });
+
+  it('um contexto novo nasce com os volumes atuais', async () => {
+    const { engine, made } = engineWith(() => fakeContext(), true);
+    engine.setLevels({ muted: false, master: 0.5, music: 0.2, ambient: 0.3, sfx: 1 });
+    engine.wake();
+    await tick();
+    engine.sleep();
+    engine.wake();
+    expect(made[1]!.log.gains).toEqual([0.5, 0.2, 0.3, 1]);
   });
 });
