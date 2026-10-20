@@ -1,13 +1,14 @@
 // Elenco, cemitério, menu, boas-vindas e fim de ato.
 
 import { useState } from 'preact/hooks';
-import { ACTS, byWhom, createWorld, formatDate, heroCapacity } from '../../sim/index.ts';
-import type { Hero, HeroStatus } from '../../sim/index.ts';
+import { ACTS, BALANCE, byWhom, childAge, createWorld, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS } from '../../sim/index.ts';
+import type { Hero, HeroStatus, RetiredRole } from '../../sim/index.ts';
 import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../../game/storage.ts';
 import { Bar, HeroLink, PanelShell, useGame } from '../components.tsx';
-import { activityText, className, liveHp } from '../format.ts';
+import { activityText, className, liveHp, plural } from '../format.ts';
 import { graveOrder } from '../../render/layout.ts';
-import { HeroPortrait } from '../PixelSprite.tsx';
+import { HeroPortrait, PixelSprite } from '../PixelSprite.tsx';
+import { heroSprite } from '../../render/assets.ts';
 
 const ORDER: Record<HeroStatus, number> = { expedition: 0, town: 1, retired: 2, left: 3, dead: 4 };
 
@@ -38,31 +39,99 @@ function HeroRow(props: { hero: Hero }) {
   );
 }
 
+type RosterTab = 'ativos' | 'aposentados' | 'criancas' | 'partiram';
+
 export function RosterPanel() {
-  const { world } = useGame();
-  const [showGone, setShowGone] = useState(false);
+  const { world, ui } = useGame();
+  const [tab, setTab] = useState<RosterTab>('ativos');
   const active = world.heroes.filter((h) => h.status === 'town' || h.status === 'expedition').sort((a, b) => ORDER[a.status] - ORDER[b.status] || b.level - a.level);
-  const gone = world.heroes.filter((h) => h.status === 'left' || h.status === 'retired');
+  const retired = world.heroes.filter((h) => h.status === 'retired');
+  const gone = world.heroes.filter((h) => h.status === 'left');
+  const kids = [...world.children].sort((a, b) => a.bornDay - b.bornDay);
+  const tabs: [RosterTab, string, number][] = [
+    ['ativos', 'Na ativa', active.length],
+    ['aposentados', 'Aposentados', retired.length],
+    ['criancas', 'Crianças', kids.length],
+    ['partiram', 'Partiram', gone.length],
+  ];
   return (
     <PanelShell title="Heróis" subtitle={`${active.length} de ${heroCapacity(world)} vagas · ${world.town.arrivals.length} a caminho`}>
-      {active.length === 0 && <p class="sub">Nenhum herói na vila. Toque o berrante.</p>}
-      <ul class="roster">
-        {active.map((h) => (
-          <HeroRow key={h.id} hero={h} />
-        ))}
-      </ul>
-      {gone.length > 0 && (
-        <>
-          <button class="btn ghost" onClick={() => setShowGone(!showGone)}>
-            {showGone ? 'Esconder' : 'Mostrar'} quem foi embora ({gone.length})
+      <div class="row tabs" role="tablist">
+        {tabs.map(([id, label, n]) => (
+          <button key={id} role="tab" aria-selected={tab === id} class={`tab${tab === id ? ' active' : ''}`} onClick={() => setTab(id)}>
+            {label} <small>{n}</small>
           </button>
-          {showGone && (
-            <ul class="roster">
-              {gone.map((h) => (
-                <HeroRow key={h.id} hero={h} />
-              ))}
-            </ul>
-          )}
+        ))}
+      </div>
+      {tab === 'ativos' && (
+        <>
+          {active.length === 0 && <p class="sub">Nenhum herói na vila. Toque o berrante.</p>}
+          <ul class="roster">
+            {active.map((h) => (
+              <HeroRow key={h.id} hero={h} />
+            ))}
+          </ul>
+        </>
+      )}
+      {tab === 'aposentados' && (
+        <>
+          <p class="sub">Quem pendura as armas fica na vila e trabalha. Até {BALANCE.roleCap} por função somam efeito.</p>
+          {(Object.keys(ROLE_NAMES) as RetiredRole[]).map((role) => (
+            <p key={role} class="sub">
+              {ROLE_NAMES[role].m.replace(/^./, (c) => c.toUpperCase())} {ROLE_NAMES[role].where}: {roleCount(world, role)} de {BALANCE.roleCap}
+            </p>
+          ))}
+          {retired.length === 0 && <p class="sub">Ninguém se aposentou ainda.</p>}
+          <ul class="roster">
+            {retired.map((h) => (
+              <HeroRow key={h.id} hero={h} />
+            ))}
+          </ul>
+        </>
+      )}
+      {tab === 'criancas' && (
+        <>
+          <p class="sub">Filhos dos casais da vila. Aos {BALANCE.comingOfAgeYears} anos pegam em armas, herdando um traço e a arma da família.</p>
+          {kids.length === 0 && <p class="sub">Nenhuma criança ainda. Casais nascem de vínculos fortes.</p>}
+          <ul class="bonds">
+            {kids.map((c) => {
+              const age = childAge(world, c);
+              const parents = c.parents.map((id) => world.heroes.find((h) => h.id === id)).filter((h): h is Hero => !!h);
+              return (
+                <li key={c.id}>
+                  <span class="kid">
+                    <PixelSprite base={heroSprite(c.classId, c.gender)} scale={1} crop={7} animate={false} />
+                    <span>
+                      <strong>{c.name}</strong>
+                      <small class="muted">
+                        {' '}
+                        {plural(age, 'ano', 'anos')} · de{' '}
+                        {parents.map((p, i) => (
+                          <span key={p.id}>
+                            {i > 0 && ' e '}
+                            <button class={`link${p.status === 'dead' ? ' dead' : ''}`} onClick={() => ui.open({ kind: 'hero', heroId: p.id })}>
+                              {p.name}
+                            </button>
+                          </span>
+                        ))}
+                      </small>
+                    </span>
+                  </span>
+                  <span class="muted">{TRAITS[c.trait].name[c.gender]}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+      {tab === 'partiram' && (
+        <>
+          {gone.length === 0 && <p class="sub">Ninguém foi embora.</p>}
+          <ul class="roster">
+            {gone.map((h) => (
+              <HeroRow key={h.id} hero={h} />
+            ))}
+          </ul>
         </>
       )}
     </PanelShell>
@@ -94,12 +163,18 @@ export function MemorialPanel() {
             <small>
               {className(h)} {h.rank}, nível {h.level} · {h.stats.expeditions} {h.stats.expeditions === 1 ? 'expedição' : 'expedições'}
             </small>
-            {h.death && (
-              <small class="muted">
-                {h.death.where}, {byWhom(h.death.by)} · {formatDate(h.death.tick)}
-              </small>
+            {h.epitaph ? (
+              <blockquote class="epitaph">{h.epitaph}</blockquote>
+            ) : (
+              <>
+                {h.death && (
+                  <small class="muted">
+                    {h.death.where}, {byWhom(h.death.by)} · {formatDate(h.death.tick)}
+                  </small>
+                )}
+                {h.deeds.length > 0 && <small class="gold">{h.deeds[h.deeds.length - 1]!.text}</small>}
+              </>
             )}
-            {h.deeds.length > 0 && <small class="gold">{h.deeds[h.deeds.length - 1]!.text}</small>}
           </li>
         ))}
       </ul>

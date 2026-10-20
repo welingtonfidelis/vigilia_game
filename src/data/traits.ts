@@ -112,6 +112,14 @@ export const TRAITS: Record<TraitId, TraitDef> = {
     moraleBase: -10,
     flee: 10,
   },
+  marcado: {
+    id: 'marcado',
+    name: { m: 'Marcado', f: 'Marcada' },
+    innate: false,
+    blurb: 'Carrega cicatrizes de sobra: já viu o pior e não se assusta fácil.',
+    moraleBase: 5,
+    flee: -3,
+  },
 };
 
 export const INNATE_TRAITS = (Object.values(TRAITS) as TraitDef[]).filter((t) => t.innate).map((t) => t.id);

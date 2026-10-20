@@ -410,11 +410,55 @@ vigilia/
 | Marco | Entrega | Critério de pronto |
 |---|---|---|
 | **M0: Núcleo** ✅ | Simulação headless com heróis, necessidades, traços, expedição, combate, economia, save e balanceador | Simula 10 anos sem soft-lock; relatório de mortalidade e ouro coerente |
-| **M1: Fatia vertical** | Vila jogável com 6 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
+| **M1: Fatia vertical** ✅ | Vila jogável com 6 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
 | **M2: Pessoas** | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
 | **M3: Vila viva** | Lotes e expansão, cidadãos, impostos e decretos, incursões noturnas, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
 | **M4: Profundidade** | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
 | **M5: Lenda** | Atos V–VI, gerações, Eras e Pactos, profundezas infinitas, celular, polimento, PT/EN | Campanha completa e motivo para recomeçar |
+
+### 9.1 Especificação do M2: Pessoas
+
+Vínculos, luto, vingança, envelhecimento e crônica já existem desde o M0. O M2 acrescenta cinco sistemas.
+
+**Energia do prefeito.** O prefeito tem 4 pontos por dia, que recarregam à meia-noite. As ações custam energia e só valem com o herói na vila:
+
+| Ação | Energia | Efeito |
+|---|---|---|
+| Conversar | 1 | +lealdade e +ânimo; 1 vez por dia por herói; às vezes revela o traço oculto |
+| Presentear | 1 + ouro | Bebida (Beberrão adora), relíquia (Devoto adora) ou arma (sobe 1 tier dentro do limite do ferreiro) |
+| Consolar | 1 | −luto e +ânimo de quem chora alguém |
+| Discursar | 2 | +ânimo e +lealdade de todos na vila; 1 vez por dia |
+| Renomear | 0 | Troca o nome do herói |
+| Aposentar | 0 | Aposentadoria honrosa: o herói fica na vila com uma função; não custa lealdade aos amigos, ao contrário de dispensar |
+
+**Lesões, cicatrizes e Casa de cura.**
+- **Quem pega lesão:** quem termina um combate (ou foge) com menos de 15% de vida pode se ferir. A lesão vai no braço, na perna, no olho ou nas costelas e traz uma penalidade no atributo correspondente.
+- **Recuperação:** a lesão leva de 8 a 25 dias. Nesse período o herói não desce e passa o tempo se tratando.
+- **Cicatrizes:** ao sarar, a lesão pode virar cicatriz permanente com penalidade menor. Com 2 cicatrizes, o herói ganha o traço adquirido *Marcado* (+ânimo, porque já viu o pior).
+- **Casa de cura (7º prédio, níveis 1–3):** acelera a recuperação e reduz a chance de cicatriz.
+
+**Casais e filhos.**
+- **Casamento:** a cada estação, dois heróis com vínculo ≥ 80 podem se casar (qualquer combinação de gênero).
+- **Filhos:** casais que estão na vila têm chance anual de ter (ou adotar) um filho.
+- **Maioridade:** aos 16 anos o filho vira recruta. Herda um traço e, com frequência, a classe de um dos pais, além de equipamento herdado.
+- **Órfãos:** a criança cresce mesmo se os pais morrerem. A morte de um cônjuge gera luto máximo.
+
+**Aposentados com função.**
+- **Quem se aposenta:** quem se aposenta (por idade, por cicatrizes ou por ordem do prefeito) continua na vila.
+- **Funções:**
+
+| Função | Efeito |
+|---|---|
+| Mentor | Campo de treino: mais XP |
+| Ferreiro | Equipamento mais barato |
+| Contador de histórias | Taverna: mais ânimo |
+| Curandeiro | Casa de cura: recuperação mais rápida |
+
+- **Velhice:** aposentados com 70 anos ou mais podem morrer de velhice e vão para o memorial.
+
+**Memorial.** Todo herói morto ganha um epitáfio gerado a partir da vida dele: feito mais notável, como caiu, um traço marcante e quem chora por ele.
+
+**Critério de pronto:** saves antigos carregam (migração v1 → v2), o balanceador mantém 0 impasses e ócio ≤ 4 dias, e a crônica de 3 anos tem casamentos, lesões e epitáfios que contam histórias.
 
 ---
 

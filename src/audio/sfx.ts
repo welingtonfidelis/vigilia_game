@@ -28,7 +28,11 @@ export type SfxName =
   | 'bell'
   | 'click'
   | 'deny'
-  | 'open';
+  | 'open'
+  | 'wound'
+  | 'wedding'
+  | 'birth'
+  | 'speech';
 
 type Recipe = (ctx: Ctx, out: AudioNode, t: number) => void;
 
@@ -211,6 +215,35 @@ export const SFX: Record<SfxName, Recipe> = {
 
   open: (ctx, out, t) => {
     noise(ctx, out, t, { dur: 0.22, gain: 0.025, filter: 'bandpass', freq: 600, to: 2200, q: 0.8, attack: 0.05 });
+  },
+
+  // Lesão: pancada surda e um gemido que cai.
+  wound: (ctx, out, t) => {
+    drum(ctx, out, t, 58, 0.3, 0.5);
+    noise(ctx, out, t, { dur: 0.25, gain: 0.08, filter: 'lowpass', freq: 500 });
+    tone(ctx, out, t + 0.12, { type: 'triangle', freq: 320, glide: { to: 150, time: 0.6 }, dur: 0.7, gain: 0.06, attack: 0.05, filter: { type: 'lowpass', freq: 900 } });
+  },
+
+  // Casamento: sinos em Ré maior, duas voltas, e um acorde dedilhado.
+  wedding: (ctx, out, t) => {
+    for (let r = 0; r < 2; r++) {
+      [74, 78, 81, 86].forEach((note, i) => bell(ctx, out, t + r * 0.55 + i * 0.12, n(note), 0.05, 1.6, SMALL_BELL));
+    }
+    arpeggio(ctx, out, t + 1.2, [62, 66, 69, 74], 0.06, 0.07, 2);
+  },
+
+  // Nascimento: canção de ninar curtinha.
+  birth: (ctx, out, t) => {
+    [81, 79, 76, 74, 76].forEach((note, i) =>
+      tone(ctx, out, t + i * 0.32, { freq: n(note), dur: 0.6, gain: 0.04, attack: 0.04, vibrato: { rate: 4.5, depth: 3 } }),
+    );
+    pad(ctx, out, t, [n(62), n(66), n(69)], 1.4, 0.025, 1300);
+  },
+
+  // Discurso: murmúrio da praça e um arpejo que sobe.
+  speech: (ctx, out, t) => {
+    noise(ctx, out, t, { dur: 1.3, gain: 0.05, filter: 'bandpass', freq: 500, to: 900, q: 1.2, attack: 0.4 });
+    arpeggio(ctx, out, t + 0.5, [57, 62, 66, 69, 74], 0.1, 0.08, 1.6);
   },
 };
 

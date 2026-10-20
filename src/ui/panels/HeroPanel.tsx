@@ -1,23 +1,32 @@
 import { useState } from 'preact/hooks';
 import {
   ageYears,
+  BALANCE,
   byWhom,
+  childAge,
   CLASSES,
   commands,
+  dayOf,
+  defaultRole,
   fleeThreshold,
+  forgePrice,
   formatDate,
   getBond,
-  gearPrice,
   heroStats,
   maxGearTier,
   maxLevel,
+  recoveryPerDay,
+  ROLE_NAMES,
+  roleCount,
   TRAITS,
+  WOUNDS,
   xpToNext,
 } from '../../sim/index.ts';
-import type { Hero, World } from '../../sim/index.ts';
+import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { HeroPortrait } from '../PixelSprite.tsx';
-import { activityText, bondLabel, className, fmt, g, liveHp, pct } from '../format.ts';
+import { activityText, bondLabel, cap, className, fmt, g, injuryName, liveHp, pct, plural } from '../format.ts';
+import { EnergyCandles } from '../Energy.tsx';
 
 function bondsOf(world: World, hero: Hero): { other: Hero; value: number }[] {
   const out: { other: Hero; value: number }[] = [];
@@ -29,10 +38,215 @@ function bondsOf(world: World, hero: Hero): { other: Hero; value: number }[] {
   return out.sort((a, b) => Math.abs(b.value) - Math.abs(a.value)).slice(0, 8);
 }
 
+/** "−15% de ataque, −50% de crítico" a partir dos multiplicadores do núcleo. */
+function woundText(m: Partial<Record<'hp' | 'atk' | 'interval' | 'crit', number>>): string {
+  const parts: string[] = [];
+  const down = (x: number) => `−${Math.round((1 - x) * 100)}%`;
+  if (m.hp !== undefined) parts.push(`${down(m.hp)} de vida`);
+  if (m.atk !== undefined) parts.push(`${down(m.atk)} de ataque`);
+  if (m.interval !== undefined) parts.push(`${down(1 / m.interval)} de ritmo`);
+  if (m.crit !== undefined) parts.push(`${down(m.crit)} de crítico`);
+  return parts.join(', ');
+}
+
+const ROLE_EFFECTS: Record<RetiredRole, string> = {
+  mentor: 'mais experiência no treino',
+  ferreiro: 'equipamento mais barato',
+  contador: 'mais ânimo na taverna',
+  curandeiro: 'lesões saram mais rápido',
+};
+
+const ROLES = Object.keys(ROLE_NAMES) as RetiredRole[];
+
+const GIFTS: { kind: GiftKind; label: string; fan?: string }[] = [
+  { kind: 'bebida', label: 'Bebida', fan: 'beberrao' },
+  { kind: 'reliquia', label: 'Relíquia', fan: 'devoto' },
+  { kind: 'arma', label: 'Arma nova' },
+];
+
+function InjuryBlock(props: { world: World; hero: Hero }) {
+  const { world, hero } = props;
+  if (!hero.injury && hero.scars.length === 0) return null;
+  const injury = hero.injury;
+  return (
+    <div class="injury">
+      {injury && (
+        <>
+          <p>
+            <strong>Lesão:</strong> {injuryName(injury.kind)} <span class="sub">({woundText(WOUNDS[injury.kind].injury)})</span>
+          </p>
+          <Bar
+            kind="heal"
+            value={injury.total - injury.daysLeft}
+            max={injury.total}
+            text={`sara em ~${plural(Math.max(1, Math.ceil(injury.daysLeft / recoveryPerDay(world))), 'dia', 'dias')} · não desce até lá`}
+          />
+        </>
+      )}
+      {hero.scars.length > 0 && (
+        <p class="sub">
+          Cicatrizes:{' '}
+          {hero.scars.map((s: InjuryKind, i) => (
+            <span key={i}>
+              {i > 0 && ' · '}
+              {WOUNDS[s].name} ({woundText(WOUNDS[s].scar)})
+            </span>
+          ))}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function FamilyBlock(props: { world: World; hero: Hero }) {
+  const { world, hero } = props;
+  const partner = hero.partnerId === null ? undefined : world.heroes.find((h) => h.id === hero.partnerId);
+  const grown = world.heroes.filter((h) => h.parents.includes(hero.id));
+  const kids = world.children.filter((c) => c.parents.includes(hero.id));
+  if (!partner && hero.parents.length === 0 && grown.length === 0 && kids.length === 0) return null;
+  return (
+    <>
+      <h3>Família</h3>
+      <ul class="bonds">
+        {partner && (
+          <li>
+            <HeroLink id={partner.id} />
+            <span class="good">{g(partner, 'marido', 'esposa')}</span>
+          </li>
+        )}
+        {hero.parents.map((id) => {
+          const p = world.heroes.find((h) => h.id === id);
+          return (
+            p && (
+              <li key={id}>
+                <HeroLink id={id} />
+                <span class="muted">{g(p, 'pai', 'mãe')}</span>
+              </li>
+            )
+          );
+        })}
+        {grown.map((c) => (
+          <li key={c.id}>
+            <HeroLink id={c.id} />
+            <span class="muted">
+              {g(c, 'filho', 'filha')} · {className(c)}
+            </span>
+          </li>
+        ))}
+        {kids.map((c) => {
+          const age = childAge(world, c);
+          const left = BALANCE.comingOfAgeYears - age;
+          return (
+            <li key={c.id}>
+              <span>{c.name}</span>
+              <span class="muted">
+                {c.gender === 'm' ? 'filho' : 'filha'}, {plural(age, 'ano', 'anos')} · pega em armas em {plural(left, 'ano', 'anos')}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
+function RolePicker(props: { world: World; hero: Hero; current: RetiredRole | null; onPick: (role: RetiredRole) => void }) {
+  const { world, hero } = props;
+  const suggested = defaultRole(hero, world);
+  return (
+    <div class="choices">
+      {ROLES.map((role) => {
+        const r = ROLE_NAMES[role];
+        const count = roleCount(world, role);
+        return (
+          <button key={role} class={`choice${props.current === role ? ' active' : ''}`} aria-pressed={props.current === role} onClick={() => props.onPick(role)}>
+            <strong>
+              {cap(r[hero.gender])} {r.where}
+              {role === suggested && props.current !== role ? ' · sugerida' : ''}
+            </strong>
+            <span>
+              {cap(ROLE_EFFECTS[role])} · {count} de {BALANCE.roleCap} {count >= BALANCE.roleCap ? '(efeito no máximo)' : 'na função'}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Conversar, presentear e consolar: custam energia do prefeito. */
+function MayorActions(props: { world: World; hero: Hero }) {
+  const { world, hero } = props;
+  const command = useCommand();
+  const energy = world.town.mayorEnergy;
+  const today = dayOf(world.tick);
+  const talked = hero.lastTalkDay === today;
+  const noEnergy = energy < 1 ? 'O prefeito está sem energia hoje.' : null;
+  const reasons: string[] = [];
+  if (noEnergy) reasons.push(noEnergy);
+  else if (talked) reasons.push(`Já conversou com ${hero.name} hoje.`);
+  return (
+    <>
+      <h3>
+        O prefeito pode… <EnergyCandles energy={energy} />
+      </h3>
+      <div class="row">
+        <button class="btn" disabled={!!noEnergy || talked} title={talked ? 'Uma conversa por dia' : '1 de energia'} onClick={() => command(commands.talk, hero.id)}>
+          Conversar <small>· 1</small>
+        </button>
+        {hero.grief > 0 && (
+          <button class="btn" disabled={!!noEnergy} title="1 de energia" onClick={() => command(commands.comfort, hero.id)}>
+            Consolar <small>· 1</small>
+          </button>
+        )}
+      </div>
+      <div class="row">
+        {GIFTS.map(({ kind, label, fan }) => {
+          const price = commands.giftPrice(world, hero.id, kind);
+          const maxed = kind === 'arma' && hero.gear.weapon + 1 > maxGearTier(world);
+          const poor = world.town.treasury < price;
+          const loves = fan && hero.traits.some((t) => t.id === fan && t.revealed);
+          const why = noEnergy ?? (maxed ? 'O ferreiro ainda não forja uma arma melhor.' : poor ? `Faltam ${fmt(price - world.town.treasury)} de ouro.` : '');
+          return (
+            <button key={kind} class={`btn${loves ? ' fav' : ''}`} disabled={!!why} title={why || `1 de energia + ${fmt(price)} de ouro`} onClick={() => command(commands.gift, hero.id, kind)}>
+              {label} <small>· {maxed ? '—' : `${fmt(price)} de ouro`}</small>
+              {loves && <small class="gold"> ♥</small>}
+            </button>
+          );
+        })}
+      </div>
+      {reasons.length > 0 && <p class="sub">{reasons[0]}</p>}
+    </>
+  );
+}
+
+function RenameField(props: { hero: Hero }) {
+  const command = useCommand();
+  const [name, setName] = useState(props.hero.name);
+  const clean = name.trim();
+  const valid = clean.length >= 2 && clean.length <= 20 && clean !== props.hero.name;
+  return (
+    <form
+      class="row stepper rename"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (valid) command(commands.rename, props.hero.id, clean);
+      }}
+    >
+      <input type="text" value={name} maxLength={20} aria-label="Novo nome" onInput={(e) => setName((e.target as HTMLInputElement).value)} />
+      <button class="btn" type="submit" disabled={!valid} title="De 2 a 20 letras">
+        Renomear
+      </button>
+    </form>
+  );
+}
+
 export function HeroPanel(props: { heroId: number }) {
   const { world, ui } = useGame();
   const command = useCommand();
   const [confirmDismiss, setConfirmDismiss] = useState(false);
+  const [retiring, setRetiring] = useState(false);
+  const [retireRole, setRetireRole] = useState<RetiredRole | null>(null);
   const hero = world.heroes.find((h) => h.id === props.heroId);
   if (!hero) {
     return (
@@ -50,6 +264,7 @@ export function HeroPanel(props: { heroId: number }) {
   const griefFor = hero.griefFor === null ? undefined : world.heroes.find((h) => h.id === hero.griefFor);
   const nextGear = Math.min(hero.gear.weapon, hero.gear.armor) + 1;
   const cls = CLASSES[hero.classId];
+  const role = hero.retiredRole;
 
   return (
     <PanelShell
@@ -72,6 +287,20 @@ export function HeroPanel(props: { heroId: number }) {
           De luto por <HeroLink id={griefFor.id} /> ({Math.round(hero.grief)})
         </p>
       )}
+
+      {hero.death && (
+        <div class="death">
+          {hero.epitaph && <blockquote class="epitaph">{hero.epitaph}</blockquote>}
+          <p>
+            {hero.death.by === 'velhice'
+              ? `Morreu de velhice ${hero.death.where}.`
+              : `Tombou no ${hero.death.where}, ${g(hero, 'abatido', 'abatida')} ${byWhom(hero.death.by)}.`}
+          </p>
+          <p class="sub">{formatDate(hero.death.tick)}</p>
+        </div>
+      )}
+
+      <InjuryBlock world={world} hero={hero} />
 
       {alive && (
         <div class="bars">
@@ -110,14 +339,17 @@ export function HeroPanel(props: { heroId: number }) {
         </div>
       )}
 
-      {hero.death && (
-        <div class="death">
-          <p>
-            Tombou no {hero.death.where}, {g(hero, 'abatido', 'abatida')} {byWhom(hero.death.by)}.
-          </p>
-          <p class="sub">{formatDate(hero.death.tick)}</p>
-        </div>
+      {hero.status === 'town' && <MayorActions world={world} hero={hero} />}
+
+      {hero.status === 'retired' && (
+        <>
+          <h3>Função na vila</h3>
+          <p class="sub">Aposentados não descem mais, mas ajudam a vila. Até {BALANCE.roleCap} por função somam efeito.</p>
+          <RolePicker world={world} hero={hero} current={role} onPick={(r) => command(commands.assignRole, hero.id, r)} />
+        </>
       )}
+
+      <FamilyBlock world={world} hero={hero} />
 
       <h3>Atributos</h3>
       <p class="sub">{cls.blurb}</p>
@@ -144,7 +376,7 @@ export function HeroPanel(props: { heroId: number }) {
           ) : (
             <li key={t.id} class="hidden-trait">
               <strong>?</strong>
-              <span>Traço oculto. A vila só descobre num momento marcante.</span>
+              <span>Traço oculto. A vila só descobre num momento marcante (ou conversando).</span>
             </li>
           ),
         )}
@@ -159,7 +391,7 @@ export function HeroPanel(props: { heroId: number }) {
             <li key={other.id}>
               <HeroLink id={other.id} />
               <span class={value >= 30 ? 'good' : value <= -10 ? 'bad' : 'muted'}>
-                {bondLabel(value, other)} ({value > 0 ? '+' : ''}
+                {other.id === hero.partnerId ? g(other, 'marido', 'esposa') : bondLabel(value, other)} ({value > 0 ? '+' : ''}
                 {Math.round(value)})
               </span>
             </li>
@@ -189,12 +421,18 @@ export function HeroPanel(props: { heroId: number }) {
         <Stat label="Aliados perdidos" value={hero.stats.alliesLost} />
       </div>
 
+      {(alive || hero.status === 'retired') && (
+        <>
+          <h3>Mais</h3>
+          <RenameField key={hero.name} hero={hero} />
+        </>
+      )}
+
       {alive && (
         <>
-          <h3>O prefeito pode…</h3>
           <p class="sub">
             Patrocinar dá ouro do tesouro e aumenta a lealdade.
-            {nextGear <= maxGearTier(world) && ` Equipamento tier ${nextGear} custa ${fmt(gearPrice(nextGear))}.`}
+            {nextGear <= maxGearTier(world) && ` Equipamento tier ${nextGear} custa ${fmt(forgePrice(world, nextGear))} na forja.`}
           </p>
           <div class="row">
             {[10, 25, 50, 100].map((amount) => (
@@ -204,28 +442,61 @@ export function HeroPanel(props: { heroId: number }) {
             ))}
           </div>
           {hero.status === 'town' && (
-            <div class="row">
-              {confirmDismiss ? (
+            <>
+              {retiring ? (
                 <>
-                  <button
-                    class="btn danger"
-                    onClick={() => {
-                      if (command(commands.dismiss, hero.id)) ui.close();
-                      setConfirmDismiss(false);
-                    }}
-                  >
-                    Confirmar dispensa
-                  </button>
-                  <button class="btn" onClick={() => setConfirmDismiss(false)}>
-                    Cancelar
-                  </button>
+                  <p class="sub">Aposentadoria honrosa: {g(hero, 'ele', 'ela')} fica na vila com uma função, e os amigos não se ofendem. Escolha a função:</p>
+                  <RolePicker world={world} hero={hero} current={retireRole} onPick={setRetireRole} />
+                  <div class="row">
+                    <button
+                      class="btn primary"
+                      disabled={!retireRole}
+                      onClick={() => {
+                        if (retireRole) command(commands.retire, hero.id, retireRole);
+                        setRetiring(false);
+                      }}
+                    >
+                      {retireRole ? `Aposentar como ${ROLE_NAMES[retireRole][hero.gender]}` : 'Escolha a função'}
+                    </button>
+                    <button class="btn" onClick={() => setRetiring(false)}>
+                      Cancelar
+                    </button>
+                  </div>
                 </>
               ) : (
-                <button class="btn ghost" onClick={() => setConfirmDismiss(true)}>
-                  Dispensar da vila
-                </button>
+                <div class="row">
+                  <button
+                    class="btn"
+                    onClick={() => {
+                      setRetireRole(defaultRole(hero, world));
+                      setRetiring(true);
+                    }}
+                  >
+                    Aposentar com honras…
+                  </button>
+                  {confirmDismiss ? (
+                    <>
+                      <button
+                        class="btn danger"
+                        onClick={() => {
+                          if (command(commands.dismiss, hero.id)) ui.close();
+                          setConfirmDismiss(false);
+                        }}
+                      >
+                        Confirmar dispensa
+                      </button>
+                      <button class="btn" onClick={() => setConfirmDismiss(false)}>
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <button class="btn ghost" onClick={() => setConfirmDismiss(true)} title="Os amigos não gostam">
+                      Dispensar da vila
+                    </button>
+                  )}
+                </div>
               )}
-            </div>
+            </>
           )}
         </>
       )}

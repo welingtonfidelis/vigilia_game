@@ -1371,3 +1371,125 @@ kbd {
 .panel-body a {
   color: #f2d48a;
 }
+
+/* ── Pessoas (M2) ───────────────────────────────────────────────────── */
+
+.candles {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.22rem;
+  vertical-align: middle;
+  margin-left: 0.2rem;
+}
+
+.candle {
+  position: relative;
+  display: inline-block;
+  width: 0.38rem;
+  height: 0.8rem;
+  border-radius: 0.1rem 0.1rem 0.05rem 0.05rem;
+  background: #4a4236;
+}
+
+.candle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -0.42rem;
+  width: 0.3rem;
+  height: 0.4rem;
+  margin-left: -0.15rem;
+  border-radius: 50% 50% 45% 45%;
+  background: transparent;
+}
+
+.candle.lit {
+  background: #e8dcc0;
+}
+
+.candle.lit::before {
+  background: radial-gradient(circle at 50% 70%, #fff3b0 0%, #ffb340 55%, rgba(255, 140, 40, 0) 75%);
+  box-shadow: 0 0 0.45rem rgba(255, 170, 60, 0.75);
+}
+
+.hud-item.energy {
+  padding-top: 0.3rem;
+}
+
+.injury {
+  background: #251c14;
+  border: 1px solid #6a4a2a;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.7rem 0.45rem;
+  margin: 0.4rem 0;
+}
+
+.injury p {
+  margin: 0.15rem 0 0.3rem;
+}
+
+.bar-heal .fill {
+  background: #7ab35a;
+}
+
+.epitaph {
+  margin: 0.3rem 0 0.4rem;
+  padding: 0.2rem 0 0.2rem 0.7rem;
+  border-left: 2px solid #8a7a5a;
+  font-family: var(--serif);
+  font-style: italic;
+  color: #e4d8bc;
+  line-height: 1.45;
+}
+
+.graves .epitaph {
+  font-size: 0.86rem;
+}
+
+.btn small {
+  color: var(--muted);
+  font-size: 0.78em;
+}
+
+.btn.fav {
+  border-color: #8a6a2a;
+}
+
+.rename input {
+  flex: 1;
+  min-width: 8rem;
+  text-align: left;
+}
+
+.kid {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.chronicle li.warn p {
+  color: #f0c890;
+}
+
+.tab small {
+  color: var(--muted);
+  margin-left: 0.15rem;
+}
+
+/* Telas médias: com materiais de vários atos e as velas, o nome do jogo cede lugar. */
+@media (max-width: 1180px) {
+  .brand {
+    display: none;
+  }
+
+  .hud-bar {
+    gap: 0.4rem 0.75rem;
+  }
+}
+
+/* No celular os materiais ficam só no Cofre: o HUD cabe em duas linhas. */
+@media (max-width: 720px) {
+  .hud-item.mat {
+    display: none;
+  }
+}

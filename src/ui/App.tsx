@@ -5,6 +5,7 @@ import { activeHeroes, formatDate, heroCapacity, isNight, MATERIAL_NAMES } from 
 import type { MaterialId } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
+import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt } from './format.ts';
 import { IconAbyss, IconBone, IconBook, IconCoin, IconMenu, IconMoon, IconMute, IconPause, IconPeople, IconShield, IconSound, IconSun } from './icons.tsx';
 import { objectives } from './objectives.ts';
@@ -77,6 +78,9 @@ function Hud() {
       </span>
       <span class="hud-item" title="Heróis na vila / vagas">
         <IconShield /> {activeHeroes(world).length}/{heroCapacity(world)}
+      </span>
+      <span class="hud-item energy">
+        <EnergyCandles energy={town.mayorEnergy} />
       </span>
       {mats.map((m) => (
         <span key={m} class="hud-item mat" title={MATERIAL_NAMES[m]}>

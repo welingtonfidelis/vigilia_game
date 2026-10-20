@@ -8,10 +8,13 @@ type Filter = 'tudo' | 'mortes' | 'gloria' | 'herois' | 'vila';
 
 const FILTERS: Record<Filter, { label: string; kinds: ChronicleKind[] | null }> = {
   tudo: { label: 'Tudo', kinds: null },
-  mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco'] },
+  mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco', 'lesao', 'cicatriz'] },
   gloria: { label: 'Glória', kinds: ['conquista', 'chefe', 'promocao', 'traco', 'nivel', 'fim'] },
-  herois: { label: 'Heróis', kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'partiuDaVila', 'dispensa', 'aposentadoria'] },
-  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao'] },
+  herois: {
+    label: 'Heróis',
+    kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao'],
+  },
+  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito'] },
 };
 
 const TONE: Partial<Record<ChronicleKind, string>> = {
@@ -27,6 +30,11 @@ const TONE: Partial<Record<ChronicleKind, string>> = {
   fim: 'gold',
   promocao: 'good',
   construcao: 'good',
+  lesao: 'warn',
+  cicatriz: 'grief',
+  casamento: 'good',
+  nascimento: 'good',
+  maioridade: 'gold',
 };
 
 const PAGE = 150;

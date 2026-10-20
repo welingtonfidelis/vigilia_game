@@ -5,6 +5,7 @@ import { CLASSES } from '../data/classes.ts';
 import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
 import { makeEnemy, spawnRoom } from './dungeon.ts';
+import { epitaph, maybeInjure, widow } from './people.ts';
 import { addBond, fleeThreshold, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
 import { chance, int, pick, range, shuffle, weighted } from './rng.ts';
 import type { Combat, Hero, Party, Room, Unit, World } from './types.ts';
@@ -284,6 +285,9 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
   world.metrics.deaths++;
   world.remains.push({ heroId: hero.id, act: party.act, floor: party.floor, gold: hero.gold });
   hero.gold = 0;
+  hero.injury = null;
+  hero.epitaph = epitaph(world, hero);
+  widow(world, hero);
   party.moments.push(`${hero.name} tombou (${by}).`);
   record(
     world,
@@ -311,6 +315,7 @@ function checkFlee(world: World, party: Party, c: Combat): void {
     world.metrics.fled++;
     party.memberIds = party.memberIds.filter((id) => id !== hero.id);
     hero.hp = Math.max(1, u.hp);
+    maybeInjure(world, hero, u.hp / u.maxHp, `do ${floorLabel(party.act, party.floor)}`);
     for (const id of party.memberIds) {
       const mate = world.heroes.find((h) => h.id === id);
       if (mate) addBond(world, hero, mate, -8);

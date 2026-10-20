@@ -43,6 +43,13 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   aposentadoria: 'info',
   corrupcao: 'warn',
   contrato: 'info',
+  lesao: 'warn',
+  cicatriz: 'grief',
+  casamento: 'good',
+  nascimento: 'good',
+  maioridade: 'gold',
+  prefeito: 'info',
+  funcao: 'info',
 };
 
 let bossesSeen = new Set(session.world.acts.flatMap((a, i) => (a.bossDefeated ? [i] : [])));

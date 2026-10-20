@@ -19,8 +19,9 @@ export type TraitId =
   | 'supersticioso'
   | 'sociavel'
   | 'veterano'
-  | 'traumatizado';
-export type BuildingId = 'taverna' | 'estalagem' | 'ferreiro' | 'templo' | 'guilda' | 'campo';
+  | 'traumatizado'
+  | 'marcado';
+export type BuildingId = 'taverna' | 'estalagem' | 'ferreiro' | 'templo' | 'guilda' | 'campo' | 'casa';
 export type MaterialId = 'ossos' | 'ferroNegro' | 'esporos' | 'perolas' | 'brasas' | 'almas';
 export type Doctrine = 'cautelosa' | 'equilibrada' | 'agressiva';
 export type HeroStatus = 'town' | 'expedition' | 'dead' | 'left' | 'retired';
@@ -35,7 +36,37 @@ export type ActivityKind =
   | 'tumulo'
   | 'socializar'
   | 'vagar'
-  | 'aguardar';
+  | 'aguardar'
+  /** Tratando uma lesão (na Casa de cura, ou na estalagem se ela não existir). */
+  | 'tratar';
+
+export type InjuryKind = 'braco' | 'perna' | 'olho' | 'costelas';
+
+export interface Injury {
+  kind: InjuryKind;
+  /** Dias que faltam para sarar (pode ser fracionário). */
+  daysLeft: number;
+  total: number;
+}
+
+/** O que um herói aposentado faz na vila. */
+export type RetiredRole = 'mentor' | 'ferreiro' | 'contador' | 'curandeiro';
+
+export type GiftKind = 'bebida' | 'reliquia' | 'arma';
+
+/** Filho de um casal da vila; vira herói aos 16 anos. */
+export interface Child {
+  id: number;
+  name: string;
+  gender: Gender;
+  parents: [number, number];
+  bornDay: number;
+  /** Traço herdado de um dos pais. */
+  trait: TraitId;
+  classId: ClassId;
+  /** Tier da arma herdada. */
+  heirloom: number;
+}
 
 export interface Activity {
   kind: ActivityKind;
@@ -90,6 +121,18 @@ export interface Hero {
     alliesLost: number;
   };
   death: { tick: number; where: string; by: string } | null;
+  /** Lesão em tratamento (não desce enquanto houver). */
+  injury: Injury | null;
+  /** Cicatrizes permanentes. */
+  scars: InjuryKind[];
+  partnerId: number | null;
+  /** Pais, quando o herói nasceu na vila. */
+  parents: number[];
+  retiredRole: RetiredRole | null;
+  /** Último dia em que conversou com o prefeito (uma conversa por dia). */
+  lastTalkDay: number;
+  /** Escrito na lápide quando morre. */
+  epitaph: string | null;
 }
 
 export interface EnemyUnitDef {
@@ -218,6 +261,10 @@ export interface Town {
   arrivals: { at: number; free: boolean }[];
   contracts: Contract[];
   emptySinceDay: number | null;
+  /** Energia do prefeito para conversar, presentear, consolar e discursar. Recarrega todo dia. */
+  mayorEnergy: number;
+  /** Último dia em que o prefeito discursou (um discurso por dia). */
+  speechDay: number;
 }
 
 export type ChronicleKind =
@@ -244,6 +291,13 @@ export type ChronicleKind =
   | 'contrato'
   | 'corrupcao'
   | 'eco'
+  | 'lesao'
+  | 'cicatriz'
+  | 'casamento'
+  | 'nascimento'
+  | 'maioridade'
+  | 'prefeito'
+  | 'funcao'
   | 'vinculo'
   | 'fim';
 
@@ -272,6 +326,12 @@ export interface Metrics {
   longestIdleStreak: number;
   idleStreak: number;
   goldLooted: number;
+  injuries: number;
+  scars: number;
+  marriages: number;
+  births: number;
+  comeOfAge: number;
+  oldAgeDeaths: number;
   /** Desfecho das expedições por faixa de confiança (0,25 em 0,25). Calibra a escolha de andar. */
   byConfidence: Record<string, { n: number; deaths: number; wipes: number; conquests: number }>;
   daily: DailySample[];
@@ -301,6 +361,7 @@ export interface World {
   bonds: Record<string, number>;
   remains: Remains[];
   chronicle: ChronicleEntry[];
+  children: Child[];
   /** Heróis que fugiram sozinhos neste tick e ainda precisam virar um retorno solo. */
   pendingFugitives: { heroId: number; act: number; floor: number }[];
   metrics: Metrics;

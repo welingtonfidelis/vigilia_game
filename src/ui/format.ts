@@ -2,8 +2,11 @@
 
 import {
   ACTS,
+  BALANCE,
   BUILDINGS,
   CLASSES,
+  ROLE_NAMES,
+  WOUNDS,
   floorLabel,
   heroStats,
   hourOf,
@@ -83,7 +86,7 @@ export function activityText(world: World, hero: Hero): string {
     case 'left':
       return 'Deixou a vila';
     case 'retired':
-      return 'Aposentad' + g(hero, 'o', 'a');
+      return hero.retiredRole ? `${cap(ROLE_NAMES[hero.retiredRole][hero.gender])} ${ROLE_NAMES[hero.retiredRole].where}` : 'Aposentad' + g(hero, 'o', 'a');
     case 'expedition': {
       const party = world.parties.find((p) => p.id === hero.partyId);
       if (!party) return 'No abismo';
@@ -119,6 +122,11 @@ export function activityText(world: World, hero: Hero): string {
       return 'Vagando pela vila';
     case 'aguardar':
       return 'Esperando grupo no quadro';
+    case 'tratar': {
+      const part = hero.injury ? ` ${injuryName(hero.injury.kind)}` : ' uma lesão';
+      const where = world.town.buildings.casa >= 1 ? 'na Casa de cura' : world.town.buildings.estalagem >= 1 ? 'na estalagem' : 'ao relento';
+      return `Tratando${part} ${where}`;
+    }
   }
 }
 
@@ -155,7 +163,19 @@ export function buildingEffects(id: keyof typeof BUILDINGS, level: number): stri
       return [`Grupos ao mesmo tempo: ${1 + l}`, `Tamanho do grupo: até ${l >= 2 ? 5 : 4}`, l === 0 ? 'Sem contratos nem doutrina' : `Contratos no quadro: até ${l}`];
     case 'campo':
       return l === 0 ? ['Sem campo, só se aprende descendo'] : [`Treino: ${4 * l} de ouro por sessão`, `XP por sessão: ${6 * l}% do nível`];
+    case 'casa':
+      return l === 0
+        ? ['Sem Casa de cura, os lesionados se tratam na estalagem', `Chance de virar cicatriz: ${pct(BALANCE.scarChance)}`]
+        : [`Lesões saram ${(1 + 0.5 * l).toLocaleString('pt-BR')}× mais rápido`, `Chance de virar cicatriz: ${pct(Math.max(0.05, BALANCE.scarChance - 0.1 * l))}`];
   }
+}
+
+export const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** "o braço", "as costelas"… */
+export function injuryName(kind: keyof typeof WOUNDS): string {
+  const name = WOUNDS[kind].name;
+  return `${kind === 'costelas' ? 'as' : kind === 'perna' ? 'a' : 'o'} ${name}`;
 }
 
 /** "O Guardião das Urnas" no meio da frase vira "o Guardião das Urnas". */

@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -80,4 +80,22 @@ export const BALANCE = {
   healThreshold: 0.75,
   tauntChance: 0.65,
   critMult: 1.8,
+
+  // Pessoas (M2)
+  mayorEnergy: 4,
+  talkLoyalty: 6,
+  speechMorale: 12,
+  consoleGrief: 35,
+  giftPrice: { bebida: 10, reliquia: 40 },
+  injuryHpFrac: 0.15,
+  injuryChance: 0.45,
+  injuryDays: [8, 25],
+  scarChance: 0.35,
+  marriageBond: 80,
+  marriageChancePerSeason: 0.25,
+  birthChancePerSeason: 0.08,
+  comingOfAgeYears: 16,
+  oldAgeYears: 70,
+  oldAgeDeathChance: 0.25,
+  roleCap: 2,
 } as const;

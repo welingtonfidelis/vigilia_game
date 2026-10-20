@@ -4,7 +4,7 @@ import type { ActivityKind } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
 import { MAX_FRAME_MS, MAX_STEPS_PER_FRAME, Session, type SessionEvent } from '../src/game/session.ts';
 import { clearSave, loadPrefs, loadWorld, readSaveMeta, saveWorld, type KeyValueStore } from '../src/game/storage.ts';
-import { heroDestination, LANDMARKS, door } from '../src/render/layout.ts';
+import { heroDestination, LANDMARKS, door, workSpot } from '../src/render/layout.ts';
 import { activityText, midSentence, phaseText } from '../src/ui/format.ts';
 import { objectives } from '../src/ui/objectives.ts';
 
@@ -130,7 +130,7 @@ describe('planta da vila', () => {
   it('cada atividade leva o herói a um lugar da vila', () => {
     const world = createWorld(2);
     const hero = createHero(world);
-    const kinds: ActivityKind[] = ['chegando', 'descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'vagar', 'aguardar'];
+    const kinds: ActivityKind[] = ['chegando', 'descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'vagar', 'aguardar', 'tratar'];
     for (const kind of kinds) {
       hero.activity = { kind, startedAt: world.tick, endsAt: world.tick + 20 };
       const dest = heroDestination(world, hero, () => null);
@@ -155,6 +155,31 @@ describe('planta da vila', () => {
     expect(heroDestination(world, hero, () => null)).toMatchObject({ place: 'abismo', hide: true });
     hero.status = 'left';
     expect(heroDestination(world, hero, () => null)).toMatchObject({ place: 'portao', hide: true });
+  });
+
+  it('lesionado se trata na Casa de cura; sem ela, na estalagem', () => {
+    const world = createWorld(2);
+    const hero = createHero(world);
+    hero.injury = { kind: 'perna', daysLeft: 9, total: 12 };
+    hero.activity = { kind: 'tratar', startedAt: 0, endsAt: 99 };
+    expect(heroDestination(world, hero, () => null).place).toBe('fogueira');
+    world.town.buildings.estalagem = 1;
+    expect(heroDestination(world, hero, () => null).place).toBe('estalagem');
+    world.town.buildings.casa = 1;
+    expect(heroDestination(world, hero, () => null).place).toBe('casa');
+  });
+
+  it('aposentado com função fica na vila, no posto de trabalho', () => {
+    const world = createWorld(2);
+    const hero = createHero(world);
+    hero.status = 'retired';
+    hero.retiredRole = 'mentor';
+    const dest = heroDestination(world, hero, () => null);
+    expect(dest.hide).toBe(false);
+    expect(dest.place).toBe('campo');
+    expect(dest.point).toEqual(workSpot(world, 'mentor'));
+    hero.retiredRole = null;
+    expect(heroDestination(world, hero, () => null).hide).toBe(true);
   });
 
   it('o enlutado vai até a cova do amigo', () => {

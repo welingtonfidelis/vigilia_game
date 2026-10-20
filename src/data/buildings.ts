@@ -64,6 +64,14 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
     startLevel: 0,
     costs: [{ gold: 160 }, { gold: 420, materials: { ossos: 20 } }, { gold: 1300, materials: { esporos: 25 } }],
   },
+  casa: {
+    id: 'casa',
+    name: 'Casa de cura',
+    gender: 'f',
+    blurb: 'Trata lesões mais rápido e evita cicatrizes.',
+    startLevel: 0,
+    costs: [{ gold: 140 }, { gold: 420, materials: { ossos: 20 } }, { gold: 1300, materials: { esporos: 25 } }],
+  },
 };
 
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];

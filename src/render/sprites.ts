@@ -2,7 +2,7 @@
 // Só posição visual: quem decide para onde vão é o núcleo.
 
 import Phaser from 'phaser';
-import type { ActivityKind, Hero } from '../sim/index.ts';
+import type { ActivityKind, Child, Hero } from '../sim/index.ts';
 import { ICON_KINDS } from './art.ts';
 import { ART_SCALE, CLASS_LOOK, heroSprite, MAYOR_SPRITE } from './assets.ts';
 import { DEPTH, smooth } from './town.ts';
@@ -29,11 +29,11 @@ abstract class Walker {
   private playing = '';
   private left = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, base: string, weapon: string | null) {
+  constructor(scene: Phaser.Scene, x: number, y: number, base: string, weapon: string | null, scale = ART_SCALE) {
     this.base = base;
-    const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE);
-    this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(ART_SCALE) : null;
-    this.body = scene.add.sprite(0, 2, 'dungeon', `${base}_idle_anim_f0`).setOrigin(0.5, 1).setScale(ART_SCALE);
+    const shadow = scene.add.image(0, 0, 'shadow').setScale(scale);
+    this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(scale) : null;
+    this.body = scene.add.sprite(0, 2, 'dungeon', `${base}_idle_anim_f0`).setOrigin(0.5, 1).setScale(scale);
     const parts: Phaser.GameObjects.GameObject[] = [shadow, this.body];
     if (this.weapon) parts.push(this.weapon);
     this.root = scene.add.container(Math.round(x), Math.round(y), parts).setDepth(y);
@@ -103,6 +103,7 @@ export class HeroSprite extends Walker {
   private readonly badgeDot: Phaser.GameObjects.Arc;
   private readonly icon: Phaser.GameObjects.Image;
   private readonly ring: Phaser.GameObjects.Image;
+  private readonly bandage: Phaser.GameObjects.Image;
   private rank = '';
   hidden = false;
   /** Para onde está andando agora (pode estar uma atividade atrás do núcleo). */
@@ -114,7 +115,8 @@ export class HeroSprite extends Walker {
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
     this.root.addAt(this.ring, 0);
     this.icon = scene.add.image(0, HEAD_Y - 10, 'icon-aguardar').setOrigin(0.5, 1).setScale(ART_SCALE).setVisible(false);
-    this.root.add(this.icon);
+    this.bandage = scene.add.image(-5, HEAD_Y + 10, 'bandage').setScale(ART_SCALE).setVisible(false);
+    this.root.add([this.bandage, this.icon]);
     this.label = smooth(scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE)).setOrigin(0.5, 0).setDepth(DEPTH.labels);
     this.badgeDot = scene.add.circle(0, 0, 7, 0xffffff).setStrokeStyle(2, 0x0b0a08);
     this.badgeText = smooth(scene.add.text(0, 0, '', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#0b0a08', fontStyle: 'bold' })).setOrigin(0.5);
@@ -129,7 +131,10 @@ export class HeroSprite extends Walker {
       this.badgeDot.setFillStyle(RANK_COLORS[hero.rank]);
     }
     const grieving = hero.grief > 30;
-    this.label.setColor(hero.vengeful ? '#ff9a7a' : grieving ? '#a8c0ff' : '#f4ecd8');
+    const retired = hero.status === 'retired';
+    this.label.setColor(hero.vengeful ? '#ff9a7a' : grieving ? '#a8c0ff' : retired ? '#c9b48a' : '#f4ecd8');
+    this.bandage.setVisible(hero.injury !== null);
+    this.weapon?.setVisible(!retired);
   }
 
   setActivityIcon(kind: ActivityKind | null): void {
@@ -161,6 +166,42 @@ export class HeroSprite extends Walker {
     this.root.destroy();
     this.label.destroy();
     this.badge.destroy();
+  }
+}
+
+/** Criança da vila: metade do tamanho, brinca na praça de dia (só enfeite). */
+export class ChildSprite extends Walker {
+  readonly id: number;
+  readonly label: Phaser.GameObjects.Text;
+  readonly parents: [number, number];
+  hidden = false;
+
+  constructor(scene: Phaser.Scene, child: Child, at: Point) {
+    super(scene, at.x, at.y, heroSprite(child.classId, child.gender), null, ART_SCALE / 2);
+    this.id = child.id;
+    this.parents = child.parents;
+    this.label = smooth(scene.add.text(at.x, at.y + 3, child.name, { ...LABEL_STYLE, fontSize: '11px', color: '#d8d0c0' }))
+      .setOrigin(0.5, 0)
+      .setDepth(DEPTH.labels);
+  }
+
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden;
+    this.root.setVisible(!hidden);
+    this.label.setVisible(!hidden);
+  }
+
+  placeLabels(labelScale: number): void {
+    this.label.setPosition(this.root.x, this.root.y + 3).setScale(labelScale * 0.9);
+  }
+
+  hits(x: number, y: number): boolean {
+    return !this.hidden && Math.abs(x - this.root.x) < 12 && y > this.root.y - 26 && y < this.root.y + 14;
+  }
+
+  destroy(): void {
+    this.root.destroy();
+    this.label.destroy();
   }
 }
 

@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M1, a fatia vertical jogável.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless do M0. Dá para jogar o Ato I do zero até o Guardião das Urnas.
+**Estado atual: M2, Pessoas.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar o Ato I do zero até o Guardião das Urnas, com heróis que se ferem, casam, têm filhos, se aposentam com uma função na vila e ganham epitáfio quando morrem.
 
 ## Jogar
 
@@ -22,7 +22,7 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 59 testes (núcleo, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm test                                        # 71 testes (núcleo, pessoas, sessão, save, planta e tiles da vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
@@ -60,6 +60,7 @@ src/sim/    regras: tudo determinístico, estado 100% JSON
   town.ts        necessidades e IA de utilidade (descansar, beber, rezar, comprar, treinar, túmulo, socializar, quadro)
   party.ts       formação autônoma de grupos e escolha do andar (confiança × doutrina × traços × corrupção)
   expedition.ts  descida, salas, saque, conquista, retorno, luto, contratos
+  people.ts      lesões e cicatrizes, casamentos e filhos, aposentados com função, velhice e epitáfios
   combat.ts      combate em tempo real: papéis, ânimo, fuga, retirada, vingança, mecânicas de chefe
   dungeon.ts     andares (mapa persistente até conquistar), inimigos, afixos, corrupção, estimativa de força
   economy.ts     tesouro, preços, efeitos dos prédios, população e impostos
@@ -81,15 +82,16 @@ A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da 
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 1,1 | 0,6 h | 0,8–1,5 | 100% |
-| Minas Inundadas | 3,4 | 1,8 h | 1,7–5,3 | 100% |
-| Jardim de Fungos | 5,4 | 2,9 h | 2,6–7,5 | 100% |
-| Cidade Afogada | 11,0 | 5,9 h | 6,4–19,4 | 100% |
-| Forja Abissal | 18,5 | 9,9 h | 12,3–27,3 | 100% |
-| Coração do Abismo | 20,4 | 10,9 h | 17,0–29,2 | 50% |
+| Catacumbas | 0,9 | 0,5 h | 0,6–1,6 | 100% |
+| Minas Inundadas | 3,4 | 1,8 h | 2,0–5,7 | 100% |
+| Jardim de Fungos | 5,5 | 2,9 h | 3,9–8,3 | 100% |
+| Cidade Afogada | 9,6 | 5,1 h | 6,4–13,9 | 100% |
+| Forja Abissal | 17,4 | 9,3 h | 11,3–29,9 | 100% |
+| Coração do Abismo | 17,4 | 9,3 h | 13,1–20,6 | 50% |
 
-- **Mortalidade:** 3,4 mortes/ano com elenco de ~18; carreira típica de 4–6 anos de jogo.
-- **Expedições:** ~97 por ano, com zero impasses de combate e no máximo 1 dia seguido sem expedição.
+- **Mortalidade:** 2,8 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 20 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~56 lesões, ~5 cicatrizes, ~20 casamentos, ~17 filhos e ~8 deles chegando à maioridade como heróis.
+- **Expedições:** ~94 por ano, com zero impasses de combate e no máximo 1 dia seguido sem expedição.
 - **Ouro:** o tesouro sobe até ~15–17 mil no meio do jogo e volta a cair com patrocínios e contratos. O ouro dos heróis acumula no fim (economizando para os tiers 11–12). Faltam sumidouros de fim de jogo, que entram no M3 (decretos, defesa, festivais).
 - **Desempenho:** ~0,5 s para simular uma campanha de 30 anos.
 
@@ -133,6 +135,25 @@ As duas licenças são CC0 (domínio público), com uso livre inclusive comercia
 - [x] Pixel art CC0 (Tiny Town + DungeonTileset II): zoom em passos de pixel inteiro, cena dessaturada e escurecida para a fantasia sombria
 - [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
 
-## Próximo: M2 (pessoas)
+## O que o M2 entrega
 
-Conversas, presentes e discursos do prefeito (energia diária), lesões, memorial com epitáfio, filhos e aposentados com função. Ver a seção 9 do [GDD.md](GDD.md).
+Especificação na seção 9.1 do [GDD.md](GDD.md).
+
+- [x] **Prefeito com energia diária (4):** conversar, presentear (bebida, relíquia ou arma), consolar quem está de luto, discursar na praça, renomear e aposentar com honras
+- [x] **Lesões** (braço, perna, olho, costelas) para quem sai de um combate por um fio. O grupo volta carregando o ferido, que se trata por dias. Algumas viram **cicatrizes** permanentes; com 2 delas o herói fica *Marcado*. A **Casa de cura** (7º prédio) acelera a recuperação e evita cicatrizes
+- [x] **Casamentos** entre heróis muito ligados, **filhos** que crescem na vila e viram heróis aos 16 anos com traço, classe e arma herdados; a morte de um cônjuge pesa no outro
+- [x] **Aposentados com função** (mentor, ferreiro, contador de histórias, curandeiro) que ficam na vila e melhoram o prédio onde trabalham, e que podem morrer de velhice
+- [x] **Epitáfios** gerados a partir da vida de cada herói (feito, como caiu, traço, quem fica)
+- [x] Save v1 → v2 migra sozinho (heróis mortos antes do M2 ganham epitáfio)
+- [x] Sons novos: lesão, casamento, nascimento, discurso e ações do prefeito
+- [x] **Interface:**
+  - velas de energia do prefeito no HUD;
+  - na ficha do herói, conversar, presentear, consolar, renomear e aposentar com função (a sugerida vem marcada);
+  - lesão com barra de recuperação e bandagem no mapa;
+  - família e crianças brincando na praça; aposentados no posto de trabalho;
+  - epitáfio ao clicar na lápide;
+  - discurso na fogueira da praça.
+
+## Próximo: M3 (vila viva)
+
+Lotes e expansão, cidadãos, impostos e decretos, incursões noturnas e eventos sazonais. Ver a seção 9 do [GDD.md](GDD.md).

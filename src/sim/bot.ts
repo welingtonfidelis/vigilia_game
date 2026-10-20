@@ -4,7 +4,7 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { blowHorn, build, dismiss, postContract, sponsor, suggestedReward } from './commands.ts';
+import { blowHorn, build, comfort, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
 import { canAfford, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
 import { BALANCE as B } from './config.ts';
 import { activeHeroes, townHeroes } from './town.ts';
@@ -16,24 +16,28 @@ const BUILD_ORDER: [BuildingId, number][] = [
   ['ferreiro', 1],
   ['estalagem', 1],
   ['templo', 1],
+  ['casa', 1],
   ['campo', 1],
   ['ferreiro', 2],
   ['guilda', 2],
   ['estalagem', 2],
   ['taverna', 2],
   ['templo', 2],
+  ['casa', 2],
   ['campo', 2],
   ['ferreiro', 3],
   ['guilda', 3],
   ['estalagem', 3],
   ['taverna', 3],
   ['templo', 3],
+  ['casa', 3],
   ['campo', 3],
 ];
 
 export function autoMayor(world: World): void {
   const town = world.town;
   if (hourOf(world.tick) === 9 && dayOf(world.tick) % 10 === 0) makeRoom(world);
+  if (hourOf(world.tick) === 10) tendPeople(world);
   const roster = activeHeroes(world).length + town.arrivals.length;
   const wanted = Math.min(heroCapacity(world), 4 * maxParties(world) + 2);
   if (roster < wanted) blowHorn(world);
@@ -93,5 +97,15 @@ function makeRoom(world: World): void {
     const s = heroStrength(world, h);
     return s.ehp * s.dps;
   };
-  dismiss(world, capped.reduce((lo, h) => (power(h) < power(lo) ? h : lo)).id);
+  retire(world, capped.reduce((lo, h) => (power(h) < power(lo) ? h : lo)).id);
+}
+
+/** Um prefeito atento: consola quem chora, discursa para a vila e conversa com quem anda desconfiado. */
+function tendPeople(world: World): void {
+  const heroes = townHeroes(world);
+  const grieving = heroes.filter((h) => h.grief >= 40).sort((a, b) => b.grief - a.grief)[0];
+  if (grieving) comfort(world, grieving.id);
+  if (heroes.length >= 4) speech(world);
+  const doubtful = heroes.filter((h) => h.loyalty < 60).sort((a, b) => a.loyalty - b.loyalty);
+  for (const h of doubtful) if (world.town.mayorEnergy > 0) talk(world, h.id);
 }

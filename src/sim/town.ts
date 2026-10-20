@@ -5,7 +5,6 @@ import { dayOf, isNight } from './calendar.ts';
 import { BALANCE as B, DAYS_PER_YEAR, TICKS_PER_HOUR } from './config.ts';
 import {
   drinkPrice,
-  gearPrice,
   heroCapacity,
   level,
   maxGearTier,
@@ -27,6 +26,7 @@ import {
   xpToNext,
   maxLevel,
 } from './hero.ts';
+import { forgePrice, retireHero, roleCount } from './people.ts';
 import { pick, range } from './rng.ts';
 import type { ActivityKind, Hero, World } from './types.ts';
 
@@ -41,6 +41,7 @@ const DURATION_HOURS: Record<ActivityKind, number> = {
   socializar: 1,
   vagar: 1,
   aguardar: 2,
+  tratar: 6,
 };
 
 export const townHeroes = (world: World): Hero[] => world.heroes.filter((h) => h.status === 'town');
@@ -100,8 +101,10 @@ export function dailyTown(world: World): void {
       leaveTown(world, hero);
       continue;
     }
-    if (dayOf(world.tick) % DAYS_PER_YEAR === 0 && ageYears(world, hero) >= B.retireAge) {
-      if (range(world.rng, 0, 1) < 0.3) retire(world, hero);
+    if (dayOf(world.tick) % DAYS_PER_YEAR === 0) {
+      const age = ageYears(world, hero);
+      if (age >= B.retireAge && range(world.rng, 0, 1) < 0.3) retireHero(world, hero, `aos ${age} anos`);
+      else if (hero.scars.length >= 3 && range(world.rng, 0, 1) < 0.5) retireHero(world, hero, 'por causa das cicatrizes');
     }
   }
 }
@@ -113,19 +116,6 @@ function leaveTown(world: World, hero: Hero): void {
   world.metrics.left++;
   const why = hero.loyalty < 15 ? 'sem confiança no prefeito' : 'sem ânimo para continuar';
   record(world, 'partiuDaVila', [hero.id], `${heroLabel(hero)} juntou suas coisas e deixou a vila, ${why}.`);
-}
-
-function retire(world: World, hero: Hero): void {
-  hero.status = 'retired';
-  hero.activity = null;
-  hero.lfgSince = null;
-  world.metrics.retired++;
-  record(
-    world,
-    'aposentadoria',
-    [hero.id],
-    `${heroLabel(hero)} pendurou as armas aos ${ageYears(world, hero)} anos, depois de ${hero.stats.expeditions} expedições.`,
-  );
 }
 
 // ── IA de utilidade ───────────────────────────────────────────────────────
@@ -144,7 +134,7 @@ function affordableUpgrade(world: World, hero: Hero): 'weapon' | 'armor' | null 
   const slot = hero.gear.weapon <= hero.gear.armor ? 'weapon' : 'armor';
   const tier = hero.gear[slot] + 1;
   if (tier > cap) return null;
-  return hero.gold >= gearPrice(tier) ? slot : null;
+  return hero.gold >= forgePrice(world, tier) ? slot : null;
 }
 
 function idlePartners(world: World, hero: Hero): Hero[] {
@@ -161,6 +151,8 @@ export function scoreActivities(world: World, hero: Hero): [ActivityKind, number
   const scores: [ActivityKind, number][] = [];
 
   scores.push(['descansar', (1 - e) * 1.2 + (1 - hpFrac) * 1.6 + (night ? 0.9 : 0)]);
+  // Lesionado não desce nem treina: trata a lesão (na Casa de cura, se houver).
+  if (hero.injury) scores.push(['tratar', 1.5]);
   if (level(world, 'taverna') >= 1 && hero.gold >= drinkPrice(world)) {
     const mult = hasTrait(hero, 'beberrao') ? 1.4 : 1;
     scores.push(['beber', (1 - hero.needs.fun / 100) * mult + (hero.morale < 40 ? 0.3 : 0)]);
@@ -170,13 +162,13 @@ export function scoreActivities(world: World, hero: Hero): [ActivityKind, number
     scores.push(['rezar', (1 - hero.needs.faith / 100) * 0.8 * mult + hero.grief / 200]);
   }
   if (affordableUpgrade(world, hero)) scores.push(['comprar', 1.1]);
-  if (level(world, 'campo') >= 1 && hero.gold >= trainPrice(world) && hero.level < maxLevel(hero)) {
+  if (!hero.injury && level(world, 'campo') >= 1 && hero.gold >= trainPrice(world) && hero.level < maxLevel(hero)) {
     scores.push(['treinar', 0.35]);
   }
   if (hero.grief > 10 && hero.griefFor !== null) scores.push(['tumulo', (hero.grief / 100) * 1.4]);
   if (idlePartners(world, hero).length > 0) scores.push(['socializar', hasTrait(hero, 'sociavel') ? 0.6 : 0.3]);
   scores.push(['vagar', 0.15]);
-  if (hpFrac >= 0.75 && e >= 0.5 && hero.morale >= 35) {
+  if (!hero.injury && hpFrac >= 0.75 && e >= 0.5 && hero.morale >= 35) {
     let lfg = (0.6 + 0.5 * Math.min(hpFrac, e)) * traitMult(hero, 'lfg');
     if (hero.gold < 20) lfg += 0.3;
     if (hero.lfgSince !== null) lfg += 0.3;
@@ -230,7 +222,7 @@ function finishActivity(world: World, hero: Hero): void {
       hero.gold -= price;
       town.treasury += price * 0.7;
       hero.needs.fun = clamp(hero.needs.fun + 35);
-      hero.morale = clamp(hero.morale + (hasTrait(hero, 'beberrao') ? 20 : 10));
+      hero.morale = clamp(hero.morale + (hasTrait(hero, 'beberrao') ? 20 : 10) + 5 * roleCount(world, 'contador'));
       for (const other of townHeroes(world)) {
         if (other.id !== hero.id && other.activity?.kind === 'beber') addBond(world, hero, other, 1 + 3 * temperament(hero, other));
       }
@@ -248,7 +240,7 @@ function finishActivity(world: World, hero: Hero): void {
     case 'comprar': {
       const slot = affordableUpgrade(world, hero);
       if (!slot) break;
-      const price = gearPrice(hero.gear[slot] + 1);
+      const price = forgePrice(world, hero.gear[slot] + 1);
       hero.gold -= price;
       hero.gear[slot]++;
       town.treasury += price * B.gearMargin;
@@ -259,7 +251,7 @@ function finishActivity(world: World, hero: Hero): void {
       const price = trainPrice(world);
       hero.gold -= price;
       town.treasury += price * 0.5;
-      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo'));
+      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo') * (1 + 0.5 * roleCount(world, 'mentor')));
       hero.needs.energy = clamp(hero.needs.energy - 10);
       break;
     }
@@ -281,6 +273,14 @@ function finishActivity(world: World, hero: Hero): void {
       const other = world.heroes.find((h) => h.id === act.targetId);
       if (other && other.status === 'town') addBond(world, hero, other, 1 + 4 * temperament(hero, other) + range(world.rng, -2, 2));
       hero.needs.fun = clamp(hero.needs.fun + 10);
+      break;
+    }
+    case 'tratar': {
+      if (hero.injury) hero.injury.daysLeft -= 0.25 * (1 + level(world, 'casa'));
+      const fee = Math.min(hero.gold, level(world, 'casa') > 0 ? 2 : 0);
+      hero.gold -= fee;
+      town.treasury += fee;
+      hero.morale = clamp(hero.morale + 3);
       break;
     }
     case 'chegando':

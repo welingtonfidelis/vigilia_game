@@ -6,7 +6,7 @@ import type { ActivityKind } from '../sim/index.ts';
 
 type Palette = Record<string, readonly [number, number?]>;
 
-export const ICON_KINDS: ActivityKind[] = ['descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'aguardar'];
+export const ICON_KINDS: ActivityKind[] = ['descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'aguardar', 'tratar'];
 
 /** Desenha um mapa de caracteres como textura (um caractere = um pixel da arte). */
 function pixels(scene: Phaser.Scene, key: string, rows: readonly string[], palette: Palette): void {
@@ -47,6 +47,7 @@ const GLYPHS: Record<string, readonly string[]> = {
   tumulo: ['...tt...', '...tt...', '..tttt..', '.tttttt.', '.tttttt.', '..tttt..'],
   socializar: ['........', '........', 'kk.kk.kk', 'kk.kk.kk', '........', '........'],
   aguardar: ['.prrrr..', '.prrrrr.', '.prrrr..', '.p......', '.p......', '.p......'],
+  tratar: ['...rr...', '...rr...', '.rrrrrr.', '.rrrrrr.', '...rr...', '...rr...'],
 };
 
 const GLYPH_PALETTE: Palette = {
@@ -116,6 +117,7 @@ export function makeTextures(scene: Phaser.Scene): void {
   pixels(scene, 'fire1', ['.....y....', '....oy....', '.y.oyo....', '.oyoyyo...', '.ooyyyoo..', '.ooyyyyyo.', '.orryyyro.', '..rrrrrr..'], fire);
   pixels(scene, 'fire2', ['...y......', '...oy..y..', '..oyo.oy..', '..oyyoyyo.', '.ooyyyyoo.', '.ooyyyyyo.', '.orryyyro.', '..rrrrrr..'], fire);
   pixels(scene, 'spark', ['xx', 'xx'], { x: [0xffffff] });
+  pixels(scene, 'bandage', ['.wwww.', 'wwrwww', 'wwwwww', '.wwww.'], { w: [0xf2ece0], r: [0xb83a2a] });
   for (const kind of ICON_KINDS) {
     const glyph = GLYPHS[kind]!;
     const rows = BUBBLE.map((row, y) => {

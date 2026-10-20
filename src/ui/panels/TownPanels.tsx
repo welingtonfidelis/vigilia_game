@@ -24,6 +24,7 @@ import {
 import type { ActivityKind, BuildingId, Doctrine, MaterialId, World } from '../../sim/index.ts';
 import { HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { buildingEffects, DOCTRINES, fmt, pct, plural } from '../format.ts';
+import { ROLE_PLACE } from '../../render/layout.ts';
 
 const BUILDING_ACTIVITY: Partial<Record<BuildingId, ActivityKind>> = {
   taverna: 'beber',
@@ -31,6 +32,7 @@ const BUILDING_ACTIVITY: Partial<Record<BuildingId, ActivityKind>> = {
   ferreiro: 'comprar',
   templo: 'rezar',
   campo: 'treinar',
+  casa: 'tratar',
 };
 
 function HeroList(props: { ids: number[]; empty: string }) {
@@ -74,7 +76,8 @@ export function BuildingPanel(props: { id: BuildingId }) {
   const lvl = buildingLevel(world, id);
   const cost = nextLevelCost(world, id);
   const activity = BUILDING_ACTIVITY[id];
-  const inside = activity ? townHeroes(world).filter((h) => h.activity?.kind === activity).map((h) => h.id) : [];
+  const workers = world.heroes.filter((h) => h.status === 'retired' && h.retiredRole && ROLE_PLACE[h.retiredRole] === id).map((h) => h.id);
+  const inside = [...(activity ? townHeroes(world).filter((h) => h.activity?.kind === activity).map((h) => h.id) : []), ...workers];
   const affordable = cost ? canAfford(world, cost) : false;
   return (
     <PanelShell title={def.name} subtitle={lvl === 0 ? 'Em ruínas' : `Nível ${lvl} de ${MAX_BUILDING_LEVEL}`}>

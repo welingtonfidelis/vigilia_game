@@ -86,7 +86,6 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
     PLAZA_TILES,
     { tx: CEMETERY_TILES.tx - 1, ty: CEMETERY_TILES.ty - 1, tw: CEMETERY_TILES.tw + 2, th: CEMETERY_TILES.th + 3 },
     { tx: 1, ty: 10, tw: 5, th: 7 }, // torre do berrante
-    { tx: 17, ty: 21, tw: 5, th: 3 }, // fogueira
     { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
     { tx: 21, ty: 29, tw: 8, th: 3 }, // portão
   ];
@@ -380,6 +379,6 @@ export function buildProps(scene: Phaser.Scene): void {
   townTile(scene, T.well, 21 * TILE, 16 * TILE);
   townTile(scene, T.hay, 22 * TILE, 21 * TILE);
   townTile(scene, T.sack, 14 * TILE, 15 * TILE);
-  townTile(scene, T.bucket, 21 * TILE, 20 * TILE);
+  townTile(scene, T.bucket, 22 * TILE, 16 * TILE);
   townTile(scene, T.sign, 26 * TILE, 8 * TILE);
 }

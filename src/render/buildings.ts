@@ -9,13 +9,16 @@ import { TILE } from './layout.ts';
 
 type Row = number[];
 interface Prop {
-  frame: number;
+  /** Índice do Tiny Town ou nome de quadro do 0x72 (frascos, caixotes). */
+  frame: number | string;
   col: number;
   row: number;
   tint?: number;
 }
 interface Design {
   rows: Row[];
+  /** Cor do telhado (tint), para distinguir prédios com as mesmas peças. */
+  roofTint?: number;
   props?: Prop[];
   /** Brasa da forja: posição em tiles relativa ao lote. */
   forge?: { col: number; row: number };
@@ -101,6 +104,30 @@ const DESIGNS: Record<BuildingId, Design[]> = {
     { rows: [...roof(T.roofRed, 5, [2]), wall(T.stone, 'lwdwr')], props: [{ frame: T.sign, col: 6, row: 5 }] },
     { rows: [...roof(T.roofRed, 7, [2, 4]), wall(T.stone, 'lwwwwwr'), wall(T.stone, 'lwwdwwr')] },
   ],
+  casa: [
+    { rows: [[T.wood.l, N, T.wood.gap, N, T.wood.r]], props: [{ frame: T.sack, col: 1, row: 4 }, { frame: T.log, col: 5, row: 4 }] },
+    {
+      rows: [...roof(T.roofGray, 3), wall(T.wood, 'ldr')],
+      roofTint: 0xa8d0b0,
+      props: [{ frame: 'flask_big_red', col: 5, row: 5 }, { frame: T.sprout, col: 1, row: 5 }],
+    },
+    {
+      rows: [...roof(T.roofGray, 5, [2]), wall(T.wood, 'lwdwr')],
+      roofTint: 0xa8d0b0,
+      props: [{ frame: 'flask_big_red', col: 6, row: 5 }, { frame: 'flask_big_green', col: 6, row: 4 }, { frame: T.sprout, col: 0, row: 5 }],
+    },
+    {
+      rows: [...roof(T.roofGray, 5, [1, 3]), wall(T.wood, 'lwwwr'), wall(T.wood, 'lwdwr')],
+      roofTint: 0xa8d0b0,
+      props: [
+        { frame: 'flask_big_red', col: 6, row: 5 },
+        { frame: 'flask_big_green', col: 6, row: 4 },
+        { frame: T.well, col: 0, row: 5 },
+        { frame: T.sprout, col: 0, row: 4 },
+        { frame: T.mushrooms, col: 6, row: 3 },
+      ],
+    },
+  ],
   campo: [
     {
       rows: [],
@@ -144,6 +171,7 @@ function fence(lot: TileRect): Prop[] {
 }
 
 const RUIN_TINT = 0x8a7c70;
+const ROOF_TILES: ReadonlySet<number> = new Set([...Object.values(T.roofGray), ...Object.values(T.roofRed)]);
 
 /**
  * Desenha o prédio no contêiner (origem no canto de cima do lote) e acende janelas
@@ -161,12 +189,15 @@ export function drawBuilding(
   lights.clear();
   const design = DESIGNS[id][Math.max(0, Math.min(3, level))]!;
   const ruin = level <= 0;
-  const place = (frame: number, col: number, row: number, tint?: number) => {
-    const img = scene.add.image(col * TILE, (row + 1) * TILE, 'town', frame).setOrigin(0, 1).setScale(ART_SCALE);
+  const place = (frame: number | string, col: number, row: number, tint?: number) => {
+    const img =
+      typeof frame === 'string'
+        ? scene.add.image(col * TILE + TILE / 2, (row + 1) * TILE, 'dungeon', frame).setOrigin(0.5, 1).setScale(ART_SCALE)
+        : scene.add.image(col * TILE, (row + 1) * TILE, 'town', frame).setOrigin(0, 1).setScale(ART_SCALE);
     if (tint !== undefined) img.setTint(tint);
     else if (ruin) img.setTint(RUIN_TINT);
     container.add(img);
-    if (!ruin && WINDOW_TILES.has(frame)) {
+    if (!ruin && typeof frame === 'number' && WINDOW_TILES.has(frame)) {
       const x = col * TILE;
       const y = row * TILE;
       lights.fillStyle(0xffc46b, 0.85);
@@ -178,7 +209,9 @@ export function drawBuilding(
   const width = Math.max(0, ...design.rows.map((r) => r.length));
   const left = Math.floor((lot.tw - width) / 2);
   const top = lot.th - design.rows.length;
-  design.rows.forEach((row, r) => row.forEach((frame, c) => frame >= 0 && place(frame, left + c, top + r)));
+  design.rows.forEach((row, r) =>
+    row.forEach((frame, c) => frame >= 0 && place(frame, left + c, top + r, design.roofTint !== undefined && ROOF_TILES.has(frame) ? design.roofTint : undefined)),
+  );
   if (id === 'campo' && level > 0) for (const p of fence(lot)) place(p.frame, p.col, p.row);
   for (const p of design.props ?? []) place(p.frame, p.col, p.row, p.tint);
   if (design.forge && !ruin) {

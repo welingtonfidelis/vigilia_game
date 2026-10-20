@@ -6,6 +6,8 @@ import {
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
+  childAge,
+  commands,
   dayOf,
   hourOf,
   TICKS_PER_HOUR,
@@ -29,11 +31,12 @@ import {
   LOTS,
   slotOffset,
   TILE,
+  wanderPoint,
   WORLD_H,
   WORLD_W,
   type Point,
 } from './layout.ts';
-import { HeroSprite, Mayor } from './sprites.ts';
+import { ChildSprite, HeroSprite, Mayor } from './sprites.ts';
 import {
   buildAbyss,
   buildBoard,
@@ -61,6 +64,9 @@ const LINGER_S = 0.8;
 /** Teto para uma caminhada travada não prender o herói. */
 const MAX_COMMIT_S = 8;
 const MAYOR_SPEED = 250;
+const CHILD_SPEED = 80;
+/** Quem está lesionado anda mais devagar (manca). */
+const INJURED_PACE = 0.6;
 const INTERACT_RADIUS = 78;
 /**
  * Zooms da câmera em passos de 0,5: como cada pixel da arte vale 2 unidades do mundo,
@@ -103,6 +109,7 @@ export class VillageScene extends Phaser.Scene {
   private readonly session: Session;
   private readonly ui: UiStore;
   private heroes = new Map<number, HeroSprite>();
+  private kids = new Map<number, ChildSprite>();
   private buildings = new Map<BuildingId, BuildingView>();
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
@@ -341,6 +348,17 @@ export class VillageScene extends Phaser.Scene {
         open: open({ kind: 'dungeon' }),
       },
       {
+        id: 'discurso',
+        point: { x: LANDMARKS.fogueira.x, y: LANDMARKS.fogueira.y + 30 },
+        hit: { x: LANDMARKS.fogueira.x - 40, y: LANDMARKS.fogueira.y - 36, w: 80, h: 50 },
+        label: (world) => {
+          if (world.town.speechDay === dayOf(world.tick)) return 'Já discursou hoje';
+          if (world.town.mayorEnergy < 2) return 'Discursar (falta energia)';
+          return 'Discursar na praça (2 de energia)';
+        },
+        open: () => this.speech(),
+      },
+      {
         id: 'cemiterio',
         point: { x: cemiterio.x, y: cemiterio.y + 40 },
         hit: { x: cem.tx * TILE, y: cem.ty * TILE, w: cem.tw * TILE, h: (cem.th + 1) * TILE },
@@ -364,6 +382,16 @@ export class VillageScene extends Phaser.Scene {
 
   private interact(id: string): void {
     this.interactables.find((i) => i.id === id)?.open();
+  }
+
+  private speech(): void {
+    const result = this.session.run(commands.speech);
+    if (!result.ok) {
+      this.ui.toast(result.reason, 'warn');
+      return;
+    }
+    this.floatText(this.mayor.x, this.mayor.y - 60, 'Discurso!', '#ffd98a');
+    this.sparkle(this.mayor.x, this.mayor.y - 20);
   }
 
   // ── Prefeito ────────────────────────────────────────────────────────────
@@ -433,6 +461,17 @@ export class VillageScene extends Phaser.Scene {
       this.ui.open({ kind: 'hero', heroId: hero.id });
       return;
     }
+    const child = [...this.kids.values()].find((c) => c.hits(p.worldX, p.worldY));
+    if (child) {
+      const parent = child.parents.find((id) => this.world.heroes.some((h) => h.id === id));
+      if (parent !== undefined) this.ui.open({ kind: 'hero', heroId: parent });
+      return;
+    }
+    const grave = this.graveAt(p.worldX, p.worldY);
+    if (grave !== null) {
+      this.ui.open({ kind: 'hero', heroId: grave });
+      return;
+    }
     const it = this.interactableAt(p.worldX, p.worldY);
     if (it) {
       const dist = Math.hypot(it.point.x - this.mayor.x, it.point.y - this.mayor.y);
@@ -449,8 +488,16 @@ export class VillageScene extends Phaser.Scene {
     this.marker(this.moveTarget);
   }
 
+  /** Lápide sob o ponteiro: abre a ficha do morto, com o epitáfio. */
+  private graveAt(x: number, y: number): number | null {
+    for (const [id, g] of this.graves) {
+      if (Math.abs(x - g.stone.x) < 14 && y > g.stone.y - 28 && y < g.stone.y + 8) return id;
+    }
+    return null;
+  }
+
   private onHover(p: Phaser.Input.Pointer): void {
-    const over = this.heroAt(p.worldX, p.worldY) || this.interactableAt(p.worldX, p.worldY);
+    const over = this.heroAt(p.worldX, p.worldY) || this.graveAt(p.worldX, p.worldY) !== null || this.interactableAt(p.worldX, p.worldY);
     const cursor = over ? 'pointer' : 'default';
     if (cursor !== this.hoverCursor) {
       this.hoverCursor = cursor;
@@ -465,6 +512,7 @@ export class VillageScene extends Phaser.Scene {
     for (const id of BUILDING_IDS) this.syncBuilding(id, !initial);
     this.syncGraves(initial);
     this.syncHeroes(initial, dt);
+    this.syncChildren(dt);
 
     const night = nightFactor(world.tick);
     // De dia fica uma névoa fria; à noite escurece de vez.
@@ -507,7 +555,7 @@ export class VillageScene extends Phaser.Scene {
     for (const hero of world.heroes) {
       if (hero.status === 'dead') continue;
       const sprite = this.heroes.get(hero.id);
-      const leaving = hero.status === 'left' || hero.status === 'retired';
+      const leaving = hero.status === 'left' || (hero.status === 'retired' && !hero.retiredRole);
       if (leaving && (!sprite || sprite.hidden)) continue;
       const dest = heroDestination(world, hero, (id) => graveIndex.get(id) ?? null);
       plans.push({ hero, key: dest.key, point: dest.point, hide: dest.hide, ...(dest.followHeroId !== undefined ? { follow: dest.followHeroId } : {}) });
@@ -554,7 +602,7 @@ export class VillageScene extends Phaser.Scene {
       }
       const commit = sprite.commit!;
       sprite.sync(hero);
-      const arrived = sprite.hidden ? true : sprite.walkTo(commit.point, step);
+      const arrived = sprite.hidden ? true : sprite.walkTo(commit.point, hero.injury ? step * INJURED_PACE : step);
       if (arrived && commit.arrivedAt === null) commit.arrivedAt = this.walkClock;
       if (arrived && commit.hide && !sprite.hidden) sprite.setHidden(true);
       sprite.animate(this.session.paused ? 0 : this.session.speed);
@@ -568,6 +616,34 @@ export class VillageScene extends Phaser.Scene {
       if (seen.has(id)) continue;
       sprite.destroy();
       this.heroes.delete(id);
+    }
+  }
+
+  /** Crianças brincam na praça de dia e somem em casa à noite (só enfeite). */
+  private syncChildren(dt: number): void {
+    const world = this.world;
+    const hour = hourOf(world.tick);
+    const day = hour >= 7 && hour < 19;
+    const step = this.session.paused ? 0 : CHILD_SPEED * this.session.speed * dt;
+    const seen = new Set<number>();
+    for (const child of world.children) {
+      if (childAge(world, child) < 2) continue;
+      seen.add(child.id);
+      const target = wanderPoint(child.id + 50_000, Math.floor(world.tick / (2 * TICKS_PER_HOUR)));
+      let sprite = this.kids.get(child.id);
+      if (!sprite) {
+        sprite = new ChildSprite(this, child, target);
+        this.kids.set(child.id, sprite);
+      }
+      sprite.setHidden(!day);
+      if (!sprite.hidden) sprite.walkTo(target, step);
+      sprite.animate(this.session.paused ? 0 : this.session.speed);
+      sprite.placeLabels(this.labelScale);
+    }
+    for (const [id, sprite] of this.kids) {
+      if (seen.has(id)) continue;
+      sprite.destroy();
+      this.kids.delete(id);
     }
   }
 
@@ -595,6 +671,8 @@ export class VillageScene extends Phaser.Scene {
     if (event.type === 'reset') {
       for (const s of this.heroes.values()) s.destroy();
       this.heroes.clear();
+      for (const c of this.kids.values()) c.destroy();
+      this.kids.clear();
       for (const g of this.graves.values()) {
         g.stone.destroy();
         g.name.destroy();

@@ -89,6 +89,14 @@ console.log('\n── Mortalidade ──');
 console.log(`  mortes por ano: ${fmt(sum((w) => w.metrics.deaths) / all.length / years)} · mortes por expedição: ${fmt(sum((w) => w.metrics.deaths) / Math.max(1, exps), 2)}`);
 console.log(`  saíram da vila: ${fmt(sum((w) => w.metrics.left) / all.length, 1)}/campanha · aposentados: ${fmt(sum((w) => w.metrics.retired) / all.length, 1)}`);
 
+console.log('\n── Pessoas (M2, por campanha) ──');
+const per = (f: (w: World) => number) => fmt(sum(f) / all.length);
+console.log(
+  `  lesões ${per((w) => w.metrics.injuries)} · cicatrizes ${per((w) => w.metrics.scars)} · casamentos ${per((w) => w.metrics.marriages)} · nascimentos ${per((w) => w.metrics.births)} · maioridades ${per((w) => w.metrics.comeOfAge)} · mortes de velhice ${per((w) => w.metrics.oldAgeDeaths)}`,
+);
+const retiredByRole = (role: string) => per((w) => w.heroes.filter((h) => h.status === 'retired' && h.retiredRole === role).length);
+console.log(`  aposentados vivos no fim: mentor ${retiredByRole('mentor')} · ferreiro ${retiredByRole('ferreiro')} · contador ${retiredByRole('contador')} · curandeiro ${retiredByRole('curandeiro')}`);
+
 console.log('\n── Confiança ao descer × desfecho (calibra a escolha de andar) ──');
 const buckets = new Map<string, { n: number; deaths: number; wipes: number; conquests: number }>();
 for (const w of all) {

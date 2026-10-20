@@ -1,7 +1,7 @@
 // Planta da vila e para onde cada herói anda. Puro (sem Phaser) para dar para testar.
 
 import { buildingLevel } from '../sim/index.ts';
-import type { BuildingId, Hero, World } from '../sim/index.ts';
+import type { BuildingId, Hero, RetiredRole, World } from '../sim/index.ts';
 
 /** Lado do tile no mundo: 16 px de arte × 2. */
 export const TILE = 32;
@@ -36,6 +36,7 @@ export const LOT_TILES: Record<BuildingId, TileRect> = {
   taverna: { tx: 15, ty: 9, tw: 7, th: 6 },
   guilda: { tx: 29, ty: 9, tw: 7, th: 6 },
   estalagem: { tx: 8, ty: 20, tw: 7, th: 6 },
+  casa: { tx: 15, ty: 20, tw: 7, th: 6 },
   campo: { tx: 29, ty: 20, tw: 9, th: 6 },
   ferreiro: { tx: 39, ty: 20, tw: 7, th: 6 },
 };
@@ -76,7 +77,7 @@ export const LANDMARKS: Record<Landmark, Point> = {
   abismo: { x: 25 * TILE, y: 6.5 * TILE },
   cemiterio: { x: 43.5 * TILE, y: 14 * TILE },
   portao: { x: 25 * TILE, y: WORLD_H - 12 },
-  fogueira: { x: 19.5 * TILE, y: 22.5 * TILE },
+  fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
 };
 
 export const door = (id: BuildingId): Point => {
@@ -129,8 +130,32 @@ export function wanderPoint(heroId: number, seed: number): Point {
 
 const at = (key: string, place: PlaceKey, point: Point, hide = false): Destination => ({ key, place, point, hide });
 
+/** Onde cada aposentado trabalha (de pé ao lado da porta, fora da fila de quem visita). */
+export const ROLE_PLACE: Record<RetiredRole, BuildingId> = {
+  mentor: 'campo',
+  ferreiro: 'ferreiro',
+  contador: 'taverna',
+  curandeiro: 'casa',
+};
+
+/** Lugar de tratamento: Casa de cura, senão a estalagem, senão a fogueira. */
+export function healerPlace(world: World): BuildingId | null {
+  if (buildingLevel(world, 'casa') >= 1) return 'casa';
+  if (buildingLevel(world, 'estalagem') >= 1) return 'estalagem';
+  return null;
+}
+
+export function workSpot(world: World, role: RetiredRole): Point {
+  const place = role === 'curandeiro' ? (healerPlace(world) ?? 'casa') : ROLE_PLACE[role];
+  const d = door(place);
+  return { x: d.x + 56, y: d.y - 6 };
+}
+
 export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: number) => number | null): Destination {
   if (hero.status === 'expedition') return at('abismo', 'abismo', LANDMARKS.abismo, true);
+  if (hero.status === 'retired' && hero.retiredRole) {
+    return at(`funcao:${hero.retiredRole}`, ROLE_PLACE[hero.retiredRole], workSpot(world, hero.retiredRole));
+  }
   if (hero.status === 'left' || hero.status === 'retired' || hero.status === 'dead') {
     return at('portao', 'portao', LANDMARKS.portao, true);
   }
@@ -145,6 +170,10 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
       return buildingLevel(world, 'estalagem') >= 1
         ? at('estalagem', 'estalagem', door('estalagem'))
         : at('fogueira', 'fogueira', LANDMARKS.fogueira);
+    case 'tratar': {
+      const place = healerPlace(world);
+      return place ? at(`tratar:${place}`, place, { x: door(place).x - 40, y: door(place).y }) : at('fogueira', 'fogueira', LANDMARKS.fogueira);
+    }
     case 'beber':
       return at('taverna', 'taverna', door('taverna'));
     case 'rezar':

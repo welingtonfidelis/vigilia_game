@@ -5,7 +5,7 @@ import { dayOf } from './calendar.ts';
 import { record, g, heroLabel, className } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_YEAR } from './config.ts';
 import { chance, int, next, pick, range, weighted } from './rng.ts';
-import type { Doctrine, Hero, Rank, TraitId, World } from './types.ts';
+import type { Doctrine, Hero, InjuryKind, Rank, TraitId, World } from './types.ts';
 
 export interface HeroStats {
   maxHp: number;
@@ -46,14 +46,40 @@ export function heroStats(world: World, hero: Hero): HeroStats {
   const lv = hero.level - 1;
   const age = ageYears(world, hero);
   const decline = age > B.declineAge ? Math.max(0.6, 1 - 0.02 * (age - B.declineAge)) : 1;
+  const hurt = woundEffects(hero);
   return {
-    maxHp: Math.round(c.hp * (1 + B.levelHpGrowth * lv) * rm * (1 + B.armorHpPerTier * hero.gear.armor) * decline),
-    atk: c.atk * (1 + B.levelAtkGrowth * lv) * rm * (1 + B.weaponAtkPerTier * hero.gear.weapon) * decline,
+    maxHp: Math.round(c.hp * (1 + B.levelHpGrowth * lv) * rm * (1 + B.armorHpPerTier * hero.gear.armor) * decline * hurt.hp),
+    atk: c.atk * (1 + B.levelAtkGrowth * lv) * rm * (1 + B.weaponAtkPerTier * hero.gear.weapon) * decline * hurt.atk,
     def: c.def * (1 + B.levelDefGrowth * lv) * rm + B.armorDefPerTier * hero.gear.armor,
-    interval: c.interval,
+    interval: Math.round(c.interval * hurt.interval),
     pierce: c.pierce,
-    crit: c.crit,
+    crit: c.crit * hurt.crit,
   };
+}
+
+/** Penalidade de cada lesão (aberta) e da cicatriz que ela pode deixar. */
+export const WOUNDS: Record<InjuryKind, { name: string; injury: Partial<WoundMults>; scar: Partial<WoundMults> }> = {
+  braco: { name: 'braço', injury: { atk: 0.85 }, scar: { atk: 0.95 } },
+  perna: { name: 'perna', injury: { interval: 1.15 }, scar: { interval: 1.05 } },
+  olho: { name: 'olho', injury: { atk: 0.92, crit: 0.5 }, scar: { crit: 0.8 } },
+  costelas: { name: 'costelas', injury: { hp: 0.85 }, scar: { hp: 0.95 } },
+};
+
+interface WoundMults {
+  hp: number;
+  atk: number;
+  interval: number;
+  crit: number;
+}
+
+export function woundEffects(hero: Hero): WoundMults {
+  const out: WoundMults = { hp: 1, atk: 1, interval: 1, crit: 1 };
+  const apply = (m: Partial<WoundMults>) => {
+    for (const k of Object.keys(m) as (keyof WoundMults)[]) out[k] *= m[k]!;
+  };
+  if (hero.injury) apply(WOUNDS[hero.injury.kind].injury);
+  for (const scar of hero.scars) apply(WOUNDS[scar].scar);
+  return out;
 }
 
 export const maxLevel = (hero: Hero): number => RANK_MAX_LEVEL[hero.rank];
@@ -151,6 +177,13 @@ export function createHero(world: World, opts: { rankCap?: Rank } = {}): Hero {
     deeds: [],
     stats: { expeditions: 0, kills: 0, floorsConquered: 0, bossKills: 0, fled: 0, alliesLost: 0 },
     death: null,
+    injury: null,
+    scars: [],
+    partnerId: null,
+    parents: [],
+    retiredRole: null,
+    lastTalkDay: -1,
+    epitaph: null,
   };
   hero.hp = heroStats(world, hero).maxHp;
   hero.morale = moraleBaseline(hero);

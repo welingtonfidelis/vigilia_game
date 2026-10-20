@@ -33,7 +33,7 @@ export function useCommand(): <A extends unknown[]>(
 export function Bar(props: {
   value: number;
   max: number;
-  kind: 'hp' | 'morale' | 'xp' | 'energy' | 'fun' | 'faith' | 'loyalty' | 'corruption' | 'enemy';
+  kind: 'hp' | 'morale' | 'xp' | 'energy' | 'fun' | 'faith' | 'loyalty' | 'corruption' | 'enemy' | 'heal';
   marker?: number | null;
   markerTitle?: string;
   text?: string;

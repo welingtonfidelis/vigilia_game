@@ -36,6 +36,13 @@ const ENTRY_CUES: Partial<Record<ChronicleKind, Cue>> = {
   partiuDaVila: { sfx: 'leave', priority: 3 },
   dispensa: { sfx: 'leave', priority: 3 },
   aposentadoria: { sfx: 'bond', priority: 3 },
+  lesao: { sfx: 'wound', priority: 6 },
+  cicatriz: { sfx: 'grief', priority: 4 },
+  casamento: { sfx: 'wedding', priority: 7 },
+  nascimento: { sfx: 'birth', priority: 7 },
+  maioridade: { sfx: 'conquest', priority: 7 },
+  funcao: { sfx: 'reveal', priority: 2 },
+  // 'prefeito' fica de fora: as ações do prefeito já soam na hora do comando.
   // 'berrante' fica de fora: o som sai na hora do comando, não quando a crônica registra.
 };
 
@@ -50,6 +57,13 @@ const COMMAND_CUES = new Map<unknown, SfxName>([
   [commands.setLootTax, 'click'],
   [commands.sponsor, 'coins'],
   [commands.dismiss, 'leave'],
+  [commands.talk, 'bond'],
+  [commands.gift, 'coins'],
+  [commands.comfort, 'grief'],
+  [commands.speech, 'speech'],
+  [commands.rename, 'click'],
+  [commands.retire, 'bond'],
+  [commands.assignRole, 'click'],
 ]);
 
 export function cuesFor(event: SessionEvent): Cue[] {
@@ -86,6 +100,9 @@ export const COOLDOWN_MS: Partial<Record<SfxName, number>> = {
   death: 2500,
   conquest: 1500,
   click: 40,
+  wound: 1500,
+  wedding: 3000,
+  birth: 3000,
 };
 
 const DEFAULT_COOLDOWN = 400;

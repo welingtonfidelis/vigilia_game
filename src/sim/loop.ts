@@ -4,6 +4,7 @@ import { dailyCorruption } from './dungeon.ts';
 import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { formParties } from './party.ts';
+import { dailyPeople } from './people.ts';
 import { int } from './rng.ts';
 import { activeHeroes, dailyTown, hourlyTown, processArrivals, townHeroes, updateTownHeroes } from './town.ts';
 import type { World } from './types.ts';
@@ -38,6 +39,7 @@ function daily(world: World): void {
   dailyEconomy(world);
   dailyCorruption(world);
   dailyTown(world);
+  dailyPeople(world);
   strayArrivals(world);
   trackIdle(world);
   sample(world);

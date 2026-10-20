@@ -1,4 +1,5 @@
-import { SAVE_VERSION } from './config.ts';
+import { BALANCE, SAVE_VERSION } from './config.ts';
+import { defaultRole, epitaph } from './people.ts';
 import type { World } from './types.ts';
 
 export function serialize(world: World): string {
@@ -14,7 +15,33 @@ export function deserialize(json: string): World {
 
 /** Ponto único para migrar saves antigos quando o formato mudar. */
 function migrate(world: World): World {
+  if (world.version < 2) migrateToV2(world);
   return world;
+}
+
+/** v1 → v2 (M2, Pessoas): lesões, casais, filhos, aposentados com função, epitáfios e prefeito. */
+function migrateToV2(world: World): void {
+  type Loose<T> = { [K in keyof T]?: T[K] };
+  const town = world.town as Loose<World['town']> & World['town'];
+  town.buildings.casa ??= 0;
+  town.mayorEnergy ??= BALANCE.mayorEnergy;
+  town.speechDay ??= -1;
+  (world as Loose<World> & World).children ??= [];
+  const m = world.metrics as Loose<World['metrics']> & World['metrics'];
+  for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths'] as const) m[k] ??= 0;
+  for (const hero of world.heroes) {
+    const h = hero as Loose<typeof hero> & typeof hero;
+    h.injury ??= null;
+    h.scars ??= [];
+    h.partnerId ??= null;
+    h.parents ??= [];
+    h.retiredRole ??= h.status === 'retired' ? defaultRole(h) : null;
+    h.lastTalkDay ??= -1;
+    h.epitaph ??= null;
+  }
+  // Quem morreu antes do M2 ganha o epitáfio agora.
+  for (const hero of world.heroes) if (hero.status === 'dead' && !hero.epitaph) hero.epitaph = epitaph(world, hero);
+  world.version = 2;
 }
 
 /** Hash curto (FNV-1a) do estado, útil para comparar mundos em testes. */

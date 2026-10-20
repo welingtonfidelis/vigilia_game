@@ -8,11 +8,15 @@ import {
   runDays,
   runTicks,
   serialize,
+  dayOf,
+  DAYS_PER_SEASON,
   DAYS_PER_YEAR,
   TICKS_PER_DAY,
 } from '../src/sim/index.ts';
 import { startCombat, combatTick } from '../src/sim/combat.ts';
-import { createHero } from '../src/sim/hero.ts';
+import { addBond, createHero, getBond } from '../src/sim/hero.ts';
+import { dailyPeople, epitaph, maybeInjure } from '../src/sim/people.ts';
+import { scoreActivities } from '../src/sim/town.ts';
 import { formParties } from '../src/sim/party.ts';
 import type { Party, World } from '../src/sim/index.ts';
 
@@ -227,5 +231,182 @@ describe('crônica', () => {
     const kinds = new Set(world.chronicle.map((e) => e.kind));
     for (const k of ['chegada', 'partida', 'retorno', 'conquista', 'chefe']) expect(kinds.has(k as never)).toBe(true);
     expect(world.chronicle.every((e) => e.text.length > 0 && !e.text.includes('undefined'))).toBe(true);
+  });
+});
+
+describe('pessoas (M2)', () => {
+  const dayStart = (world: World, day: number) => {
+    world.tick = day * TICKS_PER_DAY;
+  };
+
+  it('energia do prefeito: uma conversa por herói por dia, e ela acaba e recarrega', () => {
+    const world = createWorld(21);
+    const heroes = [createHero(world), createHero(world), createHero(world), createHero(world), createHero(world)];
+    const before = heroes[0]!.loyalty;
+    expect(commands.talk(world, heroes[0]!.id)).toEqual({ ok: true });
+    expect(heroes[0]!.loyalty).toBeGreaterThan(before);
+    expect(commands.talk(world, heroes[0]!.id).ok).toBe(false); // mesmo dia
+    for (const h of heroes.slice(1, 4)) commands.talk(world, h.id);
+    expect(world.town.mayorEnergy).toBe(0);
+    expect(commands.talk(world, heroes[4]!.id).ok).toBe(false); // sem energia
+    dayStart(world, dayOf(world.tick) + 1);
+    dailyPeople(world);
+    expect(world.town.mayorEnergy).toBe(4);
+  });
+
+  it('presentes custam ouro e agradam mais a quem gosta; arma respeita o ferreiro', () => {
+    const world = createWorld(22);
+    const fan = createHero(world);
+    fan.traits = [{ id: 'beberrao', revealed: true }];
+    const plain = createHero(world);
+    plain.traits = [{ id: 'leal', revealed: true }];
+    fan.morale = plain.morale = 40;
+    const gold = world.town.treasury;
+    commands.gift(world, fan.id, 'bebida');
+    commands.gift(world, plain.id, 'bebida');
+    expect(world.town.treasury).toBe(gold - 20);
+    expect(fan.morale).toBeGreaterThan(plain.morale);
+    expect(commands.gift(world, plain.id, 'arma').ok).toBe(false); // ferreiro em ruína
+  });
+
+  it('consolar só com luto; discurso uma vez por dia', () => {
+    const world = createWorld(23);
+    const a = createHero(world);
+    createHero(world);
+    expect(commands.comfort(world, a.id).ok).toBe(false);
+    a.grief = 60;
+    expect(commands.comfort(world, a.id)).toEqual({ ok: true });
+    expect(a.grief).toBeLessThan(60);
+    expect(commands.speech(world)).toEqual({ ok: true });
+    expect(commands.speech(world).ok).toBe(false);
+  });
+
+  it('renomear e aposentar com função', () => {
+    const world = createWorld(24);
+    const h = createHero(world);
+    h.classId = 'guardiao';
+    expect(commands.rename(world, h.id, 'X').ok).toBe(false);
+    expect(commands.rename(world, h.id, '  Velho   Bram ')).toEqual({ ok: true });
+    expect(h.name).toBe('Velho Bram');
+    expect(commands.retire(world, h.id)).toEqual({ ok: true });
+    expect(h.status).toBe('retired');
+    expect(h.retiredRole).toBe('mentor');
+    expect(commands.assignRole(world, h.id, 'ferreiro')).toEqual({ ok: true });
+    expect(h.retiredRole).toBe('ferreiro');
+  });
+
+  it('lesão: herói por um fio se fere, não desce, perde atributo e sara com o tempo', () => {
+    const world = createWorld(25);
+    const heroes = Array.from({ length: 20 }, () => createHero(world));
+    for (const h of heroes) maybeInjure(world, h, 0.05, 'do andar 1 das Catacumbas');
+    const hurt = heroes.find((h) => h.injury);
+    expect(hurt).toBeDefined();
+    expect(heroes.filter((h) => h.injury).length).toBeLessThan(20); // é chance, não certeza
+    const fine = heroes.find((h) => !h.injury)!;
+    maybeInjure(world, fine, 0.5, 'x');
+    expect(fine.injury).toBeNull(); // vida acima de 15%: nada
+    const kinds = scoreActivities(world, hurt!).map(([k]) => k);
+    expect(kinds).toContain('tratar');
+    expect(kinds).not.toContain('aguardar');
+    for (let d = 1; d <= 30 && hurt!.injury; d++) {
+      dayStart(world, d);
+      dailyPeople(world);
+    }
+    expect(hurt!.injury).toBeNull();
+  });
+
+  it('casamento, filho e maioridade: o filho herda traço e conhece os pais', () => {
+    const world = createWorld(26);
+    world.town.buildings.estalagem = 1;
+    const [a, b] = [createHero(world), createHero(world)];
+    addBond(world, a, b, 100);
+    for (let s = 1; s <= 40 && a.partnerId === null; s++) {
+      dayStart(world, s * DAYS_PER_SEASON);
+      dailyPeople(world);
+    }
+    expect(a.partnerId).toBe(b.id);
+    expect(b.partnerId).toBe(a.id);
+    for (let s = 41; s <= 200 && world.children.length === 0; s++) {
+      dayStart(world, s * DAYS_PER_SEASON);
+      dailyPeople(world);
+    }
+    const child = world.children[0]!;
+    expect(child.parents).toEqual(expect.arrayContaining([a.id, b.id]));
+    child.bornDay = dayOf(world.tick) - 16 * DAYS_PER_YEAR;
+    dailyPeople(world);
+    const grown = world.heroes.find((h) => h.name === child.name && h.parents.length === 2)!;
+    expect(grown).toBeDefined();
+    expect(grown.traits[0]!.id).toBe(child.trait);
+    expect(getBond(world, grown.id, a.id)).toBeGreaterThanOrEqual(60);
+    expect(world.chronicle.some((e) => e.kind === 'maioridade')).toBe(true);
+  });
+
+  it('epitáfio conta o feito, como caiu e quem fica', () => {
+    const world = createWorld(27);
+    const [h, partner] = [createHero(world), createHero(world)];
+    h.partnerId = partner.id;
+    partner.partnerId = h.id;
+    h.deeds.push({ tick: 1, kind: 'chefe', text: 'deu o golpe final no Guardião das Urnas' });
+    h.status = 'dead';
+    h.death = { tick: 1, where: 'andar 4 das Catacumbas', by: 'Esqueleto' };
+    const text = epitaph(world, h);
+    expect(text).toContain(h.name);
+    expect(text).toContain('Guardião das Urnas');
+    expect(text).toContain('andar 4 das Catacumbas');
+    expect(text).toContain(`Deixa ${partner.name}`);
+  });
+
+  it('epitáfio sem erro de concordância', () => {
+    const world = createWorld(30);
+    const slayer = createHero(world);
+    slayer.stats.kills = 104;
+    slayer.deeds.push({ tick: 1, kind: 'matador', text: '100 inimigos abatidos' });
+    slayer.status = 'dead';
+    slayer.death = { tick: 1, where: 'andar 1 das Minas Inundadas', by: 'Golem' };
+    expect(epitaph(world, slayer)).toContain('Abateu 104 inimigos.');
+    const rookie = createHero(world);
+    rookie.stats.expeditions = 1;
+    rookie.stats.kills = 1;
+    rookie.status = 'dead';
+    rookie.death = { tick: 1, where: 'andar 1 das Catacumbas', by: 'Rato' };
+    const text = epitaph(world, rookie);
+    expect(text).toContain('1 descida, 1 inimigo abatido.');
+    expect(text).not.toMatch(/\b1 descidas|\b1 inimigos/);
+  });
+
+  it('aposentados velhos morrem em paz e ganham epitáfio', () => {
+    const world = createWorld(28);
+    const old = createHero(world);
+    commands.retire(world, old.id);
+    old.bornDay = -80 * DAYS_PER_YEAR;
+    for (let y = 1; y <= 40 && old.status !== 'dead'; y++) {
+      dayStart(world, y * DAYS_PER_YEAR);
+      dailyPeople(world);
+    }
+    expect(old.status).toBe('dead');
+    expect(old.death?.by).toBe('velhice');
+    expect(old.epitaph).toContain('velhice');
+  });
+
+  it('save da versão 1 carrega com os campos do M2 e epitáfio para os mortos', () => {
+    const world = createWorld(29);
+    runDays(world, 2 * DAYS_PER_YEAR, bot);
+    const v1 = JSON.parse(serialize(world));
+    v1.version = 1;
+    delete v1.children;
+    delete v1.town.mayorEnergy;
+    delete v1.town.speechDay;
+    delete v1.town.buildings.casa;
+    for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths']) delete v1.metrics[k];
+    for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
+    const loaded = deserialize(JSON.stringify(v1));
+    expect(loaded.version).toBe(2);
+    expect(loaded.town.buildings.casa).toBe(0);
+    expect(loaded.children).toEqual([]);
+    expect(loaded.heroes.every((h) => Array.isArray(h.scars) && h.injury === null)).toBe(true);
+    const dead = loaded.heroes.filter((h) => h.status === 'dead');
+    expect(dead.every((h) => typeof h.epitaph === 'string' && h.epitaph.length > 0)).toBe(true);
+    runDays(loaded, 30, bot); // e o jogo segue
+    expect(loaded.metrics.stalemates).toBe(0);
   });
 });

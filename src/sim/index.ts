@@ -31,6 +31,9 @@ export { activeHeroes, townHeroes } from './town.ts';
 export { busyParties } from './party.ts';
 export { floorPower, isBossFloor, partyRooms, travelTicks } from './dungeon.ts';
 export { byWhom, floorLabel, heroLabel } from './chronicle.ts';
+// Pessoas (M2): funções dos aposentados, recuperação, filhos e penalidades de lesão.
+export { childAge, defaultRole, forgePrice, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';
+export { WOUNDS, woundEffects } from './hero.ts';
 
 // Dados do jogo (nomes, custos, descrições).
 export { ACTS, ACT_COUNT, MATERIAL_NAMES, type ActDef } from '../data/acts.ts';

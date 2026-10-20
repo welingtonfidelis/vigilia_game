@@ -19,6 +19,7 @@ import {
   revealTrait,
   traitSum,
 } from './hero.ts';
+import { maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
 import { chance, int } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, World } from './types.ts';
@@ -59,6 +60,7 @@ function stepParty(world: World, party: Party): void {
       if (result === 'andamento') return;
       syncHeroes(world, party.combat!);
       party.combat = null;
+      for (const h of members(world, party)) maybeInjure(world, h, h.hp / heroStats(world, h).maxHp, `do ${floorLabel(party.act, party.floor)}`);
       if (party.memberIds.length === 0) {
         finish(world, party, 'massacre');
         return;
@@ -202,6 +204,8 @@ function shouldContinue(world: World, party: Party, nextRoom: Room): 'seguir' | 
   if (heroes.length === 0) return 'massacre';
   if (party.startMemberIds.length >= 2 && heroes.length < 2) return 'retirada';
   if (heroes.some((h) => h.needs.energy < 10)) return 'cansaco';
+  // Ninguém deixa um ferido para trás: o grupo volta carregando quem se machucou.
+  if (heroes.some((h) => h.injury)) return 'retirada';
   const avgHp = heroes.reduce((s, h) => s + h.hp / heroStats(world, h).maxHp, 0) / heroes.length;
   const avgMorale = heroes.reduce((s, h) => s + h.morale, 0) / heroes.length;
   let threshold = { cautelosa: 0.6, equilibrada: 0.45, agressiva: 0.3 }[world.town.doctrine];
