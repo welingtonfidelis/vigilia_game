@@ -2,7 +2,7 @@
 
 import { ACTS } from '../data/acts.ts';
 import { CLASSES } from '../data/classes.ts';
-import { record, floorLabel, g, heroLabel } from './chronicle.ts';
+import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
 import { makeEnemy, spawnRoom } from './dungeon.ts';
 import { addBond, fleeThreshold, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
@@ -289,7 +289,7 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
     world,
     'morte',
     [hero.id],
-    `${heroLabel(hero)} tombou no ${floorLabel(party.act, party.floor)}, ${g(hero, 'abatido', 'abatida')} por ${by}. ${
+    `${heroLabel(hero)} tombou no ${floorLabel(party.act, party.floor)}, ${g(hero, 'abatido', 'abatida')} ${byWhom(by)}. ${
       hero.stats.expeditions === 0
         ? 'Era sua primeira descida.'
         : `Tinha ${hero.stats.expeditions} ${hero.stats.expeditions === 1 ? 'expedição' : 'expedições'} nas costas.`

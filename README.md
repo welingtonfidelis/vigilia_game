@@ -2,13 +2,27 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M0, o núcleo de simulação headless.** Ainda não há tela; tudo roda no terminal.
+**Estado atual: M1, a fatia vertical jogável.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless do M0. Dá para jogar o Ato I do zero até o Guardião das Urnas.
 
-## Rodar
+## Jogar
 
 ```bash
 npm install
-npm test                                        # 19 testes (determinismo, save, soft-locks, comandos)
+npm run dev                                     # abre em http://localhost:5173
+npm run dev -- --host                           # idem, acessível pelo celular na mesma rede
+```
+
+- **Prefeito:** WASD/setas ou clique (toque) no chão para andar. Clique num prédio, no berrante, no quadro, no cofre, no abismo ou no cemitério: o prefeito vai até lá e interage. Perto de algo, **E** interage.
+- **Heróis:** clique num herói para ver a ficha (vida, ânimo com a marca de fuga, traços revelados e ocultos, vínculos, feitos). Eles não obedecem: escolhem o que fazer e com quem descer.
+- **Tempo:** Espaço pausa · 1, 2, 3 = 1×, 2×, 4× · **M** abismo · **H** heróis · **C** crônica · **Esc** fecha.
+- **Save:** salva sozinho no `localStorage` a cada dia do jogo e ao sair da página. Menu → Salvar/Carregar/Novo jogo.
+- **Celular:** toque para andar e interagir; os painéis viram folhas acima da barra de navegação; Menu → A−/A+ ajusta o tamanho da interface.
+
+## Rodar as ferramentas
+
+```bash
+npm test                                        # 35 testes (núcleo + sessão, save no navegador, planta da vila, textos)
+npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
 npm run deaths -- --seeds 6 --years 5           # Diagnóstico de quem morre, onde e para quem
@@ -20,6 +34,15 @@ Node 22+ roda os `.ts` direto (type stripping). Não há passo de build para as 
 ## Arquitetura
 
 ```
+index.html, src/main.tsx   monta a sessão, o HUD/painéis (Preact) e o Phaser; atalhos, autosave e avisos
+src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
+  session.ts     acumulador de tick fixo (10 ticks/s em 1×, 2×, 4×, pausa), comandos, eventos e resumo das expedições
+  storage.ts     salvar/carregar no localStorage com try/catch e preferências da tela
+src/render/ Phaser: só lê o World a cada quadro
+  VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
+  layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
+  buildings.ts, environment.ts, art.ts, sprites.ts   arte placeholder gerada em código
+src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
 src/data/   classes, traços, atos/inimigos/chefes, prédios, nomes (dados puros)
 src/sim/    regras: tudo determinístico, estado 100% JSON
   world.ts       cria o mundo
@@ -39,6 +62,10 @@ tests/      vitest
 ```
 
 O RNG (mulberry32) vive dentro do `World`. Por isso salvar no meio de um combate e carregar continua **exatamente** a mesma partida, e há um teste que garante isso.
+
+A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da sessão, `commands.*` para as alavancas do prefeito e consultas somente-leitura (custos, vagas, limiar de fuga, salas do andar). Um teste confirma que jogar pela sessão, quadro a quadro, dá o mesmo mundo que rodar o núcleo direto.
+
+**Atalhos de depuração** (só em `npm run dev`, no console do navegador): `vigilia.days(n)` avança n dias, `vigilia.advance(ticks)`, `vigilia.autoplay(n)` deixa o prefeito automático jogar n dias e `vigilia.frames(n)` roda quadros do Phaser na mão (útil com a aba em segundo plano, quando o navegador para o `requestAnimationFrame`).
 
 ## Retrato do balanceamento (10 sementes × 30 anos, prefeito automático)
 
@@ -77,6 +104,17 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 - A Bippinbits está desenvolvendo a versão completa oficial do Tristram. Este projeto não tem relação com ela nem com a Bippinbits.
 - "Tristram" e "Diablo" são marcas da Blizzard Entertainment. Vigília não usa elementos desse universo e não é afiliado à Blizzard.
 
-## Próximo: M1 (fatia vertical jogável)
+## O que o M1 entrega
 
-Cena da vila e da masmorra (Phaser), HUD, painéis de herói e prefeito andando. O núcleo já expõe tudo o que a tela precisa ler.
+- [x] Vila em Phaser: 6 lotes (ruína × níveis 1–3), berrante, quadro de contratos, cofre com a pilha de ouro, fogueira, cemitério com uma cova por herói caído, abismo com a abadia em ruínas e brilho que cresce com a corrupção, dia e noite
+- [x] Heróis andando até o lugar da atividade escolhida pelo núcleo (estalagem, taverna, templo, ferreiro, campo, quadro, túmulo do amigo, conversa com outro herói), entrando no abismo e voltando por ele
+- [x] Prefeito com WASD, clique/toque para andar e interação por proximidade (E ou o botão na tela)
+- [x] Painel do abismo: atos e andares, corrupção, grupos com a sala atual (névoa sala a sala), vida e ânimo com a marca do limiar de fuga, inimigos do combate, momentos e o sino de retirada; resumo das expedições recentes
+- [x] HUD (tesouro, data e hora, população, heróis/vagas, materiais, velocidade), objetivos abertos, avisos da crônica e fim de ato
+- [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
+- [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
+- [x] Arte placeholder 100% gerada em código (sem asset externo)
+
+## Próximo: M2 (pessoas)
+
+Conversas, presentes e discursos do prefeito (energia diária), lesões, memorial com epitáfio, filhos e aposentados com função. Ver a seção 9 do [GDD.md](GDD.md).

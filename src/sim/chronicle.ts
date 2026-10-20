@@ -15,6 +15,13 @@ export const heroLabel = (hero: Hero): string => `${hero.name} (${className(hero
 
 export const floorLabel = (act: number, floor: number): string => `andar ${floor + 1} ${ACTS[act]!.of}`;
 
+/** Agente da passiva com contração: "pelo Guardião das Urnas", "pela explosão de…", "por veneno". */
+export function byWhom(by: string): string {
+  const m = /^(O|A|a|o) (.*)$/.exec(by);
+  if (!m) return `por ${by}`;
+  return `${m[1]!.toLowerCase() === 'o' ? 'pelo' : 'pela'} ${m[2]}`;
+}
+
 export function listNames(heroes: Hero[]): string {
   const names = heroes.map((h) => h.name);
   if (names.length <= 1) return names.join('');
