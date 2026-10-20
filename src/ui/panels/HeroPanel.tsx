@@ -16,6 +16,7 @@ import {
 } from '../../sim/index.ts';
 import type { Hero, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
+import { HeroPortrait } from '../PixelSprite.tsx';
 import { activityText, bondLabel, className, fmt, g, liveHp, pct } from '../format.ts';
 
 function bondsOf(world: World, hero: Hero): { other: Hero; value: number }[] {
@@ -59,7 +60,12 @@ export function HeroPanel(props: { heroId: number }) {
       }
       subtitle={`${className(hero)} · nível ${hero.level} · ${ageYears(world, hero)} anos`}
     >
-      <p class={`status status-${hero.status}`}>{activityText(world, hero)}</p>
+      <div class="hero-head">
+        <span class="hero-portrait">
+          <HeroPortrait hero={hero} scale={3} />
+        </span>
+        <p class={`status status-${hero.status}`}>{activityText(world, hero)}</p>
+      </div>
       {hero.vengeful && <p class="tag bad">Em fúria vingativa: ignora o sino de retirada.</p>}
       {griefFor && hero.grief > 0 && (
         <p class="tag grief">

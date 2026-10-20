@@ -13,6 +13,7 @@ import type { ExpeditionSummary } from '../../game/session.ts';
 import { Bar, HeroLink, PanelShell, useCommand, useGame } from '../components.tsx';
 import { className, fmt, floorName, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { IconSkull, RoomIcon } from '../icons.tsx';
+import { HERO_CROP, HeroPortrait, monsterBase, PixelSprite } from '../PixelSprite.tsx';
 
 function ActOverview(props: { world: World }) {
   const { world } = props;
@@ -70,12 +71,18 @@ function Rooms(props: { world: World; party: Party }) {
   );
 }
 
-function EnemyRow(props: { unit: Unit }) {
+function EnemyRow(props: { unit: Unit; world: World; act: number }) {
   const u = props.unit;
+  const look = monsterBase(props.world, u, props.act);
   return (
     <div class={`unit enemy${u.alive ? '' : ' down'}`}>
-      <span class={`unit-name${u.elite ? ' elite' : ''}${u.tags.includes('boss') ? ' boss' : ''}`}>{u.name}</span>
-      <Bar kind="enemy" value={u.hp} max={u.maxHp} slim />
+      <span class="unit-art">
+        <PixelSprite base={look.base} scale={u.tags.includes('boss') ? 1 : 2} crop={look.ghost ? HERO_CROP : 0} ghost={look.ghost} animate={u.alive} />
+      </span>
+      <div class="unit-info">
+        <span class={`unit-name${u.elite ? ' elite' : ''}${u.tags.includes('boss') ? ' boss' : ''}`}>{u.name}</span>
+        <Bar kind="enemy" value={u.hp} max={u.maxHp} slim />
+      </div>
     </div>
   );
 }
@@ -123,6 +130,10 @@ function PartyCard(props: { world: World; party: Party }) {
             const state = dead ? 'tombou' : !inParty ? 'fugiu' : unit?.fled ? 'recuando' : '';
             return (
               <div key={hero.id} class={`unit hero${dead ? ' down' : !inParty ? ' gone' : ''}`}>
+                <span class="unit-art">
+                  <HeroPortrait hero={hero} animate={!dead} />
+                </span>
+                <div class="unit-info">
                 <span class="unit-name">
                   <HeroLink id={hero.id} /> <small>{className(hero)} {hero.rank}</small>
                   {hero.vengeful && <small class="bad"> · vingança</small>}
@@ -141,6 +152,7 @@ function PartyCard(props: { world: World; party: Party }) {
                     />
                   </>
                 )}
+                </div>
               </div>
             );
           })}
@@ -153,7 +165,7 @@ function PartyCard(props: { world: World; party: Party }) {
               .sort((a, b) => Number(b.tags.includes('boss')) - Number(a.tags.includes('boss')) || Number(b.alive) - Number(a.alive) || b.uid - a.uid)
               .slice(0, 8)
               .map((u) => (
-                <EnemyRow key={u.uid} unit={u} />
+                <EnemyRow key={u.uid} unit={u} world={world} act={party.act} />
               ))}
           </div>
         )}

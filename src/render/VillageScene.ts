@@ -14,39 +14,45 @@ import type { BuildingId, ChronicleEntry, Hero, World } from '../sim/index.ts';
 import type { Session, SessionEvent } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { makeTextures } from './art.ts';
+import { animFrames, ART_SCALE, CLASS_LOOK, DUNGEON_URL, FRAMES_0X72, MAYOR_SPRITE, TOWN_URL } from './assets.ts';
 import { drawBuilding } from './buildings.ts';
-import {
-  DEPTH,
-  drawAbyss,
-  drawBoard,
-  drawCampfire,
-  drawCemetery,
-  drawCoffer,
-  drawGate,
-  drawGround,
-  drawHornTower,
-  scatterTrees,
-  type AbyssView,
-  type BoardView,
-  type CampfireView,
-  type CofferView,
-  type HornView,
-} from './environment.ts';
 import { moveAxis } from './keys.ts';
 import {
   ABYSS_EDGE_Y,
+  CEMETERY_TILES,
   door,
   gravePoint,
   graveOrder,
   heroDestination,
   LANDMARKS,
+  LOT_TILES,
   LOTS,
   slotOffset,
+  TILE,
   WORLD_H,
   WORLD_W,
   type Point,
 } from './layout.ts';
 import { HeroSprite, Mayor } from './sprites.ts';
+import {
+  buildAbyss,
+  buildBoard,
+  buildCampfire,
+  buildCemetery,
+  buildCoffer,
+  buildGate,
+  buildGround,
+  buildHornTower,
+  buildProps,
+  DEPTH,
+  label,
+  scatterTrees,
+  smooth,
+  type AbyssView,
+  type BoardView,
+  type CofferView,
+  type HornView,
+} from './town.ts';
 
 /** Velocidade de caminhada dos heróis em 1× (px de mundo por segundo real). */
 const HERO_SPEED = 170;
@@ -56,6 +62,13 @@ const LINGER_S = 0.8;
 const MAX_COMMIT_S = 8;
 const MAYOR_SPEED = 250;
 const INTERACT_RADIUS = 78;
+/**
+ * Zooms da câmera em passos de 0,5: como cada pixel da arte vale 2 unidades do mundo,
+ * todo zoom da lista vira um número inteiro de pixels de tela por pixel de arte.
+ */
+const ZOOMS = [0.5, 1, 1.5, 2, 2.5, 3];
+/** Área mínima do mundo visível para escolher um zoom maior (em pé, o celular segue o prefeito). */
+const MIN_VIEW = { landscape: { w: 1000, h: 560 }, portrait: { w: 360, h: 560 } };
 
 interface Interactable {
   id: string;
@@ -66,7 +79,7 @@ interface Interactable {
 }
 
 interface BuildingView {
-  g: Phaser.GameObjects.Graphics;
+  tiles: Phaser.GameObjects.Container;
   lights: Phaser.GameObjects.Graphics;
   sign: Phaser.GameObjects.Text;
   level: number;
@@ -99,12 +112,12 @@ export class VillageScene extends Phaser.Scene {
   private horn!: HornView;
   private board!: BoardView;
   private coffer!: CofferView;
-  private campfire!: CampfireView;
   private moveTarget: Point | null = null;
   private pendingInteract: string | null = null;
   private labelScale = 1;
-  private baseZoom = 1;
-  private zoomFactor = 1;
+  private zoomIndex = 1;
+  private autoZoom = true;
+  private pinch: { dist: number; index: number } | null = null;
   private treasurySeen = 0;
   private treasuryCheckAt = 0;
   private hoverCursor = '';
@@ -122,17 +135,23 @@ export class VillageScene extends Phaser.Scene {
     return this.session.world;
   }
 
+  preload(): void {
+    this.load.spritesheet('town', TOWN_URL, { frameWidth: 16, frameHeight: 16 });
+    this.load.image('dungeon', DUNGEON_URL);
+  }
+
   create(): void {
-    makeTextures(this);
-    drawGround(this);
-    this.abyss = drawAbyss(this);
-    scatterTrees(this);
-    drawCemetery(this);
-    drawGate(this);
-    this.horn = drawHornTower(this);
-    this.board = drawBoard(this);
-    this.coffer = drawCoffer(this);
-    this.campfire = drawCampfire(this);
+    this.registerArt();
+    const mask = buildGround(this);
+    this.abyss = buildAbyss(this);
+    scatterTrees(this, mask);
+    buildCemetery(this);
+    buildGate(this);
+    buildProps(this);
+    buildCampfire(this);
+    this.horn = buildHornTower(this);
+    this.board = buildBoard(this);
+    this.coffer = buildCoffer(this);
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createInteractables();
 
@@ -141,11 +160,19 @@ export class VillageScene extends Phaser.Scene {
       .setOrigin(0)
       .setDepth(DEPTH.night);
 
-    this.mayor = new Mayor(this, LANDMARKS.cofre.x - 40, LANDMARKS.cofre.y + 90);
+    this.mayor = new Mayor(this, LANDMARKS.cofre.x - 40, LANDMARKS.cofre.y + 70);
     const cam = this.cameras.main;
-    cam.setBackgroundColor('#0b0a0c');
-    cam.setBounds(-60, -40, WORLD_W + 120, WORLD_H + 60);
+    cam.setBackgroundColor('#07060a');
+    cam.setRoundPixels(true);
     cam.startFollow(this.mayor.root, true, 0.12, 0.12);
+    // Fantasia sombria: o Tiny Town é colorido; tira saturação e brilho da cena inteira.
+    if (this.game.renderer.type === Phaser.WEBGL) {
+      const grade = cam.postFX.addColorMatrix();
+      grade.saturate(-0.55);
+      grade.brightness(0.8, true);
+      grade.contrast(0.08, true);
+      cam.postFX.addVignette(0.5, 0.5, 0.95, 0.32);
+    }
     this.fitCamera();
     this.scale.on('resize', () => this.fitCamera());
 
@@ -154,11 +181,11 @@ export class VillageScene extends Phaser.Scene {
       if (this.downOnMap && this.onCanvas(p)) this.onTap(p);
       this.downOnMap = false;
     });
-    this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.onHover(p));
-    this.input.on('wheel', (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
-      this.zoomFactor = Phaser.Math.Clamp(this.zoomFactor * (dy > 0 ? 0.9 : 1.1), 0.8, 2.2);
-      this.fitCamera();
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      this.onPinch();
+      this.onHover(p);
     });
+    this.input.on('wheel', (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => this.stepZoom(dy > 0 ? -1 : 1));
 
     this.ui.interact = (id) => this.interact(id);
     this.unsubscribe = this.session.subscribe((e) => this.onSessionEvent(e));
@@ -178,13 +205,22 @@ export class VillageScene extends Phaser.Scene {
 
   private fitCamera(): void {
     const { width, height } = this.scale.gameSize;
-    const fit = Math.min(width / WORLD_W, height / WORLD_H);
-    // Se a vila inteira cabe legível, mostra tudo. Em tela pequena (celular),
-    // aproxima até a altura caber e a câmera segue o prefeito.
-    const tall = Math.min(height / WORLD_H, width / 620);
-    this.baseZoom = fit >= 0.55 ? fit : Math.max(fit, tall, 0.5);
-    const zoom = this.baseZoom * this.zoomFactor;
-    this.cameras.main.setZoom(zoom);
+    if (this.autoZoom) {
+      const min = height > width ? MIN_VIEW.portrait : MIN_VIEW.landscape;
+      let index = 0;
+      ZOOMS.forEach((z, i) => {
+        if (width / z >= min.w && height / z >= min.h) index = i;
+      });
+      this.zoomIndex = index;
+    }
+    const zoom = ZOOMS[this.zoomIndex]!;
+    const cam = this.cameras.main;
+    cam.setZoom(zoom);
+    // Tela maior que a vila: centraliza na horizontal e põe a sobra em cima, onde ela
+    // vira mais abismo (o fundo da câmera tem a mesma cor do vazio).
+    const bw = Math.max(WORLD_W, width / zoom);
+    const bh = Math.max(WORLD_H, height / zoom);
+    cam.setBounds((WORLD_W - bw) / 2, WORLD_H - bh, bw, bh);
     this.labelScale = Phaser.Math.Clamp(1 / zoom, 1, 1.8);
     for (const obj of this.children.list) {
       if (obj.name === 'label' && obj instanceof Phaser.GameObjects.Text) obj.setScale(this.labelScale);
@@ -193,23 +229,68 @@ export class VillageScene extends Phaser.Scene {
     for (const grave of this.graves.values()) grave.name.setScale(Math.min(this.labelScale, 1.4));
   }
 
+  /** Roda do mouse ou pinça: anda um passo na lista de zooms inteiros. */
+  private stepZoom(dir: 1 | -1): void {
+    const next = Phaser.Math.Clamp(this.zoomIndex + dir, 0, ZOOMS.length - 1);
+    if (next === this.zoomIndex) return;
+    this.autoZoom = false;
+    this.zoomIndex = next;
+    this.fitCamera();
+  }
+
+  private onPinch(): void {
+    const a = this.input.pointer1;
+    const b = this.input.pointer2;
+    if (!a?.isDown || !b?.isDown) {
+      this.pinch = null;
+      return;
+    }
+    const dist = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y);
+    if (!this.pinch) {
+      this.pinch = { dist, index: this.zoomIndex };
+      this.downOnMap = false;
+      return;
+    }
+    const ratio = dist / this.pinch.dist;
+    const steps = ratio >= 1 ? Math.floor((ratio - 1) / 0.35) : -Math.floor((1 / ratio - 1) / 0.35);
+    const target = Phaser.Math.Clamp(this.pinch.index + steps, 0, ZOOMS.length - 1);
+    if (target !== this.zoomIndex) {
+      this.autoZoom = false;
+      this.zoomIndex = target;
+      this.fitCamera();
+    }
+  }
+
+  /** Quadros do 0x72 a partir da tabela e as animações de heróis, monstros e moedas. */
+  private registerArt(): void {
+    makeTextures(this);
+    const sheet = this.textures.get('dungeon');
+    for (const [name, [x, y, w, h]] of Object.entries(FRAMES_0X72)) sheet.add(name, 0, x, y, w, h);
+    const bodies = new Set<string>([MAYOR_SPRITE]);
+    for (const look of Object.values(CLASS_LOOK)) for (const g of ['m', 'f']) bodies.add(`${look.body}_${g}`);
+    for (const base of bodies) {
+      for (const kind of ['idle', 'run'] as const) {
+        this.anims.create({
+          key: `${base}_${kind}`,
+          frames: animFrames(base, kind).map((frame) => ({ key: 'dungeon', frame })),
+          frameRate: kind === 'run' ? 10 : 6,
+          repeat: -1,
+        });
+      }
+    }
+    this.anims.create({ key: 'coin', frames: [0, 1, 2, 3].map((i) => ({ key: 'dungeon', frame: `coin_anim_f${i}` })), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: 'fire', frames: [{ key: 'fire0' }, { key: 'fire1' }, { key: 'fire2' }], frameRate: 7, repeat: -1 });
+  }
+
   // ── Prédios e marcos ───────────────────────────────────────────────────
 
   private createBuilding(id: BuildingId): void {
     const lot = LOTS[id];
-    const g = this.add.graphics({ x: lot.x, y: lot.y }).setDepth(lot.y + lot.h / 2 - 22);
-    const lights = this.add.graphics({ x: lot.x, y: lot.y }).setDepth(DEPTH.lights).setBlendMode(Phaser.BlendModes.ADD);
-    const sign = this.add
-      .text(lot.x, lot.y + lot.h / 2 - 8, '', {
-        fontFamily: 'Georgia, serif',
-        fontSize: '15px',
-        color: '#f4ecd8',
-        stroke: '#0b0a08',
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5, 0)
-      .setDepth(DEPTH.labels);
-    const view: BuildingView = { g, lights, sign, level: -1 };
+    const r = LOT_TILES[id];
+    const tiles = this.add.container(r.tx * TILE, r.ty * TILE).setDepth(lot.y + lot.h / 2 - 2);
+    const lights = this.add.graphics({ x: r.tx * TILE, y: r.ty * TILE }).setDepth(DEPTH.lights).setBlendMode(Phaser.BlendModes.ADD);
+    const sign = label(this, lot.x, lot.y + lot.h / 2 + 2, '', 14);
+    const view: BuildingView = { tiles, lights, sign, level: -1 };
     this.buildings.set(id, view);
     this.syncBuilding(id, false);
   }
@@ -219,49 +300,50 @@ export class VillageScene extends Phaser.Scene {
     const level = buildingLevel(this.world, id);
     if (level === view.level) return;
     const lot = LOTS[id];
-    drawBuilding(view.g, view.lights, id, level, lot);
+    drawBuilding(this, view.tiles, view.lights, id, level, LOT_TILES[id]);
     view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}`);
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
-    if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y);
+    if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y + lot.h / 4);
     view.level = level;
   }
 
   private createInteractables(): void {
     const open = (panel: Parameters<UiStore['open']>[0]) => () => this.ui.open(panel);
     const { berrante, quadro, cofre, abismo, cemiterio } = LANDMARKS;
+    const cem = CEMETERY_TILES;
     this.interactables = [
       {
         id: 'berrante',
-        point: { x: berrante.x, y: berrante.y + 90 },
-        hit: { x: berrante.x - 50, y: berrante.y - 110, w: 100, h: 190 },
+        point: { x: berrante.x, y: 17.5 * TILE },
+        hit: { x: 2 * TILE, y: 10 * TILE, w: 3 * TILE, h: 6 * TILE },
         label: () => 'Tocar o berrante',
         open: open({ kind: 'horn' }),
       },
       {
         id: 'quadro',
-        point: { x: quadro.x, y: quadro.y + 48 },
-        hit: { x: quadro.x - 40, y: quadro.y - 44, w: 80, h: 80 },
+        point: { x: quadro.x, y: quadro.y + 50 },
+        hit: { x: 27 * TILE, y: 15 * TILE, w: 3 * TILE, h: 2 * TILE },
         label: () => 'Quadro de contratos',
         open: open({ kind: 'board' }),
       },
       {
         id: 'cofre',
-        point: { x: cofre.x, y: cofre.y + 48 },
-        hit: { x: cofre.x - 50, y: cofre.y - 44, w: 100, h: 70 },
+        point: { x: cofre.x, y: cofre.y + 44 },
+        hit: { x: cofre.x - 40, y: cofre.y - 40, w: 80, h: 50 },
         label: () => 'Cofre da vila',
         open: open({ kind: 'coffer' }),
       },
       {
         id: 'abismo',
-        point: { x: abismo.x, y: abismo.y + 50 },
-        hit: { x: abismo.x - 110, y: 60, w: 220, h: 180 },
+        point: { x: abismo.x, y: abismo.y + 40 },
+        hit: { x: 21 * TILE, y: 2 * TILE, w: 8 * TILE, h: 5 * TILE },
         label: () => 'Olhar o abismo',
         open: open({ kind: 'dungeon' }),
       },
       {
         id: 'cemiterio',
-        point: { x: cemiterio.x, y: cemiterio.y + 160 },
-        hit: { x: cemiterio.x - 120, y: ABYSS_EDGE_Y, w: 240, h: 250 },
+        point: { x: cemiterio.x, y: cemiterio.y + 40 },
+        hit: { x: cem.tx * TILE, y: cem.ty * TILE, w: cem.tw * TILE, h: (cem.th + 1) * TILE },
         label: () => 'Cemitério',
         open: open({ kind: 'memorial' }),
       },
@@ -270,8 +352,8 @@ export class VillageScene extends Phaser.Scene {
         const d = door(id);
         return {
           id,
-          point: { x: d.x, y: d.y + 18 },
-          hit: { x: lot.x - lot.w / 2, y: lot.y - lot.h / 2 - 40, w: lot.w, h: lot.h + 40 },
+          point: { x: d.x, y: d.y + 12 },
+          hit: { x: lot.x - lot.w / 2, y: lot.y - lot.h / 2, w: lot.w, h: lot.h },
           label: (world) =>
             buildingLevel(world, id) === 0 ? `Reconstruir: ${BUILDINGS[id].name}` : `${BUILDINGS[id].name} (nível ${buildingLevel(world, id)})`,
           open: open({ kind: 'building', id }),
@@ -300,7 +382,7 @@ export class VillageScene extends Phaser.Scene {
     } else {
       this.mayor.walkTo({ x: this.mayor.x, y: this.mayor.y }, 0);
     }
-    this.mayor.animate(dt);
+    this.mayor.animate(1);
 
     const near = this.nearestInteractable();
     if (this.pendingInteract && near?.id === this.pendingInteract) {
@@ -325,7 +407,7 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private clampWalk(p: Point): Point {
-    return { x: Phaser.Math.Clamp(p.x, 24, WORLD_W - 24), y: Phaser.Math.Clamp(p.y, ABYSS_EDGE_Y + 40, WORLD_H - 8) };
+    return { x: Phaser.Math.Clamp(p.x, 24, WORLD_W - 24), y: Phaser.Math.Clamp(p.y, ABYSS_EDGE_Y + 44, WORLD_H - 8) };
   }
 
   private heroAt(x: number, y: number): HeroSprite | null {
@@ -345,7 +427,7 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private onTap(p: Phaser.Input.Pointer): void {
-    if (p.getDistance() > 14) return;
+    if (p.getDistance() > 14 || this.input.pointer2?.isDown) return;
     const hero = this.heroAt(p.worldX, p.worldY);
     if (hero) {
       this.ui.open({ kind: 'hero', heroId: hero.id });
@@ -385,7 +467,8 @@ export class VillageScene extends Phaser.Scene {
     this.syncHeroes(initial, dt);
 
     const night = nightFactor(world.tick);
-    this.night.setFillStyle(0x0b0f24, night * 0.5);
+    // De dia fica uma névoa fria; à noite escurece de vez.
+    this.night.setFillStyle(0x0b0f24, 0.1 + night * 0.45);
     const lightAlpha = 0.2 + 0.8 * night;
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
     this.mayor.placeLabels(this.labelScale, night);
@@ -395,11 +478,10 @@ export class VillageScene extends Phaser.Scene {
     this.horn.ready.setVisible(hornReady);
     this.board.update(town.contracts.length, buildingLevel(world, 'guilda') >= 1);
     this.coffer.update(town.treasury);
-    this.campfire.bedrolls.setVisible(buildingLevel(world, 'estalagem') === 0);
 
     const corruption = Math.max(...world.acts.filter((a) => a.unlocked).map((a) => a.corruption));
     const pulse = 0.08 * Math.sin(this.time.now / 600);
-    this.abyss.glow.setAlpha(0.18 + (0.55 * corruption) / 100 + pulse);
+    this.abyss.glow.setAlpha(0.3 + (0.6 * corruption) / 100 + pulse);
     const parties = world.parties.filter((p) => p.outcome !== 'fuga' || p.memberIds.length > 0);
     const fighting = parties.some((p) => p.phase === 'combate');
     const badge = parties.length === 0 ? '' : `${parties.length} ${parties.length === 1 ? 'grupo' : 'grupos'} no abismo${fighting ? ' · em combate' : ''}`;
@@ -409,7 +491,7 @@ export class VillageScene extends Phaser.Scene {
     if (this.time.now >= this.treasuryCheckAt) {
       this.treasuryCheckAt = this.time.now + 700;
       const gain = town.treasury - this.treasurySeen;
-      if (!initial && gain >= 5) this.floatText(LANDMARKS.cofre.x + 20, LANDMARKS.cofre.y - 40, `+${Math.round(gain)} ouro`, '#ffd86a');
+      if (!initial && gain >= 5) this.floatText(LANDMARKS.cofre.x + 16, LANDMARKS.cofre.y - 44, `+${Math.round(gain)} ouro`, '#ffd86a');
       this.treasurySeen = town.treasury;
     }
   }
@@ -475,7 +557,7 @@ export class VillageScene extends Phaser.Scene {
       const arrived = sprite.hidden ? true : sprite.walkTo(commit.point, step);
       if (arrived && commit.arrivedAt === null) commit.arrivedAt = this.walkClock;
       if (arrived && commit.hide && !sprite.hidden) sprite.setHidden(true);
-      sprite.animate(this.session.paused ? 0 : dt * this.session.speed);
+      sprite.animate(this.session.paused ? 0 : this.session.speed);
       const here = arrived && commit.key === plan.key && hero.status === 'town';
       sprite.setActivityIcon(here ? (hero.activity?.kind ?? null) : null);
       sprite.setSelected(this.ui.selectedHeroId === hero.id);
@@ -495,16 +577,15 @@ export class VillageScene extends Phaser.Scene {
     order.forEach((hero, index) => {
       if (this.graves.has(hero.id)) return;
       const p = gravePoint(index);
-      const stone = this.add.image(p.x, p.y, 'grave').setOrigin(0.5, 1).setDepth(p.y);
-      const name = this.add
-        .text(p.x, p.y + 2, hero.name, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#cfc8bb', stroke: '#000', strokeThickness: 2 })
+      const stone = this.add.image(p.x, p.y, 'grave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y);
+      const name = smooth(this.add.text(p.x, p.y + 2, hero.name, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#cfc8bb', stroke: '#000', strokeThickness: 3 }))
         .setOrigin(0.5, 0)
         .setDepth(DEPTH.labels)
         .setScale(Math.min(this.labelScale, 1.4));
       if (!initial) {
         stone.setAlpha(0);
         this.tweens.add({ targets: stone, alpha: 1, duration: 1200 });
-        this.add.image(p.x, p.y + 4, 'mound').setDepth(p.y - 1);
+        this.add.image(p.x, p.y + 6, 'mound').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y - 1);
       }
       this.graves.set(hero.id, { stone, name });
     });
@@ -538,8 +619,7 @@ export class VillageScene extends Phaser.Scene {
   // ── Efeitos ─────────────────────────────────────────────────────────────
 
   private floatText(x: number, y: number, text: string, color: string): void {
-    const t = this.add
-      .text(x, y, text, { fontFamily: 'Georgia, serif', fontSize: '16px', color, stroke: '#000', strokeThickness: 4, fontStyle: 'bold' })
+    const t = smooth(this.add.text(x, y, text, { fontFamily: 'Georgia, serif', fontSize: '16px', color, stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }))
       .setOrigin(0.5)
       .setDepth(DEPTH.floating)
       .setScale(this.labelScale);
@@ -548,7 +628,7 @@ export class VillageScene extends Phaser.Scene {
 
   private sparkle(x: number, y: number): void {
     for (let i = 0; i < 18; i++) {
-      const s = this.add.image(x, y, 'spark').setTint(0xffd86a).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.floating);
+      const s = this.add.image(x, y, 'spark').setScale(ART_SCALE).setTint(0xffd86a).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.floating);
       const a = (i / 18) * Math.PI * 2;
       this.tweens.add({
         targets: s,
@@ -563,7 +643,7 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private marker(p: Point): void {
-    const ring = this.add.ellipse(p.x, p.y, 28, 12).setStrokeStyle(2, 0xffd86a, 0.9).setDepth(p.y - 1);
+    const ring = this.add.image(p.x, p.y, 'ring').setScale(ART_SCALE).setDepth(p.y - 1);
     this.tweens.add({ targets: ring, scaleX: 0.3, scaleY: 0.3, alpha: 0, duration: 500, onComplete: () => ring.destroy() });
   }
 }

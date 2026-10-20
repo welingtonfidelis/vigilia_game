@@ -3,8 +3,12 @@
 import { buildingLevel } from '../sim/index.ts';
 import type { BuildingId, Hero, World } from '../sim/index.ts';
 
-export const WORLD_W = 1600;
-export const WORLD_H = 1000;
+/** Lado do tile no mundo: 16 px de arte × 2. */
+export const TILE = 32;
+export const COLS = 50;
+export const ROWS = 32;
+export const WORLD_W = COLS * TILE;
+export const WORLD_H = ROWS * TILE;
 
 export interface Point {
   x: number;
@@ -16,37 +20,68 @@ export interface Lot extends Point {
   h: number;
 }
 
-/** Centro de cada lote. A porta fica na borda de baixo. */
-export const LOTS: Record<BuildingId, Lot> = {
-  templo: { x: 520, y: 330, w: 220, h: 170 },
-  taverna: { x: 360, y: 590, w: 230, h: 170 },
-  estalagem: { x: 560, y: 830, w: 230, h: 160 },
-  guilda: { x: 1090, y: 330, w: 220, h: 170 },
-  ferreiro: { x: 1250, y: 590, w: 210, h: 160 },
-  campo: { x: 1060, y: 840, w: 250, h: 150 },
+/** Retângulo em tiles. */
+export interface TileRect {
+  tx: number;
+  ty: number;
+  tw: number;
+  th: number;
+}
+
+const lotOf = (r: TileRect): Lot => ({ x: (r.tx + r.tw / 2) * TILE, y: (r.ty + r.th / 2) * TILE, w: r.tw * TILE, h: r.th * TILE });
+
+/** Lotes em tiles. O prédio fica encostado na borda de baixo, com a porta no centro. */
+export const LOT_TILES: Record<BuildingId, TileRect> = {
+  templo: { tx: 7, ty: 9, tw: 7, th: 6 },
+  taverna: { tx: 15, ty: 9, tw: 7, th: 6 },
+  guilda: { tx: 29, ty: 9, tw: 7, th: 6 },
+  estalagem: { tx: 8, ty: 20, tw: 7, th: 6 },
+  campo: { tx: 29, ty: 20, tw: 9, th: 6 },
+  ferreiro: { tx: 39, ty: 20, tw: 7, th: 6 },
 };
 
-export const PLAZA = { x: 800, y: 560, r: 150 };
-export const ABYSS_EDGE_Y = 200;
+/** Centro de cada lote em unidades do mundo. */
+export const LOTS: Record<BuildingId, Lot> = Object.fromEntries(
+  Object.entries(LOT_TILES).map(([id, r]) => [id, lotOf(r)]),
+) as Record<BuildingId, Lot>;
+
+export const PLAZA_TILES: TileRect = { tx: 20, ty: 15, tw: 10, th: 6 };
+export const PLAZA = { x: 25 * TILE, y: 18 * TILE, r: 150 };
+export const ABYSS_EDGE_Y = 6 * TILE;
+
+/** Estradas de terra (no mínimo 2 tiles de largura, para o autotile ter borda dos dois lados). */
+export const ROADS: TileRect[] = [
+  PLAZA_TILES,
+  { tx: 3, ty: 17, tw: 45, th: 2 }, // estrada de cima: berrante ↔ cemitério
+  { tx: 8, ty: 26, tw: 38, th: 2 }, // estrada de baixo: estalagem, campo, ferreiro
+  { tx: 24, ty: 7, tw: 2, th: 8 }, // praça → abismo (a abadia ocupa a linha 6)
+  { tx: 24, ty: 21, tw: 2, th: 11 }, // praça → portão
+  { tx: 9, ty: 15, tw: 3, th: 2 }, // porta do templo
+  { tx: 17, ty: 15, tw: 3, th: 2 }, // porta da taverna
+  { tx: 31, ty: 15, tw: 3, th: 2 }, // porta da guilda
+  { tx: 42, ty: 14, tw: 3, th: 3 }, // portão do cemitério
+  { tx: 2, ty: 16, tw: 3, th: 3 }, // pé da torre do berrante
+];
+
+/** Cemitério cercado (em tiles) e a grade das covas lá dentro. */
+export const CEMETERY_TILES: TileRect = { tx: 39, ty: 7, tw: 10, th: 7 };
+export const CEMETERY = { x: 40.5 * TILE + 8, y: 8.5 * TILE + 12, cols: 6, dx: 48, dy: 44 };
 
 export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira';
 
 export const LANDMARKS: Record<Landmark, Point> = {
-  berrante: { x: 130, y: 400 },
-  quadro: { x: 905, y: 455 },
-  cofre: { x: 800, y: 560 },
-  abismo: { x: 800, y: 190 },
-  cemiterio: { x: 1440, y: 300 },
-  portao: { x: 800, y: 985 },
-  fogueira: { x: 690, y: 655 },
+  berrante: { x: 3.5 * TILE, y: 13 * TILE },
+  quadro: { x: 28.5 * TILE, y: 16 * TILE },
+  cofre: { x: 25 * TILE, y: 18.5 * TILE },
+  abismo: { x: 25 * TILE, y: 6.5 * TILE },
+  cemiterio: { x: 43.5 * TILE, y: 14 * TILE },
+  portao: { x: 25 * TILE, y: WORLD_H - 12 },
+  fogueira: { x: 19.5 * TILE, y: 22.5 * TILE },
 };
-
-/** Área das covas: grade crescendo para baixo a partir do canto do cemitério. */
-export const CEMETERY = { x: 1355, y: 240, cols: 4, dx: 52, dy: 46 };
 
 export const door = (id: BuildingId): Point => {
   const lot = LOTS[id];
-  return { x: lot.x, y: lot.y + lot.h / 2 + 18 };
+  return { x: lot.x, y: lot.y + lot.h / 2 + TILE / 2 };
 };
 
 export function gravePoint(index: number): Point {

@@ -22,7 +22,7 @@ export function startRenderer(parent: HTMLElement, session: Session, ui: UiStore
       parent,
       backgroundColor: '#0b0a0c',
       scale: { mode: Phaser.Scale.RESIZE, width: parent.clientWidth, height: parent.clientHeight },
-      render: { antialias: true, pixelArt: false, roundPixels: false },
+      render: { pixelArt: true, roundPixels: true, antialias: false },
       input: { activePointers: 2 },
       // O som é nosso (src/audio); sem isto o Phaser abriria um segundo AudioContext.
       audio: { noAudio: true },

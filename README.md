@@ -15,14 +15,14 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 - **Prefeito:** WASD/setas ou clique (toque) no chão para andar. Clique num prédio, no berrante, no quadro, no cofre, no abismo ou no cemitério: o prefeito vai até lá e interage. Perto de algo, **E** interage.
 - **Heróis:** clique num herói para ver a ficha (vida, ânimo com a marca de fuga, traços revelados e ocultos, vínculos, feitos). Eles não obedecem: escolhem o que fazer e com quem descer.
 - **Tempo:** Espaço pausa · 1, 2, 3 = 1×, 2×, 4× · **M** abismo · **H** heróis · **C** crônica · **Esc** fecha.
+- **Som:** liga no primeiro clique (regra dos navegadores). **N** ou o alto-falante no topo silencia; Menu → Som ajusta geral, música, ambiente e efeitos.
 - **Save:** salva sozinho no `localStorage` a cada dia do jogo e ao sair da página. Menu → Salvar/Carregar/Novo jogo.
 - **Celular:** toque para andar e interagir; os painéis viram folhas acima da barra de navegação; Menu → A−/A+ ajusta o tamanho da interface.
-- **Som:** liga no primeiro clique (regra dos navegadores). **N** ou o alto-falante no topo silencia; Menu → Som ajusta geral, música, ambiente e efeitos.
 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 48 testes (núcleo + sessão, save no navegador, planta da vila, textos, som)
+npm test                                        # 54 testes (núcleo, sessão, save, planta e tiles da vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
@@ -42,7 +42,10 @@ src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
 src/render/ Phaser: só lê o World a cada quadro
   VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
-  buildings.ts, environment.ts, art.ts, sprites.ts   arte placeholder gerada em código
+  town.ts, ground.ts  vila em tiles do Tiny Town (autotile de terra, florestas, abismo, cemitério, marcos)
+  buildings.ts   os 6 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
+  sprites.ts     heróis e prefeito do 0x72 (parado/correndo), assets.ts e atlas0x72.ts mapeiam classes e monstros
+  art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
 src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
   director.ts    eventos → efeitos (prioridade e intervalo mínimo) e clima do mundo → música (puro, testado)
@@ -111,6 +114,13 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 - A Bippinbits está desenvolvendo a versão completa oficial do Tristram. Este projeto não tem relação com ela nem com a Bippinbits.
 - "Tristram" e "Diablo" são marcas da Blizzard Entertainment. Vigília não usa elementos desse universo e não é afiliado à Blizzard.
 
+### Arte de terceiros (CC0)
+
+As duas licenças são CC0 (domínio público), com uso livre inclusive comercial. Creditamos por gentileza:
+
+- **[Tiny Town](https://kenney.nl/assets/tiny-town)**, de Kenney (kenney.nl): vila, prédios, árvores e caminhos. Fica em `public/assets/kenney-tiny-town/`, com o `License.txt` original.
+- **[16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)**, de Robert (0x72): heróis, monstros e masmorra. Fica em `public/assets/0x72-dungeontileset-ii/`, com o `LICENSE.txt` e a origem do arquivo.
+
 ## O que o M1 entrega
 
 - [x] Vila em Phaser: 6 lotes (ruína × níveis 1–3), berrante, quadro de contratos, cofre com a pilha de ouro, fogueira, cemitério com uma cova por herói caído, abismo com a abadia em ruínas e brilho que cresce com a corrupção, dia e noite
@@ -120,7 +130,7 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 - [x] HUD (tesouro, data e hora, população, heróis/vagas, materiais, velocidade), objetivos abertos, avisos da crônica e fim de ato
 - [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
 - [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
-- [x] Arte placeholder 100% gerada em código (sem asset externo)
+- [x] Pixel art CC0 (Tiny Town + DungeonTileset II): zoom em passos de pixel inteiro, cena dessaturada e escurecida para a fantasia sombria
 - [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
 
 ## Próximo: M2 (pessoas)

@@ -1274,3 +1274,100 @@ kbd {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Sprites do 0x72 na UI ───────────────────────────────────────────── */
+
+.px {
+  display: inline-block;
+  flex: none;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  vertical-align: bottom;
+}
+
+.px-anim {
+  animation: px-frames 0.7s steps(var(--px-steps)) infinite;
+}
+
+@keyframes px-frames {
+  from {
+    background-position: var(--px-from) var(--px-y);
+  }
+  to {
+    background-position: var(--px-to) var(--px-y);
+  }
+}
+
+.px-ghost {
+  opacity: 0.55;
+  filter: grayscale(1) brightness(1.2);
+}
+
+.unit {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.unit-art {
+  flex: none;
+  width: 2.4rem;
+  min-height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.unit-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.unit.down .unit-art {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.hero-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.7rem;
+  margin-bottom: 0.3rem;
+}
+
+.hero-portrait {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 4rem;
+  height: 4.6rem;
+  padding-bottom: 0.2rem;
+  border-radius: 0.5rem;
+  background: radial-gradient(ellipse at 50% 85%, #3a3024 0%, #17130e 70%);
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+}
+
+.roster-art {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 2rem;
+  height: 1.6rem;
+}
+
+.roster-art .rank {
+  position: absolute;
+  right: -0.35rem;
+  bottom: -0.1rem;
+  font-size: 0.7rem;
+}
+
+.panel-body a {
+  color: #f2d48a;
+}

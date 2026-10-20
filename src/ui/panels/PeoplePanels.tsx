@@ -7,6 +7,7 @@ import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../
 import { Bar, HeroLink, PanelShell, useGame } from '../components.tsx';
 import { activityText, className, liveHp } from '../format.ts';
 import { graveOrder } from '../../render/layout.ts';
+import { HeroPortrait } from '../PixelSprite.tsx';
 
 const ORDER: Record<HeroStatus, number> = { expedition: 0, town: 1, retired: 2, left: 3, dead: 4 };
 
@@ -17,7 +18,10 @@ function HeroRow(props: { hero: Hero }) {
   return (
     <li class={`roster-row status-${h.status}`}>
       <button class="roster-main" onClick={() => ui.open({ kind: 'hero', heroId: h.id })}>
-        <span class={`rank rank-${h.rank}`}>{h.rank}</span>
+        <span class="roster-art">
+          <HeroPortrait hero={h} scale={1} animate={false} />
+          <span class={`rank rank-${h.rank}`}>{h.rank}</span>
+        </span>
         <span class="roster-name">
           <strong>{h.name}</strong>
           <small>
@@ -222,7 +226,21 @@ export function MenuPanel() {
         <li>Clique num prédio, no berrante, no quadro ou no cofre: o prefeito vai até lá e interage. Perto de algo, E interage.</li>
         <li>Clique num herói para ver a ficha.</li>
         <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · M: abismo · H: heróis · C: crônica · N: som · Esc: fechar.</li>
+        <li>Roda do mouse ou pinça com dois dedos: aproximar ou afastar o mapa.</li>
       </ul>
+
+      <h3>Créditos</h3>
+      <p class="sub">
+        Arte em pixel com licença CC0:{' '}
+        <a href="https://kenney.nl/assets/tiny-town" target="_blank" rel="noopener noreferrer">
+          Tiny Town
+        </a>
+        , de Kenney (a vila), e{' '}
+        <a href="https://0x72.itch.io/dungeontileset-ii" target="_blank" rel="noopener noreferrer">
+          16x16 DungeonTileset II
+        </a>
+        , de 0x72 (heróis, monstros e masmorra).
+      </p>
     </PanelShell>
   );
 }

@@ -1,11 +1,13 @@
-// Heróis e prefeito na vila. Só posição visual: quem decide para onde vão é o núcleo.
+// Heróis e prefeito com os sprites do 0x72 (parado/correndo, virando para o lado do movimento).
+// Só posição visual: quem decide para onde vão é o núcleo.
 
 import Phaser from 'phaser';
 import type { ActivityKind, Hero } from '../sim/index.ts';
-import { HAIR_STYLES, HEAD_Y, ICON_KINDS } from './art.ts';
-import { DEPTH } from './environment.ts';
-import { hash, type Point } from './layout.ts';
-import { HAIR, RANK_COLORS, SKIN } from './palette.ts';
+import { ICON_KINDS } from './art.ts';
+import { ART_SCALE, CLASS_LOOK, heroSprite, MAYOR_SPRITE } from './assets.ts';
+import { DEPTH, smooth } from './town.ts';
+import type { Point } from './layout.ts';
+import { RANK_COLORS } from './palette.ts';
 
 const LABEL_STYLE = {
   fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
@@ -15,25 +17,27 @@ const LABEL_STYLE = {
   strokeThickness: 3,
 };
 
+/** Altura da cabeça acima dos pés (o quadro do 0x72 tem folga em cima). */
+const HEAD_Y = -44;
+
 abstract class Walker {
   readonly root: Phaser.GameObjects.Container;
-  protected readonly body: Phaser.GameObjects.Image;
-  protected readonly head: Phaser.GameObjects.Image;
-  protected readonly hat: Phaser.GameObjects.Image;
-  protected readonly hair: Phaser.GameObjects.Image | null;
-  protected phase = 0;
+  protected readonly body: Phaser.GameObjects.Sprite;
+  protected readonly weapon: Phaser.GameObjects.Image | null;
+  protected readonly base: string;
   protected moving = false;
+  private playing = '';
+  private left = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, bodyKey: string, hatKey: string, hairStyle: number | null) {
-    const shadow = scene.add.image(0, 0, 'shadow');
-    this.body = scene.add.image(0, 0, bodyKey).setOrigin(0.5, 1);
-    this.head = scene.add.image(0, HEAD_Y, 'head');
-    this.hair = hairStyle === null ? null : scene.add.image(0, HEAD_Y - 3, `hair-${hairStyle}`);
-    this.hat = scene.add.image(0, HEAD_Y - 5, hatKey);
-    const parts: Phaser.GameObjects.GameObject[] = [shadow, this.body, this.head];
-    if (this.hair) parts.push(this.hair);
-    parts.push(this.hat);
-    this.root = scene.add.container(x, y, parts).setDepth(y);
+  constructor(scene: Phaser.Scene, x: number, y: number, base: string, weapon: string | null) {
+    this.base = base;
+    const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE);
+    this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(ART_SCALE) : null;
+    this.body = scene.add.sprite(0, 2, 'dungeon', `${base}_idle_anim_f0`).setOrigin(0.5, 1).setScale(ART_SCALE);
+    const parts: Phaser.GameObjects.GameObject[] = [shadow, this.body];
+    if (this.weapon) parts.push(this.weapon);
+    this.root = scene.add.container(Math.round(x), Math.round(y), parts).setDepth(y);
+    this.play('idle');
   }
 
   get x(): number {
@@ -62,19 +66,24 @@ abstract class Walker {
   }
 
   protected face(left: boolean): void {
+    if (left === this.left) return;
+    this.left = left;
     this.body.setFlipX(left);
-    this.hat.setFlipX(left);
-    this.hair?.setFlipX(left);
+    if (this.weapon) this.weapon.setFlipX(left).setX(left ? -10 : 10);
   }
 
-  animate(dt: number): void {
-    if (this.moving) this.phase += dt * 14;
-    else this.phase = 0;
-    const bob = this.moving ? Math.abs(Math.sin(this.phase)) * -2.5 : 0;
-    this.body.y = bob;
-    this.head.y = HEAD_Y + bob;
-    this.hat.y = HEAD_Y - 5 + bob;
-    if (this.hair) this.hair.y = HEAD_Y - 3 + bob;
+  private play(kind: 'idle' | 'run'): void {
+    const key = `${this.base}_${kind}`;
+    if (this.playing === key) return;
+    this.playing = key;
+    this.body.play(key, true);
+  }
+
+  /** `rate` acompanha a velocidade do jogo (0 = pausado, a respiração continua devagar). */
+  animate(rate: number): void {
+    this.play(this.moving ? 'run' : 'idle');
+    this.body.anims.timeScale = Math.min(2, rate > 0 ? rate : 0.6);
+    if (this.weapon) this.weapon.y = this.moving && (this.body.anims.currentFrame?.index ?? 0) % 2 === 0 ? -14 : -12;
   }
 }
 
@@ -100,21 +109,16 @@ export class HeroSprite extends Walker {
   commit: Commit | null = null;
 
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
-    const h = hash(hero.id, 77);
-    super(scene, at.x, at.y, `body-${hero.classId}`, `hat-${hero.classId}`, h % HAIR_STYLES);
+    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), CLASS_LOOK[hero.classId].weapon);
     this.id = hero.id;
-    this.head.setTint(SKIN[h % SKIN.length]!);
-    this.hair?.setTint(HAIR[(h >>> 8) % HAIR.length]!);
-    this.ring = scene.add.image(0, 2, 'ring').setVisible(false);
+    this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
     this.root.addAt(this.ring, 0);
-    this.icon = scene.add.image(0, HEAD_Y - 22, 'icon-aguardar').setVisible(false);
+    this.icon = scene.add.image(0, HEAD_Y - 10, 'icon-aguardar').setOrigin(0.5, 1).setScale(ART_SCALE).setVisible(false);
     this.root.add(this.icon);
-    this.label = scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE).setOrigin(0.5, 0).setDepth(DEPTH.labels);
-    this.badgeDot = scene.add.circle(0, 0, 7, 0xffffff).setStrokeStyle(1.5, 0x0b0a08);
-    this.badgeText = scene.add
-      .text(0, 0, '', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#0b0a08', fontStyle: 'bold' })
-      .setOrigin(0.5);
-    this.badge = scene.add.container(at.x + 11, at.y + HEAD_Y - 6, [this.badgeDot, this.badgeText]).setDepth(DEPTH.labels);
+    this.label = smooth(scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE)).setOrigin(0.5, 0).setDepth(DEPTH.labels);
+    this.badgeDot = scene.add.circle(0, 0, 7, 0xffffff).setStrokeStyle(2, 0x0b0a08);
+    this.badgeText = smooth(scene.add.text(0, 0, '', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#0b0a08', fontStyle: 'bold' })).setOrigin(0.5);
+    this.badge = scene.add.container(at.x + 13, at.y + HEAD_Y, [this.badgeDot, this.badgeText]).setDepth(DEPTH.labels);
     this.sync(hero);
   }
 
@@ -129,11 +133,8 @@ export class HeroSprite extends Walker {
   }
 
   setActivityIcon(kind: ActivityKind | null): void {
-    if (kind && ICON_KINDS.includes(kind)) {
-      this.icon.setTexture(`icon-${kind}`).setVisible(true);
-    } else {
-      this.icon.setVisible(false);
-    }
+    if (kind && ICON_KINDS.includes(kind)) this.icon.setTexture(`icon-${kind}`).setVisible(true);
+    else this.icon.setVisible(false);
   }
 
   setSelected(selected: boolean): void {
@@ -149,7 +150,7 @@ export class HeroSprite extends Walker {
 
   placeLabels(labelScale: number): void {
     this.label.setPosition(this.root.x, this.root.y + 5).setScale(labelScale);
-    this.badge.setPosition(this.root.x + 11, this.root.y + HEAD_Y - 6).setScale(labelScale);
+    this.badge.setPosition(this.root.x + 13, this.root.y + HEAD_Y).setScale(labelScale);
   }
 
   hits(x: number, y: number): boolean {
@@ -168,18 +169,15 @@ export class Mayor extends Walker {
   readonly label: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'body-mayor', 'hat-mayor', null);
-    this.head.setTint(SKIN[1]!);
-    this.lantern = scene.add.image(x + 11, y - 6, 'glow').setTint(0xffc46b).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(2.2);
-    this.label = scene.add
-      .text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' })
+    super(scene, x, y, MAYOR_SPRITE, null);
+    this.lantern = scene.add.image(x + 11, y - 14, 'glow').setTint(0xffc46b).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(2.2);
+    this.label = smooth(scene.add.text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' }))
       .setOrigin(0.5, 0)
       .setDepth(DEPTH.labels);
   }
 
   placeLabels(labelScale: number, night: number): void {
     this.label.setPosition(this.root.x, this.root.y + 5).setScale(labelScale);
-    const flip = this.body.flipX ? -1 : 1;
-    this.lantern.setPosition(this.root.x + 11 * flip, this.root.y - 6).setAlpha(0.15 + 0.75 * night);
+    this.lantern.setPosition(this.root.x + (this.body.flipX ? -10 : 10), this.root.y - 16).setAlpha(0.15 + 0.75 * night);
   }
 }
