@@ -17,7 +17,7 @@ import type { Session, SessionEvent } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { makeTextures } from './art.ts';
 import { animFrames, ART_SCALE, CLASS_LOOK, DUNGEON_URL, FRAMES_0X72, MAYOR_SPRITE, TOWN_URL } from './assets.ts';
-import { drawBuilding } from './buildings.ts';
+import { PACK_ASSETS, buildingTexture, lightsTexture, packUrl } from './pack.ts';
 import { moveAxis } from './keys.ts';
 import {
   ABYSS_EDGE_Y,
@@ -30,7 +30,6 @@ import {
   heroDestination,
   isNightOwl,
   LANDMARKS,
-  LOT_TILES,
   LOTS,
   slotOffset,
   THERMAL_TILES,
@@ -87,8 +86,8 @@ interface Interactable {
 }
 
 interface BuildingView {
-  tiles: Phaser.GameObjects.Container;
-  lights: Phaser.GameObjects.Graphics;
+  base: Phaser.GameObjects.Image;
+  lights: Phaser.GameObjects.Image;
   sign: Phaser.GameObjects.Text;
   level: number;
 }
@@ -114,6 +113,7 @@ export class VillageScene extends Phaser.Scene {
   private kids = new Map<number, ChildSprite>();
   private citizens = new Map<number, CitizenSprite>();
   private buildings = new Map<BuildingId, BuildingView>();
+  private houseLights: Phaser.GameObjects.Image[] = [];
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
   private mayor!: Mayor;
@@ -146,6 +146,21 @@ export class VillageScene extends Phaser.Scene {
   preload(): void {
     this.load.spritesheet('town', TOWN_URL, { frameWidth: 16, frameHeight: 16 });
     this.load.image('dungeon', DUNGEON_URL);
+    for (const a of PACK_ASSETS) {
+      // UI/retratos são DOM (SVG/PNG), não texturas do Phaser.
+      if (a.type === 'ui-icon' || a.type === 'portrait') continue;
+      const url = packUrl(a.file);
+      const fence = a.id === 'tile/town/cemetery-fence' || a.id === 'tile/town/wood-fence';
+      if (a.type === 'character' || a.type === 'fx' || fence) {
+        const fw = a.type === 'tileset' ? 16 : a.frameSize![0];
+        const fh = a.type === 'tileset' ? 16 : a.frameSize![1];
+        this.load.spritesheet(a.id, url, { frameWidth: fw, frameHeight: fh });
+      } else {
+        this.load.image(a.id, url);
+      }
+      if (a.lights) this.load.image(lightsTexture(a.id), packUrl(a.lights));
+    }
+    this.load.json('vigilia-terrain', packUrl('export/tiles/town-terrain.json'));
   }
 
   create(): void {
@@ -160,7 +175,7 @@ export class VillageScene extends Phaser.Scene {
     buildProps(this);
     buildCampfire(this);
     buildThermal(this);
-    buildCottages(this);
+    this.houseLights = buildCottages(this);
     this.horn = buildHornTower(this);
     this.board = buildBoard(this);
     this.coffer = buildCoffer(this);
@@ -250,17 +265,39 @@ export class VillageScene extends Phaser.Scene {
     }
     this.anims.create({ key: 'coin', frames: [0, 1, 2, 3].map((i) => ({ key: 'dungeon', frame: `coin_anim_f${i}` })), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'fire', frames: [{ key: 'fire0' }, { key: 'fire1' }, { key: 'fire2' }], frameRate: 7, repeat: -1 });
+
+    // Animações do pack novo (personagens e FX).
+    for (const a of PACK_ASSETS) {
+      if (a.animations) {
+        for (const [name, anim] of Object.entries(a.animations)) {
+          this.anims.create({
+            key: `${a.id}:${name}`,
+            frames: anim.frames.map((frame) => ({ key: a.id, frame })),
+            frameRate: anim.fps,
+            repeat: name === 'hit' ? 0 : -1,
+          });
+        }
+      }
+      if (a.type === 'fx' && a.frames) {
+        this.anims.create({
+          key: a.id,
+          frames: Array.from({ length: a.frames }, (_, i) => ({ key: a.id, frame: i })),
+          frameRate: a.fps ?? 8,
+          repeat: -1,
+        });
+      }
+    }
   }
 
   // ── Prédios e marcos ───────────────────────────────────────────────────
 
   private createBuilding(id: BuildingId): void {
     const lot = LOTS[id];
-    const r = LOT_TILES[id];
-    const tiles = this.add.container(r.tx * TILE, r.ty * TILE).setDepth(lot.y + lot.h / 2 - 2);
-    const lights = this.add.graphics({ x: r.tx * TILE, y: r.ty * TILE }).setDepth(DEPTH.lights).setBlendMode(Phaser.BlendModes.ADD);
-    const sign = label(this, lot.x, lot.y + lot.h / 2 + 2, '', 14);
-    const view: BuildingView = { tiles, lights, sign, level: -1 };
+    const y = lot.y + lot.h / 2;
+    const base = this.add.image(lot.x, y, buildingTexture(id, 1)).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
+    const lights = this.add.image(lot.x, y, lightsTexture(buildingTexture(id, 1))).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.lights).setAlpha(0);
+    const sign = label(this, lot.x, y + 2, '', 14);
+    const view: BuildingView = { base, lights, sign, level: -1 };
     this.buildings.set(id, view);
     this.syncBuilding(id, false);
   }
@@ -270,7 +307,14 @@ export class VillageScene extends Phaser.Scene {
     const level = buildingLevel(this.world, id);
     if (level === view.level) return;
     const lot = LOTS[id];
-    drawBuilding(this, view.tiles, view.lights, id, level, LOT_TILES[id]);
+    const texture = buildingTexture(id, level);
+    view.base.setTexture(texture);
+    if (this.textures.exists(lightsTexture(texture))) {
+      view.lights.setTexture(lightsTexture(texture));
+      view.lights.setVisible(true);
+    } else {
+      view.lights.setVisible(false);
+    }
     view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}`);
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
     if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y + lot.h / 4);
@@ -567,8 +611,9 @@ export class VillageScene extends Phaser.Scene {
     const night = nightFactor(world.tick);
     // De dia fica uma névoa fria; à noite escurece de vez.
     this.night.setFillStyle(0x0b0f24, 0.1 + night * 0.45);
-    const lightAlpha = 0.2 + 0.8 * night;
+    const lightAlpha = Phaser.Math.Clamp((night - 0.1) / 0.5, 0, 1);
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
+    for (const light of this.houseLights) light.setAlpha(lightAlpha);
     this.mayor.placeLabels(this.labelScale, night);
 
     const town = world.town;
@@ -769,7 +814,7 @@ export class VillageScene extends Phaser.Scene {
     order.forEach((hero, index) => {
       if (this.graves.has(hero.id)) return;
       const p = gravePoint(index);
-      const stone = this.add.image(p.x, p.y, 'grave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y);
+      const stone = this.add.image(p.x, p.y, 'decal/grave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y);
       const name = smooth(this.add.text(p.x, p.y + 2, hero.name, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#cfc8bb', stroke: '#000', strokeThickness: 3 }))
         .setOrigin(0.5, 0)
         .setDepth(DEPTH.labels)

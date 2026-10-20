@@ -1,0 +1,56 @@
+{
+ "frames": {
+  "char-villager-lavrador-m-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 21
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-villager-lavrador-m-01": {
+   "frame": {
+    "x": 16,
+    "y": 0,
+    "w": 16,
+    "h": 21
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "char-villager-lavrador-m.png",
+  "size": {
+   "w": 32,
+   "h": 21
+  },
+  "frameSize": {
+   "w": 16,
+   "h": 21
+  },
+  "columns": 2,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "idle",
+    "from": 0,
+    "to": 1,
+    "fps": 3
+   },
+   {
+    "name": "walk",
+    "from": 0,
+    "to": 1,
+    "fps": 8
+   }
+  ]
+ }
+}

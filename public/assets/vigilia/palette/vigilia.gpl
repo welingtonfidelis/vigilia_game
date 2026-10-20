@@ -1,5 +1,5 @@
 GIMP Palette
-Name: Vigilia 32
+Name: Vigilia 45
 Columns: 8
 # Paleta inicial de trabalho. Consolidar com o artista antes do lote.
 # O motor escurece (0,8) e dessatura (-55%); a arte pode sair um pouco mais clara.
@@ -35,3 +35,17 @@ Columns: 8
 255 138  42 Brasa
 154  42  42 Sangue
 250 246 234 Branco
+# Extras (sombras de telhado/casaco, pele escura, abismo, reboco)
+ 30  84  86 Agua escura
+ 96  38  40 Vermelho escuro
+ 38  56  92 Azul escuro
+ 48  20  70 Abismo escuro
+122 150  64 Verde doentio
+156 104  72 Pele escura
+112  72  50 Pele escura sombra
+112 146  84 Verde claro
+150 112  52 Ouro escuro
+130 104 150 Roxo claro
+ 78  82  92 Pedra escura
+204 192 168 Reboco
+160 146 124 Reboco sombra

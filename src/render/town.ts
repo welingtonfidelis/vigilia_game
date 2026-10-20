@@ -1,8 +1,9 @@
 // A vila montada com tiles do Tiny Town (Kenney) e peças do DungeonTileset II (0x72).
 
 import Phaser from 'phaser';
-import { ART_SCALE, T } from './assets.ts';
-import { ABYSS_ROWS, AUTUMN, dirtMask, dirtTile, FORESTS, inRect } from './ground.ts';
+import { ART_SCALE } from './assets.ts';
+import { AUTUMN, dirtMask, FORESTS, inRect, pathMask } from './ground.ts';
+import { PACK_TERRAIN_COLUMNS, PACK_TILES } from './pack.ts';
 import {
   CEMETERY_TILES,
   COLS,
@@ -42,70 +43,88 @@ function seeded(seed: number): () => number {
   };
 }
 
-function nine(set: readonly number[], r: TileRect, x: number, y: number): number {
-  const col = x === r.tx ? 0 : x === r.tx + r.tw - 1 ? 2 : 1;
-  const row = y === r.ty ? 0 : y === r.ty + r.th - 1 ? 2 : 1;
-  return set[row * 3 + col]!;
+function tileIndex(name: string): number {
+  const cell = PACK_TILES[name];
+  if (!cell) throw new Error(`tile do pack ausente: ${name}`);
+  return cell[1] * PACK_TERRAIN_COLUMNS + cell[0];
 }
 
-/** Imagem de um tile do Tiny Town no mundo, com a base em (x, y). */
-export function townTile(scene: Phaser.Scene, frame: number, x: number, y: number, depth = y): Phaser.GameObjects.Image {
-  return scene.add.image(x, y, 'town', frame).setOrigin(0, 1).setScale(ART_SCALE).setDepth(depth);
+/** Autotile do pack: escolhe a peça de terra/trilha pela vizinhança. */
+function packDirtName(mask: boolean[][], paths: boolean[][], x: number, y: number): string {
+  const prefix = paths[y]?.[x] ? 'trail' : 'dirt';
+  const d = (dx: number, dy: number): boolean => {
+    const yy = y + dy;
+    const xx = x + dx;
+    if (yy < 0 || yy >= ROWS || xx < 0 || xx >= COLS) return true;
+    return mask[yy]?.[xx] === true;
+  };
+  const n = d(0, -1);
+  const s = d(0, 1);
+  const e = d(1, 0);
+  const w = d(-1, 0);
+  if (!n && !w) return `${prefix}-nw`;
+  if (!n && !e) return `${prefix}-ne`;
+  if (!s && !w) return `${prefix}-sw`;
+  if (!s && !e) return `${prefix}-se`;
+  if (!n) return `${prefix}-n`;
+  if (!s) return `${prefix}-s`;
+  if (!w) return `${prefix}-w`;
+  if (!e) return `${prefix}-e`;
+  if (prefix === 'dirt') {
+    if (!d(-1, -1)) return 'dirt-inner-nw';
+    if (!d(1, -1)) return 'dirt-inner-ne';
+    if (!d(1, 1)) return 'dirt-inner-se';
+    if (!d(-1, 1)) return 'dirt-inner-sw';
+  }
+  return `${prefix}-c`;
 }
 
-export function dungeonPiece(scene: Phaser.Scene, frame: string, x: number, y: number, depth = y): Phaser.GameObjects.Image {
-  return scene.add.image(x, y, 'dungeon', frame).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(depth);
+function packTree(scene: Phaser.Scene, name: string, px: number, py: number): void {
+  scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py);
 }
 
-/** Casinhas dos moradores: quatro tiles de largura, telhado e parede alternados. */
-export function buildCottages(scene: Phaser.Scene): void {
+/** Casinhas dos moradores: imagem do pack + overlay de janelas para a noite. */
+export function buildCottages(scene: Phaser.Scene): Phaser.GameObjects.Image[] {
+  const lights: Phaser.GameObjects.Image[] = [];
   HOME_LOTS.forEach((lot, i) => {
-    const baseX = lot.tx * TILE;
-    const baseY = (lot.ty + lot.th) * TILE;
-    const red = i % 2 === 0;
-    const roof = red ? T.roofRed : T.roofGray;
-    const wall = red ? T.wood : T.stone;
-    const rows = [
-      [roof.tl, roof.t, roof.t, roof.tr],
-      [wall.l, wall.win, wall.win, wall.r],
-      [wall.l, wall.door, wall.win, wall.r],
-    ];
-    rows.forEach((row, r) =>
-      row.forEach((frame, c) => townTile(scene, frame, baseX + c * TILE, baseY - (rows.length - 1 - r) * TILE, baseY)),
-    );
+    const x = (lot.tx + lot.tw / 2) * TILE;
+    const y = (lot.ty + lot.th) * TILE;
+    const id = `building/house/0${i + 1}`;
+    scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    const light = scene.add
+      .image(x, y, `${id}-lights`)
+      .setOrigin(0.5, 1)
+      .setScale(ART_SCALE)
+      .setDepth(DEPTH.lights)
+      .setAlpha(0);
+    lights.push(light);
   });
+  return lights;
 }
 
 export function buildGround(scene: Phaser.Scene): boolean[][] {
   const mask = dirtMask();
+  const paths = pathMask();
   const map = scene.make.tilemap({ tileWidth: 16, tileHeight: 16, width: COLS, height: ROWS });
-  const tiles = map.addTilesetImage('town', 'town', 16, 16, 0, 0)!;
+  const tiles = map.addTilesetImage('vigilia-terrain', 'tile/town/terrain', 16, 16, 0, 0)!;
   const ground = map.createBlankLayer('ground', tiles)!.setScale(ART_SCALE).setDepth(DEPTH.ground);
-  const decor = map.createBlankLayer('decor', tiles)!.setScale(ART_SCALE).setDepth(DEPTH.decor);
   const rnd = seeded(7);
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       if (mask[y]![x]) {
-        ground.putTileAt(dirtTile(mask, x, y), x, y);
+        ground.putTileAt(tileIndex(packDirtName(mask, paths, x, y)), x, y);
         continue;
       }
       const r = rnd();
-      ground.putTileAt(r < 0.08 ? T.grassFlower : r < 0.3 ? T.grassTuft : T.grass, x, y);
-      const forest = FORESTS.find((f) => inRect(f, x, y));
-      const autumn = AUTUMN.find((f) => inRect(f, x, y));
-      if (forest) decor.putTileAt(nine(T.forest, forest, x, y), x, y);
-      else if (autumn) decor.putTileAt(nine(T.autumnForest, autumn, x, y), x, y);
+      const name = r < 0.06 ? 'grass-flowers' : `grass-${Math.floor(rnd() * 4)}`;
+      ground.putTileAt(tileIndex(name), x, y);
     }
   }
-  // O chão é estático. Assar as duas camadas numa textura única resolve a emenda de
-  // 1 px que aparece entre tiles quando a câmera rola em zoom fracionário (1,5×/2,5×):
-  // sem quads vizinhos, não há borda de tile para rasgar. Também é um desenho só por quadro.
+  // O chão é estático; assar numa textura única evita emenda entre tiles ao rolar.
   const baked = scene.add.renderTexture(0, 0, WORLD_W, WORLD_H).setOrigin(0, 0).setDepth(DEPTH.ground);
   baked.draw(ground, 0, 0);
-  baked.draw(decor, 0, 0);
   baked.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   ground.setActive(false).setVisible(false);
-  decor.setActive(false).setVisible(false);
   return mask;
 }
 
@@ -118,7 +137,7 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
     ...AUTUMN,
     PLAZA_TILES,
     { tx: CEMETERY_TILES.tx - 1, ty: CEMETERY_TILES.ty - 1, tw: CEMETERY_TILES.tw + 2, th: CEMETERY_TILES.th + 3 },
-    { tx: 0, ty: 10, tw: 7, th: 7 }, // portão com berrante na entrada
+    { tx: 0, ty: 10, tw: 7, th: 7 }, // entrada com berrante
     { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
     THERMAL_YARD,
     ...HOME_LOTS,
@@ -126,25 +145,45 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
   const nearDirt = (x: number, y: number): boolean =>
     [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => mask[y + dy]?.[x + dx] === true));
   const free = (x: number, y: number): boolean =>
-    y >= ABYSS_ROWS + 1 && y < ROWS && x >= 0 && x < COLS && !nearDirt(x, y) && !reserved.some((r) => inRect(r, x, y));
-  const decor: number[] = [T.sprout, T.mushrooms, T.stones, T.bush];
-  let trees = 0;
-  for (let i = 0; i < 1200 && trees < 48; i++) {
-    const x = Math.floor(rnd() * COLS);
-    const y = ABYSS_ROWS + 1 + Math.floor(rnd() * (ROWS - ABYSS_ROWS - 1));
-    if (!free(x, y)) continue;
-    const kind = rnd();
-    const px = x * TILE;
-    const py = (y + 1) * TILE;
-    if (kind < 0.45 && free(x, y - 1)) {
-      const autumn = rnd() < 0.3;
-      townTile(scene, autumn ? T.autumnBase : T.pineBase, px, py);
-      townTile(scene, autumn ? T.autumnTop : T.pineTop, px, py - TILE, py);
-    } else if (kind < 0.75) {
-      townTile(scene, rnd() < 0.3 ? T.autumnSmall : T.pineSmall, px, py);
-    } else {
-      townTile(scene, decor[Math.floor(rnd() * decor.length)]!, px, py, DEPTH.decor + 1);
+    y >= 1 && y < ROWS && x >= 0 && x < COLS && !nearDirt(x, y) && !reserved.some((r) => inRect(r, x, y));
+  const occupied = (x: number, y: number): boolean =>
+    [
+      ...HOME_LOTS,
+      ...Object.values(LOT_TILES),
+      THERMAL_YARD,
+      PLAZA_TILES,
+      CEMETERY_TILES,
+      { tx: 21, ty: 0, tw: 7, th: 8 }, // entrada/berrante no topo central
+      { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
+      { tx: 43, ty: 11, tw: 4, th: 5 }, // boca/terreiro da caverna
+    ].some((r) => inRect(r, x, y));
+
+  // Florestas: manchas de pinheiros sobre a grama.
+  for (const f of FORESTS) {
+    for (let y = f.ty; y < f.ty + f.th; y += 2) {
+      for (let x = f.tx; x < f.tx + f.tw; x += 2) {
+        if (rnd() < 0.25 || occupied(x, y)) continue;
+        packTree(scene, 'prop/tree/pine', (x + 0.5) * TILE, (y + 1) * TILE);
+      }
     }
+  }
+  for (const f of AUTUMN) {
+    for (let y = f.ty; y < f.ty + f.th; y += 2) {
+      for (let x = f.tx; x < f.tx + f.tw; x += 2) {
+        if (rnd() < 0.3 || occupied(x, y)) continue;
+        packTree(scene, rnd() < 0.35 ? 'prop/tree/dead' : 'prop/tree/01', (x + 0.5) * TILE, (y + 1) * TILE);
+      }
+    }
+  }
+
+  let trees = 0;
+  for (let i = 0; i < 1200 && trees < 40; i++) {
+    const x = Math.floor(rnd() * COLS);
+    const y = 1 + Math.floor(rnd() * (ROWS - 1));
+    if (!free(x, y)) continue;
+    const r = rnd();
+    const name = r < 0.55 ? 'prop/tree/pine' : r < 0.85 ? 'prop/tree/01' : 'prop/tree/dead';
+    packTree(scene, name, (x + 0.5) * TILE, (y + 1) * TILE);
     reserved.push({ tx: x, ty: y - 1, tw: 1, th: 2 });
     trees++;
   }
@@ -157,93 +196,48 @@ export interface AbyssView {
 
 export function buildAbyss(scene: Phaser.Scene): AbyssView {
   const rnd = seeded(13);
-  const g = scene.add.graphics().setDepth(DEPTH.abyss);
-  // Escuridão com borda em degraus de pixel (linhas inteiras de tile, com mordidas de 8 px).
-  g.fillStyle(0x07060a);
-  g.fillRect(-WORLD_W, -3000, WORLD_W * 3, 3000 + (ABYSS_ROWS - 1) * TILE);
-  for (let x = -2; x < COLS + 2; x++) {
-    const nearAbbey = x >= 20 && x <= 29;
-    const bite = nearAbbey ? 0 : Math.floor(rnd() * 3) * 8;
-    g.fillRect(x * TILE, (ABYSS_ROWS - 1) * TILE, TILE, TILE + bite);
-  }
-  g.fillStyle(0x110d16, 1);
-  for (let x = -2; x < COLS + 2; x++) g.fillRect(x * TILE, (ABYSS_ROWS - 1) * TILE - 12, TILE, 6);
-  // Beirada de pedra (borda de piso caindo no vazio)
-  for (let x = 0; x < COLS; x++) {
-    if (x >= 22 && x <= 27) continue;
-    scene.add
-      .image(x * TILE + TILE / 2, ABYSS_ROWS * TILE, 'dungeon', 'edge_down')
-      .setOrigin(0.5, 0)
-      .setScale(ART_SCALE)
-      .setDepth(DEPTH.abyss + 1)
-      .setTint(0x8a8078);
-  }
+  const { x } = LANDMARKS.abismo;
+  const base = 15 * TILE;
+  scene.add.image(x, base, 'prop/abyss/cave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+
   const glow = scene.add
-    .image(WORLD_W / 2, 40, 'glow')
-    .setTint(0x6a2a8a)
-    .setScale(18, 4)
-    .setBlendMode(Phaser.BlendModes.ADD)
-    .setDepth(DEPTH.abyss + 1)
-    .setAlpha(0.4);
-
-  // Luz violeta subindo pela escada
-  const stairsGlow = scene.add
-    .image(WORLD_W / 2, (ABYSS_ROWS - 0.5) * TILE, 'glow')
+    .image(x, base - 26, 'glow')
     .setTint(0x9a4ad0)
-    .setScale(3.2, 1.8)
+    .setScale(3.4, 2.2)
     .setBlendMode(Phaser.BlendModes.ADD)
-    .setDepth(DEPTH.abyss + 3)
-    .setAlpha(0.45);
-  scene.tweens.add({ targets: stairsGlow, alpha: { from: 0.3, to: 0.6 }, yoyo: true, repeat: -1, duration: 1400, ease: 'Sine.easeInOut' });
+    .setDepth(DEPTH.lights)
+    .setAlpha(0.4);
+  scene.tweens.add({ targets: glow, alpha: { from: 0.3, to: 0.6 }, yoyo: true, repeat: -1, duration: 1400, ease: 'Sine.easeInOut' });
 
-  // Ruínas da abadia em volta da escada que desce
-  const floors = ['floor_1', 'floor_2', 'floor_3', 'floor_4', 'floor_5', 'floor_6', 'floor_7', 'floor_8'];
-  for (let x = 22; x <= 27; x++) {
-    scene.add
-      .image(x * TILE, ABYSS_ROWS * TILE, 'dungeon', floors[Math.floor(rnd() * floors.length)])
-      .setOrigin(0, 0)
-      .setScale(ART_SCALE)
-      .setDepth(DEPTH.abyss + 1);
-    if (x === 24 || x === 25) {
-      scene.add
-        .image(x * TILE, (ABYSS_ROWS - 1) * TILE, 'dungeon', 'floor_stairs')
-        .setOrigin(0, 0)
-        .setScale(ART_SCALE)
-        .setDepth(DEPTH.abyss + 2);
-    }
-  }
-  for (const [x, frame] of [
-    [20, 'wall_hole_1'],
-    [21, 'wall_mid'],
-    [28, 'wall_mid'],
-    [29, 'wall_hole_2'],
-  ] as const) {
-    scene.add.image(x * TILE, (ABYSS_ROWS - 1) * TILE, 'dungeon', 'wall_top_mid').setOrigin(0, 1).setScale(ART_SCALE).setDepth(ABYSS_ROWS * TILE - 2);
-    scene.add.image(x * TILE, (ABYSS_ROWS - 1) * TILE, 'dungeon', frame).setOrigin(0, 0).setScale(ART_SCALE).setDepth(ABYSS_ROWS * TILE - 1);
-  }
-  dungeonPiece(scene, 'column', 23 * TILE - 2, (ABYSS_ROWS + 1) * TILE - 6);
-  dungeonPiece(scene, 'column', 27 * TILE + 2, (ABYSS_ROWS + 1) * TILE - 6);
-  dungeonPiece(scene, 'skull', 21 * TILE + 8, (ABYSS_ROWS + 1) * TILE + 4).setAlpha(0.85);
-
-  // Brasas violetas subindo do fundo
+  // Brasas violetas saindo da boca da caverna.
   for (let i = 0; i < 18; i++) {
     const spark = scene.add
-      .image(Math.round(120 + rnd() * (WORLD_W - 240)), 140, 'spark')
+      .image(x + (rnd() - 0.5) * 52, base - 20, 'spark')
       .setTint(0xb46ae0)
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(DEPTH.abyss + 1)
+      .setDepth(DEPTH.lights)
       .setScale(ART_SCALE)
       .setAlpha(0);
     scene.tweens.add({
       targets: spark,
-      y: { from: 150 + rnd() * 20, to: 20 + rnd() * 40 },
+      y: { from: base - 20, to: base - 90 - rnd() * 30 },
+      x: { from: spark.x, to: spark.x + (rnd() - 0.5) * 20 },
       alpha: { from: 0.8, to: 0 },
-      duration: 3000 + rnd() * 3000,
-      delay: rnd() * 4000,
+      duration: 2400 + rnd() * 2400,
+      delay: rnd() * 3000,
       repeat: -1,
     });
   }
-  const badge = smooth(scene.add.text(WORLD_W / 2, 92, '', { fontFamily: 'Georgia, serif', fontSize: '15px', color: '#e8d8ff', stroke: '#000000', strokeThickness: 4 }))
+
+  const badge = smooth(
+    scene.add.text(x, 9.5 * TILE, '', {
+      fontFamily: 'Georgia, serif',
+      fontSize: '15px',
+      color: '#e8d8ff',
+      stroke: '#000000',
+      strokeThickness: 4,
+    }),
+  )
     .setOrigin(0.5)
     .setDepth(DEPTH.labels);
   return { glow, badge };
@@ -290,20 +284,24 @@ export function label(scene: Phaser.Scene, x: number, y: number, text: string, s
 
 export function buildCemetery(scene: Phaser.Scene): void {
   const r = CEMETERY_TILES;
-  const iron = 0x7a7470;
-  const gate = { from: 42, to: 44 };
-  for (let x = r.tx; x < r.tx + r.tw; x++) {
-    const top = x === r.tx ? T.fenceL : x === r.tx + r.tw - 1 ? T.fenceR : T.fenceM;
-    townTile(scene, top, x * TILE, (r.ty + 1) * TILE).setTint(iron);
-    if (x >= gate.from && x <= gate.to) continue;
-    const bottom = x === r.tx || x === gate.to + 1 ? T.fenceL : x === r.tx + r.tw - 1 || x === gate.from - 1 ? T.fenceR : T.fenceM;
-    townTile(scene, bottom, x * TILE, (r.ty + r.th) * TILE).setTint(iron);
+  const x0 = r.tx * TILE;
+  const x1 = (r.tx + r.tw - 1) * TILE;
+  const y0 = (r.ty + 1) * TILE;
+  const y1 = (r.ty + r.th) * TILE;
+  const key = 'tile/town/cemetery-fence';
+  const put = (frame: number, x: number, y: number): void => {
+    scene.add.image(x, y, key, frame).setOrigin(0, 0).setScale(ART_SCALE).setDepth(y + 2);
+  };
+  put(2, x0, y0);
+  for (let x = x0 + TILE; x < x1; x += TILE) put(0, x, y0);
+  put(3, x1, y0);
+  put(4, x0, y1);
+  for (let x = x0 + TILE; x < x1; x += TILE) put(x === x0 + 4 * TILE ? 6 : 0, x, y1);
+  put(5, x1, y1);
+  for (let y = y0 + TILE; y < y1; y += TILE) {
+    put(1, x0, y);
+    put(1, x1, y);
   }
-  for (const x of [r.tx, r.tx + r.tw - 1]) {
-    for (let y = r.ty + 1; y < r.ty + r.th - 1; y++) townTile(scene, y === r.ty + 1 ? T.fenceVTop : T.fenceV, x * TILE, (y + 1) * TILE).setTint(iron);
-  }
-  // Árvore seca de 0x72? Não há: usa um toco e cogumelos.
-  townTile(scene, T.mushrooms, (r.tx + 1) * TILE, (r.ty + 6) * TILE, DEPTH.decor + 1);
   label(scene, LANDMARKS.cemiterio.x, LANDMARKS.cemiterio.y + 4, 'Cemitério', 14, '#c8c0b0');
 }
 
@@ -312,104 +310,10 @@ export interface HornView {
   blast: () => void;
 }
 
-/** Portão da cidade + berrante num só desenho, no espírito da referência. */
-function drawGateHorn(scene: Phaser.Scene): void {
-  if (scene.textures.exists('gate-horn')) return;
-  const g = scene.make.graphics({ x: 0, y: 0 }, false);
-  const WD = 0x2a1a10;
-  const WM = 0x6a4a2e;
-  const WL = 0x9a6c3a;
-  const WH = 0xc89a52;
-  const IRON = 0x383840;
-  const IRONL = 0x8a8a96;
-  const HD = 0x2a241e;
-  const H = 0x8a8070;
-  const HL = 0xd0c4a8;
-  const BR = 0x8a6a2a;
-  const BRL = 0xd2a848;
-  const ROPE = 0xa28458;
-  const post = (x: number): void => {
-    g.fillStyle(WD).fillRect(x, 43, 12, 53);
-    g.fillStyle(WM).fillRect(x + 2, 45, 8, 51);
-    g.fillStyle(WL).fillRect(x + 3, 47, 2, 47);
-    g.fillStyle(WM).fillRect(x + 7, 45, 2, 51);
-    g.fillStyle(IRON).fillRect(x + 1, 62, 10, 3);
-    g.fillStyle(IRON).fillRect(x + 1, 80, 10, 3);
-    g.fillStyle(IRONL).fillRect(x + 2, 62, 2, 1);
-    g.fillStyle(IRONL).fillRect(x + 2, 80, 2, 1);
-  };
-  post(2);
-  post(68);
-  // Viga-mestra
-  g.fillStyle(WD).fillRect(0, 37, 80, 15);
-  g.fillStyle(WM).fillRect(2, 39, 76, 11);
-  g.fillStyle(WL).fillRect(2, 41, 76, 2);
-  g.fillStyle(WM).fillRect(2, 47, 76, 3);
-  g.fillStyle(IRON).fillRect(0, 42, 4, 8);
-  g.fillStyle(IRON).fillRect(76, 42, 4, 8);
-  // Folha do portão aberta à esquerda
-  g.fillStyle(WD).fillRect(9, 51, 20, 42);
-  g.fillStyle(WM).fillRect(11, 53, 16, 38);
-  for (let x = 13; x < 27; x += 4) {
-    g.fillStyle(WL, 0.7).fillRect(x, 53, 1, 38);
-    g.fillStyle(WD, 0.5).fillRect(x + 2, 53, 1, 38);
-  }
-  g.fillStyle(IRON).fillRect(11, 63, 16, 2);
-  g.fillStyle(IRON).fillRect(11, 82, 16, 2);
-  g.fillStyle(IRONL).fillRect(12, 63, 2, 1);
-  g.lineStyle(2, WL, 0.5).lineBetween(12, 88, 26, 54);
-  g.fillStyle(IRON).fillRect(8, 57, 3, 6);
-  g.fillStyle(IRON).fillRect(8, 75, 3, 6);
-  // Soleira
-  g.fillStyle(WD).fillRect(2, 92, 76, 4);
-  g.fillStyle(WM).fillRect(4, 93, 72, 2);
-  // Mão de madeira do berrante
-  g.fillStyle(WD).fillRect(24, 34, 36, 10);
-  g.fillStyle(WM).fillRect(26, 36, 32, 6);
-  g.fillStyle(WH).fillRect(28, 37, 28, 1);
-  // Berrante grande, curvado, com bocal à direita
-  const pts = [
-    { x: 52, y: 2 }, { x: 62, y: 0 }, { x: 68, y: 5 }, { x: 69, y: 15 }, { x: 63, y: 23 },
-    { x: 54, y: 27 }, { x: 44, y: 29 }, { x: 34, y: 35 }, { x: 25, y: 38 }, { x: 17, y: 35 },
-    { x: 13, y: 28 }, { x: 16, y: 21 }, { x: 24, y: 18 }, { x: 34, y: 21 }, { x: 44, y: 20 },
-    { x: 50, y: 15 }, { x: 49, y: 8 },
-  ].map((p) => new Phaser.Geom.Point(p.x, p.y));
-  g.fillStyle(HD).fillPoints(pts, true);
-  const inner = pts.map((p) => new Phaser.Geom.Point(40 + (p.x - 40) * 0.86, 19 + (p.y - 19) * 0.82));
-  g.fillStyle(H).fillPoints(inner, true);
-  g.lineStyle(2, HL, 0.55).strokePoints(
-    [new Phaser.Geom.Point(28, 22), new Phaser.Geom.Point(38, 20), new Phaser.Geom.Point(48, 16), new Phaser.Geom.Point(54, 10)],
-    false,
-  );
-  g.lineStyle(2, HD, 0.9).strokePoints(
-    [new Phaser.Geom.Point(24, 30), new Phaser.Geom.Point(36, 28), new Phaser.Geom.Point(46, 24), new Phaser.Geom.Point(56, 19)],
-    false,
-  );
-  // Boca e braçadeiras
-  g.fillStyle(BR).fillRect(58, 4, 9, 20);
-  g.fillStyle(BRL).fillRect(59, 5, 2, 18);
-  g.fillStyle(HD).fillPoints(
-    [new Phaser.Geom.Point(60, 7), new Phaser.Geom.Point(67, 7), new Phaser.Geom.Point(66, 17), new Phaser.Geom.Point(61, 20), new Phaser.Geom.Point(58, 15)],
-    true,
-  );
-  g.fillStyle(BR).fillRect(14, 26, 8, 7);
-  g.fillStyle(BRL).fillRect(15, 27, 2, 5);
-  // Cordas
-  g.lineStyle(3, ROPE, 1).lineBetween(36, 8, 32, 36);
-  g.lineStyle(3, ROPE, 1).lineBetween(48, 6, 44, 34);
-  g.lineStyle(2, WD, 1).lineBetween(33, 36, 34, 44);
-  g.fillStyle(WD).fillRect(30, 40, 20, 6);
-  g.fillStyle(WH).fillRect(32, 41, 16, 1);
-  g.generateTexture('gate-horn', 80, 96);
-  g.destroy();
-}
-
 export function buildHornTower(scene: Phaser.Scene): HornView {
-  drawGateHorn(scene);
-  const x0 = HORN_TOWER.tx * TILE;
   const base = (HORN_TOWER.ty + HORN_TOWER.th) * TILE;
-  scene.add.image(x0, base, 'gate-horn').setOrigin(0, 1).setScale(ART_SCALE).setDepth(base);
-  const c = x0 + 2.5 * TILE;
+  const c = (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE;
+  scene.add.image(c, base, 'prop/gate-horn/open').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
   const hornY = base - 4.5 * TILE;
   const ready = scene.add
     .image(c, hornY, 'glow')
@@ -418,7 +322,7 @@ export function buildHornTower(scene: Phaser.Scene): HornView {
     .setBlendMode(Phaser.BlendModes.ADD)
     .setDepth(DEPTH.lights);
   scene.tweens.add({ targets: ready, alpha: { from: 0.15, to: 0.6 }, yoyo: true, repeat: -1, duration: 900 });
-  label(scene, c, base - 6 * TILE - 18, 'Berrante', 13);
+  label(scene, c, base + 10, 'Berrante', 13);
   const blast = () => {
     for (let i = 0; i < 3; i++) {
       const ring = scene.add.circle(c - 6, hornY, 10).setStrokeStyle(4, 0xffc46b, 0.9).setDepth(DEPTH.floating);
@@ -433,28 +337,17 @@ export interface BoardView {
 }
 
 export function buildBoard(scene: Phaser.Scene): BoardView {
-  const x0 = 27 * TILE;
+  const x = 28 * TILE;
   const base = 17 * TILE;
-  townTile(scene, T.frameTL, x0, base - TILE, base);
-  townTile(scene, T.frameT, x0 + TILE, base - TILE, base);
-  townTile(scene, T.frameTR, x0 + 2 * TILE, base - TILE, base);
-  townTile(scene, T.frameL, x0, base, base);
-  townTile(scene, T.frameR, x0 + 2 * TILE, base, base);
-  const papers = scene.add.container(0, 0).setDepth(base + 1);
-  const broken = townTile(scene, T.sign, x0 + TILE, base, base + 1).setAngle(-12).setTint(0x8a7a6a);
+  const board = scene.add.image(x, base, 'prop/board').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+  label(scene, x, base - 2 * TILE - 4, 'Quadro', 13).setOrigin(0.5, 1);
   let last = '';
   const update = (contracts: number, enabled: boolean) => {
     const key = `${contracts}:${enabled}`;
     if (key === last) return;
     last = key;
-    papers.removeAll(true);
-    broken.setVisible(!enabled);
-    if (!enabled) return;
-    for (let i = 0; i < Math.min(contracts, 3); i++) {
-      papers.add(scene.add.image(x0 + TILE + 4 + i * 22, base - TILE + 12, 'paper').setOrigin(0, 0).setScale(ART_SCALE));
-    }
+    board.setAlpha(enabled ? 1 : 0.65);
   };
-  label(scene, x0 + 1.5 * TILE, base - 2 * TILE - 4, 'Quadro', 13).setOrigin(0.5, 1);
   return { update };
 }
 
@@ -464,28 +357,13 @@ export interface CofferView {
 
 export function buildCoffer(scene: Phaser.Scene): CofferView {
   const { x, y } = LANDMARKS.cofre;
-  dungeonPiece(scene, 'chest_full_open_anim_f0', x - 18, y + 6, y + 6);
-  const pile = scene.add.container(x + 16, y + 4).setDepth(y + 7);
+  const chest = scene.add.image(x, y + 8, 'prop/coffer').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y + 8);
   let shown = -1;
   const update = (treasury: number) => {
-    const coins = Math.max(0, Math.min(28, Math.round(Math.log2(treasury / 15 + 1) * 4)));
-    if (coins === shown) return;
-    shown = coins;
-    pile.removeAll(true);
-    const base = Math.ceil((Math.sqrt(8 * coins + 1) - 1) / 2);
-    let n = 0;
-    for (let row = 0; n < coins; row++) {
-      const width = Math.max(1, base - row);
-      for (let i = 0; i < width && n < coins; i++, n++) {
-        const coin = scene.add
-          .sprite(Math.round((i - (width - 1) / 2) * 10), -row * 8, 'dungeon', 'coin_anim_f0')
-          .setOrigin(0.5, 1)
-          .setScale(ART_SCALE);
-        // Só as do topo giram: o monte inteiro piscando cansa a vista.
-        if (row >= Math.max(0, Math.floor(base / 2))) coin.play({ key: 'coin', startFrame: (i + row) % 4 });
-        pile.add(coin);
-      }
-    }
+    const step = Math.floor(Math.log2(treasury / 15 + 1));
+    if (step === shown) return;
+    shown = step;
+    chest.setScale(ART_SCALE + Math.min(0.35, step * 0.015));
   };
   label(scene, x, y + 10, 'Cofre', 13);
   return { update };
@@ -493,116 +371,51 @@ export function buildCoffer(scene: Phaser.Scene): CofferView {
 
 export function buildCampfire(scene: Phaser.Scene): void {
   const { x, y } = LANDMARKS.fogueira;
-  scene.add.image(x, y, 'campfire').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
-  scene.add.sprite(x, y - 4, 'fire0').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).play('fire');
-  townTile(scene, T.log, x - 52, y + 10, y + 10);
-  townTile(scene, T.log, x + 20, y + 14, y + 14);
+  scene.add.image(x, y, 'prop/campfire/on').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
+  scene.add.sprite(x, y - 4, 'fx/fire').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).play('fx/fire');
   const halo = scene.add.image(x, y - 12, 'glow').setTint(0xffa040).setScale(2.6, 1.8).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setAlpha(0.3);
   scene.tweens.add({ targets: halo, alpha: { from: 0.2, to: 0.35 }, yoyo: true, repeat: -1, duration: 600 });
 }
 
-/** Fonte termal: bacia de pedra com água quente, vapor e um banco. */
+/** Fonte termal: bacia natural do pack, água separada, vapor e banco. */
 export function buildThermal(scene: Phaser.Scene): void {
   const r = THERMAL_TILES;
-  const bottom = (r.ty + r.th) * TILE;
-  // A bacia é chão, não um objeto alto: quem andar por cima (prefeito, herói, criança)
-  // continua aparecendo. Por isso ela fica nos depths baixos, abaixo dos personagens.
-  for (let y = r.ty; y < r.ty + r.th; y++) {
-    for (let x = r.tx; x < r.tx + r.tw; x++) townTile(scene, T.stoneBlock, x * TILE, (y + 1) * TILE, DEPTH.decor);
-  }
-
-  const ix = (r.tx + 0.7) * TILE;
-  const iy = (r.ty + 0.7) * TILE;
-  const iw = (r.tw - 1.4) * TILE;
-  const ih = (r.th - 1.4) * TILE;
-  const water = scene.add.graphics().setDepth(DEPTH.decor + 1);
-  water.fillStyle(0x1a4a50, 1).fillRect(ix, iy, iw, ih);
-  water.fillStyle(0x2f7a78, 1).fillRect(ix + 6, iy + 6, iw - 12, ih - 12);
-  water.lineStyle(2, 0x7ac8c0, 0.9).strokeRect(ix, iy, iw, ih);
-  water.fillStyle(0x9ad8d0, 0.75);
-  for (let row = 0; row < 3; row++) {
-    const wx = ix + 18 + row * 9;
-    water.fillRect(wx, iy + 18 + row * 14, Math.min(34, iw - 34), 2);
-  }
-
-  const centerX = (r.tx + r.tw / 2) * TILE;
-  const centerY = (r.ty + r.th / 2) * TILE;
+  const cx = (r.tx + r.tw / 2) * TILE;
+  const base = (r.ty + r.th) * TILE;
+  scene.add.image(cx, base, 'prop/thermal/basin').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.decor);
+  scene.add.image(cx, base, 'prop/thermal/water').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.decor + 1).setAlpha(0.9);
+  scene.add
+    .image(cx - (r.tw / 2 - 0.4) * TILE, base - 2, 'prop/thermal/bench')
+    .setOrigin(0.5, 1)
+    .setScale(ART_SCALE)
+    .setDepth(base);
+  const steam = scene.add
+    .sprite(cx, base - 24, 'fx/steam')
+    .setOrigin(0.5, 1)
+    .setScale(ART_SCALE)
+    .setDepth(DEPTH.floating)
+    .setAlpha(0.8);
+  steam.play('fx/steam');
   const glow = scene.add
-    .image(centerX, centerY, 'glow')
+    .image(cx, base - 34, 'glow')
     .setTint(0x8ad8d0)
     .setScale(3, 2.2)
-    .setAlpha(0.28)
+    .setAlpha(0.25)
     .setBlendMode(Phaser.BlendModes.ADD)
     .setDepth(DEPTH.lights);
-  scene.tweens.add({ targets: glow, alpha: { from: 0.2, to: 0.34 }, yoyo: true, repeat: -1, duration: 1800 });
-  // Um calor alaranjado por baixo do vapor frio: a água vem quente do abismo.
-  scene.add
-    .image(centerX, centerY, 'glow')
-    .setTint(0xffa060)
-    .setScale(1.6, 1.2)
-    .setAlpha(0.12)
-    .setBlendMode(Phaser.BlendModes.ADD)
-    .setDepth(DEPTH.lights);
-
-  // Vapor: sobe da água e some. É enfeite, então pode usar números do Phaser.
-  scene.add
-    .image(centerX, iy + 6, 'glow')
-    .setTint(0xe8f8f4)
-    .setScale(1.5, 0.9)
-    .setAlpha(0.14)
-    .setBlendMode(Phaser.BlendModes.ADD)
-    .setDepth(DEPTH.floating);
-  for (let i = 0; i < 3; i++) {
-    const puff = scene.add
-      .image(centerX - 22 + i * 22, iy + 24, 'glow')
-      .setTint(0xe8f8f4)
-      .setScale(1, 0.7)
-      .setAlpha(0)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(DEPTH.floating);
-    scene.tweens.add({
-      targets: puff,
-      y: iy - 40,
-      alpha: { from: 0.28, to: 0 },
-      scale: { from: 1, to: 1.8 },
-      duration: 3200 + i * 420,
-      delay: i * 900,
-      repeat: -1,
-    });
-  }
-  for (let i = 0; i < 12; i++) {
-    const sx = ix + 16 + ((i * 37) % Math.max(1, Math.floor(iw - 32)));
-    const sy = iy + 10 + ((i * 23) % Math.max(1, Math.floor(ih - 20)));
-    const steam = scene.add
-      .image(sx, sy, 'spark')
-      .setTint(i % 3 === 0 ? 0xffe0c0 : 0xe8f8f4)
-      .setScale(3 + (i % 3))
-      .setAlpha(0)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(DEPTH.floating);
-    scene.tweens.add({
-      targets: steam,
-      y: sy - 64 - (i % 4) * 8,
-      alpha: { from: 0.7, to: 0 },
-      scale: { from: 3 + (i % 3), to: 6 + (i % 3) },
-      duration: 2400 + (i % 5) * 300,
-      delay: i * 260,
-      repeat: -1,
-    });
-  }
-
-  townTile(scene, T.log, (r.tx + 0.3) * TILE, bottom + 24, bottom + 24);
-  townTile(scene, T.log, (r.tx + 1.3) * TILE, bottom + 24, bottom + 24);
-  townTile(scene, T.log, (r.tx + 2.3) * TILE, bottom + 24, bottom + 24);
-  townTile(scene, T.bucket, (r.tx + r.tw - 0.5) * TILE, bottom + 22, bottom + 22);
+  scene.tweens.add({ targets: glow, alpha: { from: 0.18, to: 0.32 }, yoyo: true, repeat: -1, duration: 1800 });
   label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
-
-/** Enfeites da praça e das ruas (poço, feno, sacos). */
+/** Props de praça do pack 1.3. */
 export function buildProps(scene: Phaser.Scene): void {
-  townTile(scene, T.well, 21 * TILE, 16 * TILE);
-  townTile(scene, T.hay, 22 * TILE, 21 * TILE);
-  townTile(scene, T.sack, 14 * TILE, 15 * TILE);
-  townTile(scene, T.bucket, 22 * TILE, 16 * TILE);
-  townTile(scene, T.sign, 26 * TILE, 8 * TILE);
+  const prop = (id: string, x: number, y: number): void => {
+    scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+  };
+  prop('prop/well', 21 * TILE + 16, 16 * TILE);
+  prop('prop/hay', 22 * TILE, 21 * TILE);
+  prop('prop/sacks', 14 * TILE, 15 * TILE);
+  prop('prop/bucket', 22 * TILE, 16 * TILE);
+  prop('prop/logs', LANDMARKS.fogueira.x - 52, LANDMARKS.fogueira.y + 10);
+  prop('prop/barrel', 17 * TILE, 17 * TILE);
+  prop('prop/crate', 26 * TILE, 16 * TILE);
 }

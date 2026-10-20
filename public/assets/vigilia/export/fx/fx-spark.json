@@ -1,0 +1,74 @@
+{
+ "frames": {
+  "fx-spark-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-spark-01": {
+   "frame": {
+    "x": 8,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-spark-02": {
+   "frame": {
+    "x": 16,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "fx-spark-03": {
+   "frame": {
+    "x": 24,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "fx-spark.png",
+  "size": {
+   "w": 32,
+   "h": 8
+  },
+  "frameSize": {
+   "w": 8,
+   "h": 8
+  },
+  "columns": 4,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "loop",
+    "from": 0,
+    "to": 3,
+    "fps": 12
+   }
+  ]
+ }
+}

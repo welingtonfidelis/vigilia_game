@@ -1,15 +1,18 @@
 {
   "schema": 1,
   "pack": "vigilia-art",
-  "version": "0.1.0-skeleton",
-  "status": "handoff-skeleton",
-  "skeleton": true,
+  "version": "1.3.0",
+  "status": "review",
+  "skeleton": false,
   "updated": "2026-10-20",
-  "notes": "Contrato do pack de arte externo. Nenhum arquivo de imagem deste pack foi criado ainda. O campo 'current' descreve o que o jogo usa hoje; 'status' é o estado do asset NO pack novo.",
+  "notes": "size = tamanho do QUADRO; folhas trazem frameSize, sheetSize, columns, rows e frames. Predios: file = base de dia (sem janela acesa); lights = overlay alinhado em 0,0. status review = pronto, aguardando validacao no jogo real; done so apos screenshot aprovado. current = o que o jogo usa hoje.",
   "docs": {
-    "brief": "docs/art/ART-BRIEF.md",
-    "assetList": "docs/art/ASSET-LIST.md",
-    "changelog": "docs/art/CHANGELOG.md"
+    "readme": "README.md",
+    "brief": "docs/ART-BRIEF.md",
+    "assetList": "docs/ASSET-LIST.md",
+    "changelog": "CHANGELOG.md",
+    "changeRequest": "docs/CHANGE-REQUEST-v01.md",
+    "profileRequest": "docs/PROFILE-REQUEST.md"
   },
   "engine": {
     "name": "Phaser",
@@ -32,8 +35,8 @@
     }
   },
   "palette": "palette/vigilia.gpl",
-  "author": "TBD",
-  "license": "TBD",
+  "author": "Equipe Vigília",
+  "license": "CC0-1.0",
   "naming": {
     "files": "kebab-case, ASCII, sem espacos ou acentos; prefixo por categoria",
     "ids": "caminho com barras, usando os IDs do jogo em portugues",
@@ -54,196 +57,3908 @@
       "type": "tileset",
       "file": "export/tiles/town-terrain.png",
       "meta": "export/tiles/town-terrain.json",
-      "size": [16, 16],
-      "anchor": [0, 0],
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 8,
+      "rows": 8,
+      "sheetSize": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
       "tile": true,
       "autotile": true,
       "priority": "P0",
-      "status": "todo",
       "current": "third-party (Tiny Town)",
-      "license": "TBD",
-      "notes": "Grama, terra, estrada, pedra, agua, penhasco e abismo. 9 partes de terra, bordas de estrada; sem props nem personagens embutidos."
+      "notes": "Grama x4 + flores, terra, trilha, agua (9 partes cada), cantos internos de terra, paredao marrom (topo/face/pe x3), rocha, abismo + nevoa, terreiro, lama, laje. Validacao em preview/tile-test.png.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/templo/level-1",
+      "type": "building",
+      "file": "export/png/building-templo-level-1.png",
+      "lights": "export/png/building-templo-level-1-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/templo/level-2",
+      "type": "building",
+      "file": "export/png/building-templo-level-2.png",
+      "lights": "export/png/building-templo-level-2-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/templo/level-3",
+      "type": "building",
+      "file": "export/png/building-templo-level-3.png",
+      "lights": "export/png/building-templo-level-3-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/templo/ruin",
+      "type": "building",
+      "file": "export/png/building-templo-ruin.png",
+      "lights": "export/png/building-templo-ruin-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "building/taverna/level-1",
       "type": "building",
       "file": "export/png/building-taverna-level-1.png",
-      "size": [112, 96],
-      "footprint": [7, 6],
-      "anchor": [0.5, 1],
-      "states": ["level-1"],
+      "lights": "export/png/building-taverna-level-1-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
       "priority": "P0",
-      "status": "todo",
       "current": "third-party (Tiny Town)",
-      "license": "TBD",
-      "notes": "Teste de estilo dos predios. Porta central, placa sem texto, telhado vermelho, sem sombra/glow assados."
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "building/taverna/level-2",
       "type": "building",
       "file": "export/png/building-taverna-level-2.png",
-      "size": [112, 96],
-      "footprint": [7, 6],
-      "anchor": [0.5, 1],
-      "states": ["level-2"],
+      "lights": "export/png/building-taverna-level-2-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
       "priority": "P1",
-      "status": "todo",
       "current": "third-party (Tiny Town)",
-      "license": "TBD"
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "building/taverna/level-3",
       "type": "building",
       "file": "export/png/building-taverna-level-3.png",
-      "size": [112, 96],
-      "footprint": [7, 6],
-      "anchor": [0.5, 1],
-      "states": ["level-3"],
+      "lights": "export/png/building-taverna-level-3-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
       "priority": "P1",
-      "status": "todo",
       "current": "third-party (Tiny Town)",
-      "license": "TBD"
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "building/taverna/ruin",
       "type": "building",
       "file": "export/png/building-taverna-ruin.png",
-      "size": [112, 96],
-      "footprint": [7, 6],
-      "anchor": [0.5, 1],
-      "states": ["ruin"],
+      "lights": "export/png/building-taverna-ruin-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
       "priority": "P1",
-      "status": "todo",
       "current": "third-party (Tiny Town)",
-      "license": "TBD"
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/guilda/level-1",
+      "type": "building",
+      "file": "export/png/building-guilda-level-1.png",
+      "lights": "export/png/building-guilda-level-1-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/guilda/level-2",
+      "type": "building",
+      "file": "export/png/building-guilda-level-2.png",
+      "lights": "export/png/building-guilda-level-2-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/guilda/level-3",
+      "type": "building",
+      "file": "export/png/building-guilda-level-3.png",
+      "lights": "export/png/building-guilda-level-3-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/guilda/ruin",
+      "type": "building",
+      "file": "export/png/building-guilda-ruin.png",
+      "lights": "export/png/building-guilda-ruin-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/estalagem/level-1",
+      "type": "building",
+      "file": "export/png/building-estalagem-level-1.png",
+      "lights": "export/png/building-estalagem-level-1-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/estalagem/level-2",
+      "type": "building",
+      "file": "export/png/building-estalagem-level-2.png",
+      "lights": "export/png/building-estalagem-level-2-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/estalagem/level-3",
+      "type": "building",
+      "file": "export/png/building-estalagem-level-3.png",
+      "lights": "export/png/building-estalagem-level-3-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/estalagem/ruin",
+      "type": "building",
+      "file": "export/png/building-estalagem-ruin.png",
+      "lights": "export/png/building-estalagem-ruin-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/casa/level-1",
+      "type": "building",
+      "file": "export/png/building-casa-level-1.png",
+      "lights": "export/png/building-casa-level-1-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/casa/level-2",
+      "type": "building",
+      "file": "export/png/building-casa-level-2.png",
+      "lights": "export/png/building-casa-level-2-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/casa/level-3",
+      "type": "building",
+      "file": "export/png/building-casa-level-3.png",
+      "lights": "export/png/building-casa-level-3-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/casa/ruin",
+      "type": "building",
+      "file": "export/png/building-casa-ruin.png",
+      "lights": "export/png/building-casa-ruin-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/campo/level-1",
+      "type": "building",
+      "file": "export/png/building-campo-level-1.png",
+      "lights": "export/png/building-campo-level-1-lights.png",
+      "size": [
+        144,
+        96
+      ],
+      "footprint": [
+        9,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/campo/level-2",
+      "type": "building",
+      "file": "export/png/building-campo-level-2.png",
+      "lights": "export/png/building-campo-level-2-lights.png",
+      "size": [
+        144,
+        96
+      ],
+      "footprint": [
+        9,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/campo/level-3",
+      "type": "building",
+      "file": "export/png/building-campo-level-3.png",
+      "lights": "export/png/building-campo-level-3-lights.png",
+      "size": [
+        144,
+        96
+      ],
+      "footprint": [
+        9,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/campo/ruin",
+      "type": "building",
+      "file": "export/png/building-campo-ruin.png",
+      "lights": "export/png/building-campo-ruin-lights.png",
+      "size": [
+        144,
+        96
+      ],
+      "footprint": [
+        9,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/ferreiro/level-1",
+      "type": "building",
+      "file": "export/png/building-ferreiro-level-1.png",
+      "lights": "export/png/building-ferreiro-level-1-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-1"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/ferreiro/level-2",
+      "type": "building",
+      "file": "export/png/building-ferreiro-level-2.png",
+      "lights": "export/png/building-ferreiro-level-2-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-2"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/ferreiro/level-3",
+      "type": "building",
+      "file": "export/png/building-ferreiro-level-3.png",
+      "lights": "export/png/building-ferreiro-level-3-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "level-3"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/ferreiro/ruin",
+      "type": "building",
+      "file": "export/png/building-ferreiro-ruin.png",
+      "lights": "export/png/building-ferreiro-ruin-lights.png",
+      "size": [
+        112,
+        96
+      ],
+      "footprint": [
+        7,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "ruin"
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Base sem janela acesa (dia). Overlay -lights: mesmo canvas/pivo, so janelas acesas + halo; vazio na ruina.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "building/house/01",
       "type": "building",
       "file": "export/png/building-house-01.png",
-      "size": [64, 48],
-      "footprint": [4, 3],
-      "anchor": [0.5, 1],
-      "states": ["default"],
+      "lights": "export/png/building-house-01-lights.png",
+      "size": [
+        64,
+        48
+      ],
+      "footprint": [
+        4,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "default"
+      ],
       "priority": "P1",
-      "status": "todo",
       "current": "procedural (tiles)",
-      "license": "TBD",
-      "notes": "Uma das cinco casinhas da borda sul; variar madeira/pedra e telhado."
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/house/02",
+      "type": "building",
+      "file": "export/png/building-house-02.png",
+      "lights": "export/png/building-house-02-lights.png",
+      "size": [
+        64,
+        48
+      ],
+      "footprint": [
+        4,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "default"
+      ],
+      "priority": "P1",
+      "current": "procedural (tiles)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/house/03",
+      "type": "building",
+      "file": "export/png/building-house-03.png",
+      "lights": "export/png/building-house-03-lights.png",
+      "size": [
+        64,
+        48
+      ],
+      "footprint": [
+        4,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "default"
+      ],
+      "priority": "P1",
+      "current": "procedural (tiles)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/house/04",
+      "type": "building",
+      "file": "export/png/building-house-04.png",
+      "lights": "export/png/building-house-04-lights.png",
+      "size": [
+        64,
+        48
+      ],
+      "footprint": [
+        4,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "default"
+      ],
+      "priority": "P1",
+      "current": "procedural (tiles)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "building/house/05",
+      "type": "building",
+      "file": "export/png/building-house-05.png",
+      "lights": "export/png/building-house-05-lights.png",
+      "size": [
+        64,
+        48
+      ],
+      "footprint": [
+        4,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "door": [
+        0.5,
+        1
+      ],
+      "states": [
+        "default"
+      ],
+      "priority": "P1",
+      "current": "procedural (tiles)",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "prop/gate-horn/open",
       "type": "prop",
       "file": "export/png/prop-gate-horn-open.png",
-      "size": [80, 96],
-      "footprint": [5, 6],
-      "anchor": [0.5, 1],
-      "states": ["open"],
+      "size": [
+        80,
+        96
+      ],
+      "footprint": [
+        5,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "states": [
+        "open"
+      ],
       "priority": "P0",
-      "status": "todo",
       "current": "procedural (gate-horn)",
-      "license": "TBD",
-      "notes": "Portao + berrante numa imagem; passagem central transparente; berrante acima da viga, nao atras do portao; sem texto."
+      "notes": "Portao + berrante numa imagem; passagem central transparente (open); berrante acima da viga.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/gate-horn/closed",
+      "type": "prop",
+      "file": "export/png/prop-gate-horn-closed.png",
+      "size": [
+        80,
+        96
+      ],
+      "footprint": [
+        5,
+        6
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "states": [
+        "closed"
+      ],
+      "priority": "P2",
+      "current": "procedural (gate-horn)",
+      "notes": "Portao + berrante numa imagem; passagem central transparente (open); berrante acima da viga.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "prop/thermal/basin",
       "type": "prop",
       "file": "export/png/prop-thermal-basin.png",
-      "size": [80, 64],
-      "footprint": [5, 4],
-      "anchor": [0.5, 1],
-      "states": ["full"],
+      "size": [
+        80,
+        64
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "states": [
+        "full"
+      ],
       "priority": "P0",
-      "status": "todo",
       "current": "procedural",
-      "license": "TBD",
-      "notes": "Bacia de pedra no antigo portao sul; agua, vapor e glow sao separados."
+      "notes": "Fonte termal natural. Agua separada em prop/thermal/water; leito vazio em prop/thermal/basin-empty.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
-      "id": "char/villager/lavrador/f",
-      "type": "character",
-      "file": "export/png/char-villager-lavrador-f.png",
-      "meta": "export/png/char-villager-lavrador-f.json",
-      "size": [16, 21],
-      "anchor": [0.5, 1],
-      "priority": "P0",
-      "status": "todo",
-      "current": "procedural",
-      "license": "TBD",
-      "animations": {
-        "idle": { "frames": [0, 1], "fps": 3 },
-        "walk": { "frames": [0, 1], "fps": 8 }
-      },
-      "notes": "Perfil, flip horizontal; sem arma, sem rotulo, sem sombra; silhueta distinta dos herois."
+      "id": "prop/thermal/basin-empty",
+      "type": "prop",
+      "file": "export/png/prop-thermal-basin-empty.png",
+      "size": [
+        80,
+        64
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "states": [
+        "empty"
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
-      "id": "char/hero/guardiao/m",
-      "type": "character",
-      "file": "export/png/char-hero-guardiao-m.png",
-      "meta": "export/png/char-hero-guardiao-m.json",
-      "size": [16, 28],
-      "anchor": [0.5, 1],
-      "priority": "P1",
-      "status": "todo",
-      "current": "third-party (0x72)",
-      "license": "TBD",
-      "animations": {
-        "idle": { "frames": [0, 1, 2, 3], "fps": 6 },
-        "run": { "frames": [4, 5, 6, 7], "fps": 10 },
-        "hit": { "frames": [8], "fps": 1 }
-      },
-      "notes": "Perfil, flip horizontal; 4 idle + 4 run + 1 hit."
+      "id": "prop/thermal/water",
+      "type": "prop",
+      "file": "export/png/prop-thermal-water.png",
+      "size": [
+        80,
+        64
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "states": [
+        "overlay"
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": "Camada de agua alinhada a bacia vazia.",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
-      "id": "ui/icon/activity/termas",
-      "type": "ui-icon",
-      "file": "export/ui/ui-icon-activity-termas.svg",
-      "size": [24, 24],
-      "anchor": [0, 0],
-      "format": "svg",
-      "priority": "P1",
-      "status": "todo",
+      "id": "prop/thermal/bench",
+      "type": "prop",
+      "file": "export/png/prop-thermal-bench.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
       "current": "procedural",
-      "license": "TBD",
-      "notes": "Traco com currentColor; sem texto."
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/coffer",
+      "type": "prop",
+      "file": "export/png/prop-coffer.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/board",
+      "type": "prop",
+      "file": "export/png/prop-board.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/campfire/off",
+      "type": "prop",
+      "file": "export/png/prop-campfire-off.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/campfire/on",
+      "type": "prop",
+      "file": "export/png/prop-campfire-on.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/tree/01",
+      "type": "prop",
+      "file": "export/png/prop-tree-01.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/tree/dead",
+      "type": "prop",
+      "file": "export/png/prop-tree-dead.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/abyss/cave",
+      "type": "prop",
+      "file": "export/png/prop-abyss-cave.png",
+      "size": [
+        80,
+        64
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/tree/pine",
+      "type": "prop",
+      "file": "export/png/prop-tree-pine.png",
+      "size": [
+        32,
+        48
+      ],
+      "footprint": [
+        2,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/boulder/01",
+      "type": "prop",
+      "file": "export/png/prop-boulder-01.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/boulder/02",
+      "type": "prop",
+      "file": "export/png/prop-boulder-02.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "decal/grave",
+      "type": "decal",
+      "file": "export/png/decal-grave.png",
+      "size": [
+        10,
+        12
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "decal/sign",
+      "type": "decal",
+      "file": "export/png/decal-sign.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "decal/banner",
+      "type": "decal",
+      "file": "export/png/decal-banner.png",
+      "size": [
+        16,
+        32
+      ],
+      "footprint": [
+        1,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "decal/rubble",
+      "type": "decal",
+      "file": "export/png/decal-rubble.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "procedural",
+      "license": "CC0-1.0",
+      "status": "review"
     },
     {
       "id": "fx/steam",
       "type": "fx",
       "file": "export/fx/fx-steam.png",
       "meta": "export/fx/fx-steam.json",
-      "size": [32, 32],
-      "anchor": [0.5, 1],
-      "frames": 8,
+      "anchor": [
+        0.5,
+        1
+      ],
       "fps": 8,
+      "blend": "normal",
+      "priority": "P1",
+      "current": "procedural",
+      "size": [
+        32,
+        32
+      ],
+      "frameSize": [
+        32,
+        32
+      ],
+      "sheetSize": [
+        256,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/fire",
+      "type": "fx",
+      "file": "export/fx/fx-fire.png",
+      "meta": "export/fx/fx-fire.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "fps": 10,
       "blend": "additive",
       "priority": "P1",
-      "status": "todo",
       "current": "procedural",
-      "license": "TBD",
-      "notes": "Alpha limpo, sem fundo; nao assar glow difuso."
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        96,
+        16
+      ],
+      "columns": 6,
+      "rows": 1,
+      "frames": 6,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "fx/spark",
+      "type": "fx",
+      "file": "export/fx/fx-spark.png",
+      "meta": "export/fx/fx-spark.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "fps": 12,
+      "blend": "additive",
+      "priority": "P2",
+      "current": "procedural",
+      "size": [
+        8,
+        8
+      ],
+      "frameSize": [
+        8,
+        8
+      ],
+      "sheetSize": [
+        32,
+        8
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/lavrador/m",
+      "type": "character",
+      "file": "export/png/char-villager-lavrador-m.png",
+      "meta": "export/png/char-villager-lavrador-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/lavrador/f",
+      "type": "character",
+      "file": "export/png/char-villager-lavrador-f.png",
+      "meta": "export/png/char-villager-lavrador-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/artesa/m",
+      "type": "character",
+      "file": "export/png/char-villager-artesa-m.png",
+      "meta": "export/png/char-villager-artesa-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/artesa/f",
+      "type": "character",
+      "file": "export/png/char-villager-artesa-f.png",
+      "meta": "export/png/char-villager-artesa-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/acolito/m",
+      "type": "character",
+      "file": "export/png/char-villager-acolito-m.png",
+      "meta": "export/png/char-villager-acolito-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/acolito/f",
+      "type": "character",
+      "file": "export/png/char-villager-acolito-f.png",
+      "meta": "export/png/char-villager-acolito-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/guarda/m",
+      "type": "character",
+      "file": "export/png/char-villager-guarda-m.png",
+      "meta": "export/png/char-villager-guarda-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/villager/guarda/f",
+      "type": "character",
+      "file": "export/png/char-villager-guarda-f.png",
+      "meta": "export/png/char-villager-guarda-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/guardiao/m",
+      "type": "character",
+      "file": "export/png/char-hero-guardiao-m.png",
+      "meta": "export/png/char-hero-guardiao-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "espada + escudo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/guardiao/f",
+      "type": "character",
+      "file": "export/png/char-hero-guardiao-f.png",
+      "meta": "export/png/char-hero-guardiao-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "espada + escudo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/selvagem/m",
+      "type": "character",
+      "file": "export/png/char-hero-selvagem-m.png",
+      "meta": "export/png/char-hero-selvagem-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "machado",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/selvagem/f",
+      "type": "character",
+      "file": "export/png/char-hero-selvagem-f.png",
+      "meta": "export/png/char-hero-selvagem-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "machado",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/lanceiro/m",
+      "type": "character",
+      "file": "export/png/char-hero-lanceiro-m.png",
+      "meta": "export/png/char-hero-lanceiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "lanca",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/lanceiro/f",
+      "type": "character",
+      "file": "export/png/char-hero-lanceiro-f.png",
+      "meta": "export/png/char-hero-lanceiro-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "lanca",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/arqueiro/m",
+      "type": "character",
+      "file": "export/png/char-hero-arqueiro-m.png",
+      "meta": "export/png/char-hero-arqueiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "arco",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/arqueiro/f",
+      "type": "character",
+      "file": "export/png/char-hero-arqueiro-f.png",
+      "meta": "export/png/char-hero-arqueiro-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "arco",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/clerigo/m",
+      "type": "character",
+      "file": "export/png/char-hero-clerigo-m.png",
+      "meta": "export/png/char-hero-clerigo-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "maca/martelo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/clerigo/f",
+      "type": "character",
+      "file": "export/png/char-hero-clerigo-f.png",
+      "meta": "export/png/char-hero-clerigo-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "maca/martelo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/piromante/m",
+      "type": "character",
+      "file": "export/png/char-hero-piromante-m.png",
+      "meta": "export/png/char-hero-piromante-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "cajado",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/hero/piromante/f",
+      "type": "character",
+      "file": "export/png/char-hero-piromante-f.png",
+      "meta": "export/png/char-hero-piromante-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72)",
+      "weapon": "cajado",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Arma carregada na mao da frente, dentro dos 16 px.",
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        144,
+        28
+      ],
+      "columns": 9,
+      "rows": 1,
+      "frames": 9,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/mayor",
+      "type": "character",
+      "file": "export/png/char-mayor.png",
+      "meta": "export/png/char-mayor.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "third-party (0x72 doc)",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Jogador: casaco teal, corrente de oficio, chapeu com pena, lanterna (cor ambar, sem glow).",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/mayor/f",
+      "type": "character",
+      "file": "export/png/char-mayor-f.png",
+      "meta": "export/png/char-mayor-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P0",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Jogador: casaco teal, corrente de oficio, chapeu com pena, lanterna (cor ambar, sem glow). Variante feminina.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/descansar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-descansar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/beber",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-beber.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/rezar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-rezar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/comprar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-comprar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/treinar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-treinar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/tumulo",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-tumulo.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/socializar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-socializar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/aguardar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-aguardar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/tratar",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-tratar.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/activity/termas",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-termas.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/resource/gold",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-resource-gold.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "svg",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/resource/materials",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-resource-materials.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "svg",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/resource/population",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-resource-population.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "svg",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/resource/heroes",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-resource-heroes.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "svg",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/resource/energy",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-resource-energy.svg",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "format": "svg",
+      "priority": "P1",
+      "current": "svg",
+      "notes": "Traco 2 px com stroke=currentColor; sem texto. Cor vem do CSS/tint do jogo.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/rank/E",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-rank-e.png",
+      "variant": "export/ui/ui-icon-rank-e-glyph.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Medalha sem letra (o jogo escreve o rank). variant = mesma medalha com a letra em pixel, caso o projeto prefira.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/rank/D",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-rank-d.png",
+      "variant": "export/ui/ui-icon-rank-d-glyph.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Medalha sem letra (o jogo escreve o rank). variant = mesma medalha com a letra em pixel, caso o projeto prefira.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/rank/C",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-rank-c.png",
+      "variant": "export/ui/ui-icon-rank-c-glyph.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Medalha sem letra (o jogo escreve o rank). variant = mesma medalha com a letra em pixel, caso o projeto prefira.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/rank/B",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-rank-b.png",
+      "variant": "export/ui/ui-icon-rank-b-glyph.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Medalha sem letra (o jogo escreve o rank). variant = mesma medalha com a letra em pixel, caso o projeto prefira.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/rank/A",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-rank-a.png",
+      "variant": "export/ui/ui-icon-rank-a-glyph.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Medalha sem letra (o jogo escreve o rank). variant = mesma medalha com a letra em pixel, caso o projeto prefira.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/rank/S",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-rank-s.png",
+      "variant": "export/ui/ui-icon-rank-s-glyph.png",
+      "size": [
+        16,
+        16
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "procedural",
+      "notes": "Medalha sem letra (o jogo escreve o rank). variant = mesma medalha com a letra em pixel, caso o projeto prefira.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/weapon/guardiao",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-weapon-guardiao.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "recorte/SVG",
+      "notes": "Arma da classe: espada + escudo. Mesma silhueta do sprite.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/weapon/selvagem",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-weapon-selvagem.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "recorte/SVG",
+      "notes": "Arma da classe: machado. Mesma silhueta do sprite.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/weapon/lanceiro",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-weapon-lanceiro.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "recorte/SVG",
+      "notes": "Arma da classe: lanca. Mesma silhueta do sprite.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/weapon/arqueiro",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-weapon-arqueiro.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "recorte/SVG",
+      "notes": "Arma da classe: arco. Mesma silhueta do sprite.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/weapon/clerigo",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-weapon-clerigo.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "recorte/SVG",
+      "notes": "Arma da classe: maca/martelo. Mesma silhueta do sprite.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/weapon/piromante",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-weapon-piromante.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "recorte/SVG",
+      "notes": "Arma da classe: cajado. Mesma silhueta do sprite.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/icon/armor",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-armor.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "SVG/gerado",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/guardiao/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-guardiao-m.png",
+      "small": "export/ui/ui-portrait-hero-guardiao-m-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/guardiao/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-guardiao-f.png",
+      "small": "export/ui/ui-portrait-hero-guardiao-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/selvagem/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-selvagem-m.png",
+      "small": "export/ui/ui-portrait-hero-selvagem-m-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/selvagem/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-selvagem-f.png",
+      "small": "export/ui/ui-portrait-hero-selvagem-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/lanceiro/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-lanceiro-m.png",
+      "small": "export/ui/ui-portrait-hero-lanceiro-m-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/lanceiro/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-lanceiro-f.png",
+      "small": "export/ui/ui-portrait-hero-lanceiro-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/arqueiro/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-arqueiro-m.png",
+      "small": "export/ui/ui-portrait-hero-arqueiro-m-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/arqueiro/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-arqueiro-f.png",
+      "small": "export/ui/ui-portrait-hero-arqueiro-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/clerigo/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-clerigo-m.png",
+      "small": "export/ui/ui-portrait-hero-clerigo-m-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/clerigo/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-clerigo-f.png",
+      "small": "export/ui/ui-portrait-hero-clerigo-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/piromante/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-piromante-m.png",
+      "small": "export/ui/ui-portrait-hero-piromante-m-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/hero/piromante/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hero-piromante-f.png",
+      "small": "export/ui/ui-portrait-hero-piromante-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (0x72)",
+      "notes": "Retrato detalhado 48x84, meio corpo de frente, com a arma da classe. small = quadro 16x28 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/mayor",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-mayor.png",
+      "small": "export/ui/ui-portrait-mayor-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "todo",
+      "notes": "Retrato detalhado 48x84. small = quadro 16x23 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "ui/portrait/mayor/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-mayor-f.png",
+      "small": "export/ui/ui-portrait-mayor-f-small.png",
+      "size": [
+        48,
+        84
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "todo",
+      "notes": "Retrato detalhado 48x84. small = quadro 16x23 (idle 0).",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/child/m",
+      "type": "character",
+      "file": "export/png/char-child-m.png",
+      "meta": "export/png/char-child-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Mais baixa que os adultos dentro do mesmo canvas 16x21.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/child/f",
+      "type": "character",
+      "file": "export/png/char-child-f.png",
+      "meta": "export/png/char-child-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "todo",
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 3
+        },
+        "walk": {
+          "frames": [
+            0,
+            1
+          ],
+          "fps": 8
+        }
+      },
+      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Mais baixa que os adultos dentro do mesmo canvas 16x21.",
+      "size": [
+        16,
+        21
+      ],
+      "frameSize": [
+        16,
+        21
+      ],
+      "sheetSize": [
+        32,
+        21
+      ],
+      "columns": 2,
+      "rows": 1,
+      "frames": 2,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "tile/town/cemetery-fence",
+      "type": "tileset",
+      "file": "export/tiles/cemetery-fence.png",
+      "meta": "export/tiles/cemetery-fence.json",
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "sheetSize": [
+        128,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tile": true,
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Cerca de ferro do cemiterio.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "tile/town/wood-fence",
+      "type": "tileset",
+      "file": "export/tiles/wood-fence.png",
+      "meta": "export/tiles/wood-fence.json",
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "sheetSize": [
+        128,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tile": true,
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "notes": "Cerca de madeira para lotes e pasto.",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/well",
+      "type": "prop",
+      "file": "export/png/prop-well.png",
+      "size": [
+        32,
+        40
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/hay",
+      "type": "prop",
+      "file": "export/png/prop-hay.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/sacks",
+      "type": "prop",
+      "file": "export/png/prop-sacks.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/bucket",
+      "type": "prop",
+      "file": "export/png/prop-bucket.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/logs",
+      "type": "prop",
+      "file": "export/png/prop-logs.png",
+      "size": [
+        32,
+        16
+      ],
+      "footprint": [
+        2,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/barrel",
+      "type": "prop",
+      "file": "export/png/prop-barrel.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/crate",
+      "type": "prop",
+      "file": "export/png/prop-crate.png",
+      "size": [
+        16,
+        16
+      ],
+      "footprint": [
+        1,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P1",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
     }
   ],
   "planned": {
-    "buildingIds": ["templo", "taverna", "guilda", "estalagem", "casa", "campo", "ferreiro"],
-    "buildingStates": ["level-1", "level-2", "level-3", "ruin"],
+    "buildingIds": [
+      "templo",
+      "taverna",
+      "guilda",
+      "estalagem",
+      "casa",
+      "campo",
+      "ferreiro"
+    ],
+    "buildingStates": [
+      "level-1",
+      "level-2",
+      "level-3",
+      "ruin"
+    ],
     "buildingFootprints": {
-      "templo": [7, 6],
-      "taverna": [7, 6],
-      "guilda": [7, 6],
-      "estalagem": [7, 6],
-      "casa": [7, 6],
-      "campo": [9, 6],
-      "ferreiro": [7, 6]
+      "templo": [
+        7,
+        6
+      ],
+      "taverna": [
+        7,
+        6
+      ],
+      "guilda": [
+        7,
+        6
+      ],
+      "estalagem": [
+        7,
+        6
+      ],
+      "casa": [
+        7,
+        6
+      ],
+      "campo": [
+        9,
+        6
+      ],
+      "ferreiro": [
+        7,
+        6
+      ]
     },
-    "houseIds": ["01", "02", "03", "04", "05"],
-    "heroClasses": ["guardiao", "selvagem", "lanceiro", "arqueiro", "clerigo", "piromante"],
-    "heroGenders": ["m", "f"],
-    "villagerLooks": ["lavrador", "artesa", "acolito", "guarda"],
-    "villagerGenders": ["m", "f"],
-    "activityIcons": ["descansar", "beber", "rezar", "comprar", "treinar", "tumulo", "socializar", "aguardar", "tratar", "termas"],
-    "resourceIcons": ["gold", "materials", "population", "heroes", "energy"],
-    "fx": ["steam", "fire", "spark", "raid-shade", "raid-flash"],
-    "decals": ["grave", "sign", "banner", "rubble"]
+    "houseIds": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05"
+    ],
+    "heroClasses": [
+      "guardiao",
+      "selvagem",
+      "lanceiro",
+      "arqueiro",
+      "clerigo",
+      "piromante"
+    ],
+    "heroGenders": [
+      "m",
+      "f"
+    ],
+    "villagerLooks": [
+      "lavrador",
+      "artesa",
+      "acolito",
+      "guarda"
+    ],
+    "villagerGenders": [
+      "m",
+      "f"
+    ],
+    "activityIcons": [
+      "descansar",
+      "beber",
+      "rezar",
+      "comprar",
+      "treinar",
+      "tumulo",
+      "socializar",
+      "aguardar",
+      "tratar",
+      "termas"
+    ],
+    "resourceIcons": [
+      "gold",
+      "materials",
+      "population",
+      "heroes",
+      "energy"
+    ],
+    "fx": [
+      "steam",
+      "fire",
+      "spark",
+      "raid-shade",
+      "raid-flash"
+    ],
+    "decals": [
+      "grave",
+      "sign",
+      "banner",
+      "rubble"
+    ]
+  },
+  "preview": {
+    "contactSheet": "preview/contact-sheet.png",
+    "uiIcons": "preview/ui-icons.png",
+    "tileTest": "preview/tile-test.png",
+    "composition": "preview/town-composition.png",
+    "simDay": "preview/sim-town-day.png",
+    "simNight": "preview/sim-town-night.png",
+    "simCameraDesktop": "preview/sim-camera-desktop.png",
+    "simCameraMobile": "preview/sim-camera-mobile.png",
+    "ingameScreenshots": "PENDENTE: capturas do jogo real 1370x1289 e 390x844 (feitas pelo projeto)"
   }
 }

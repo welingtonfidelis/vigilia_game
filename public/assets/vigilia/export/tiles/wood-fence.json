@@ -1,0 +1,41 @@
+{
+ "image": "wood-fence.png",
+ "tileSize": 16,
+ "columns": 8,
+ "rows": 1,
+ "tiles": {
+  "h": [
+   0,
+   0
+  ],
+  "v": [
+   1,
+   0
+  ],
+  "nw": [
+   2,
+   0
+  ],
+  "ne": [
+   3,
+   0
+  ],
+  "sw": [
+   4,
+   0
+  ],
+  "se": [
+   5,
+   0
+  ],
+  "gate": [
+   6,
+   0
+  ],
+  "post": [
+   7,
+   0
+  ]
+ },
+ "notes": "h = trecho horizontal; v = vertical; nw/ne/sw/se = cantos; gate = portao aberto; post = poste solto"
+}

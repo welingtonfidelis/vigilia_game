@@ -88,24 +88,23 @@ export const citizenHome = (citizen: Citizen): Point => HOMES[Math.abs(citizen.i
 /** Quem fica acordado: copeiros da taverna e alguns noctívagos. */
 export const isNightOwl = (citizen: Citizen): boolean =>
   citizen.job === 'copeiro' || Math.abs(citizen.id) % 9 === 0;
-export const ABYSS_EDGE_Y = 6 * TILE;
+export const ABYSS_EDGE_Y = 0;
 
 /** Estradas de terra (no mínimo 2 tiles de largura, para o autotile ter borda dos dois lados). */
 export const ROADS: TileRect[] = [
   PLAZA_TILES,
-  { tx: 3, ty: 17, tw: 45, th: 2 }, // estrada de cima: entrada ↔ cemitério
+  { tx: 3, ty: 17, tw: 45, th: 2 }, // estrada de cima
+  { tx: 24, ty: 7, tw: 2, th: 11 }, // entrada central → estrada de cima
   { tx: 8, ty: 26, tw: 38, th: 2 }, // estrada de baixo: estalagem, campo, ferreiro
-  { tx: 24, ty: 7, tw: 2, th: 8 }, // praça → abismo (a abadia ocupa a linha 6)
   { tx: 24, ty: 21, tw: 2, th: 11 }, // praça → portão
   { tx: 9, ty: 15, tw: 3, th: 2 }, // porta do templo
   { tx: 17, ty: 15, tw: 3, th: 2 }, // porta da taverna
   { tx: 31, ty: 15, tw: 3, th: 2 }, // porta da guilda
-  { tx: 42, ty: 14, tw: 3, th: 3 }, // portão do cemitério
 ];
 
 /** Cemitério cercado (em tiles) e a grade das covas lá dentro. */
-export const CEMETERY_TILES: TileRect = { tx: 39, ty: 7, tw: 10, th: 7 };
-export const CEMETERY = { x: 40.5 * TILE + 8, y: 8.5 * TILE + 12, cols: 6, dx: 48, dy: 44 };
+export const CEMETERY_TILES: TileRect = { tx: 1, ty: 2, tw: 12, th: 6 };
+export const CEMETERY = { x: 3 * TILE, y: 3.5 * TILE, cols: 9, dx: 32, dy: 26, rows: 6 };
 
 /** Fonte termal no lugar do antigo portão: a água quente que sobe do abismo. */
 export const THERMAL_TILES: TileRect = { tx: 23, ty: 27, tw: 5, th: 4 };
@@ -113,17 +112,20 @@ export const THERMAL_TILES: TileRect = { tx: 23, ty: 27, tw: 5, th: 4 };
 export const THERMAL_YARD: TileRect = { tx: 22, ty: 26, tw: 7, th: 6 };
 export const THERMAL_PATH: TileRect = { tx: 24, ty: 25, tw: 2, th: 2 };
 
+/** Terreiro e trilha da caverna no canto direito, no pé do paredão. */
+export const CAVE_PATH: TileRect = { tx: 43, ty: 15, tw: 2, th: 3 };
+
 export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
 
 /** Guarita de madeira com o berrante: agora é a entrada, no centro-esquerdo. */
-export const HORN_TOWER: TileRect = { tx: 1, ty: 11, tw: 5, th: 6 };
+export const HORN_TOWER: TileRect = { tx: 22, ty: 1, tw: 5, th: 6 };
 
 export const LANDMARKS: Record<Landmark, Point> = {
-  berrante: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: 12.5 * TILE },
+  berrante: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + 1.5) * TILE },
   quadro: { x: 28.5 * TILE, y: 16 * TILE },
   cofre: { x: 25 * TILE, y: 18.5 * TILE },
-  abismo: { x: 25 * TILE, y: 6.5 * TILE },
-  cemiterio: { x: 43.5 * TILE, y: 14 * TILE },
+  abismo: { x: 45 * TILE, y: 14.5 * TILE },
+  cemiterio: { x: 7 * TILE, y: 9 * TILE },
   portao: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 10 },
   fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
   termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },

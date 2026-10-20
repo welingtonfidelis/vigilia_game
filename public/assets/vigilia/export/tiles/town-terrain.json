@@ -1,0 +1,262 @@
+{
+ "image": "town-terrain.png",
+ "tileSize": 16,
+ "columns": 8,
+ "rows": 8,
+ "tiles": {
+  "grass-0": [
+   0,
+   0
+  ],
+  "grass-1": [
+   1,
+   0
+  ],
+  "grass-2": [
+   2,
+   0
+  ],
+  "grass-3": [
+   3,
+   0
+  ],
+  "dirt": [
+   4,
+   0
+  ],
+  "trail": [
+   5,
+   0
+  ],
+  "water": [
+   6,
+   0
+  ],
+  "abyss": [
+   7,
+   0
+  ],
+  "dirt-nw": [
+   0,
+   1
+  ],
+  "trail-nw": [
+   5,
+   1
+  ],
+  "dirt-n": [
+   1,
+   1
+  ],
+  "trail-n": [
+   6,
+   1
+  ],
+  "dirt-ne": [
+   2,
+   1
+  ],
+  "trail-ne": [
+   7,
+   1
+  ],
+  "dirt-w": [
+   0,
+   2
+  ],
+  "trail-w": [
+   5,
+   2
+  ],
+  "dirt-c": [
+   1,
+   2
+  ],
+  "trail-c": [
+   6,
+   2
+  ],
+  "dirt-e": [
+   2,
+   2
+  ],
+  "trail-e": [
+   7,
+   2
+  ],
+  "dirt-sw": [
+   0,
+   3
+  ],
+  "trail-sw": [
+   5,
+   3
+  ],
+  "dirt-s": [
+   1,
+   3
+  ],
+  "trail-s": [
+   6,
+   3
+  ],
+  "dirt-se": [
+   2,
+   3
+  ],
+  "trail-se": [
+   7,
+   3
+  ],
+  "dirt-inner-nw": [
+   3,
+   1
+  ],
+  "dirt-inner-ne": [
+   4,
+   1
+  ],
+  "dirt-inner-sw": [
+   3,
+   2
+  ],
+  "dirt-inner-se": [
+   4,
+   2
+  ],
+  "trail-on-dirt-n": [
+   3,
+   3
+  ],
+  "grass-stones": [
+   4,
+   3
+  ],
+  "water-nw": [
+   0,
+   4
+  ],
+  "water-n": [
+   1,
+   4
+  ],
+  "water-ne": [
+   2,
+   4
+  ],
+  "water-w": [
+   0,
+   5
+  ],
+  "water-c": [
+   1,
+   5
+  ],
+  "water-e": [
+   2,
+   5
+  ],
+  "water-sw": [
+   0,
+   6
+  ],
+  "water-s": [
+   1,
+   6
+  ],
+  "water-se": [
+   2,
+   6
+  ],
+  "cliff-top-0": [
+   3,
+   4
+  ],
+  "cliff-face-0": [
+   3,
+   5
+  ],
+  "cliff-base-0": [
+   3,
+   6
+  ],
+  "cliff-top-1": [
+   4,
+   4
+  ],
+  "cliff-face-1": [
+   4,
+   5
+  ],
+  "cliff-base-1": [
+   4,
+   6
+  ],
+  "cliff-top-2": [
+   5,
+   4
+  ],
+  "cliff-face-2": [
+   5,
+   5
+  ],
+  "cliff-base-2": [
+   5,
+   6
+  ],
+  "abyss-2": [
+   6,
+   4
+  ],
+  "abyss-mist": [
+   7,
+   4
+  ],
+  "abyss-glint": [
+   6,
+   5
+  ],
+  "abyss-3": [
+   7,
+   5
+  ],
+  "rock-ground": [
+   5,
+   7
+  ],
+  "rock-top": [
+   6,
+   7
+  ],
+  "rock-face": [
+   7,
+   7
+  ],
+  "yard": [
+   0,
+   7
+  ],
+  "mud": [
+   1,
+   7
+  ],
+  "trail-v": [
+   2,
+   7
+  ],
+  "grass-flowers": [
+   3,
+   7
+  ],
+  "flagstone": [
+   4,
+   7
+  ]
+ },
+ "autotile": {
+  "dirt": "9 partes dirt-{nw,n,ne,w,c,e,sw,s,se} + cantos internos dirt-inner-{nw,ne,sw,se} (canto de grama no lado indicado)",
+  "trail": "9 partes trail-{nw..se}",
+  "water": "9 partes water-{nw..se}",
+  "cliff": "paredao marrom: cliff-top-N (grama + borda) sobre cliff-face-N sobre cliff-base-N, N=0..2 (variacoes horizontais)"
+ }
+}

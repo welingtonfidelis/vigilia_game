@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Fase A e a primeira fatia da Fase B (cidadãos e incursões noturnas).** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões) e o pack de arte Vigília 1.3 no cenário/prédios/moradores e os heróis/retratos do 0x72.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -42,9 +42,9 @@ src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
 src/render/ Phaser: só lê o World a cada quadro
   VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
-  town.ts, ground.ts  vila em tiles do Tiny Town (autotile de terra, florestas, abismo, cemitério, marcos); o chão é assado numa textura única e as UVs dos tiles recuam meio texel, para não vazar o tile vizinho do atlas em zoom fracionário
+  town.ts, ground.ts  vila no tileset do pack Vigília 1.3 (autotile de terra/trilha, abismo, marcos e casas); o chão é assado numa textura única para não vazar tile em zoom fracionário
   buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
-  sprites.ts     heróis e prefeito do 0x72 (parado/correndo), assets.ts e atlas0x72.ts mapeiam classes e monstros
+  sprites.ts     moradores, prefeito e crianças do pack 1.3; heróis e retratos voltaram ao 0x72; monstros/masmorra também seguem no 0x72
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
 src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
@@ -123,8 +123,9 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 
 As duas licenças são CC0 (domínio público), com uso livre inclusive comercial. Creditamos por gentileza:
 
-- **[Tiny Town](https://kenney.nl/assets/tiny-town)**, de Kenney (kenney.nl): vila, prédios, árvores e caminhos. Fica em `public/assets/kenney-tiny-town/`, com o `License.txt` original.
-- **[16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)**, de Robert (0x72): heróis, monstros e masmorra. Fica em `public/assets/0x72-dungeontileset-ii/`, com o `LICENSE.txt` e a origem do arquivo.
+- **Vigília Art Pack 1.3** (Equipe Vigília, CC0 1.0): terreno, 7 prédios × 3 níveis + ruína, casas, portão/berrante, termas, props, FX, moradores, prefeito e crianças. Fica em `public/assets/vigilia/`, com `licenses/LICENSE.md` e o gerador no pacote original.
+- **[Tiny Town](https://kenney.nl/assets/tiny-town)**, de Kenney (kenney.nl): legado da vila/prédios antigos; permanece em `public/assets/kenney-tiny-town/` com o `License.txt` original.
+- **[16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)**, de Robert (0x72): heróis, retratos, monstros e masmorra; fica em `public/assets/0x72-dungeontileset-ii/`, com o `LICENSE.txt` e a origem do arquivo.
 
 ## O que o M1 entrega
 
@@ -135,7 +136,7 @@ As duas licenças são CC0 (domínio público), com uso livre inclusive comercia
 - [x] HUD (tesouro, data e hora, população, heróis/vagas, materiais, velocidade), objetivos abertos, avisos da crônica e fim de ato
 - [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
 - [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
-- [x] Pixel art CC0 (Tiny Town + DungeonTileset II): câmera fixa que acompanha o prefeito, cena dessaturada e escurecida para a fantasia sombria
+- [x] Pixel art CC0: pack Vigília 1.3 no cenário/prédios/moradores, heróis e retratos do 0x72, câmera fixa que acompanha o prefeito e cena dessaturada para a fantasia sombria
 - [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
 
 ## O que o M2 entrega
@@ -177,7 +178,7 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 - [x] **Humor e imposto.** O humor médio (0–100) puxa o imposto dos moradores e decide quem fica: abaixo de 30, o morador pode deixar a vila. Festa na praça e pouca corrupção levantam o humor; incursões derrubam.
 - [x] **Incursões noturnas.** Às 22h, o ato mais corrompido (≥55) pode subir à vila. A defesa soma heróis em casa, aposentados e guardas; o resultado é **repelida**, **segurada com custo** ou **saqueada**. No pior caso, prédios voltam a ruínas, moradores morrem, heróis se ferem e o tesouro sangra — a campanha nunca acaba. Aviso na crônica, no toast, no mapa (vultos saindo do abismo) e na navegação.
 - [x] **Painel da Vila** com população, humor, guardas, ameaça, ofícios, a lista de moradores com a barra de humor e as últimas incursões.
-- [x] **Sprites próprios de morador:** quatro corpos desenhados no projeto — lavrador, artesã, acólito e guarda — em dois gêneros e dois quadros de caminhada. Heróis e moradores não dividem mais o mesmo corpo; o prefeito segue com o `doc`.
+- [x] **Sprites de morador:** quatro ofícios — lavrador, artesã, acólito e guarda — em dois gêneros, agora com a arte do pack 1.1 em perfil; heróis e moradores não dividem o mesmo corpo.
 - [x] **Casinhas e noite:** cinco casas na borda sul, com caminhos de terra. À noite a maioria entra em casa e some; os guardas ficam no portão e copeiros/alguns noctívagos, na taverna.
 - [x] **Entrada e câmera:** portão de madeira com o berrante grande montado sobre a viga, no centro-esquerdo. A câmera fixa em 1,5× acompanha o prefeito; o zoom por roda/pinça saiu.
 - [x] **Save v3 → v4** migra sozinho (moradores, crescimento, incursões).

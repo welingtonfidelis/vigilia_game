@@ -7,8 +7,7 @@ import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../
 import { Bar, HeroLink, PanelShell, Stat, useGame } from '../components.tsx';
 import { activityText, className, fmt, liveHp, plural } from '../format.ts';
 import { graveOrder } from '../../render/layout.ts';
-import { HeroPortrait, PixelSprite } from '../PixelSprite.tsx';
-import { heroSprite } from '../../render/assets.ts';
+import { ChildIcon, HeroPortrait } from '../PixelSprite.tsx';
 
 const ORDER: Record<HeroStatus, number> = { expedition: 0, town: 1, retired: 2, left: 3, dead: 4 };
 
@@ -100,7 +99,7 @@ export function RosterPanel() {
               return (
                 <li key={c.id}>
                   <span class="kid">
-                    <PixelSprite base={heroSprite(c.classId, c.gender)} scale={1} crop={7} animate={false} />
+                    <ChildIcon gender={c.gender} />
                     <span>
                       <strong>{c.name}</strong>
                       <small class="muted">

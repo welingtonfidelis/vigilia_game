@@ -2,69 +2,19 @@
 
 import { ACTS } from '../sim/index.ts';
 import type { ClassId, Hero, Unit, World } from '../sim/index.ts';
-import { animFrames, CLASS_LOOK, DUNGEON_URL, frameRect, heroSprite, MONSTERS, SHEET_0X72_SIZE } from '../render/assets.ts';
+import { animFrames, DUNGEON_URL, frameRect, heroSprite, MONSTERS, SHEET_0X72_SIZE } from '../render/assets.ts';
+import { armorIconUrl, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
 
-/** Arma de classe, parada, só para a ficha do herói. O recorte é feito por CSS:
- *  o fundo fica clipado na caixa do próprio quadro, sem puxar o vizinho do atlas. */
+/** Arma de classe no ícone do pack (24×24), para a ficha do herói. */
 export function WeaponIcon(props: { classId: ClassId; scale?: number }) {
-  const name = CLASS_LOOK[props.classId].weapon;
-  const frame = name ? frameRect(name) : null;
-  if (!frame) return null;
   const s = props.scale ?? 2;
-  const [x, y, w, h] = frame;
-  return (
-    <span
-      class="px"
-      style={{
-        width: `${w * s}px`,
-        height: `${h * s}px`,
-        backgroundImage: `url(${DUNGEON_URL})`,
-        backgroundSize: `${SHEET_0X72_SIZE * s}px ${SHEET_0X72_SIZE * s}px`,
-        backgroundPosition: `${-x * s}px ${-y * s}px`,
-      }}
-      aria-hidden="true"
-    />
-  );
+  return <img class="ui-icon" src={weaponIconUrl(props.classId)} width={24 * s} height={24 * s} alt="" aria-hidden="true" />;
 }
 
-/** Peitoral em pixel art para a armadura comprada (o pacote 0x72 não tem uma). */
-const ARMOR_ROWS = [
-  '................',
-  '..oooo....oooo..',
-  '.osssso..osssso.',
-  '.osssssoossssso.',
-  '.osssssssssssso.',
-  '.osllllllllllso.',
-  '.oslllgggglllso.',
-  '.osllllggllllso.',
-  '.osllllggllllso.',
-  '..osllllllllso..',
-  '..osllllllllso..',
-  '...osllllllso...',
-  '...osllggllso...',
-  '....osllllso....',
-  '.....oooooo.....',
-  '................',
-];
-
-const ARMOR_COLORS: Record<string, string> = {
-  o: '#17130f',
-  s: '#4a5460',
-  l: '#aab6c0',
-  g: '#e9c049',
-};
-
+/** Armadura comprada, no ícone 24×24 do pack. */
 export function ArmorIcon(props: { size?: number }) {
   const size = props.size ?? 52;
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true" style={{ display: 'block' }}>
-      {ARMOR_ROWS.flatMap((row, y) =>
-        [...row].map((c, x) =>
-          c === '.' ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={ARMOR_COLORS[c]} />,
-        ),
-      )}
-    </svg>
-  );
+  return <img class="ui-icon" src={armorIconUrl()} width={size} height={size} alt="" aria-hidden="true" />;
 }
 
 /** `crop` tira pixels vazios do topo do quadro (os heróis do 0x72 têm folga em cima). */
@@ -95,15 +45,18 @@ export function PixelSprite(props: { base: string; scale?: number; animate?: boo
 /** Folga vazia no topo dos quadros de herói do 0x72 (16×28). */
 export const HERO_CROP = 7;
 
-export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: boolean }) => (
-  <PixelSprite
-    base={heroSprite(props.hero.classId, props.hero.gender)}
-    scale={props.scale ?? 2}
-    crop={HERO_CROP}
-    animate={props.animate}
-    ghost={props.hero.status === 'dead'}
-  />
-);
+export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: boolean; variant?: 'detail' | 'small' }) => {
+  const scale = props.scale ?? (props.variant === 'detail' ? 3 : 2);
+  return (
+    <PixelSprite
+      base={heroSprite(props.hero.classId, props.hero.gender)}
+      scale={scale}
+      crop={HERO_CROP}
+      animate={props.animate}
+      ghost={props.hero.status === 'dead'}
+    />
+  );
+};
 
 /** Qual monstro do 0x72 desenha esta unidade (inimigo do ato, chefe ou eco de um herói morto). */
 export function monsterBase(world: World, unit: Unit, act: number): { base: string; ghost: boolean } {
@@ -116,4 +69,22 @@ export function monsterBase(world: World, unit: Unit, act: number): { base: stri
   }
   const enemy = def.enemies.find((e) => unit.name.startsWith(e.name));
   return { base: (enemy && MONSTERS[enemy.id]?.base) || 'skelet', ghost: false };
+}
+
+/** Criança do pack (16×21, dois quadros) na lista do elenco; quadro 0 parado. */
+export function ChildIcon(props: { gender: 'm' | 'f'; scale?: number }) {
+  const s = props.scale ?? 1;
+  return (
+    <span
+      class="pack-child"
+      aria-hidden="true"
+      style={{
+        width: `${16 * s}px`,
+        height: `${21 * s}px`,
+        backgroundImage: `url(${PACK_BASE}export/png/char-child-${props.gender}.png)`,
+        backgroundSize: `${32 * s}px ${21 * s}px`,
+        backgroundPosition: '0 0',
+      }}
+    />
+  );
 }

@@ -3,8 +3,8 @@
 
 import Phaser from 'phaser';
 import type { ActivityKind, Child, Citizen, Hero } from '../sim/index.ts';
-import { citizenLook, ICON_KINDS, villagerTexture } from './art.ts';
-import { ART_SCALE, heroSprite, MAYOR_SPRITE } from './assets.ts';
+import { citizenLook, ICON_KINDS } from './art.ts';
+import { ART_SCALE, heroSprite } from './assets.ts';
 import { DEPTH, smooth } from './town.ts';
 import type { Point } from './layout.ts';
 import { RANK_COLORS } from './palette.ts';
@@ -20,20 +20,39 @@ const LABEL_STYLE = {
 /** Altura da cabeça acima dos pés (o quadro do 0x72 tem folga em cima). */
 const HEAD_Y = -44;
 
+interface WalkerVisual {
+  texture: string;
+  idle: string;
+  run: string;
+}
+
 abstract class Walker {
   readonly root: Phaser.GameObjects.Container;
   protected readonly body: Phaser.GameObjects.Sprite;
   protected readonly weapon: Phaser.GameObjects.Image | null;
   protected readonly base: string;
+  protected readonly visual: WalkerVisual | undefined;
   protected moving = false;
   private playing = '';
   private left = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, base: string, weapon: string | null, scale = ART_SCALE) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    base: string,
+    weapon: string | null,
+    scale = ART_SCALE,
+    visual?: WalkerVisual,
+  ) {
     this.base = base;
+    this.visual = visual;
     const shadow = scene.add.image(0, 0, 'shadow').setScale(scale);
     this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(scale) : null;
-    this.body = scene.add.sprite(0, 2, 'dungeon', `${base}_idle_anim_f0`).setOrigin(0.5, 1).setScale(scale);
+    this.body = scene.add
+      .sprite(0, 2, visual?.texture ?? 'dungeon', visual ? 0 : `${base}_idle_anim_f0`)
+      .setOrigin(0.5, 1)
+      .setScale(scale);
     const parts: Phaser.GameObjects.GameObject[] = [shadow, this.body];
     if (this.weapon) parts.push(this.weapon);
     this.root = scene.add.container(Math.round(x), Math.round(y), parts).setDepth(y);
@@ -85,7 +104,7 @@ abstract class Walker {
   }
 
   private play(kind: 'idle' | 'run'): void {
-    const key = `${this.base}_${kind}`;
+    const key = this.visual ? this.visual[kind] : `${this.base}_${kind}`;
     if (this.playing === key) return;
     this.playing = key;
     this.body.play(key, true);
@@ -122,8 +141,7 @@ export class HeroSprite extends Walker {
   commit: Commit | null = null;
 
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
-    // A arma do 0x72 é um enfeite fixo da classe, enorme ao lado do herói, e não diz
-    // nada sobre o equipamento comprado. O tier aparece na ficha; no mapa, fica limpo.
+    // Heróis voltam ao pacote 0x72; o resto da vila segue no pack 1.3.
     super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null);
     this.id = hero.id;
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
@@ -191,7 +209,12 @@ export class ChildSprite extends Walker {
   hidden = false;
 
   constructor(scene: Phaser.Scene, child: Child, at: Point) {
-    super(scene, at.x, at.y, heroSprite(child.classId, child.gender), null, ART_SCALE / 2);
+    const texture = `char/child/${child.gender}`;
+    super(scene, at.x, at.y, heroSprite(child.classId, child.gender), null, ART_SCALE, {
+      texture,
+      idle: `${texture}:idle`,
+      run: `${texture}:walk`,
+    });
     this.id = child.id;
     this.parents = child.parents;
     this.label = smooth(scene.add.text(at.x, at.y + 3, child.name, { ...LABEL_STYLE, fontSize: '11px', color: '#d8d0c0' }))
@@ -210,7 +233,7 @@ export class ChildSprite extends Walker {
   }
 
   hits(x: number, y: number): boolean {
-    return !this.hidden && Math.abs(x - this.root.x) < 12 && y > this.root.y - 26 && y < this.root.y + 14;
+    return !this.hidden && Math.abs(x - this.root.x) < 14 && y > this.root.y - 38 && y < this.root.y + 16;
   }
 
   destroy(): void {
@@ -224,7 +247,11 @@ export class Mayor extends Walker {
   readonly label: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, MAYOR_SPRITE, null);
+    super(scene, x, y, 'doc', null, ART_SCALE, {
+      texture: 'char/mayor',
+      idle: 'char/mayor:idle',
+      run: 'char/mayor:run',
+    });
     this.lantern = scene.add.image(x + 11, y - 14, 'glow').setTint(0xffc46b).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(2.2);
     this.label = smooth(scene.add.text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' }))
       .setOrigin(0.5, 0)
@@ -243,7 +270,7 @@ export class CitizenSprite {
   readonly id: number;
   readonly root: Phaser.GameObjects.Container;
   private readonly body: Phaser.GameObjects.Sprite;
-  private readonly frames: [string, string];
+  private readonly texture: string;
   private moving = false;
   private left = false;
   private frameTime = 0;
@@ -252,9 +279,9 @@ export class CitizenSprite {
   constructor(scene: Phaser.Scene, citizen: Citizen, at: Point) {
     this.id = citizen.id;
     const look = citizenLook(citizen);
-    this.frames = [villagerTexture(look, citizen.gender, 0), villagerTexture(look, citizen.gender, 1)];
+    this.texture = `char/villager/${look}/${citizen.gender}`;
     const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE);
-    this.body = scene.add.sprite(0, 2, this.frames[0]!).setOrigin(0.5, 1).setScale(ART_SCALE);
+    this.body = scene.add.sprite(0, 2, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
     this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
   }
 
@@ -286,12 +313,12 @@ export class CitizenSprite {
   animate(rate: number, dt: number): void {
     if (!this.moving || rate <= 0) {
       this.frameTime = 0;
-      if (this.body.texture.key !== this.frames[0]) this.body.setTexture(this.frames[0]!);
+      if (this.body.frame.name !== '0') this.body.setTexture(this.texture, 0);
       return;
     }
     this.frameTime += dt * rate;
-    const key = this.frames[Math.floor(this.frameTime * 6) % 2]!;
-    if (this.body.texture.key !== key) this.body.setTexture(key);
+    const frame = Math.floor(this.frameTime * 6) % 2;
+    if (this.body.frame.name !== String(frame)) this.body.setTexture(this.texture, frame);
   }
 
   setHidden(hidden: boolean): void {
