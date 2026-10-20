@@ -1,4 +1,4 @@
-# Vigília Art Pack — 1.3.0
+# Vigília Art Pack — 1.4.0
 
 **Autor:** Equipe Vigília · **Licença:** CC0 1.0 (ver `licenses/`) · **Data:** 2026-10-20
 **Status:** pronto para integração; assets em `review` até serem validados em screenshots do jogo real.
@@ -37,7 +37,7 @@ Decisão do projeto na 1.3.0: os personagens voltaram a ser de frente. O motor c
 | `char-villager-<ofício>-<m\|f>` | 16×21 | 32×21, 2 quadros | idle 0–1 (3), walk 0–1 (8) |
 | `char-mayor`, `char-mayor-f` | 16×23 | 128×23, 8 quadros | idle 0–3 (6), run 4–7 (10) |
 
-Armas de classe na mão direita (escudo do guardião na esquerda), dentro dos 16 px: guardião espada + escudo, selvagem machado, lanceiro lança, arqueiro arco, clérigo maça/martelo, piromante cajado. Os pés ficam na base em todos os quadros; só o corpo sobe 1 px na respiração e no passo.
+Heróis na direção "sombria" (1.4.0): proporção mais alta (cabeça/elmo de 8 px), silhueta própria por classe e cores fechadas. Armas de classe dentro dos 16 px: guardião espada + escudo de pipa (elmo fechado), selvagem machado de duas mãos (manto de pele), lanceiro lança + broquel (chapéu de ferro), arqueiro arco + aljava (capuz fundo), clérigo martelo de guerra + livro (capuz claro), piromante cajado com chama + chama na mão (capuz com olhos de brasa; a chama tremula nos quadros parados). Os pés ficam na base em todos os quadros; só o corpo sobe 1 px na respiração e no passo.
 
 No manifesto, `size` é o **quadro**; `frameSize`, `sheetSize`, `columns`, `rows` e `frames` descrevem a folha. Cada `.json` segue o formato hash do Aseprite (`frames` + `meta.frameTags`, `meta.frameSize`, `pivot`).
 

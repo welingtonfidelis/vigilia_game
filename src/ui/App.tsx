@@ -7,7 +7,7 @@ import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt } from './format.ts';
-import { IconAbyss, IconBone, IconBook, IconCoin, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconPeople, IconShield, IconSound, IconSun } from './icons.tsx';
+import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconShield, IconSound, IconSun, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
@@ -67,7 +67,7 @@ function Hud() {
     <div class="hud-bar">
       <span class="brand">Vigília</span>
       <span class="hud-item gold" title="Tesouro da vila">
-        <IconCoin /> {fmt(town.treasury)}
+        <PackIcon name="resource-gold" /> {fmt(town.treasury)}
       </span>
       <span class="hud-item date" title={formatDate(world.tick)}>
         {isNight(world.tick) ? <IconMoon /> : <IconSun />}
@@ -75,17 +75,17 @@ function Hud() {
         <span class="date-short">{formatDate(world.tick).replace(/^Ano (\d+) · .+, dia (\d+)$/, 'A$1 · dia $2')}</span> · {clockOf(world.tick)}
       </span>
       <span class="hud-item pop" title="População">
-        <IconPeople /> {fmt(town.population)}
+        <PackIcon name="resource-population" /> {fmt(town.population)}
       </span>
       <span class="hud-item" title="Heróis na vila / vagas">
-        <IconShield /> {activeHeroes(world).length}/{heroCapacity(world)}
+        <PackIcon name="resource-heroes" /> {activeHeroes(world).length}/{heroCapacity(world)}
       </span>
       <span class="hud-item energy">
         <EnergyCandles energy={town.mayorEnergy} />
       </span>
       {mats.map((m) => (
         <span key={m} class="hud-item mat" title={MATERIAL_NAMES[m]}>
-          <IconBone /> {town.materials[m]}
+          <PackIcon name="resource-materials" /> {town.materials[m]}
         </span>
       ))}
       <button

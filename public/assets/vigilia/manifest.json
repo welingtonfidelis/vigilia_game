@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "pack": "vigilia-art",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "status": "review",
   "skeleton": false,
   "updated": "2026-10-20",
@@ -2093,7 +2093,7 @@
       ],
       "priority": "P0",
       "current": "third-party (0x72)",
-      "weapon": "machado",
+      "weapon": "machado de duas maos",
       "animations": {
         "idle": {
           "frames": [
@@ -2150,7 +2150,7 @@
       ],
       "priority": "P0",
       "current": "third-party (0x72)",
-      "weapon": "machado",
+      "weapon": "machado de duas maos",
       "animations": {
         "idle": {
           "frames": [
@@ -2207,7 +2207,7 @@
       ],
       "priority": "P0",
       "current": "third-party (0x72)",
-      "weapon": "lanca",
+      "weapon": "lanca + broquel",
       "animations": {
         "idle": {
           "frames": [
@@ -2264,7 +2264,7 @@
       ],
       "priority": "P0",
       "current": "third-party (0x72)",
-      "weapon": "lanca",
+      "weapon": "lanca + broquel",
       "animations": {
         "idle": {
           "frames": [
@@ -2435,7 +2435,7 @@
       ],
       "priority": "P0",
       "current": "third-party (0x72)",
-      "weapon": "maca/martelo",
+      "weapon": "martelo de guerra + livro",
       "animations": {
         "idle": {
           "frames": [
@@ -2492,7 +2492,7 @@
       ],
       "priority": "P0",
       "current": "third-party (0x72)",
-      "weapon": "maca/martelo",
+      "weapon": "martelo de guerra + livro",
       "animations": {
         "idle": {
           "frames": [
@@ -3183,7 +3183,7 @@
       ],
       "priority": "P1",
       "current": "recorte/SVG",
-      "notes": "Arma da classe: machado. Mesma silhueta do sprite.",
+      "notes": "Arma da classe: machado de duas maos. Mesma silhueta do sprite.",
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -3201,7 +3201,7 @@
       ],
       "priority": "P1",
       "current": "recorte/SVG",
-      "notes": "Arma da classe: lanca. Mesma silhueta do sprite.",
+      "notes": "Arma da classe: lanca + broquel. Mesma silhueta do sprite.",
       "license": "CC0-1.0",
       "status": "review"
     },
@@ -3237,7 +3237,7 @@
       ],
       "priority": "P1",
       "current": "recorte/SVG",
-      "notes": "Arma da classe: maca/martelo. Mesma silhueta do sprite.",
+      "notes": "Arma da classe: martelo de guerra + livro. Mesma silhueta do sprite.",
       "license": "CC0-1.0",
       "status": "review"
     },

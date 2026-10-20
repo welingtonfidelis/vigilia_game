@@ -1,12 +1,28 @@
 // Ícones em SVG simples (traço em currentColor), para não depender de emoji nem de fonte.
 
 import type { RoomKind } from '../sim/index.ts';
+import { PACK_BASE } from '../render/pack.ts';
 
 const Svg = (props: { children: preact.ComponentChildren; label?: string }) => (
   <svg class="ico" viewBox="0 0 24 24" aria-hidden={props.label ? undefined : 'true'} aria-label={props.label} role={props.label ? 'img' : undefined}>
     {props.children}
   </svg>
 );
+
+
+/** Ícone de traço do pack como máscara: herda currentColor e não precisa de SVG inline. */
+export const PackIcon = (props: { name: string; label?: string }) => {
+  const url = `${PACK_BASE}export/ui/ui-icon-${props.name}.svg`;
+  return (
+    <span
+      class="pack-mask-icon"
+      aria-hidden={props.label ? undefined : 'true'}
+      aria-label={props.label}
+      role={props.label ? 'img' : undefined}
+      style={{ maskImage: `url(${url})`, WebkitMaskImage: `url(${url})` }}
+    />
+  );
+};
 
 export const IconCoin = () => (
   <Svg>

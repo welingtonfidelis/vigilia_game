@@ -1,25 +1,13 @@
-// Gerado a partir do manifest do pack vigilia-art 1.3.0. Não editar à mão.
+// Gerado a partir do manifest do pack vigilia-art 1.4.0. Não editar à mão.
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
   id: string;
   type: 'tileset' | 'building' | 'prop' | 'decal' | 'fx' | 'character' | 'ui-icon' | 'portrait';
   file: string;
-  lights?: string;
-  frameSize?: [number, number];
-  sheetSize?: [number, number];
-  frames?: number;
-  fps?: number;
-  animations?: Record<string, PackAnim>;
-  anchor?: [number, number];
-  tileSize?: [number, number];
-  columns?: number;
-  rows?: number;
-  size?: [number, number];
-  small?: string;
-  variant?: string;
-  format?: string;
-  meta?: string;
+  lights?: string; frameSize?: [number, number]; sheetSize?: [number, number]; frames?: number; fps?: number;
+  animations?: Record<string, PackAnim>; anchor?: [number, number]; tileSize?: [number, number];
+  columns?: number; rows?: number; size?: [number, number]; small?: string; variant?: string; format?: string; meta?: string;
 }
 
 export const PACK_ASSETS: PackAsset[] = [

@@ -141,8 +141,13 @@ export class HeroSprite extends Walker {
   commit: Commit | null = null;
 
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
-    // Heróis voltam ao pacote 0x72; o resto da vila segue no pack 1.3.
-    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null);
+    // Heróis redesenhados do pack 1.4 (direção sombria), com a arma de classe no sprite.
+    const texture = `char/hero/${hero.classId}/${hero.gender}`;
+    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null, ART_SCALE, {
+      texture,
+      idle: `${texture}:idle`,
+      run: `${texture}:run`,
+    });
     this.id = hero.id;
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
     this.root.addAt(this.ring, 0);

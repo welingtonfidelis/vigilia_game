@@ -3,7 +3,7 @@
 import { ACTS } from '../sim/index.ts';
 import type { ClassId, Hero, Unit, World } from '../sim/index.ts';
 import { animFrames, DUNGEON_URL, frameRect, heroSprite, MONSTERS, SHEET_0X72_SIZE } from '../render/assets.ts';
-import { armorIconUrl, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
+import { armorIconUrl, heroPortraitUrl, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
 
 /** Arma de classe no ícone do pack (24×24), para a ficha do herói. */
 export function WeaponIcon(props: { classId: ClassId; scale?: number }) {
@@ -46,14 +46,13 @@ export function PixelSprite(props: { base: string; scale?: number; animate?: boo
 export const HERO_CROP = 7;
 
 export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: boolean; variant?: 'detail' | 'small' }) => {
-  const scale = props.scale ?? (props.variant === 'detail' ? 3 : 2);
+  const detail = props.variant === 'detail';
   return (
-    <PixelSprite
-      base={heroSprite(props.hero.classId, props.hero.gender)}
-      scale={scale}
-      crop={HERO_CROP}
-      animate={props.animate}
-      ghost={props.hero.status === 'dead'}
+    <img
+      class={`portrait-img ${detail ? 'portrait-detail' : 'portrait-small'}${props.hero.status === 'dead' ? ' portrait-ghost' : ''}`}
+      src={heroPortraitUrl(props.hero.classId, props.hero.gender, !detail)}
+      alt=""
+      aria-hidden="true"
     />
   );
 };
