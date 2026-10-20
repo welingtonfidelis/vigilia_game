@@ -132,38 +132,40 @@ export const WEAPON_NAMES: Record<ClassId, string> = {
 export const MAYOR_SPRITE = 'doc';
 
 export interface MonsterLook {
-  /** Prefixo dos quadros: `${base}_idle_anim_f0` ou `${base}_anim_f0`. */
-  base: string;
-  /** Filtro de cor para variar monstros repetidos entre atos. */
-  tint?: number;
+  /** Fallback 0x72 para ecos de herói e casos sem arte nova. */
+  base?: string;
+  /** Asset ID do pack 1.7: char/monster/<id> ou char/boss/<id>. */
+  asset?: string;
+  frameSize?: [number, number];
+  ghost?: boolean;
 }
 
 /** Inimigos de cada ato (por id em src/data/acts.ts) e o chefe. */
 export const MONSTERS: Record<string, MonsterLook> = {
-  esqueleto: { base: 'skelet' },
-  rato: { base: 'tiny_zombie' },
-  acolito: { base: 'necromancer' },
-  guardiaoUrnas: { base: 'big_zombie', tint: 0xd8c8a8 },
-  mineiro: { base: 'zombie' },
-  enguia: { base: 'muddy' },
-  golem: { base: 'ogre', tint: 0x8a90a0 },
-  couraca: { base: 'ogre', tint: 0x6a8aa8 },
-  esporento: { base: 'swampy' },
-  aranha: { base: 'slug' },
-  brotado: { base: 'goblin' },
-  maeBolor: { base: 'big_zombie', tint: 0x9ac87a },
-  sacerdote: { base: 'orc_shaman' },
-  sereia: { base: 'ice_zombie' },
-  cavaleiroSalobro: { base: 'masked_orc' },
-  arcebispo: { base: 'big_demon', tint: 0x7aa0d8 },
-  ferreiroCinzento: { base: 'orc_warrior' },
-  caoBrasa: { base: 'imp' },
-  escravoForja: { base: 'chort' },
-  martelo: { base: 'big_demon' },
-  sombra: { base: 'wogol' },
-  lamento: { base: 'big_zombie', tint: 0x8a7aa8 },
-  arauto: { base: 'big_demon', tint: 0x9a80c0 },
-  aquiloQueVigia: { base: 'big_demon', tint: 0x6a4a8a },
+  esqueleto: { asset: 'char/monster/esqueleto', frameSize: [16, 16] },
+  rato: { asset: 'char/monster/rato', frameSize: [16, 16] },
+  acolito: { asset: 'char/monster/acolito', frameSize: [16, 23] },
+  guardiaoUrnas: { asset: 'char/boss/guardiaoUrnas', frameSize: [32, 36] },
+  mineiro: { asset: 'char/monster/mineiro', frameSize: [16, 23] },
+  enguia: { asset: 'char/monster/enguia', frameSize: [16, 16] },
+  golem: { asset: 'char/monster/golem', frameSize: [16, 23] },
+  couraca: { asset: 'char/boss/couraca', frameSize: [32, 36] },
+  esporento: { asset: 'char/monster/esporento', frameSize: [16, 16] },
+  aranha: { asset: 'char/monster/aranha', frameSize: [16, 23] },
+  brotado: { asset: 'char/monster/brotado', frameSize: [16, 16] },
+  maeBolor: { asset: 'char/boss/maeBolor', frameSize: [32, 36] },
+  sacerdote: { asset: 'char/monster/sacerdote', frameSize: [16, 23] },
+  sereia: { asset: 'char/monster/sereia', frameSize: [16, 16] },
+  cavaleiroSalobro: { asset: 'char/monster/cavaleiroSalobro', frameSize: [16, 23] },
+  arcebispo: { asset: 'char/boss/arcebispo', frameSize: [32, 36] },
+  ferreiroCinzento: { asset: 'char/monster/ferreiroCinzento', frameSize: [16, 23] },
+  caoBrasa: { asset: 'char/monster/caoBrasa', frameSize: [16, 16] },
+  escravoForja: { asset: 'char/monster/escravoForja', frameSize: [16, 23] },
+  martelo: { asset: 'char/boss/martelo', frameSize: [32, 36] },
+  sombra: { asset: 'char/monster/sombra', frameSize: [16, 23] },
+  lamento: { asset: 'char/monster/lamento', frameSize: [16, 23] },
+  arauto: { asset: 'char/monster/arauto', frameSize: [16, 23] },
+  aquiloQueVigia: { asset: 'char/boss/aquiloQueVigia', frameSize: [32, 36] },
 };
 
 /** Quadros de uma animação (idle/run quando existe, senão a animação única). */

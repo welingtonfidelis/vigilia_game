@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "pack": "vigilia-art",
-  "version": "1.4.0",
+  "version": "1.7.0",
   "status": "review",
   "skeleton": false,
   "updated": "2026-10-20",
@@ -3840,6 +3840,1525 @@
       "current": "third-party (Tiny Town)",
       "license": "CC0-1.0",
       "status": "review"
+    },
+    {
+      "id": "char/monster/esqueleto",
+      "type": "character",
+      "file": "export/png/char-monster-esqueleto.png",
+      "meta": "export/png/char-monster-esqueleto.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "I",
+      "name": "Esqueleto Rangente",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/rato",
+      "type": "character",
+      "file": "export/png/char-monster-rato.png",
+      "meta": "export/png/char-monster-rato.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "I",
+      "name": "Rato-de-ossuário",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/acolito",
+      "type": "character",
+      "file": "export/png/char-monster-acolito.png",
+      "meta": "export/png/char-monster-acolito.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "I",
+      "name": "Acólito Caído",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/mineiro",
+      "type": "character",
+      "file": "export/png/char-monster-mineiro.png",
+      "meta": "export/png/char-monster-mineiro.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "II",
+      "name": "Mineiro Afogado",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/enguia",
+      "type": "character",
+      "file": "export/png/char-monster-enguia.png",
+      "meta": "export/png/char-monster-enguia.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "II",
+      "name": "Enguia de Breu",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/golem",
+      "type": "character",
+      "file": "export/png/char-monster-golem.png",
+      "meta": "export/png/char-monster-golem.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "II",
+      "name": "Golem de Ferro-negro",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/esporento",
+      "type": "character",
+      "file": "export/png/char-monster-esporento.png",
+      "meta": "export/png/char-monster-esporento.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "III",
+      "name": "Esporento",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/aranha",
+      "type": "character",
+      "file": "export/png/char-monster-aranha.png",
+      "meta": "export/png/char-monster-aranha.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "III",
+      "name": "Aranha-de-micélio",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/brotado",
+      "type": "character",
+      "file": "export/png/char-monster-brotado.png",
+      "meta": "export/png/char-monster-brotado.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "III",
+      "name": "Brotado",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sacerdote",
+      "type": "character",
+      "file": "export/png/char-monster-sacerdote.png",
+      "meta": "export/png/char-monster-sacerdote.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "IV",
+      "name": "Sacerdote Afogado",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sereia",
+      "type": "character",
+      "file": "export/png/char-monster-sereia.png",
+      "meta": "export/png/char-monster-sereia.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "IV",
+      "name": "Sereia de Lodo",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/cavaleiroSalobro",
+      "type": "character",
+      "file": "export/png/char-monster-cavaleiro-salobro.png",
+      "meta": "export/png/char-monster-cavaleiro-salobro.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "IV",
+      "name": "Cavaleiro Salobro",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/ferreiroCinzento",
+      "type": "character",
+      "file": "export/png/char-monster-ferreiro-cinzento.png",
+      "meta": "export/png/char-monster-ferreiro-cinzento.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "V",
+      "name": "Ferreiro Cinzento",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/caoBrasa",
+      "type": "character",
+      "file": "export/png/char-monster-cao-brasa.png",
+      "meta": "export/png/char-monster-cao-brasa.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "V",
+      "name": "Cão de Brasa",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        16
+      ],
+      "frameSize": [
+        16,
+        16
+      ],
+      "sheetSize": [
+        128,
+        16
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/escravoForja",
+      "type": "character",
+      "file": "export/png/char-monster-escravo-forja.png",
+      "meta": "export/png/char-monster-escravo-forja.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "V",
+      "name": "Escravo da Forja",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/sombra",
+      "type": "character",
+      "file": "export/png/char-monster-sombra.png",
+      "meta": "export/png/char-monster-sombra.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "VI",
+      "name": "Sombra Faminta",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/lamento",
+      "type": "character",
+      "file": "export/png/char-monster-lamento.png",
+      "meta": "export/png/char-monster-lamento.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "VI",
+      "name": "Lamento",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/monster/arauto",
+      "type": "character",
+      "file": "export/png/char-monster-arauto.png",
+      "meta": "export/png/char-monster-arauto.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "VI",
+      "name": "Arauto do Fundo",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 2,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
+      "size": [
+        16,
+        23
+      ],
+      "frameSize": [
+        16,
+        23
+      ],
+      "sheetSize": [
+        128,
+        23
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/guardiaoUrnas",
+      "type": "character",
+      "file": "export/png/char-boss-guardiao-urnas.png",
+      "meta": "export/png/char-boss-guardiao-urnas.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "I",
+      "name": "O Guardião das Urnas",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 1,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        256,
+        36
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/couraca",
+      "type": "character",
+      "file": "export/png/char-boss-couraca.png",
+      "meta": "export/png/char-boss-couraca.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "II",
+      "name": "A Couraça Submersa",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 1,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        256,
+        36
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/maeBolor",
+      "type": "character",
+      "file": "export/png/char-boss-mae-bolor.png",
+      "meta": "export/png/char-boss-mae-bolor.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "III",
+      "name": "A Mãe-Bolor",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 1,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        256,
+        36
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/arcebispo",
+      "type": "character",
+      "file": "export/png/char-boss-arcebispo.png",
+      "meta": "export/png/char-boss-arcebispo.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "IV",
+      "name": "O Arcebispo Sem Fôlego",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 1,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        256,
+        36
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/martelo",
+      "type": "character",
+      "file": "export/png/char-boss-martelo.png",
+      "meta": "export/png/char-boss-martelo.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "V",
+      "name": "O Martelo Que Não Dorme",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 1,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        256,
+        36
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "char/boss/aquiloQueVigia",
+      "type": "character",
+      "file": "export/png/char-boss-aquilo-que-vigia.png",
+      "meta": "export/png/char-boss-aquilo-que-vigia.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (0x72)",
+      "act": "VI",
+      "name": "Aquilo que Vigia",
+      "tint": null,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        }
+      },
+      "panelScale": 1,
+      "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run (4-7, 10 fps) opcional para o futuro. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
+      "size": [
+        32,
+        36
+      ],
+      "frameSize": [
+        32,
+        36
+      ],
+      "sheetSize": [
+        256,
+        36
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "tile/town/autumn-grass-0",
+      "type": "tileset",
+      "file": "export/tiles/autumn-grass-0.png",
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 1,
+      "rows": 1,
+      "sheetSize": [
+        16,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tile": true,
+      "priority": "P2",
+      "current": "third-party (Tiny Town outono)",
+      "notes": "base",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "tile/town/autumn-grass-1",
+      "type": "tileset",
+      "file": "export/tiles/autumn-grass-1.png",
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 1,
+      "rows": 1,
+      "sheetSize": [
+        16,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tile": true,
+      "priority": "P2",
+      "current": "third-party (Tiny Town outono)",
+      "notes": "folhas caidas",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "tile/town/autumn-grass-2",
+      "type": "tileset",
+      "file": "export/tiles/autumn-grass-2.png",
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 1,
+      "rows": 1,
+      "sheetSize": [
+        16,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tile": true,
+      "priority": "P2",
+      "current": "third-party (Tiny Town outono)",
+      "notes": "tom claro",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "tile/town/autumn-grass-3",
+      "type": "tileset",
+      "file": "export/tiles/autumn-grass-3.png",
+      "size": [
+        16,
+        16
+      ],
+      "tileSize": [
+        16,
+        16
+      ],
+      "columns": 1,
+      "rows": 1,
+      "sheetSize": [
+        16,
+        16
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "tile": true,
+      "priority": "P2",
+      "current": "third-party (Tiny Town outono)",
+      "notes": "restos de verde",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/tree/autumn",
+      "type": "prop",
+      "file": "export/png/prop-tree-autumn.png",
+      "size": [
+        32,
+        48
+      ],
+      "footprint": [
+        2,
+        3
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/tree/autumn-small",
+      "type": "prop",
+      "file": "export/png/prop-tree-autumn-small.png",
+      "size": [
+        32,
+        32
+      ],
+      "footprint": [
+        2,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/bench",
+      "type": "prop",
+      "file": "export/png/prop-bench.png",
+      "size": [
+        32,
+        16
+      ],
+      "footprint": [
+        2,
+        1
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/cart",
+      "type": "prop",
+      "file": "export/png/prop-cart.png",
+      "size": [
+        48,
+        32
+      ],
+      "footprint": [
+        3,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "third-party (Tiny Town)",
+      "license": "CC0-1.0",
+      "status": "review"
+    },
+    {
+      "id": "prop/lamp",
+      "type": "prop",
+      "file": "export/png/prop-lamp.png",
+      "lights": "export/png/prop-lamp-lights.png",
+      "size": [
+        16,
+        32
+      ],
+      "footprint": [
+        1,
+        2
+      ],
+      "anchor": [
+        0.5,
+        1
+      ],
+      "priority": "P2",
+      "current": "todo",
+      "notes": "Base apagada (dia) + overlay -lights (vidro aceso + halo), igual aos predios.",
+      "license": "CC0-1.0",
+      "status": "review"
     }
   ],
   "planned": {
@@ -3952,6 +5471,7 @@
   },
   "preview": {
     "contactSheet": "preview/contact-sheet.png",
+    "abyssPanel": "preview/abyss-panel.png",
     "uiIcons": "preview/ui-icons.png",
     "tileTest": "preview/tile-test.png",
     "composition": "preview/town-composition.png",

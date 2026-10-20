@@ -107,7 +107,9 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   const paths = pathMask();
   const map = scene.make.tilemap({ tileWidth: 16, tileHeight: 16, width: COLS, height: ROWS });
   const tiles = map.addTilesetImage('vigilia-terrain', 'tile/town/terrain', 16, 16, 0, 0)!;
-  const ground = map.createBlankLayer('ground', tiles)!.setScale(ART_SCALE).setDepth(DEPTH.ground);
+  const autumnGid = (tiles.firstgid ?? 1) + (tiles.total ?? 64);
+  const autumnTiles = [0, 1, 2, 3].map((i) => map.addTilesetImage(`autumn-grass-${i}`, `tile/town/autumn-grass-${i}`, 16, 16, 0, 0, autumnGid + i)!);
+  const ground = map.createBlankLayer('ground', [tiles, ...autumnTiles])!.setScale(ART_SCALE).setDepth(DEPTH.ground);
   const rnd = seeded(7);
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -120,6 +122,17 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
       ground.putTileAt(tileIndex(name), x, y);
     }
   }
+  // Manchas de outono: grama própria nas clareiras marcadas em AUTUMN.
+  for (const f of AUTUMN) {
+    for (let y = f.ty; y < f.ty + f.th; y++) {
+      for (let x = f.tx; x < f.tx + f.tw; x++) {
+        if (mask[y]?.[x]) continue;
+        const ts = autumnTiles[Math.floor(rnd() * autumnTiles.length)]!;
+        ground.putTileAt(ts.firstgid, x, y);
+      }
+    }
+  }
+
   // O chão é estático; assar numa textura única evita emenda entre tiles ao rolar.
   const baked = scene.add.renderTexture(0, 0, WORLD_W, WORLD_H).setOrigin(0, 0).setDepth(DEPTH.ground);
   baked.draw(ground, 0, 0);
@@ -171,7 +184,7 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
     for (let y = f.ty; y < f.ty + f.th; y += 2) {
       for (let x = f.tx; x < f.tx + f.tw; x += 2) {
         if (rnd() < 0.3 || occupied(x, y)) continue;
-        packTree(scene, rnd() < 0.35 ? 'prop/tree/dead' : 'prop/tree/01', (x + 0.5) * TILE, (y + 1) * TILE);
+        packTree(scene, rnd() < 0.35 ? 'prop/tree/autumn-small' : 'prop/tree/autumn', (x + 0.5) * TILE, (y + 1) * TILE);
       }
     }
   }
@@ -406,8 +419,8 @@ export function buildThermal(scene: Phaser.Scene): void {
   scene.tweens.add({ targets: glow, alpha: { from: 0.18, to: 0.32 }, yoyo: true, repeat: -1, duration: 1800 });
   label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
-/** Props de praça do pack 1.3. */
-export function buildProps(scene: Phaser.Scene): void {
+/** Props de praça do pack 1.7; retorna as luzes das lamparinas para o ciclo dia/noite. */
+export function buildProps(scene: Phaser.Scene): Phaser.GameObjects.Image[] {
   const prop = (id: string, x: number, y: number): void => {
     scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
   };
@@ -418,4 +431,23 @@ export function buildProps(scene: Phaser.Scene): void {
   prop('prop/logs', LANDMARKS.fogueira.x - 52, LANDMARKS.fogueira.y + 10);
   prop('prop/barrel', 17 * TILE, 17 * TILE);
   prop('prop/crate', 26 * TILE, 16 * TILE);
+  prop('prop/bench', 22 * TILE, 19 * TILE);
+  prop('prop/cart', 17 * TILE, 22 * TILE);
+
+  const lights: Phaser.GameObjects.Image[] = [];
+  const lamp = (x: number, y: number): void => {
+    scene.add.image(x, y, 'prop/lamp').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    const light = scene.add
+      .image(x, y, 'prop/lamp-lights')
+      .setOrigin(0.5, 1)
+      .setScale(ART_SCALE)
+      .setDepth(DEPTH.lights)
+      .setAlpha(0);
+    lights.push(light);
+  };
+  lamp(18 * TILE, 17 * TILE);
+  lamp(32 * TILE, 17 * TILE);
+  lamp(23 * TILE, 13 * TILE);
+  lamp(43 * TILE, 18 * TILE);
+  return lights;
 }

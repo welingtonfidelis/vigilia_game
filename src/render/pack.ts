@@ -1,4 +1,4 @@
-// Gerado a partir do manifest do pack vigilia-art 1.4.0. Não editar à mão.
+// Gerado a partir do manifest do pack vigilia-art 1.7.0. Não editar à mão.
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -2666,6 +2666,1244 @@ export const PACK_ASSETS: PackAsset[] = [
       16,
       16
     ]
+  },
+  {
+    "id": "char/monster/esqueleto",
+    "type": "character",
+    "file": "export/png/char-monster-esqueleto.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-esqueleto.json"
+  },
+  {
+    "id": "char/monster/rato",
+    "type": "character",
+    "file": "export/png/char-monster-rato.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-rato.json"
+  },
+  {
+    "id": "char/monster/acolito",
+    "type": "character",
+    "file": "export/png/char-monster-acolito.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-acolito.json"
+  },
+  {
+    "id": "char/monster/mineiro",
+    "type": "character",
+    "file": "export/png/char-monster-mineiro.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-mineiro.json"
+  },
+  {
+    "id": "char/monster/enguia",
+    "type": "character",
+    "file": "export/png/char-monster-enguia.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-enguia.json"
+  },
+  {
+    "id": "char/monster/golem",
+    "type": "character",
+    "file": "export/png/char-monster-golem.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-golem.json"
+  },
+  {
+    "id": "char/monster/esporento",
+    "type": "character",
+    "file": "export/png/char-monster-esporento.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-esporento.json"
+  },
+  {
+    "id": "char/monster/aranha",
+    "type": "character",
+    "file": "export/png/char-monster-aranha.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-aranha.json"
+  },
+  {
+    "id": "char/monster/brotado",
+    "type": "character",
+    "file": "export/png/char-monster-brotado.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-brotado.json"
+  },
+  {
+    "id": "char/monster/sacerdote",
+    "type": "character",
+    "file": "export/png/char-monster-sacerdote.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-sacerdote.json"
+  },
+  {
+    "id": "char/monster/sereia",
+    "type": "character",
+    "file": "export/png/char-monster-sereia.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-sereia.json"
+  },
+  {
+    "id": "char/monster/cavaleiroSalobro",
+    "type": "character",
+    "file": "export/png/char-monster-cavaleiro-salobro.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-cavaleiro-salobro.json"
+  },
+  {
+    "id": "char/monster/ferreiroCinzento",
+    "type": "character",
+    "file": "export/png/char-monster-ferreiro-cinzento.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-ferreiro-cinzento.json"
+  },
+  {
+    "id": "char/monster/caoBrasa",
+    "type": "character",
+    "file": "export/png/char-monster-cao-brasa.png",
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      128,
+      16
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "meta": "export/png/char-monster-cao-brasa.json"
+  },
+  {
+    "id": "char/monster/escravoForja",
+    "type": "character",
+    "file": "export/png/char-monster-escravo-forja.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-escravo-forja.json"
+  },
+  {
+    "id": "char/monster/sombra",
+    "type": "character",
+    "file": "export/png/char-monster-sombra.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-sombra.json"
+  },
+  {
+    "id": "char/monster/lamento",
+    "type": "character",
+    "file": "export/png/char-monster-lamento.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-lamento.json"
+  },
+  {
+    "id": "char/monster/arauto",
+    "type": "character",
+    "file": "export/png/char-monster-arauto.png",
+    "frameSize": [
+      16,
+      23
+    ],
+    "sheetSize": [
+      128,
+      23
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      23
+    ],
+    "meta": "export/png/char-monster-arauto.json"
+  },
+  {
+    "id": "char/boss/guardiaoUrnas",
+    "type": "character",
+    "file": "export/png/char-boss-guardiao-urnas.png",
+    "frameSize": [
+      32,
+      36
+    ],
+    "sheetSize": [
+      256,
+      36
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      36
+    ],
+    "meta": "export/png/char-boss-guardiao-urnas.json"
+  },
+  {
+    "id": "char/boss/couraca",
+    "type": "character",
+    "file": "export/png/char-boss-couraca.png",
+    "frameSize": [
+      32,
+      36
+    ],
+    "sheetSize": [
+      256,
+      36
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      36
+    ],
+    "meta": "export/png/char-boss-couraca.json"
+  },
+  {
+    "id": "char/boss/maeBolor",
+    "type": "character",
+    "file": "export/png/char-boss-mae-bolor.png",
+    "frameSize": [
+      32,
+      36
+    ],
+    "sheetSize": [
+      256,
+      36
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      36
+    ],
+    "meta": "export/png/char-boss-mae-bolor.json"
+  },
+  {
+    "id": "char/boss/arcebispo",
+    "type": "character",
+    "file": "export/png/char-boss-arcebispo.png",
+    "frameSize": [
+      32,
+      36
+    ],
+    "sheetSize": [
+      256,
+      36
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      36
+    ],
+    "meta": "export/png/char-boss-arcebispo.json"
+  },
+  {
+    "id": "char/boss/martelo",
+    "type": "character",
+    "file": "export/png/char-boss-martelo.png",
+    "frameSize": [
+      32,
+      36
+    ],
+    "sheetSize": [
+      256,
+      36
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      36
+    ],
+    "meta": "export/png/char-boss-martelo.json"
+  },
+  {
+    "id": "char/boss/aquiloQueVigia",
+    "type": "character",
+    "file": "export/png/char-boss-aquilo-que-vigia.png",
+    "frameSize": [
+      32,
+      36
+    ],
+    "sheetSize": [
+      256,
+      36
+    ],
+    "frames": 8,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      }
+    },
+    "columns": 8,
+    "rows": 1,
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      36
+    ],
+    "meta": "export/png/char-boss-aquilo-que-vigia.json"
+  },
+  {
+    "id": "tile/town/autumn-grass-0",
+    "type": "tileset",
+    "file": "export/tiles/autumn-grass-0.png",
+    "sheetSize": [
+      16,
+      16
+    ],
+    "tileSize": [
+      16,
+      16
+    ],
+    "columns": 1,
+    "rows": 1,
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "id": "tile/town/autumn-grass-1",
+    "type": "tileset",
+    "file": "export/tiles/autumn-grass-1.png",
+    "sheetSize": [
+      16,
+      16
+    ],
+    "tileSize": [
+      16,
+      16
+    ],
+    "columns": 1,
+    "rows": 1,
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "id": "tile/town/autumn-grass-2",
+    "type": "tileset",
+    "file": "export/tiles/autumn-grass-2.png",
+    "sheetSize": [
+      16,
+      16
+    ],
+    "tileSize": [
+      16,
+      16
+    ],
+    "columns": 1,
+    "rows": 1,
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "id": "tile/town/autumn-grass-3",
+    "type": "tileset",
+    "file": "export/tiles/autumn-grass-3.png",
+    "sheetSize": [
+      16,
+      16
+    ],
+    "tileSize": [
+      16,
+      16
+    ],
+    "columns": 1,
+    "rows": 1,
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "id": "prop/tree/autumn",
+    "type": "prop",
+    "file": "export/png/prop-tree-autumn.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      48
+    ]
+  },
+  {
+    "id": "prop/tree/autumn-small",
+    "type": "prop",
+    "file": "export/png/prop-tree-autumn-small.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "id": "prop/bench",
+    "type": "prop",
+    "file": "export/png/prop-bench.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      16
+    ]
+  },
+  {
+    "id": "prop/cart",
+    "type": "prop",
+    "file": "export/png/prop-cart.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      32
+    ]
+  },
+  {
+    "id": "prop/lamp",
+    "type": "prop",
+    "file": "export/png/prop-lamp.png",
+    "lights": "export/png/prop-lamp-lights.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      32
+    ]
   }
 ];
 
@@ -2925,6 +4163,8 @@ export const PACK_TERRAIN_COLUMNS = 8;
 export const PACK_BASE = `${import.meta.env?.BASE_URL ?? '/'}assets/vigilia/`;
 
 export const packUrl = (file: string): string => `${PACK_BASE}${file}`;
+
+export const packAsset = (id: string): PackAsset | undefined => PACK_ASSETS.find((a) => a.id === id);
 
 export const buildingTexture = (id: string, level: number): string =>
   `building/${id}/${level <= 0 ? 'ruin' : `level-${level}`}`;

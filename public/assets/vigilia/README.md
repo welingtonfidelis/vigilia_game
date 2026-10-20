@@ -1,4 +1,4 @@
-# Vigília Art Pack — 1.4.0
+# Vigília Art Pack — 1.7.0
 
 **Autor:** Equipe Vigília · **Licença:** CC0 1.0 (ver `licenses/`) · **Data:** 2026-10-20
 **Status:** pronto para integração; assets em `review` até serem validados em screenshots do jogo real.
@@ -37,9 +37,21 @@ Decisão do projeto na 1.3.0: os personagens voltaram a ser de frente. O motor c
 | `char-villager-<ofício>-<m\|f>` | 16×21 | 32×21, 2 quadros | idle 0–1 (3), walk 0–1 (8) |
 | `char-mayor`, `char-mayor-f` | 16×23 | 128×23, 8 quadros | idle 0–3 (6), run 4–7 (10) |
 
-Heróis na direção "sombria" (1.4.0): proporção mais alta (cabeça/elmo de 8 px), silhueta própria por classe e cores fechadas. Armas de classe dentro dos 16 px: guardião espada + escudo de pipa (elmo fechado), selvagem machado de duas mãos (manto de pele), lanceiro lança + broquel (chapéu de ferro), arqueiro arco + aljava (capuz fundo), clérigo martelo de guerra + livro (capuz claro), piromante cajado com chama + chama na mão (capuz com olhos de brasa; a chama tremula nos quadros parados). Os pés ficam na base em todos os quadros; só o corpo sobe 1 px na respiração e no passo.
+Elenco inteiro na direção "sombria" (heróis 1.4.0; prefeito, moradores e crianças 1.5.0). Alturas por papel: heróis ~27 px, prefeito ~23, moradores ~20, crianças ~16. Heróis: proporção mais alta (cabeça/elmo de 8 px), silhueta própria por classe e cores fechadas. Armas de classe dentro dos 16 px: guardião espada + escudo de pipa (elmo fechado), selvagem machado de duas mãos (manto de pele), lanceiro lança + broquel (chapéu de ferro), arqueiro arco + aljava (capuz fundo), clérigo martelo de guerra + livro (capuz claro), piromante cajado com chama + chama na mão (capuz com olhos de brasa; a chama tremula nos quadros parados). Os pés ficam na base em todos os quadros; só o corpo sobe 1 px na respiração e no passo.
 
 No manifesto, `size` é o **quadro**; `frameSize`, `sheetSize`, `columns`, `rows` e `frames` descrevem a folha. Cada `.json` segue o formato hash do Aseprite (`frames` + `meta.frameTags`, `meta.frameSize`, `pivot`).
+
+## Monstros do Abismo (P2)
+
+Para o painel de combate do Abismo: **idle 0–3 a 6 fps** (o que o jogo usa hoje) e **run 4–7 a 10 fps** (opcional, pronto para o futuro). De frente, sem flip, sem ataque/morte. Cada um tem paleta própria; **remova o tint do 0x72 no jogo**.
+
+| Tipo | Quadro | Folha | Escala no painel |
+|---|---|---|---|
+| Normal pequeno (esqueleto, rato, enguia, esporento, brotado, sereia, caoBrasa) | 16×16 | 128×16 | 2× |
+| Normal humanoide (acolito, mineiro, golem, aranha, sacerdote, cavaleiroSalobro, ferreiroCinzento, escravoForja, sombra, lamento, arauto) | 16×23 | 128×23 | 2× |
+| Chefe (guardiaoUrnas, couraca, maeBolor, arcebispo, martelo, aquiloQueVigia) | 32×36 | 256×36 | 1× |
+
+IDs exatamente como no jogo: `char/monster/<id>` e `char/boss/<id>`; arquivos em kebab-case (`char-monster-cavaleiro-salobro.png`). Mineiro, Golem, Lamento e Arauto agora são normais 16×23. Cada entrada traz `act`, `name`, `frameSize`, `sheetSize`, `columns`, `rows`, `frames`, `animations.idle`, `animations.run` e `panelScale`. Prévia: `preview/abyss-panel.png`.
 
 ## Prédios: dia e noite
 
@@ -86,4 +98,4 @@ Os SVG herdam a cor do texto: no Preact, `<img>` não pinta `currentColor`; use 
 
 - Screenshots do jogo real (só o projeto consegue gerar).
 - Decisão de layout: re-skin do layout atual (recomendado no pedido) ou adotar `preview/town-composition.png`.
-- P2 do pedido: monstros e chefes, variante de outono, props extras, retratos de monstros.
+- Retratos de monstro (opcionais pelo brief): 32×36 se o painel ganhar slot próprio.

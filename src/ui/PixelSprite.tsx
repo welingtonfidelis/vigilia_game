@@ -2,8 +2,8 @@
 
 import { ACTS } from '../sim/index.ts';
 import type { ClassId, Hero, Unit, World } from '../sim/index.ts';
-import { animFrames, DUNGEON_URL, frameRect, heroSprite, MONSTERS, SHEET_0X72_SIZE } from '../render/assets.ts';
-import { armorIconUrl, heroPortraitUrl, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
+import { animFrames, DUNGEON_URL, frameRect, heroSprite, MONSTERS, SHEET_0X72_SIZE, type MonsterLook } from '../render/assets.ts';
+import { armorIconUrl, heroPortraitUrl, packAsset, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
 
 /** Arma de classe no ícone do pack (24×24), para a ficha do herói. */
 export function WeaponIcon(props: { classId: ClassId; scale?: number }) {
@@ -45,6 +45,23 @@ export function PixelSprite(props: { base: string; scale?: number; animate?: boo
 /** Folga vazia no topo dos quadros de herói do 0x72 (16×28). */
 export const HERO_CROP = 7;
 
+/** Sprite do pack 1.7 para o painel do Abismo: idle 4 quadros, normais a 2x e chefes a 1x. */
+export function MonsterSprite(props: { asset: string; boss: boolean; animate: boolean }) {
+  const asset = packAsset(props.asset);
+  if (!asset) return null;
+  const [w, h] = asset.frameSize ?? [16, 16];
+  const scale = props.boss ? 1 : 2;
+  const style: Record<string, string> = {
+    width: `${w * scale}px`,
+    height: `${h * scale}px`,
+    backgroundImage: `url(${PACK_BASE}${asset.file})`,
+    backgroundSize: `${w * 8 * scale}px ${h * scale}px`,
+    backgroundPosition: '0 0',
+    '--monster-to': `${-w * 4 * scale}px`,
+  };
+  return <span class={`monster-sprite${props.boss ? ' boss' : ''}${props.animate ? ' animate' : ''}`} style={style} aria-hidden="true" />;
+}
+
 export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: boolean; variant?: 'detail' | 'small' }) => {
   const detail = props.variant === 'detail';
   return (
@@ -57,17 +74,17 @@ export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: bool
   );
 };
 
-/** Qual monstro do 0x72 desenha esta unidade (inimigo do ato, chefe ou eco de um herói morto). */
-export function monsterBase(world: World, unit: Unit, act: number): { base: string; ghost: boolean } {
+/** Qual visual desenha esta unidade (pack 1.7 ou eco 0x72 de um herói morto). */
+export function monsterBase(world: World, unit: Unit, act: number): MonsterLook {
   const def = ACTS[act];
-  if (!def) return { base: 'skelet', ghost: false };
-  if (unit.tags.includes('boss')) return { base: MONSTERS[def.boss.id]?.base ?? 'big_demon', ghost: false };
+  if (!def) return { base: 'skelet' };
+  if (unit.tags.includes('boss')) return MONSTERS[def.boss.id] ?? { base: 'big_demon' };
   if (unit.name.startsWith('Eco de ')) {
     const lost = world.heroes.find((h) => h.name === unit.name.slice('Eco de '.length));
     return { base: lost ? heroSprite(lost.classId, lost.gender) : 'wogol', ghost: true };
   }
   const enemy = def.enemies.find((e) => unit.name.startsWith(e.name));
-  return { base: (enemy && MONSTERS[enemy.id]?.base) || 'skelet', ghost: false };
+  return (enemy && MONSTERS[enemy.id]) || { base: 'skelet' };
 }
 
 /** Criança do pack (16×21, dois quadros) na lista do elenco; quadro 0 parado. */

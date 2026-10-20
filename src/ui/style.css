@@ -1733,3 +1733,23 @@ kbd {
 .decree em { display: block; font-style: normal; color: var(--gold); font-size: 0.76rem; margin-top: 0.3rem; }
 .decree.active { border-color: var(--gold); background: rgba(94, 70, 28, 0.25); }
 .decree:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Monstros do pack 1.7 no painel do Abismo. */
+.monster-sprite {
+  display: inline-block;
+  flex: none;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  vertical-align: bottom;
+}
+.monster-sprite.animate {
+  animation: monster-idle 0.7s steps(4) infinite;
+}
+@keyframes monster-idle {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: var(--monster-to) 0;
+  }
+}

@@ -25,7 +25,8 @@ describe('sprites do 0x72', () => {
       for (const id of [...act.enemies.map((e) => e.id), act.boss.id]) {
         const look = MONSTERS[id];
         expect(look, id).toBeDefined();
-        expect(animFrames(look!.base, 'idle').length, `${id} → ${look!.base}`).toBeGreaterThan(0);
+        expect(look!.asset, id).toBeTruthy();
+        expect(look!.frameSize, id).toHaveLength(2);
       }
     }
   });

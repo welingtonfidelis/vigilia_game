@@ -114,6 +114,7 @@ export class VillageScene extends Phaser.Scene {
   private citizens = new Map<number, CitizenSprite>();
   private buildings = new Map<BuildingId, BuildingView>();
   private houseLights: Phaser.GameObjects.Image[] = [];
+  private propLights: Phaser.GameObjects.Image[] = [];
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
   private mayor!: Mayor;
@@ -172,7 +173,7 @@ export class VillageScene extends Phaser.Scene {
     this.abyss = buildAbyss(this);
     scatterTrees(this, mask);
     buildCemetery(this);
-    buildProps(this);
+    this.propLights = buildProps(this);
     buildCampfire(this);
     buildThermal(this);
     this.houseLights = buildCottages(this);
@@ -614,6 +615,7 @@ export class VillageScene extends Phaser.Scene {
     const lightAlpha = Phaser.Math.Clamp((night - 0.1) / 0.5, 0, 1);
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
     for (const light of this.houseLights) light.setAlpha(lightAlpha);
+    for (const light of this.propLights) light.setAlpha(lightAlpha);
     this.mayor.placeLabels(this.labelScale, night);
 
     const town = world.town;
