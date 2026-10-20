@@ -2051,11 +2051,11 @@ kbd {
   image-rendering: pixelated;
   pointer-events: none;
 }
-.arena-back { left: 0; top: 0; z-index: 0; }
-.arena-floor { left: 0; top: 128px; z-index: 1; }
+.arena-back { left: -4px; top: 0; z-index: 0; width: 328px; height: 192px; }
+.arena-floor { left: 0; top: 128px; z-index: 1; width: 320px; height: 64px; background-repeat: repeat-x; background-size: 320px 64px; }
 .arena-ritual { left: 80px; top: 150px; z-index: 2; opacity: 0.9; }
 .arena-boss-gate { left: 204px; top: 54px; z-index: 1; opacity: 0.95; }
-.arena-fore { left: 0; top: 128px; z-index: 3; }
+.arena-fore { left: 0; top: 128px; z-index: 3; width: 320px; height: 64px; background-repeat: repeat-x; background-size: 320px 64px; }
 .arena-boss-banner { left: 0; top: 0; z-index: 6; opacity: 0.95; }
 .arena-prop { position: absolute; image-rendering: pixelated; z-index: 2; pointer-events: none; }
 .arena-prop.animated {
@@ -2335,4 +2335,97 @@ kbd {
 }
 @media (max-width: 620px) {
   .arena-bell { font-size: 0.58rem; padding: 0.12rem 0.3rem; }
+}
+
+
+/* Os heróis caminham: o chão corre e o fundo faz um parallax curto. */
+.arena-card-stage.walking .arena-floor { animation: arena-ground 2.2s linear infinite; }
+.arena-card-stage.walking .arena-fore { animation: arena-ground 1.55s linear infinite; }
+.arena-card-stage.walking.backward .arena-floor,
+.arena-card-stage.walking.backward .arena-fore { animation-direction: reverse; }
+.arena-card-stage.walking .arena-back { animation: arena-back-walk 5s ease-in-out infinite alternate; }
+@keyframes arena-ground {
+  from { background-position: 0 0; }
+  to { background-position: -320px 0; }
+}
+@keyframes arena-back-walk {
+  from { transform: translateX(-3px); }
+  to { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena-card-stage.walking .arena-floor,
+  .arena-card-stage.walking .arena-fore,
+  .arena-card-stage.walking .arena-back { animation: none; }
+}
+
+.arena-hp {
+  height: 6px;
+  border: 0;
+  padding: 1px;
+  background-color: transparent;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
+.arena-hp i { height: 100%; border-radius: 1px; }
+.arena-room-node {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background-size: 24px 8px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.arena-room-node.normal { background-position: 0 0; }
+.arena-room-node.current { background-position: -8px 0; }
+.arena-room-node.cleared { background-position: -16px 0; }
+.arena-room .ico { display: none; }
+
+.history-button { flex: none; }
+.battle-history {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  background: rgba(5, 5, 5, 0.94);
+}
+.history-card {
+  width: min(720px, 100%);
+  margin: auto;
+  border: 1px solid #5b4a30;
+  border-radius: 0.6rem;
+  background: #100e0b;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.7);
+  padding: 1rem 1.15rem;
+}
+.history-card header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #33291d; padding-bottom: 0.6rem; }
+.history-card header small { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; }
+.history-card h2 { margin: 0.1rem 0 0; font-family: var(--serif); font-weight: normal; color: var(--gold); font-size: 1.4rem; }
+.history-card ul { list-style: none; margin: 0.6rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; max-height: 55vh; overflow-y: auto; }
+.history-card li button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.15rem 0.7rem;
+  text-align: left;
+  border: 1px solid #30271c;
+  border-radius: 0.35rem;
+  background: #15110d;
+  color: var(--text);
+  padding: 0.45rem 0.55rem;
+  cursor: pointer;
+}
+.history-card li button:hover { border-color: #6a5638; }
+.history-card li strong { color: #e0cba0; font-family: var(--serif); font-weight: normal; grid-row: 1 / span 2; }
+.history-card li span { color: #cdbb9a; font-size: 0.82rem; }
+.history-card li small { color: var(--muted); font-size: 0.72rem; }
+@media (max-width: 620px) {
+  .battle-top { flex-wrap: wrap; }
+  .history-card li button { grid-template-columns: 1fr; }
+  .history-card li strong { grid-row: auto; }
+  .battle-history { padding: 0.5rem; }
 }

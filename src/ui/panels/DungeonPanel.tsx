@@ -14,6 +14,7 @@ import { Bar, HeroLink, PanelShell, useCommand, useGame } from '../components.ts
 import { className, fmt, floorName, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { IconSkull, RoomIcon } from '../icons.tsx';
 import { HERO_CROP, HeroPortrait, MonsterPortrait, monsterBase, PixelSprite } from '../PixelSprite.tsx';
+import { loadReportHistory } from '../report-history.ts';
 
 function ActOverview(props: { world: World }) {
   const { world } = props;
@@ -232,10 +233,16 @@ function Summary(props: { s: ExpeditionSummary }) {
 }
 
 export function DungeonPanel() {
-  const { world, session } = useGame();
+  const { world, session, ui } = useGame();
   const parties = [...world.parties].sort((a, b) => a.startedTick - b.startedTick);
+  const reports = loadReportHistory();
   return (
     <PanelShell title="O Abismo" subtitle="Você não comanda o combate: só pode tocar o sino." wide>
+      {reports.length > 0 && (
+        <p class="sub">
+          <button class="btn small" onClick={() => ui.open({ kind: 'battle', partyId: 0 })}>Relatórios recentes ({reports.length})</button>
+        </p>
+      )}
       <ActOverview world={world} />
       <h3>Grupos no abismo</h3>
       {parties.length === 0 ? (

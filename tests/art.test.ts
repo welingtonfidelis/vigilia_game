@@ -1,10 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { ACTS, BUILDING_IDS, CLASS_IDS } from '../src/sim/index.ts';
 import { animFrames, CLASS_LOOK, frameRect, heroSprite, MAYOR_SPRITE, MONSTERS, T, WINDOW_TILES } from '../src/render/assets.ts';
+import { PACK_ASSETS } from '../src/render/pack.ts';
 import { dirtMask, dirtTile } from '../src/render/ground.ts';
 import { COLS, door, LANDMARKS, ROWS, TILE, WORLD_H, WORLD_W } from '../src/render/layout.ts';
 
 const TOWN_TILES = 132;
+
+describe('pack de arena 1.9', () => {
+  it('cobre os seis atos, os quatro andares e as variantes de chefe', () => {
+    const ids = new Set(PACK_ASSETS.map((a) => a.id));
+    const romans = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+    for (const r of romans) {
+      for (let floor = 1; floor <= 4; floor++) expect(ids.has(`arena/${r}/back-${floor}`), `${r} back-${floor}`).toBe(true);
+      expect(ids.has(`arena/${r}/floor`), `${r} floor`).toBe(true);
+      expect(ids.has(`arena/${r}/fore`), `${r} fore`).toBe(true);
+      expect(ids.has(`prop/arena/${r}/boss-gate`), `${r} boss gate`).toBe(true);
+    }
+    for (const act of ACTS) {
+      expect(ids.has(`char/boss/${act.boss.id}-phase2`), act.boss.id).toBe(true);
+      for (const e of act.enemies) {
+        expect(ids.has(`char/monster/${e.id}-deep`), `${e.id} deep`).toBe(true);
+        expect(ids.has(`char/monster/${e.id}-core`), `${e.id} core`).toBe(true);
+      }
+    }
+  });
+});
 
 describe('sprites do 0x72', () => {
   it('toda classe, nos dois gêneros, tem quadros parado e correndo (e a arma existe)', () => {

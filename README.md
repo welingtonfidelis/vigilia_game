@@ -198,6 +198,11 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 
 - [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela usa as **arenas em camadas do pack 1.9** (fundo por ato e por andar, piso, primeiro plano, props e moldura), heróis e monstros com animações de idle/ataque/dano/morte, variantes de profundidade dos monstros, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste. Até três expedições aparecem empilhadas, cada card tem seu próprio sino (chama só aquele grupo, ao custo de 1 de reputação) e, ao terminar, cada uma gera um relatório com XP, ouro, salas, andar vencido, heróis caídos e heróis que subiram de nível.
 - [x] **Efeitos e retratos:** impacto/corte do ato no alvo e retratos 32×36 dos monstros no painel do Abismo.
+- [x] **Avanço pela dungeon:** fora do combate o chão e o primeiro plano correm, o fundo faz parallax e os heróis usam a animação de corrida; ao voltar, o sentido inverte.
+- [x] **Chefes e fases:** fundo do quarto do chefe, portão, círculo ritual, faixa de chefe, posicionamento dos lacaios e troca para a variante de fase 2 abaixo de 50% de vida. Teste cobre os seis atos e as 24 variantes.
+- [x] **Mobile:** até três dungeons empilhadas com escala proporcional ao espaço, sem overflow horizontal.
+- [x] **Histórico:** os últimos 10 relatórios ficam no armazenamento local e podem ser reabertos pelo Abismo ou pelo botão Relatórios.
+- [x] **HUD:** moldura de vida e nós de sala do pack 1.9.
 - [ ] Itens nomeados e afixos.
 - [ ] Fabricação no ferreiro.
 - [ ] Especializações de nível 3 dos prédios.

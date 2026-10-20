@@ -1,13 +1,13 @@
 // Visualizador de dungeon do M4: várias expedições empilhadas e relatório ao fim.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { RefObject } from 'preact';
-import { commands, floorLabel, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
+import { commands, floorLabel, formatDate, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
 import type { Hero, MaterialId, Party, Unit } from '../../sim/index.ts';
 import { packAsset, packUrl } from '../../render/pack.ts';
 import { fmt, heroById, liveHp, phaseText, ROOM_LABELS } from '../format.ts';
 import { HeroPortrait, HERO_CROP, monsterBase, PixelSprite } from '../PixelSprite.tsx';
 import { useCommand, useGame } from '../components.tsx';
-import { RoomIcon } from '../icons.tsx';
+import { addReportToHistory, clearReportHistory, loadReportHistory } from '../report-history.ts';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'] as const;
 const OUTCOMES: Record<string, string> = {
@@ -91,7 +91,9 @@ interface Track {
 }
 
 export interface DungeonReport {
+  key: string;
   id: number;
+  endTick: number;
   act: number;
   floor: number;
   outcome: Party['outcome'];
@@ -103,7 +105,7 @@ export interface DungeonReport {
   roomsTotal: number;
   duration: number;
   fallen: { id: number; name: string }[];
-  leveled: { hero: Hero; from: number; to: number; xpGain: number }[];
+  leveled: { heroId: number; name: string; from: number; to: number; xpGain: number }[];
   survivors: string[];
   rescued: number;
   contract: number | null;
@@ -139,9 +141,9 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
     .map((hero) => {
       const initial = track.initial.get(hero.id);
       if (!initial || hero.level <= initial.level) return null;
-      return { hero, from: initial.level, to: hero.level, xpGain: Math.max(0, Math.round(hero.xp - initial.xp)) };
+      return { heroId: hero.id, name: hero.name, from: initial.level, to: hero.level, xpGain: Math.max(0, Math.round(hero.xp - initial.xp)) };
     })
-    .filter((h): h is { hero: Hero; from: number; to: number; xpGain: number } => !!h);
+    .filter((h): h is { heroId: number; name: string; from: number; to: number; xpGain: number } => !!h);
   const survivors = last.startMemberIds
     .filter((id) => !last.dead.includes(id))
     .map((id) => heroById(world, id)?.name ?? track.initial.get(id)?.name ?? 'Herói')
@@ -150,7 +152,9 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
   const cleared = last.outcome === 'conquista' || (!track.initialFloorCleared && world.acts[last.act]?.conquered[last.floor] === true);
   const outcome = last.outcome ?? (cleared ? 'conquista' : 'retirada');
   return {
+    key: `${last.startMemberIds.join('-')}:${last.act}:${last.floor}:${last.endTick}`,
     id: last.startMemberIds[0] ?? 0,
+    endTick: last.endTick,
     act: last.act,
     floor: last.floor,
     outcome,
@@ -193,7 +197,7 @@ function useArenaScale(): { ref: RefObject<HTMLDivElement>; scale: number } {
   return { ref, scale };
 }
 
-function ArenaSprite(props: { assetId: string; anim: 'idle' | 'attack' | 'hit' | 'death' }) {
+function ArenaSprite(props: { assetId: string; anim: 'idle' | 'run' | 'attack' | 'hit' | 'death' }) {
   const asset = packAsset(props.assetId);
   if (!asset) return null;
   const frames = asset.animations?.[props.anim]?.frames ?? asset.animations?.idle?.frames ?? [0];
@@ -263,24 +267,33 @@ function ArenaFx(props: { assetId: string }) {
 
 function HpBar(props: { hp: number; max: number }) {
   const pct = props.max > 0 ? Math.max(0, Math.min(100, (props.hp / props.max) * 100)) : 0;
-  return <span class="arena-hp" title={`${Math.ceil(props.hp)} / ${props.max}`}><i style={{ width: `${pct}%` }} /></span>;
+  return (
+    <span class="arena-hp" title={`${Math.ceil(props.hp)} / ${props.max}`} style={{ backgroundImage: `url(${packUrl('export/ui/ui-hp-frame.png')})` }}>
+      <i style={{ width: `${pct}%` }} />
+    </span>
+  );
 }
 
-function damageAnim(dead: boolean, hit: boolean, attacking: boolean): 'idle' | 'attack' | 'hit' | 'death' {
+function RoomNode(props: { state: 'normal' | 'current' | 'cleared' }) {
+  return <span class={`arena-room-node ${props.state}`} style={{ backgroundImage: `url(${packUrl('export/ui/ui-room-node.png')})` }} aria-hidden="true" />;
+}
+
+function damageAnim(dead: boolean, hit: boolean, attacking: boolean, moving = false): 'idle' | 'run' | 'attack' | 'hit' | 'death' {
   if (dead) return 'death';
   if (hit) return 'hit';
   if (attacking) return 'attack';
+  if (moving) return 'run';
   return 'idle';
 }
 
-function HeroUnit(props: { world: ReturnType<typeof useGame>['world']; hero: Hero; unit: Unit | null; x: number; y: number; floats: FloatItem[]; attacking: boolean; fxAsset: string | null }) {
-  const { world, hero, unit, x, y, floats, attacking, fxAsset } = props;
+function HeroUnit(props: { world: ReturnType<typeof useGame>['world']; hero: Hero; unit: Unit | null; x: number; y: number; floats: FloatItem[]; attacking: boolean; fxAsset: string | null; moving: boolean }) {
+  const { world, hero, unit, x, y, floats, attacking, fxAsset, moving } = props;
   const live = liveHp(world, hero);
   const hp = unit ? Math.max(0, unit.hp) : live.hp;
   const max = unit ? unit.maxHp : live.max;
   const hits = floats.filter((f) => unit && f.unitUid === unit.uid);
   const dead = unit ? !unit.alive : hero.status === 'dead';
-  const anim = damageAnim(dead, hits.length > 0, attacking);
+  const anim = damageAnim(dead, hits.length > 0, attacking, moving);
   return (
     <div class={`arena-unit hero${dead ? ' down' : ''}`} style={{ left: `${x}px`, bottom: `${192 - y}px` }}>
       <ArenaSprite assetId={`char/hero/${hero.classId}/${hero.gender}`} anim={anim} />
@@ -403,13 +416,16 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
   const heroX = [36, 62, 88, 114, 140];
   const enemyX = [292, 262, 232, 202, 172];
   const fighting = party.phase === 'combate' && !!combat;
+  const bossPhase2 = enemies.some((u) => u.tags.includes('boss') && u.hp <= u.maxHp * 0.5);
+  const moving = !fighting && enemies.length === 0;
+  const backwards = party.phase === 'voltando';
   const canRecall = party.phase !== 'voltando' && !party.recallRequested;
 
   return (
     <section class={`arena-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
         <strong>Ato {party.act + 1} · {floorLabel(party.act, party.floor)}</strong>
-        <span>{phaseText(world, party)}{party.rooms.length > 0 ? ` · sala ${Math.min(party.roomIndex + 1, party.rooms.length)}/${party.rooms.length}` : ''}{room ? ` · ${ROOM_LABELS[room.kind]}` : ''}{combat?.isBoss ? ' · CHEFE' : ''}</span>
+        <span>{phaseText(world, party)}{party.rooms.length > 0 ? ` · sala ${Math.min(party.roomIndex + 1, party.rooms.length)}/${party.rooms.length}` : ''}{room ? ` · ${ROOM_LABELS[room.kind]}` : ''}{combat?.isBoss ? ' · CHEFE' : ''}{bossPhase2 ? ' · FASE 2' : ''}</span>
         <span class="arena-card-loot">{fmt(party.loot.gold)} ouro · {fmt(party.loot.xp)} XP</span>
         <button
           class="btn bell arena-bell"
@@ -420,27 +436,28 @@ function ArenaCard(props: { party: Party; selected: boolean }) {
           {party.recallRequested ? 'Sino tocado' : 'Tocar o sino'}
         </button>
       </header>
-      <div class="arena-card-stage" ref={ref}>
+      <div class={`arena-card-stage${moving ? ' walking' : ''}${backwards ? ' backward' : ''}`} ref={ref}>
         <div class="arena-shell" style={{ width: '320px', height: '192px', transform: `scale(${scale})` }}>
           {back && <img class="arena-back" src={packUrl(back.file)} width={320} height={192} alt="" />}
-          {floor && <img class="arena-floor" src={packUrl(floor.file)} width={320} height={64} alt="" />}
+          {floor && <div class="arena-floor" style={{ backgroundImage: `url(${packUrl(floor.file)})` }} aria-hidden="true" />}
           {ritual && floorIndex === 3 && <img class="arena-ritual" src={packUrl(ritual.file)} width={160} height={16} alt="" />}
           {ACT_PROPS[roman]?.map((p) => <ArenaProp key={p.id} id={p.id} x={p.x} y={p.y} />)}
           <ArenaProp id="prop/arena/torch" x={13} y={150} />
           <ArenaProp id="prop/arena/brazier" x={306} y={152} />
           {bossGate && floorIndex === 3 && <img class="arena-boss-gate" src={packUrl(bossGate.file)} width={96} height={96} alt="" />}
-          {heroes.map((hero, i) => <HeroUnit key={hero.id} world={world} hero={hero} unit={unitsByHero.get(hero.id) ?? null} x={heroX[i] ?? 150} y={i % 2 === 0 ? 166 : 152} floats={floats} attacking={attacking === 'hero'} fxAsset={fxAsset} />)}
+          {heroes.map((hero, i) => <HeroUnit key={hero.id} world={world} hero={hero} unit={unitsByHero.get(hero.id) ?? null} x={heroX[i] ?? 150} y={i % 2 === 0 ? 166 : 152} floats={floats} attacking={attacking === 'hero'} fxAsset={fxAsset} moving={moving} />)}
           {enemies.map((unit, i) => {
             const boss = unit.tags.includes('boss');
-            return <EnemyUnit key={unit.uid} world={world} party={party} unit={unit} x={boss ? 252 : (enemyX[i] ?? 250)} y={boss ? 152 : (i % 2 === 0 ? 166 : 152)} floats={floats} attacking={attacking === 'enemy'} fxAsset={fxAsset} />;
+            const bossAddX = [302, 210, 178, 150];
+            return <EnemyUnit key={unit.uid} world={world} party={party} unit={unit} x={boss ? 252 : combat?.isBoss ? (bossAddX[i] ?? 180) : (enemyX[i] ?? 250)} y={boss ? 152 : (i % 2 === 0 ? 166 : 152)} floats={floats} attacking={attacking === 'enemy'} fxAsset={fxAsset} />;
           })}
-          {fore && <img class="arena-fore" src={packUrl(fore.file)} width={320} height={64} alt="" />}
+          {fore && <div class="arena-fore" style={{ backgroundImage: `url(${packUrl(fore.file)})` }} aria-hidden="true" />}
           {bossBanner && combat?.isBoss && <img class="arena-boss-banner" src={packUrl(bossBanner.file)} width={320} height={48} alt="" />}
           <span class="arena-frame" style={{ borderImageSource: `url(${packUrl('export/ui/ui-dungeon-frame.png')})` }} />
           {!fighting && enemies.length === 0 && <span class="arena-message">{party.phase === 'voltando' ? 'Voltando à vila' : 'Avançando pela dungeon'}</span>}
           {banner && <div class="arena-banner">{banner}</div>}
           <div class="arena-room-progress">
-            {party.rooms.map((r, i) => <span key={i} class={`arena-room${i === party.roomIndex ? ' current' : ''}${r.cleared ? ' cleared' : ''}`} title={ROOM_LABELS[r.kind as keyof typeof ROOM_LABELS]}><RoomIcon kind={r.cleared || i <= party.roomIndex ? r.kind as never : null} /></span>)}
+            {party.rooms.map((r, i) => <span key={i} class={`arena-room${i === party.roomIndex ? ' current' : ''}${r.cleared ? ' cleared' : ''}`} title={ROOM_LABELS[r.kind as keyof typeof ROOM_LABELS]}><RoomNode state={i === party.roomIndex ? 'current' : r.cleared ? 'cleared' : 'normal'} /></span>)}
           </div>
         </div>
       </div>
@@ -481,9 +498,10 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
         <h3>Subiram de nível</h3>
         {report.leveled.length === 0 ? <p class="sub">Nenhum herói subiu de nível.</p> : (
           <ul class="report-heroes">
-            {report.leveled.map((l) => (
-              <li key={l.hero.id}><HeroPortrait hero={l.hero} variant="detail" /><span>{l.hero.name}<small>nível {l.from} → {l.to}{l.xpGain > 0 ? ` · +${fmt(l.xpGain)} XP` : ''}</small></span></li>
-            ))}
+            {report.leveled.map((l) => {
+              const hero = heroById(world, l.heroId);
+              return <li key={l.heroId}>{hero ? <HeroPortrait hero={hero} variant="detail" /> : <span class="report-portrait-empty">↑</span>}<span>{l.name}<small>nível {l.from} → {l.to}{l.xpGain > 0 ? ` · +${fmt(l.xpGain)} XP` : ''}</small></span></li>;
+            })}
           </ul>
         )}
         <p class="sub report-survivors">Sobreviventes: {report.survivors.join(', ') || 'nenhum'}.</p>
@@ -496,9 +514,42 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
   );
 }
 
+function ReportHistory(props: { reports: DungeonReport[]; onOpen: (r: DungeonReport) => void; onClose: () => void; onClear: () => void }) {
+  return (
+    <div class="battle-history">
+      <section class="history-card">
+        <header>
+          <div><small>Arquivo da vila</small><h2>Relatórios recentes</h2></div>
+          <button class="battle-close" onClick={props.onClose} aria-label="Fechar histórico">×</button>
+        </header>
+        {props.reports.length === 0 ? <p class="sub">Nenhum relatório guardado.</p> : (
+          <ul>
+            {props.reports.map((r) => (
+              <li key={r.key}>
+                <button onClick={() => props.onOpen(r)}>
+                  <strong>{r.outcome ? OUTCOMES[r.outcome] ?? r.outcome : 'Retorno'}</strong>
+                  <span>Ato {r.act + 1} · {floorLabel(r.act, r.floor)}</span>
+                  <small>{formatDate(r.endTick)} · {fmt(r.xp)} XP · {fmt(r.gold)} ouro{r.cleared ? ' · vencida' : ''}</small>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div class="report-actions">
+          <button class="btn" onClick={props.onClear}>Limpar histórico</button>
+          <button class="btn" onClick={props.onClose}>Fechar</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function BattlePanel(props: { partyId: number }) {
   const { world, session, ui } = useGame();
   const [reports, setReports] = useState<DungeonReport[]>([]);
+  const [history, setHistory] = useState<DungeonReport[]>(() => loadReportHistory());
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyReport, setHistoryReport] = useState<DungeonReport | null>(null);
   const tracked = useRef(new Map<number, Track>());
 
   const ordered = [...world.parties].sort((a, b) => {
@@ -530,7 +581,12 @@ export function BattlePanel(props: { partyId: number }) {
         tracked.current.delete(id);
       }
     }
-    if (finished.length > 0) setReports((old) => [...old, ...finished]);
+    if (finished.length > 0) {
+      setReports((old) => [...old, ...finished]);
+      let next = history;
+      for (const r of finished) next = addReportToHistory(r);
+      setHistory(next);
+    }
   }, [session.rev]);
 
   const report = reports[0] ?? null;
@@ -545,10 +601,26 @@ export function BattlePanel(props: { partyId: number }) {
           <p>{world.parties.length} grupo{world.parties.length === 1 ? '' : 's'} no abismo{world.parties.length > 3 ? ` · mostrando 3` : ''}</p>
         </div>
         <div class="battle-loot"><span>Em campo</span><strong>{world.parties.length}</strong></div>
+        {history.length > 0 && <button class="btn small history-button" onClick={() => setHistoryOpen(true)}>Relatórios ({history.length})</button>}
       </header>
 
       {report ? (
         <BattleReport report={report} world={world} total={reports.length} onClose={closeReport} onAbismo={() => ui.open({ kind: 'dungeon' })} />
+      ) : historyReport ? (
+        <BattleReport
+          report={historyReport}
+          world={world}
+          total={1}
+          onClose={() => { setHistoryReport(null); setHistoryOpen(true); }}
+          onAbismo={() => ui.open({ kind: 'dungeon' })}
+        />
+      ) : historyOpen ? (
+        <ReportHistory
+          reports={history}
+          onOpen={(r) => { setHistoryReport(r); setHistoryOpen(false); }}
+          onClose={() => setHistoryOpen(false)}
+          onClear={() => { clearReportHistory(); setHistory([]); setHistoryOpen(false); }}
+        />
       ) : visible.length === 0 ? (
         <div class="battle-empty">Nenhuma dungeon em andamento.</div>
       ) : (
@@ -557,7 +629,7 @@ export function BattlePanel(props: { partyId: number }) {
         </div>
       )}
 
-      {!report && <footer class="battle-bottom"><span>{world.parties.length} expedição{world.parties.length === 1 ? '' : 'ões'} ativa{world.parties.length === 1 ? '' : 's'}</span><span>O combate segue automático.</span><button class="btn small" onClick={() => ui.open({ kind: 'dungeon' })}>Voltar ao Abismo</button></footer>}
+      {!report && !historyReport && !historyOpen && <footer class="battle-bottom"><span>{world.parties.length} expedição{world.parties.length === 1 ? '' : 'ões'} ativa{world.parties.length === 1 ? '' : 's'}</span><span>O combate segue automático.</span><button class="btn small" onClick={() => ui.open({ kind: 'dungeon' })}>Voltar ao Abismo</button></footer>}
     </section>
   );
 }
