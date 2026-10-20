@@ -2,7 +2,9 @@
 
 import {
   ACTS,
+  BALANCE,
   BUILDINGS,
+  commands,
   citizenMood,
   formatDate,
   JOB_NAMES,
@@ -12,8 +14,9 @@ import {
   TICKS_PER_DAY,
 } from '../../sim/index.ts';
 import type { CitizenJob, Raid, World } from '../../sim/index.ts';
-import { Bar, PanelShell, Stat, useGame } from '../components.tsx';
+import { Bar, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { fmt } from '../format.ts';
+import { EXPANSION_LOTS } from '../../render/layout.ts';
 
 const OUTCOMES: Record<Raid['outcome'], string> = {
   repelido: 'Repelida',
@@ -48,6 +51,9 @@ function RaidLine(props: { world: World; raid: Raid }) {
 
 export function VillagePanel() {
   const { world } = useGame();
+  const command = useCommand();
+  const expansion = world.town.expansion;
+  const builtHouses = expansion.houses.filter(Boolean).length;
   const mood = citizenMood(world);
   const threat = threatOf(world);
   const guards = world.citizens.filter((c) => c.job === 'guarda').length;
@@ -74,6 +80,31 @@ export function VillagePanel() {
         <p class="tag warn">
           O abismo está inquieto: uma incursão pode subir à noite. Heróis em casa, aposentados e guardas defendem; prédios podem cair de nível.
         </p>
+      )}
+
+      <h3>Distrito Sul <span class="sub">({builtHouses}/3 casas)</span></h3>
+      <p class="sub">
+        A floresta ao sul esconde três lotes de moradia. Limpar a área custa {fmt(BALANCE.expansionClearCost)} de ouro; cada casa custa{' '}
+        {fmt(BALANCE.expansionHouseCost)} e aumenta a capacidade da vila em {BALANCE.expansionHouseCapacity}.
+      </p>
+      {!expansion.cleared ? (
+        <button class="btn" disabled={world.town.treasury < BALANCE.expansionClearCost} onClick={() => command(commands.clearSouthExpansion)}>
+          Limpar os lotes do sul ({fmt(BALANCE.expansionClearCost)})
+        </button>
+      ) : (
+        <div class="expansion-lots">
+          {EXPANSION_LOTS.map((_, i) => {
+            const built = expansion.houses[i] === true;
+            const blocked = built || world.town.treasury < BALANCE.expansionHouseCost;
+            return (
+              <button key={i} class={`expansion-lot${built ? ' built' : ''}`} disabled={blocked} onClick={() => command(commands.buildExpansionHouse, i)}>
+                <strong>Lote {i + 1}</strong>
+                <span>{built ? 'Casa construída' : `Construir casa (${fmt(BALANCE.expansionHouseCost)})`}</span>
+                <small>{built ? `+${BALANCE.expansionHouseCapacity} de capacidade` : 'Lote aberto'}</small>
+              </button>
+            );
+          })}
+        </div>
       )}
 
       <h3>Moradores conhecidos</h3>

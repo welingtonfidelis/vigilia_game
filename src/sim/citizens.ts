@@ -131,8 +131,9 @@ const threatCorruption = (world: World): number =>
 
 export function dailyCitizens(world: World): void {
   const corruption = threatCorruption(world);
+  const houses = world.town.expansion.houses.filter(Boolean).length;
   const base = clamp(
-    B.citizenHappinessBase + 2 * world.town.buildings.estalagem + 2 * world.town.buildings.templo - corruption * 0.25,
+    B.citizenHappinessBase + 2 * world.town.buildings.estalagem + 2 * world.town.buildings.templo + 2 * houses - corruption * 0.25,
     15,
     90,
   );

@@ -2,7 +2,7 @@
 // de cada canto. Puro (sem Phaser) para dar para testar no Node.
 
 import { T } from './assets.ts';
-import { CAVE_PATH, CEMETERY_TILES, COLS, HOME_PATHS, LOT_TILES, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, type TileRect } from './layout.ts';
+import { CAVE_PATH, CEMETERY_TILES, COLS, EXPANSION_LOTS, HOME_PATHS, LOT_TILES, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, type TileRect } from './layout.ts';
 
 export const inRect = (r: TileRect, x: number, y: number): boolean => x >= r.tx && x < r.tx + r.tw && y >= r.ty && y < r.ty + r.th;
 
@@ -37,7 +37,7 @@ export function dirtMask(): boolean[][] {
     tw: CEMETERY_TILES.tw - 2,
     th: CEMETERY_TILES.th,
   };
-  const areas = [...ROADS, THERMAL_PATH, THERMAL_YARD, CAVE_PATH, ...HOME_PATHS, ...yards(), cemeteryGround];
+  const areas = [...ROADS, THERMAL_PATH, THERMAL_YARD, CAVE_PATH, ...HOME_PATHS, ...EXPANSION_LOTS, ...yards(), cemeteryGround];
   return Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => areas.some((r) => inRect(r, x, y))));
 }
 

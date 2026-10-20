@@ -76,7 +76,8 @@ export function festivalCost(world: World): number {
 // ── Diário ────────────────────────────────────────────────────────────────
 
 export function populationCap(world: World): number {
-  return B.startPopulation + B.populationPerBuildingLevel * totalBuildingLevels(world);
+  const houses = world.town.expansion.houses.filter(Boolean).length;
+  return B.startPopulation + B.populationPerBuildingLevel * totalBuildingLevels(world) + houses * B.expansionHouseCapacity;
 }
 
 export function dailyEconomy(world: World): void {

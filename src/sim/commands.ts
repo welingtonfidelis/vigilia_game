@@ -109,6 +109,32 @@ export function setLootTax(world: World, rate: number): CommandResult {
   return OK;
 }
 
+/** Abre os três lotes do distrito sul, cobrindo a limpeza da floresta. */
+export function clearSouthExpansion(world: World): CommandResult {
+  const expansion = world.town.expansion;
+  if (expansion.cleared) return fail('Os lotes do sul já estão limpos.');
+  const cost = B.expansionClearCost;
+  if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para limpar os lotes.`);
+  world.town.treasury -= cost;
+  expansion.cleared = true;
+  record(world, 'construcao', [], 'O prefeito limpou a floresta ao sul. Três lotes de moradia estão abertos.');
+  return OK;
+}
+
+/** Constrói uma casa em um dos três lotes do sul. */
+export function buildExpansionHouse(world: World, index: number): CommandResult {
+  const expansion = world.town.expansion;
+  if (!expansion.cleared) return fail('Limpe os lotes do sul primeiro.');
+  if (!Number.isInteger(index) || index < 0 || index >= expansion.houses.length) return fail('Lote inválido.');
+  if (expansion.houses[index]) return fail('Esse lote já tem casa.');
+  const cost = B.expansionHouseCost;
+  if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para a casa.`);
+  world.town.treasury -= cost;
+  expansion.houses[index] = true;
+  record(world, 'construcao', [], `Uma casa foi construída no lote ${index + 1} do distrito sul. A vila cresce.`);
+  return OK;
+}
+
 export function toggleDecree(world: World, id: DecreeId): CommandResult {
   if (!DECREE_IDS.includes(id)) return fail('Decreto desconhecido.');
   const def = DECREES[id];

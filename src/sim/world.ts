@@ -70,6 +70,7 @@ export function createWorld(seed: number): World {
       decrees: [],
       event: null,
       lastEventKey: '',
+      expansion: { cleared: false, houses: [false, false, false] },
     },
     acts: ACTS.map((_, i) => ({
       unlocked: i === 0,

@@ -7,7 +7,7 @@ import type { BuildingId, Citizen, Hero, RetiredRole, World } from '../sim/index
 /** Lado do tile no mundo: 16 px de arte × 2. */
 export const TILE = 32;
 export const COLS = 50;
-export const ROWS = 32;
+export const ROWS = 40;
 export const WORLD_W = COLS * TILE;
 export const WORLD_H = ROWS * TILE;
 
@@ -83,6 +83,21 @@ export const HOMES: Home[] = HOME_LOTS.map((lot) => ({
 /** Caminhos de terra da estrada de baixo até a porta de cada casa. */
 export const HOME_PATHS: TileRect[] = HOME_LOTS.map((lot) => ({ tx: lot.tx + 1, ty: 27, tw: 2, th: 4 }));
 
+/** Expansão sul: três lotes de moradia que o prefeito abre e constrói. */
+export const EXPANSION_LOTS: TileRect[] = [
+  { tx: 8, ty: 35, tw: 4, th: 3 },
+  { tx: 15, ty: 35, tw: 4, th: 3 },
+  { tx: 29, ty: 35, tw: 4, th: 3 },
+];
+export const EXPANSION_TILES: TileRect = { tx: 6, ty: 32, tw: 38, th: 7 };
+export const EXPANSION_ROADS: TileRect[] = [
+  { tx: 24, ty: 27, tw: 2, th: 9 },
+  { tx: 8, ty: 33, tw: 23, th: 2 },
+  { tx: 9, ty: 34, tw: 2, th: 1 },
+  { tx: 16, ty: 34, tw: 2, th: 1 },
+  { tx: 30, ty: 34, tw: 2, th: 1 },
+];
+
 export const citizenHome = (citizen: Citizen): Point => HOMES[Math.abs(citizen.id) % HOMES.length]!.door;
 
 /** Quem fica acordado: copeiros da taverna e alguns noctívagos. */
@@ -95,6 +110,7 @@ export const ROADS: TileRect[] = [
   PLAZA_TILES,
   { tx: 3, ty: 17, tw: 45, th: 2 }, // estrada de cima
   { tx: 24, ty: 7, tw: 2, th: 11 }, // entrada central → estrada de cima
+  ...EXPANSION_ROADS,
   { tx: 8, ty: 26, tw: 38, th: 2 }, // estrada de baixo: estalagem, campo, ferreiro
   { tx: 24, ty: 21, tw: 2, th: 11 }, // praça → portão
   { tx: 9, ty: 15, tw: 3, th: 2 }, // porta do templo

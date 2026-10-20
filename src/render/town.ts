@@ -7,6 +7,7 @@ import { PACK_TERRAIN_COLUMNS, PACK_TILES } from './pack.ts';
 import {
   CEMETERY_TILES,
   COLS,
+  EXPANSION_TILES,
   HOME_LOTS,
   HORN_TOWER,
   LANDMARKS,
@@ -153,6 +154,7 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
     { tx: 0, ty: 10, tw: 7, th: 7 }, // entrada com berrante
     { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
     THERMAL_YARD,
+    EXPANSION_TILES,
     ...HOME_LOTS,
   ];
   const nearDirt = (x: number, y: number): boolean =>

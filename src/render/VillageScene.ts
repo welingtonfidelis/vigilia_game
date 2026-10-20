@@ -22,6 +22,7 @@ import { moveAxis } from './keys.ts';
 import {
   ABYSS_EDGE_Y,
   CEMETERY_TILES,
+  EXPANSION_LOTS,
   citizenSpot,
   door,
   gravePoint,
@@ -115,6 +116,8 @@ export class VillageScene extends Phaser.Scene {
   private buildings = new Map<BuildingId, BuildingView>();
   private houseLights: Phaser.GameObjects.Image[] = [];
   private propLights: Phaser.GameObjects.Image[] = [];
+  private expansionHouses: (Phaser.GameObjects.Image | undefined)[] = [];
+  private expansionLights: (Phaser.GameObjects.Image | undefined)[] = [];
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
   private mayor!: Mayor;
@@ -386,6 +389,31 @@ export class VillageScene extends Phaser.Scene {
     }
   }
 
+  /** Casas do distrito sul aparecem conforme o prefeito constrói cada lote. */
+  private syncExpansion(): void {
+    const expansion = this.world.town.expansion;
+    EXPANSION_LOTS.forEach((lot, i) => {
+      const built = expansion.houses[i] === true;
+      if (built && !this.expansionHouses[i]) {
+        const x = (lot.tx + lot.tw / 2) * TILE;
+        const y = (lot.ty + lot.th) * TILE;
+        const id = `building/house/0${i + 1}`;
+        this.expansionHouses[i] = this.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+        this.expansionLights[i] = this.add
+          .image(x, y, `${id}-lights`)
+          .setOrigin(0.5, 1)
+          .setScale(ART_SCALE)
+          .setDepth(DEPTH.lights)
+          .setAlpha(0);
+      } else if (!built && this.expansionHouses[i]) {
+        this.expansionHouses[i]!.destroy();
+        this.expansionLights[i]?.destroy();
+        this.expansionHouses[i] = undefined;
+        this.expansionLights[i] = undefined;
+      }
+    });
+  }
+
   private createInteractables(): void {
     const open = (panel: Parameters<UiStore['open']>[0]) => () => this.ui.open(panel);
     const { berrante, quadro, cofre, abismo, cemiterio } = LANDMARKS;
@@ -608,6 +636,7 @@ export class VillageScene extends Phaser.Scene {
     this.syncHeroes(initial, dt);
     this.syncChildren(dt);
     this.syncCitizens(dt);
+    this.syncExpansion();
 
     const night = nightFactor(world.tick);
     // De dia fica uma névoa fria; à noite escurece de vez.
@@ -616,6 +645,7 @@ export class VillageScene extends Phaser.Scene {
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
     for (const light of this.houseLights) light.setAlpha(lightAlpha);
     for (const light of this.propLights) light.setAlpha(lightAlpha);
+    for (const light of this.expansionLights) light?.setAlpha(lightAlpha);
     this.mayor.placeLabels(this.labelScale, night);
 
     const town = world.town;

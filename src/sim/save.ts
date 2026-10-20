@@ -22,6 +22,7 @@ function migrate(world: World): World {
   if (world.version < 4) migrateToV4(world);
   if (world.version < 5) migrateToV5(world);
   if (world.version < 6) migrateToV6(world);
+  if (world.version < 7) migrateToV7(world);
   return world;
 }
 
@@ -52,6 +53,15 @@ function migrateToV4(world: World): void {
     seedCitizens(world, target);
   }
   world.version = 4;
+}
+
+/** v6 → v7 (M3): expansão sul com três lotes de moradia. */
+function migrateToV7(world: World): void {
+  type Loose<T> = { [K in keyof T]?: T[K] };
+  const town = world.town as Loose<World['town']> & World['town'];
+  town.expansion ??= { cleared: false, houses: [false, false, false] };
+  town.expansion.houses = [0, 1, 2].map((i) => town.expansion.houses?.[i] === true) as [boolean, boolean, boolean];
+  world.version = 7;
 }
 
 /** v5 → v6 (M3): eventos sazonais pendentes. */

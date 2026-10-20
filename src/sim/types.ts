@@ -293,6 +293,13 @@ export interface Contract {
   takenBy: number | null;
 }
 
+export interface ExpansionState {
+  /** A floresta ao sul foi limpa e os três lotes estão abertos. */
+  cleared: boolean;
+  /** Quais dos três lotes de moradia já têm casa. */
+  houses: [boolean, boolean, boolean];
+}
+
 export interface Town {
   treasury: number;
   buildings: Record<BuildingId, number>;
@@ -322,6 +329,8 @@ export interface Town {
   event: PendingEvent | null;
   /** Chave `ano:estação` do último evento criado, para não repetir. */
   lastEventKey: string;
+  /** Expansão sul: limpeza e casas construídas. */
+  expansion: ExpansionState;
 }
 
 export type ChronicleKind =
