@@ -88,7 +88,6 @@ export function resolveSeasonalEvent(world: World, choiceId: string): CommandRes
       for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, -6);
       break;
     case 'peste:tratar':
-      for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, 5);
       applyMood(2, 5);
       break;
     case 'peste:quarentena':
