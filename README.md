@@ -17,11 +17,12 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 - **Tempo:** Espaço pausa · 1, 2, 3 = 1×, 2×, 4× · **M** abismo · **H** heróis · **C** crônica · **Esc** fecha.
 - **Save:** salva sozinho no `localStorage` a cada dia do jogo e ao sair da página. Menu → Salvar/Carregar/Novo jogo.
 - **Celular:** toque para andar e interagir; os painéis viram folhas acima da barra de navegação; Menu → A−/A+ ajusta o tamanho da interface.
+- **Som:** liga no primeiro clique (regra dos navegadores). **N** ou o alto-falante no topo silencia; Menu → Som ajusta geral, música, ambiente e efeitos.
 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 35 testes (núcleo + sessão, save no navegador, planta da vila, textos)
+npm test                                        # 48 testes (núcleo + sessão, save no navegador, planta da vila, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
@@ -43,6 +44,12 @@ src/render/ Phaser: só lê o World a cada quadro
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
   buildings.ts, environment.ts, art.ts, sprites.ts   arte placeholder gerada em código
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
+src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
+  director.ts    eventos → efeitos (prioridade e intervalo mínimo) e clima do mundo → música (puro, testado)
+  sfx.ts         26 efeitos: berrante, moedas, martelo, sino fúnebre, fanfarra do chefe, eco dos mortos…
+  music.ts       trilha generativa em Ré menor: dia, noite, luto, tensão (chefe) e alvorada (fim)
+  ambience.ts    vento, grilos, pássaros, fogueira, metal distante do combate e o zumbido do abismo (cresce com a corrupção)
+  engine.ts      mesa com canais de música, ambiente e efeitos, reverb e compressor
 src/data/   classes, traços, atos/inimigos/chefes, prédios, nomes (dados puros)
 src/sim/    regras: tudo determinístico, estado 100% JSON
   world.ts       cria o mundo
@@ -114,6 +121,7 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 - [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
 - [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
 - [x] Arte placeholder 100% gerada em código (sem asset externo)
+- [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
 
 ## Próximo: M2 (pessoas)
 

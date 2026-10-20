@@ -90,9 +90,24 @@ export interface Prefs {
   uiScale: number;
   pauseOnDeath: boolean;
   autosave: boolean;
+  muted: boolean;
+  /** Volumes de 0 a 1. */
+  masterVolume: number;
+  musicVolume: number;
+  ambientVolume: number;
+  sfxVolume: number;
 }
 
-export const DEFAULT_PREFS: Prefs = { uiScale: 1, pauseOnDeath: false, autosave: true };
+export const DEFAULT_PREFS: Prefs = {
+  uiScale: 1,
+  pauseOnDeath: false,
+  autosave: true,
+  muted: false,
+  masterVolume: 0.8,
+  musicVolume: 0.4,
+  ambientVolume: 0.5,
+  sfxVolume: 0.9,
+};
 
 export function loadPrefs(store: KeyValueStore | null): Prefs {
   try {

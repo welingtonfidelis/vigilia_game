@@ -34,6 +34,8 @@ export type SessionEvent =
   | { type: 'entries'; entries: ChronicleEntry[] }
   | { type: 'expedition'; summary: ExpeditionSummary }
   | { type: 'day'; day: number }
+  /** Uma alavanca do prefeito foi acionada (o som de resposta sai na hora). */
+  | { type: 'command'; command: unknown; ok: boolean }
   | { type: 'reset' };
 
 type Listener = (event: SessionEvent) => void;
@@ -92,6 +94,7 @@ export class Session {
   run<A extends unknown[]>(command: (world: World, ...args: A) => CommandResult, ...args: A): CommandResult {
     const result = command(this.world, ...args);
     this.rev++;
+    this.emit({ type: 'command', command, ok: result.ok });
     this.flush();
     return result;
   }

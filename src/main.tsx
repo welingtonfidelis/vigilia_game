@@ -3,6 +3,7 @@ import { createWorld, runTicks, autoMayor, TICKS_PER_DAY, ACTS } from './sim/ind
 import type { ChronicleEntry } from './sim/index.ts';
 import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
+import { startAudio } from './audio/index.ts';
 import { startRenderer } from './render/game.ts';
 import { isTyping } from './render/keys.ts';
 import { HudRoot, OverlayRoot } from './ui/App.tsx';
@@ -28,6 +29,7 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   restos: 'grief',
   conquista: 'gold',
   chefe: 'gold',
+  eco: 'bad',
   fim: 'gold',
   promocao: 'good',
   traco: 'info',
@@ -127,6 +129,9 @@ window.addEventListener(
       case 'KeyC':
         toggle('chronicle');
         break;
+      case 'KeyN':
+        ui.setPrefs({ muted: !ui.prefs.muted });
+        break;
     }
   },
   true,
@@ -137,6 +142,7 @@ window.addEventListener(
 render(<HudRoot session={session} ui={ui} />, document.getElementById('hud')!);
 render(<OverlayRoot session={session} ui={ui} />, document.getElementById('overlay')!);
 const renderer = startRenderer(document.getElementById('game')!, session, ui);
+const audio = startAudio(session, ui);
 
 // Atalhos de depuração para testar sem esperar (só em desenvolvimento).
 if (import.meta.env.DEV) {
@@ -145,6 +151,7 @@ if (import.meta.env.DEV) {
       session,
       ui,
       renderer,
+      audio,
       ACTS,
       advance: (ticks: number) => session.advance(ticks),
       /** Roda N quadros do Phaser na mão (com a aba oculta o requestAnimationFrame para). */

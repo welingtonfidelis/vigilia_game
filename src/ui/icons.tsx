@@ -79,6 +79,20 @@ export const IconPause = () => (
   </Svg>
 );
 
+export const IconSound = () => (
+  <Svg label="Som ligado">
+    <path d="M4 10v4h4l5 4V6L8 10z" />
+    <path d="M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10" />
+  </Svg>
+);
+
+export const IconMute = () => (
+  <Svg label="Som desligado">
+    <path d="M4 10v4h4l5 4V6L8 10z" />
+    <path d="M16.5 9.5l5 5M21.5 9.5l-5 5" />
+  </Svg>
+);
+
 export const IconSkull = () => (
   <Svg>
     <path d="M12 3c-4.4 0-7.5 3-7.5 7 0 2.4 1.1 4 2.5 5v3h10v-3c1.4-1 2.5-2.6 2.5-5 0-4-3.1-7-7.5-7z" />

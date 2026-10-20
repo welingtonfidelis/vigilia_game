@@ -243,6 +243,7 @@ export type ChronicleKind =
   | 'berrante'
   | 'contrato'
   | 'corrupcao'
+  | 'eco'
   | 'vinculo'
   | 'fim';
 

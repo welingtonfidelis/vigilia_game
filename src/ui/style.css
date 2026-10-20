@@ -141,6 +141,28 @@ button {
   overflow: hidden;
 }
 
+.hud-mute {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  min-height: 2.1rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.hud-mute.off {
+  color: var(--muted);
+}
+
+.hud-mute + .speed {
+  margin-left: 0.4rem;
+}
+
 .spd {
   background: transparent;
   border: 0;
@@ -1229,4 +1251,26 @@ kbd {
   .combat {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Volume ─────────────────────────────────────────────────────────── */
+
+.volume {
+  display: grid;
+  grid-template-columns: 6rem 1fr 3rem;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.35rem 0;
+  font-size: 0.92rem;
+}
+
+.volume input[type='range'] {
+  width: 100%;
+  accent-color: var(--gold);
+}
+
+.volume output {
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }

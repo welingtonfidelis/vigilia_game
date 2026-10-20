@@ -178,6 +178,33 @@ export function MenuPanel() {
         </button>
       )}
 
+      <h3>Som</h3>
+      <label class="check">
+        <input type="checkbox" checked={!prefs.muted} onChange={(e) => ui.setPrefs({ muted: !(e.target as HTMLInputElement).checked })} /> Som ligado
+      </label>
+      {(
+        [
+          ['masterVolume', 'Geral'],
+          ['musicVolume', 'Música'],
+          ['ambientVolume', 'Ambiente'],
+          ['sfxVolume', 'Efeitos'],
+        ] as const
+      ).map(([key, label]) => (
+        <label key={key} class="volume">
+          <span>{label}</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={Math.round(prefs[key] * 100)}
+            disabled={prefs.muted}
+            onInput={(e) => ui.setPrefs({ [key]: Number((e.target as HTMLInputElement).value) / 100 })}
+          />
+          <output>{Math.round(prefs[key] * 100)}%</output>
+        </label>
+      ))}
+
       <h3>Tela</h3>
       <div class="row stepper">
         <button class="btn" onClick={() => scale(-0.1)} aria-label="Diminuir interface">
@@ -194,7 +221,7 @@ export function MenuPanel() {
         <li>WASD ou setas: andar com o prefeito. Clique ou toque no chão para andar até lá.</li>
         <li>Clique num prédio, no berrante, no quadro ou no cofre: o prefeito vai até lá e interage. Perto de algo, E interage.</li>
         <li>Clique num herói para ver a ficha.</li>
-        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · M: abismo · H: heróis · C: crônica · Esc: fechar.</li>
+        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · M: abismo · H: heróis · C: crônica · N: som · Esc: fechar.</li>
       </ul>
     </PanelShell>
   );

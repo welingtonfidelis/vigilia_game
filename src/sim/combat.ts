@@ -426,6 +426,6 @@ function spawnEchoes(world: World, party: Party, c: Combat): void {
       interval: s.interval,
     });
     party.moments.push(`Aquilo que Vigia ergueu o eco de ${lost.name}.`);
-    record(world, 'chefe', [lost.id, ...party.memberIds], `No fundo do abismo, o eco de ${lost.name} se ergueu contra os próprios amigos.`);
+    record(world, 'eco', [lost.id, ...party.memberIds], `No fundo do abismo, o eco de ${lost.name} se ergueu contra os próprios amigos.`);
   }
 }

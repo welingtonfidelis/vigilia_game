@@ -1,0 +1,138 @@
+// Ambiente da vila: vento e zumbido do abismo contínuos, mais grilos (noite), pássaros
+// (dia), estalos da fogueira, metal distante quando há combate e o "respiro" do abismo.
+
+import type { Mood } from './director.ts';
+import { clank, noise, noiseBuffer, rand, tone } from './instruments.ts';
+
+type Timer = 'cricket' | 'bird' | 'fire' | 'clank' | 'breath';
+
+export class AmbiencePlayer {
+  private readonly ctx: BaseAudioContext;
+  private readonly out: AudioNode;
+  private readonly windGain: GainNode;
+  private readonly droneGain: GainNode;
+  private mood: Mood = { mode: 'dia', night: false, hour: 8, corruption: 0, fighting: 0 };
+  private next: Record<Timer, number> = { cricket: 0, bird: 0, fire: 0, clank: 0, breath: 0 };
+
+  constructor(ctx: BaseAudioContext, out: AudioNode) {
+    this.ctx = ctx;
+    this.out = out;
+    this.windGain = this.wind();
+    this.droneGain = this.drone();
+    this.setMood(this.mood);
+  }
+
+  setMood(mood: Mood): void {
+    this.mood = mood;
+    const now = this.ctx.currentTime;
+    this.windGain.gain.setTargetAtTime((mood.night ? 0.05 : 0.035) + mood.corruption * 0.025, now, 1.5);
+    this.droneGain.gain.setTargetAtTime((0.01 + mood.corruption * 0.07) * (mood.night ? 1.2 : 1), now, 2);
+  }
+
+  schedule(): void {
+    const now = this.ctx.currentTime;
+    const { mood } = this;
+    const due = (timer: Timer, min: number, max: number): boolean => {
+      if (this.next[timer] > now) return false;
+      this.next[timer] = now + rand(min, max);
+      return true;
+    };
+    if (mood.night && due('cricket', 0.5, 2.2)) this.cricket(now + 0.05);
+    const daylight = mood.hour >= 5 && mood.hour < 19;
+    if (daylight && due('bird', 3, 9)) this.bird(now + 0.05);
+    if (due('fire', 0.08, 0.7)) {
+      noise(this.ctx, this.panned(rand(-0.2, 0.2)), now + 0.02, {
+        dur: rand(0.01, 0.03),
+        gain: rand(0.006, mood.night ? 0.03 : 0.015),
+        filter: 'highpass',
+        freq: rand(1500, 3200),
+      });
+    }
+    if (mood.fighting > 0 && due('clank', 0.6 / mood.fighting, 2.2 / mood.fighting)) {
+      clank(this.ctx, this.panned(rand(-0.4, 0.4)), now + 0.05, rand(0.015, 0.035));
+    }
+    if (mood.corruption > 0.6 && due('breath', 8, 20)) {
+      noise(this.ctx, this.out, now + 0.1, { dur: 4, gain: 0.05 * mood.corruption, filter: 'lowpass', freq: 180, attack: 2 });
+      tone(this.ctx, this.out, now + 0.1, { freq: 36, dur: 4, gain: 0.08 * mood.corruption, attack: 2 });
+    }
+  }
+
+  /** Cinco posições fixas no estéreo, reaproveitadas (sem criar um nó por som). */
+  private readonly pans: StereoPannerNode[] = [];
+
+  private panned(pan: number): AudioNode {
+    if (this.pans.length === 0) {
+      for (const value of [-0.8, -0.4, 0, 0.4, 0.8]) {
+        const p = this.ctx.createStereoPanner();
+        p.pan.value = value;
+        p.connect(this.out);
+        this.pans.push(p);
+      }
+    }
+    const idx = Math.round(((Math.max(-0.8, Math.min(0.8, pan)) + 0.8) / 1.6) * (this.pans.length - 1));
+    return this.pans[idx]!;
+  }
+
+  private cricket(t: number): void {
+    const out = this.panned(rand(-0.8, 0.8));
+    const freq = rand(4200, 5000);
+    const pulses = 2 + Math.floor(rand(0, 3));
+    for (let i = 0; i < pulses; i++) tone(this.ctx, out, t + i * 0.07, { freq, dur: 0.03, gain: 0.012, attack: 0.004 });
+  }
+
+  private bird(t: number): void {
+    const out = this.panned(rand(-0.9, 0.9));
+    const chirps = 2 + Math.floor(rand(0, 3));
+    for (let i = 0; i < chirps; i++) {
+      const from = rand(2400, 3400);
+      tone(this.ctx, out, t + i * rand(0.1, 0.16), { freq: from, glide: { to: from * rand(1.2, 1.6), time: 0.07 }, dur: 0.09, gain: 0.018 });
+    }
+  }
+
+  private wind(): GainNode {
+    const { ctx } = this;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(ctx);
+    src.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 500;
+    filter.Q.value = 0.6;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    // Rajadas: um LFO lento mexe no filtro.
+    const lfo = ctx.createOscillator();
+    const depth = ctx.createGain();
+    lfo.frequency.value = 0.07;
+    depth.gain.value = 260;
+    lfo.connect(depth).connect(filter.frequency);
+    src.connect(filter).connect(gain).connect(this.out);
+    src.start();
+    lfo.start();
+    return gain;
+  }
+
+  private drone(): GainNode {
+    const { ctx } = this;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 300;
+    filter.connect(gain).connect(this.out);
+    for (const [type, freq, level] of [
+      ['sine', 55, 1],
+      ['triangle', 82.1, 0.5],
+      ['sine', 27.5, 0.7],
+    ] as const) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.value = level;
+      osc.connect(g).connect(filter);
+      osc.start();
+    }
+    return gain;
+  }
+}

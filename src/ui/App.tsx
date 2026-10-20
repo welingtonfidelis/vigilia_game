@@ -6,7 +6,7 @@ import type { MaterialId } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { clockOf, fmt } from './format.ts';
-import { IconAbyss, IconBone, IconBook, IconCoin, IconMenu, IconMoon, IconPause, IconPeople, IconShield, IconSun } from './icons.tsx';
+import { IconAbyss, IconBone, IconBook, IconCoin, IconMenu, IconMoon, IconMute, IconPause, IconPeople, IconShield, IconSound, IconSun } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
@@ -57,7 +57,8 @@ export function OverlayRoot(props: { session: Session; ui: UiStore }) {
 }
 
 function Hud() {
-  const { world, session } = useGame();
+  const { world, session, ui } = useGame();
+  const muted = ui.prefs.muted;
   const town = world.town;
   const mats = (Object.keys(town.materials) as MaterialId[]).filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked);
   return (
@@ -82,6 +83,14 @@ function Hud() {
           <IconBone /> {town.materials[m]}
         </span>
       ))}
+      <button
+        class={`hud-mute${muted ? ' off' : ''}`}
+        onClick={() => ui.setPrefs({ muted: !muted })}
+        aria-pressed={muted}
+        title={muted ? 'Ligar o som (N)' : 'Desligar o som (N)'}
+      >
+        {muted ? <IconMute /> : <IconSound />}
+      </button>
       <span class="speed" role="group" aria-label="Velocidade">
         <button class={`spd${session.paused ? ' active' : ''}`} onClick={() => session.togglePause()} aria-pressed={session.paused} title="Pausa (Espaço)">
           <IconPause />
