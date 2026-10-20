@@ -42,6 +42,7 @@ const DURATION_HOURS: Record<ActivityKind, number> = {
   vagar: 1,
   aguardar: 2,
   tratar: 6,
+  termas: 3,
 };
 
 export const townHeroes = (world: World): Hero[] => world.heroes.filter((h) => h.status === 'town');
@@ -151,6 +152,13 @@ export function scoreActivities(world: World, hero: Hero): [ActivityKind, number
   const scores: [ActivityKind, number][] = [];
 
   scores.push(['descansar', (1 - e) * 1.2 + (1 - hpFrac) * 1.6 + (night ? 0.9 : 0)]);
+  // A fonte termal é grátis e boa para quem voltou machucado, sem ânimo ou de luto.
+  // Só entra na conta quando o herói precisa: saudável, ele prefere descer ou esperar.
+  if (hpFrac < 0.8 || hero.morale < 50 || hero.grief > 20 || hero.injury) {
+    const thermal =
+      0.5 + (1 - hpFrac) * 1.2 + (1 - hero.morale / 100) * 0.5 + hero.grief / 200 + (hero.injury ? 0.4 : 0) + (night ? 0.2 : 0);
+    scores.push(['termas', thermal]);
+  }
   // Lesionado não desce nem treina: trata a lesão (na Casa de cura, se houver).
   if (hero.injury) scores.push(['tratar', 1.5]);
   if (level(world, 'taverna') >= 1 && hero.gold >= drinkPrice(world)) {
@@ -286,6 +294,15 @@ function finishActivity(world: World, hero: Hero): void {
       hero.gold -= fee;
       town.treasury += fee;
       hero.morale = clamp(hero.morale + 3);
+      break;
+    }
+    case 'termas': {
+      hero.hp = Math.min(maxHp, hero.hp + maxHp * 0.2);
+      hero.morale = clamp(hero.morale + 12);
+      hero.needs.energy = clamp(hero.needs.energy + 12);
+      hero.needs.fun = clamp(hero.needs.fun + 8);
+      hero.grief = Math.max(0, hero.grief - 8);
+      if (hero.injury) hero.injury.daysLeft = Math.max(0, hero.injury.daysLeft - 0.5);
       break;
     }
     case 'chegando':

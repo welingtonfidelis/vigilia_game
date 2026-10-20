@@ -108,6 +108,8 @@ export function activityText(world: World, hero: Hero): string {
       return 'Rezando no templo';
     case 'comprar':
       return 'Comprando no ferreiro';
+    case 'termas':
+      return 'Na fonte termal';
     case 'treinar':
       return 'Treinando no campo';
     case 'tumulo': {

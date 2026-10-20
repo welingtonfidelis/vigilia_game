@@ -68,7 +68,13 @@ export const ROADS: TileRect[] = [
 export const CEMETERY_TILES: TileRect = { tx: 39, ty: 7, tw: 10, th: 7 };
 export const CEMETERY = { x: 40.5 * TILE + 8, y: 8.5 * TILE + 12, cols: 6, dx: 48, dy: 44 };
 
-export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira';
+/** Fonte termal a oeste da estalagem: a água quente que sobe do abismo. */
+export const THERMAL_TILES: TileRect = { tx: 2, ty: 21, tw: 5, th: 4 };
+/** Terreiro de terra em volta da fonte e o caminho curto até a estrada de cima. */
+export const THERMAL_YARD: TileRect = { tx: 1, ty: 20, tw: 7, th: 6 };
+export const THERMAL_PATH: TileRect = { tx: 4, ty: 19, tw: 2, th: 2 };
+
+export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
 
 export const LANDMARKS: Record<Landmark, Point> = {
   berrante: { x: 3.5 * TILE, y: 13 * TILE },
@@ -78,6 +84,7 @@ export const LANDMARKS: Record<Landmark, Point> = {
   cemiterio: { x: 43.5 * TILE, y: 14 * TILE },
   portao: { x: 25 * TILE, y: WORLD_H - 12 },
   fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
+  termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },
 };
 
 export const door = (id: BuildingId): Point => {
@@ -174,6 +181,8 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
       const place = healerPlace(world);
       return place ? at(`tratar:${place}`, place, { x: door(place).x - 40, y: door(place).y }) : at('fogueira', 'fogueira', LANDMARKS.fogueira);
     }
+    case 'termas':
+      return at('termas', 'termas', LANDMARKS.termas);
     case 'beber':
       return at('taverna', 'taverna', door('taverna'));
     case 'rezar':

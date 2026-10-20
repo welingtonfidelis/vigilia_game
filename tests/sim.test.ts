@@ -460,8 +460,22 @@ describe('economia da vila (Fase A)', () => {
     expect(world.town.treasury).toBeCloseTo(Math.max(0, expected), 5);
   });
 
-  it('quem tem fortuna deixa uma oferta no templo', () => {
-    const world = createWorld(34);
+  it('a fonte termal cura vida, ânimo, luto e lesão', () => {
+    const world = createWorld(36);
+    const hero = createHero(world);
+    hero.hp = 10;
+    hero.morale = 20;
+    hero.grief = 40;
+    hero.injury = { kind: 'perna', daysLeft: 4, total: 10 };
+    hero.activity = { kind: 'termas', startedAt: world.tick, endsAt: world.tick - 1 };
+    updateTownHeroes(world);
+    expect(hero.hp).toBeGreaterThan(10);
+    expect(hero.morale).toBe(32);
+    expect(hero.grief).toBe(32);
+    expect(hero.injury!.daysLeft).toBeCloseTo(3.5);
+  });
+
+  it('quem tem fortuna deixa uma oferta no templo', () => {    const world = createWorld(34);
     const hero = createHero(world);
     hero.gold = 1000;
     const before = world.town.treasury;

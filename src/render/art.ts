@@ -6,7 +6,7 @@ import type { ActivityKind } from '../sim/index.ts';
 
 type Palette = Record<string, readonly [number, number?]>;
 
-export const ICON_KINDS: ActivityKind[] = ['descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'aguardar', 'tratar'];
+export const ICON_KINDS: ActivityKind[] = ['descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'aguardar', 'tratar', 'termas'];
 
 /** Desenha um mapa de caracteres como textura (um caractere = um pixel da arte). */
 function pixels(scene: Phaser.Scene, key: string, rows: readonly string[], palette: Palette): void {
@@ -48,6 +48,7 @@ const GLYPHS: Record<string, readonly string[]> = {
   socializar: ['........', '........', 'kk.kk.kk', 'kk.kk.kk', '........', '........'],
   aguardar: ['.prrrr..', '.prrrrr.', '.prrrr..', '.p......', '.p......', '.p......'],
   tratar: ['...rr...', '...rr...', '.rrrrrr.', '.rrrrrr.', '...rr...', '...rr...'],
+  termas: ['c..c..c.', '.c..c...', '..c..c..', '........', '.aaaaaa.', 'aaaaaaaa'],
 };
 
 const GLYPH_PALETTE: Palette = {
@@ -63,6 +64,8 @@ const GLYPH_PALETTE: Palette = {
   k: [0x2a2420],
   p: [0x3a2a1a],
   r: [0x9a2a2a],
+  c: [0xd8f2ec],
+  a: [0x3a8a90],
 };
 
 export function makeTextures(scene: Phaser.Scene): void {

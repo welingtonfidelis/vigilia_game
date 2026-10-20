@@ -16,6 +16,7 @@ export type Panel =
   | { kind: 'memorial' }
   | { kind: 'menu' }
   | { kind: 'welcome' }
+  | { kind: 'thermal' }
   | { kind: 'campaignEnd' }
   | { kind: 'actEnd'; act: number };
 

@@ -362,3 +362,25 @@ export function CofferPanel() {
     </PanelShell>
   );
 }
+
+export function ThermalPanel() {
+  const { world } = useGame();
+  const bathers = world.heroes.filter((h) => h.status === 'town' && h.activity?.kind === 'termas').map((h) => h.id);
+  return (
+    <PanelShell title="Fonte termal" subtitle="A água quente que sobe do abismo.">
+      <p>
+        A vila tirou pedra e vapor de uma fenda quente e fez uma bacia. Não é um prédio: não tem nível nem preço. Os heróis vêm sozinhos quando
+        voltam machucados, sem ânimo ou de luto.
+      </p>
+      <h3>O que a água faz</h3>
+      <ul class="effects">
+        <li>Recupera 20% da vida máxima e 12 de energia.</li>
+        <li>Dá 12 de ânimo e alivia 8 de luto.</li>
+        <li>Adianta meio dia de recuperação de lesão.</li>
+        <li>É de graça. A vila paga com a água.</li>
+      </ul>
+      <h3>Na água agora</h3>
+      <HeroList ids={bathers} empty="Ninguém agora. O vapor sobe sozinho." />
+    </PanelShell>
+  );
+}

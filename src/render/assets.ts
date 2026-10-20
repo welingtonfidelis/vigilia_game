@@ -119,6 +119,16 @@ export const CLASS_LOOK: Record<ClassId, ClassLook> = {
 
 export const heroSprite = (classId: ClassId, gender: Gender): string => `${CLASS_LOOK[classId].body}_${gender}`;
 
+/** Nome da arma de classe, para a ficha (o desenho no mapa foi retirado). */
+export const WEAPON_NAMES: Record<ClassId, string> = {
+  guardiao: 'espada de cavaleiro',
+  selvagem: 'machado de guerra',
+  lanceiro: 'lança',
+  arqueiro: 'arco',
+  clerigo: 'cajado sagrado',
+  piromante: 'cajado de fogo',
+};
+
 export const MAYOR_SPRITE = 'doc';
 
 export interface MonsterLook {

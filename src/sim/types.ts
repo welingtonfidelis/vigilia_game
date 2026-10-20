@@ -38,7 +38,9 @@ export type ActivityKind =
   | 'vagar'
   | 'aguardar'
   /** Tratando uma lesão (na Casa de cura, ou na estalagem se ela não existir). */
-  | 'tratar';
+  | 'tratar'
+  /** Tomando banho na fonte termal: vida, ânimo e luto. */
+  | 'termas';
 
 export type InjuryKind = 'braco' | 'perna' | 'olho' | 'costelas';
 

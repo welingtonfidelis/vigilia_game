@@ -85,7 +85,8 @@ describe('sessão: acumulador de tick fixo', () => {
     expect(entries.length).toBe(session.world.chronicle.length);
     const summaries = events.flatMap((e) => (e.type === 'expedition' ? [e.summary] : []));
     expect(summaries.length).toBeGreaterThan(0);
-    expect(session.recent[0]!.moments.length).toBeGreaterThan(0);
+    // Nem toda descida rende um momento marcante; o resumo carrega os que houver.
+    expect(summaries.some((s) => s.moments.length > 0)).toBe(true);
   });
 });
 
@@ -130,7 +131,7 @@ describe('planta da vila', () => {
   it('cada atividade leva o herói a um lugar da vila', () => {
     const world = createWorld(2);
     const hero = createHero(world);
-    const kinds: ActivityKind[] = ['chegando', 'descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'vagar', 'aguardar', 'tratar'];
+    const kinds: ActivityKind[] = ['chegando', 'descansar', 'beber', 'rezar', 'comprar', 'treinar', 'tumulo', 'socializar', 'vagar', 'aguardar', 'tratar', 'termas'];
     for (const kind of kinds) {
       hero.activity = { kind, startedAt: world.tick, endsAt: world.tick + 20 };
       const dest = heroDestination(world, hero, () => null);

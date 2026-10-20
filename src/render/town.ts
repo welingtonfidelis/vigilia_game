@@ -10,6 +10,8 @@ import {
   LOT_TILES,
   PLAZA_TILES,
   ROWS,
+  THERMAL_TILES,
+  THERMAL_YARD,
   TILE,
   WORLD_H,
   WORLD_W,
@@ -98,6 +100,7 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
     { tx: 1, ty: 10, tw: 5, th: 7 }, // torre do berrante
     { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
     { tx: 21, ty: 29, tw: 8, th: 3 }, // portão
+    THERMAL_YARD,
   ];
   const nearDirt = (x: number, y: number): boolean =>
     [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => mask[y + dy]?.[x + dx] === true));
@@ -407,6 +410,103 @@ export function buildCampfire(scene: Phaser.Scene): void {
   townTile(scene, T.log, x + 20, y + 14, y + 14);
   const halo = scene.add.image(x, y - 12, 'glow').setTint(0xffa040).setScale(2.6, 1.8).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setAlpha(0.3);
   scene.tweens.add({ targets: halo, alpha: { from: 0.2, to: 0.35 }, yoyo: true, repeat: -1, duration: 600 });
+}
+
+/** Fonte termal: bacia de pedra com água quente, vapor e um banco. */
+export function buildThermal(scene: Phaser.Scene): void {
+  const r = THERMAL_TILES;
+  const bottom = (r.ty + r.th) * TILE;
+  // A bacia é chão, não um objeto alto: quem andar por cima (prefeito, herói, criança)
+  // continua aparecendo. Por isso ela fica nos depths baixos, abaixo dos personagens.
+  for (let y = r.ty; y < r.ty + r.th; y++) {
+    for (let x = r.tx; x < r.tx + r.tw; x++) townTile(scene, T.stoneBlock, x * TILE, (y + 1) * TILE, DEPTH.decor);
+  }
+
+  const ix = (r.tx + 0.7) * TILE;
+  const iy = (r.ty + 0.7) * TILE;
+  const iw = (r.tw - 1.4) * TILE;
+  const ih = (r.th - 1.4) * TILE;
+  const water = scene.add.graphics().setDepth(DEPTH.decor + 1);
+  water.fillStyle(0x1a4a50, 1).fillRect(ix, iy, iw, ih);
+  water.fillStyle(0x2f7a78, 1).fillRect(ix + 6, iy + 6, iw - 12, ih - 12);
+  water.lineStyle(2, 0x7ac8c0, 0.9).strokeRect(ix, iy, iw, ih);
+  water.fillStyle(0x9ad8d0, 0.75);
+  for (let row = 0; row < 3; row++) {
+    const wx = ix + 18 + row * 9;
+    water.fillRect(wx, iy + 18 + row * 14, Math.min(34, iw - 34), 2);
+  }
+
+  const centerX = (r.tx + r.tw / 2) * TILE;
+  const centerY = (r.ty + r.th / 2) * TILE;
+  const glow = scene.add
+    .image(centerX, centerY, 'glow')
+    .setTint(0x8ad8d0)
+    .setScale(3, 2.2)
+    .setAlpha(0.28)
+    .setBlendMode(Phaser.BlendModes.ADD)
+    .setDepth(DEPTH.lights);
+  scene.tweens.add({ targets: glow, alpha: { from: 0.2, to: 0.34 }, yoyo: true, repeat: -1, duration: 1800 });
+  // Um calor alaranjado por baixo do vapor frio: a água vem quente do abismo.
+  scene.add
+    .image(centerX, centerY, 'glow')
+    .setTint(0xffa060)
+    .setScale(1.6, 1.2)
+    .setAlpha(0.12)
+    .setBlendMode(Phaser.BlendModes.ADD)
+    .setDepth(DEPTH.lights);
+
+  // Vapor: sobe da água e some. É enfeite, então pode usar números do Phaser.
+  scene.add
+    .image(centerX, iy + 6, 'glow')
+    .setTint(0xe8f8f4)
+    .setScale(1.5, 0.9)
+    .setAlpha(0.14)
+    .setBlendMode(Phaser.BlendModes.ADD)
+    .setDepth(DEPTH.floating);
+  for (let i = 0; i < 3; i++) {
+    const puff = scene.add
+      .image(centerX - 22 + i * 22, iy + 24, 'glow')
+      .setTint(0xe8f8f4)
+      .setScale(1, 0.7)
+      .setAlpha(0)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(DEPTH.floating);
+    scene.tweens.add({
+      targets: puff,
+      y: iy - 40,
+      alpha: { from: 0.28, to: 0 },
+      scale: { from: 1, to: 1.8 },
+      duration: 3200 + i * 420,
+      delay: i * 900,
+      repeat: -1,
+    });
+  }
+  for (let i = 0; i < 12; i++) {
+    const sx = ix + 16 + ((i * 37) % Math.max(1, Math.floor(iw - 32)));
+    const sy = iy + 10 + ((i * 23) % Math.max(1, Math.floor(ih - 20)));
+    const steam = scene.add
+      .image(sx, sy, 'spark')
+      .setTint(i % 3 === 0 ? 0xffe0c0 : 0xe8f8f4)
+      .setScale(3 + (i % 3))
+      .setAlpha(0)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(DEPTH.floating);
+    scene.tweens.add({
+      targets: steam,
+      y: sy - 64 - (i % 4) * 8,
+      alpha: { from: 0.7, to: 0 },
+      scale: { from: 3 + (i % 3), to: 6 + (i % 3) },
+      duration: 2400 + (i % 5) * 300,
+      delay: i * 260,
+      repeat: -1,
+    });
+  }
+
+  townTile(scene, T.log, (r.tx + 0.3) * TILE, bottom + 24, bottom + 24);
+  townTile(scene, T.log, (r.tx + 1.3) * TILE, bottom + 24, bottom + 24);
+  townTile(scene, T.log, (r.tx + 2.3) * TILE, bottom + 24, bottom + 24);
+  townTile(scene, T.bucket, (r.tx + r.tw - 0.5) * TILE, bottom + 22, bottom + 22);
+  label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
 
 /** Enfeites da praça e das ruas (poço, feno, sacos). */

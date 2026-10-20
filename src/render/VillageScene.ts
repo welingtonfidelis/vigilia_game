@@ -30,6 +30,7 @@ import {
   LOT_TILES,
   LOTS,
   slotOffset,
+  THERMAL_TILES,
   TILE,
   wanderPoint,
   WORLD_H,
@@ -47,6 +48,7 @@ import {
   buildGround,
   buildHornTower,
   buildProps,
+  buildThermal,
   DEPTH,
   insetTownFrames,
   label,
@@ -161,6 +163,7 @@ export class VillageScene extends Phaser.Scene {
     buildGate(this);
     buildProps(this);
     buildCampfire(this);
+    buildThermal(this);
     this.horn = buildHornTower(this);
     this.board = buildBoard(this);
     this.coffer = buildCoffer(this);
@@ -435,6 +438,13 @@ export class VillageScene extends Phaser.Scene {
         hit: { x: cem.tx * TILE, y: cem.ty * TILE, w: cem.tw * TILE, h: (cem.th + 1) * TILE },
         label: () => 'Cemitério',
         open: open({ kind: 'memorial' }),
+      },
+      {
+        id: 'termas',
+        point: { x: LANDMARKS.termas.x, y: LANDMARKS.termas.y + 8 },
+        hit: { x: THERMAL_TILES.tx * TILE, y: THERMAL_TILES.ty * TILE, w: THERMAL_TILES.tw * TILE, h: THERMAL_TILES.th * TILE },
+        label: () => 'Fonte termal',
+        open: open({ kind: 'thermal' }),
       },
       ...BUILDING_IDS.map<Interactable>((id) => {
         const lot = LOTS[id];

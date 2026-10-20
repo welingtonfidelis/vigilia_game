@@ -22,7 +22,7 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 76 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm test                                        # 77 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
@@ -82,18 +82,18 @@ A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da 
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 0,9 | 0,5 h | 0,5–1,3 | 100% |
-| Minas Inundadas | 3,1 | 1,7 h | 1,8–4,6 | 100% |
-| Jardim de Fungos | 6,0 | 3,2 h | 2,3–9,7 | 100% |
-| Cidade Afogada | 9,2 | 4,9 h | 4,4–13,7 | 100% |
-| Forja Abissal | 15,2 | 8,1 h | 10,7–21,6 | 100% |
-| Coração do Abismo | 19,1 | 10,2 h | 13,5–25,0 | 80% |
+| Catacumbas | 1,2 | 0,7 h | 0,8–1,8 | 100% |
+| Minas Inundadas | 2,9 | 1,6 h | 2,4–3,8 | 100% |
+| Jardim de Fungos | 4,5 | 2,4 h | 3,4–5,8 | 100% |
+| Cidade Afogada | 9,0 | 4,8 h | 5,8–11,8 | 100% |
+| Forja Abissal | 13,2 | 7,0 h | 10,8–17,3 | 100% |
+| Coração do Abismo | 18,7 | 10,0 h | 12,7–28,6 | 70% |
 
-- **Mortalidade:** 4,6 mortes/ano com elenco de ~18 (antes da Fase A: 2,8). Ninguém é mais dispensado: são cerca de 17 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~77 lesões, ~7 cicatrizes, ~18 casamentos, ~16 filhos e ~7 deles chegando à maioridade como heróis.
-- **Expedições:** ~89 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **5% de retiradas** (antes: 3%). A confiança ao descer agora separa o risco: ≥0,5 → 0,28 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro fica entre ~0,4 e 4,3 mil e o ouro dos heróis entre ~15 e 37 mil (antes: 24–50 mil). **Festa na praça**, **pensão dos aposentados** e **ofertas no templo** puxam o ouro para fora do bolso dos heróis. Ainda faltam sumidouros de fim de jogo (relíquias e propriedades), que entram na Fase B/M3.
-- **Desempenho:** ~1 s para simular uma campanha de 30 anos.
+- **Mortalidade:** 4,3 mortes/ano com elenco de ~18 (antes da Fase A: 2,8). Ninguém é mais dispensado: são cerca de 17 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~66 lesões, ~7 cicatrizes, ~19 casamentos, ~17 filhos e ~6 deles chegando à maioridade como heróis.
+- **Expedições:** ~88 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas** (antes: 3%). A confiança ao descer agora separa o risco: ≥0,5 → 0,28 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro fica entre ~1 e 2,8 mil e o ouro dos heróis entre ~19 e 67 mil. **Festa na praça**, **pensão dos aposentados** e **ofertas no templo** puxam o ouro para fora do bolso dos heróis; **a fonte termal** é conforto, não sumidouro. Ainda faltam sumidouros de fim de jogo (relíquias e propriedades), que entram na Fase B/M3.
+- **Desempenho:** ~0,8 s para simular uma campanha de 30 anos.
 
 ## O que o M0 entrega
 
@@ -104,7 +104,7 @@ A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da 
 - [x] Fuga individual por ânimo, retirada por doutrina, sino de retirada, heróis vingativos que se recusam a recuar
 - [x] Mapa persistente até conquistar, restos de heróis caídos recuperáveis, resgates, santuários, baús
 - [x] Corrupção por ato que sobe com o tempo e re-infesta salas; os heróis priorizam conter o pior ato
-- [x] Economia de duas carteiras (heróis × tesouro), 6 prédios com 3 níveis e materiais por bioma
+- [x] Economia de duas carteiras (heróis × tesouro), 7 prédios com 3 níveis e materiais por bioma
 - [x] Crônica da Vila em português, save/load versionado e balanceador headless
 
 ## Inspiração e créditos
@@ -125,7 +125,7 @@ As duas licenças são CC0 (domínio público), com uso livre inclusive comercia
 
 ## O que o M1 entrega
 
-- [x] Vila em Phaser: 6 lotes (ruína × níveis 1–3), berrante, quadro de contratos, cofre com a pilha de ouro, fogueira, cemitério com uma cova por herói caído, abismo com a abadia em ruínas e brilho que cresce com a corrupção, dia e noite
+- [x] Vila em Phaser: 7 lotes (ruína × níveis 1–3), berrante, quadro de contratos, cofre com a pilha de ouro, fogueira, **fonte termal**, cemitério com uma cova por herói caído, abismo com a abadia em ruínas e brilho que cresce com a corrupção, dia e noite
 - [x] Heróis andando até o lugar da atividade escolhida pelo núcleo (estalagem, taverna, templo, ferreiro, campo, quadro, túmulo do amigo, conversa com outro herói), entrando no abismo e voltando por ele
 - [x] Prefeito com WASD, clique/toque para andar e interação por proximidade (E ou o botão na tela)
 - [x] Painel do abismo: atos e andares, corrupção, grupos com a sala atual (névoa sala a sala), vida e ânimo com a marca do limiar de fuga, inimigos do combate, momentos e o sino de retirada; resumo das expedições recentes
@@ -158,10 +158,15 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 
 - [x] **Rótulos do mapa com prioridade:** nomes de heróis não se empilham; em multidão só o nome sob o ponteiro/selecionado aparece (a medalha de rank fica); as placas de prédios vizinhos descem uma linha em vez de encostar uma na outra.
 - [x] **Celular:** HUD compacto, objetivos recolhidos por padrão, avisos acima do botão de interação e prompt acima da barra de navegação.
-- [x] **Tensão calibrada:** o grupo se acha mais capaz do que é (`confidenceBias`), o que leva as mortes de 2,8 para 4,6 por ano, aumenta retiradas e lesões e faz a confiança ao descer prever o risco de verdade. Massacres continuam raros por desenho (fuga individual + retirada), o que é proposital.
+- [x] **Tensão calibrada:** o grupo se acha mais capaz do que é (`confidenceBias`), o que leva as mortes de 2,8 para 4,6 por ano (4,3 com a fonte termal), aumenta retiradas e lesões e faz a confiança ao descer prever o risco de verdade. Massacres continuam raros por desenho (fuga individual + retirada), o que é proposital.
 - [x] **Fim de campanha:** painel com anos de vila, chefes, expedições, ouro saqueado, população e os epitáfios de quem não voltou; dá para continuar jogando. O menu reabre o resumo.
 - [x] **Sumidouros de ouro:** festa na praça (no Cofre), pensão diária dos aposentados e ofertas que os heróis ricos deixam no templo.
 - [x] **Save v2 → v3** migra sozinho (data da última festa).
+
+## Ajustes antes do M3
+
+- [x] **Arma de classe fora do mapa.** O desenho ao lado do herói era um enfeite fixo da classe, não o equipamento comprado — e ficava enorme. O herói anda sem arma na mão; a ficha mostra a arma de classe, o tier comprado e o bônus exato de ataque, vida e defesa (o tier sempre entrou no combate).
+- [x] **Fonte termal.** Bacia de pedra a oeste da estalagem, com vapor e água quente que sobe do abismo. Não tem nível nem preço: heróis machucados, sem ânimo ou de luto vão sozinhos, e a água recupera 20% da vida, 12 de energia, 12 de ânimo, alivia o luto e adianta meio dia de lesão. O painel mostra quem está na água.
 
 ## Próximo: M3 (vila viva)
 

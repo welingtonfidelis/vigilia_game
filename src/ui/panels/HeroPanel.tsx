@@ -24,7 +24,8 @@ import {
 } from '../../sim/index.ts';
 import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
-import { HeroPortrait } from '../PixelSprite.tsx';
+import { ArmorIcon, HeroPortrait, WeaponIcon } from '../PixelSprite.tsx';
+import { WEAPON_NAMES } from '../../render/assets.ts';
 import { activityText, bondLabel, cap, className, fmt, g, injuryName, liveHp, pct, plural } from '../format.ts';
 import { EnergyCandles } from '../Energy.tsx';
 
@@ -263,6 +264,9 @@ export function HeroPanel(props: { heroId: number }) {
   const bonds = bondsOf(world, hero);
   const griefFor = hero.griefFor === null ? undefined : world.heroes.find((h) => h.id === hero.griefFor);
   const nextGear = Math.min(hero.gear.weapon, hero.gear.armor) + 1;
+  const weaponBonus = Math.round(hero.gear.weapon * BALANCE.weaponAtkPerTier * 100);
+  const armorHpBonus = Math.round(hero.gear.armor * BALANCE.armorHpPerTier * 100);
+  const armorDefBonus = hero.gear.armor * BALANCE.armorDefPerTier;
   const cls = CLASSES[hero.classId];
   const role = hero.retiredRole;
 
@@ -351,6 +355,31 @@ export function HeroPanel(props: { heroId: number }) {
 
       <FamilyBlock world={world} hero={hero} />
 
+      <h3>Equipamento</h3>
+      <div class="gear">
+        <div class="gear-item">
+          <span class="gear-icon">
+            <WeaponIcon classId={hero.classId} />
+          </span>
+          <span class="gear-text">
+            <strong>
+              {WEAPON_NAMES[hero.classId]} · tier {hero.gear.weapon}
+            </strong>
+            <small>{weaponBonus > 0 ? `+${weaponBonus}% de ataque` : 'Ainda é a arma de sempre'}</small>
+          </span>
+        </div>
+        <div class="gear-item">
+          <span class="gear-icon">
+            <ArmorIcon />
+          </span>
+          <span class="gear-text">
+            <strong>Armadura · tier {hero.gear.armor}</strong>
+            <small>{armorHpBonus > 0 ? `+${armorHpBonus}% de vida e +${armorDefBonus} de defesa` : 'Ainda é a roupa de sempre'}</small>
+          </span>
+        </div>
+      </div>
+      <p class="sub">É o que o herói compra na forja; os números de vida, ataque e defesa abaixo já incluem esses bônus. No mapa ele anda sem arma na mão — o tier fica aqui.</p>
+
       <h3>Atributos</h3>
       <p class="sub">{cls.blurb}</p>
       <div class="stats">
@@ -360,8 +389,6 @@ export function HeroPanel(props: { heroId: number }) {
         <Stat label="Ações/s" value={(10 / stats.interval).toFixed(2)} />
         <Stat label="Perfuração" value={pct(stats.pierce)} />
         <Stat label="Crítico" value={pct(stats.crit)} />
-        <Stat label="Arma" value={`tier ${hero.gear.weapon}`} />
-        <Stat label="Armadura" value={`tier ${hero.gear.armor}`} />
         <Stat label="Ouro" value={fmt(hero.gold)} />
       </div>
 

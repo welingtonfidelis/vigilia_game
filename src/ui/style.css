@@ -1559,3 +1559,45 @@ kbd {
     padding: 0.3rem 0.5rem;
   }
 }
+
+/* Equipamento na ficha: o tier comprado, com o bônus que ele dá no combate. */
+.gear {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.6rem;
+}
+
+.gear-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.gear-icon {
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+
+.gear-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.gear-text small {
+  color: var(--muted);
+}

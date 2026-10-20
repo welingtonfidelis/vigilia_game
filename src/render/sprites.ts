@@ -4,7 +4,7 @@
 import Phaser from 'phaser';
 import type { ActivityKind, Child, Hero } from '../sim/index.ts';
 import { ICON_KINDS } from './art.ts';
-import { ART_SCALE, CLASS_LOOK, heroSprite, MAYOR_SPRITE } from './assets.ts';
+import { ART_SCALE, heroSprite, MAYOR_SPRITE } from './assets.ts';
 import { DEPTH, smooth } from './town.ts';
 import type { Point } from './layout.ts';
 import { RANK_COLORS } from './palette.ts';
@@ -110,7 +110,9 @@ export class HeroSprite extends Walker {
   commit: Commit | null = null;
 
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
-    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), CLASS_LOOK[hero.classId].weapon);
+    // A arma do 0x72 é um enfeite fixo da classe, enorme ao lado do herói, e não diz
+    // nada sobre o equipamento comprado. O tier aparece na ficha; no mapa, fica limpo.
+    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null);
     this.id = hero.id;
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
     this.root.addAt(this.ring, 0);

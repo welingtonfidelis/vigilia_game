@@ -13,7 +13,7 @@ import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
 import { ActEndPanel, CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
-import { BoardPanel, BuildingPanel, CofferPanel, HornPanel } from './panels/TownPanels.tsx';
+import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import type { Panel, UiStore } from './store.ts';
 
 /** Redesenha quando o mundo (no máximo ~8×/s) ou o estado da tela muda. */
@@ -203,6 +203,8 @@ function PanelHost() {
       return <BoardPanel />;
     case 'coffer':
       return <CofferPanel />;
+    case 'thermal':
+      return <ThermalPanel />;
     case 'dungeon':
       return <DungeonPanel />;
     case 'chronicle':

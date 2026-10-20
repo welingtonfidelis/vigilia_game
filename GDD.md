@@ -305,6 +305,8 @@ Cada alavanca tem custo (ouro, reputação ou energia do prefeito) para que impo
 | Prefeitura | Decretos e energia do prefeito | — |
 | Joalheiro | Encantar, engastar | — |
 
+**Fonte termal.** Um marco fora dos lotes, sem nível nem preço: uma bacia de pedra com água quente que sobe do abismo. Heróis machucados, sem ânimo ou de luto vão sozinhos; a água recupera vida e energia, levanta o ânimo, alivia o luto e adianta a recuperação de lesões. É o lugar de respiro entre expedições — e um motivo para o prefeito reparar em quem voltou mal.
+
 ### 4.6 Economia
 
 - **Duas carteiras:** o **ouro dos heróis** (gasto em lojas, taverna e templo) e o **tesouro da vila** (impostos sobre vendas e saque, cidadãos e contratos). O imposto é a ponte entre as duas, e o prefeito a regula.
