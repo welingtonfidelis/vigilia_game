@@ -1,7 +1,7 @@
 # Vigília — Game Design Document v0.1
 
 > Codinome provisório. Versão expandida e **original** inspirada na proposta de *Tristram* (Bippinbits, Ludum Dare 55).
-> Status: decidido **fantasia sombria original + web/TypeScript**. M0 (núcleo), M1 (fatia vertical) e M2 (pessoas) concluídos; a Fase A de polimento entrou (rótulos, celular, tensão, fim de campanha e sumidouros de ouro), faltando playtest; ver [README.md](README.md).
+> Status: decidido **fantasia sombria original + web/TypeScript**. M0 (núcleo), M1 (fatia vertical), M2 (pessoas) e a Fase A concluídos; a primeira fatia do M3 (cidadãos e incursões noturnas) entrou. Falta playtest; ver [README.md](README.md).
 
 ---
 
@@ -39,7 +39,7 @@
 
 ### 1.2 O que observei e o que os jogadores relatam
 
-**Vila (hub):** taverna com mesas, berrante numa torre de madeira à esquerda, baú/poço no centro (a pilha de ouro cresce ali), ruínas para reconstruir, quadro de avisos à direita, ponte ao sul (caminho para a catedral) e lago. Prefeito com WASD/E. Velocidade 1×/2×/3×.
+**Vila (hub):** taverna com mesas, portão de madeira com o berrante no centro-esquerdo, baú/poço no centro (a pilha de ouro cresce ali), ruínas para reconstruir, quadro de avisos à direita, ponte ao sul (caminho para a catedral) e lago. Prefeito com WASD/E. Velocidade 1×/2×/4×; a câmera fixa acompanha o prefeito, sem zoom.
 
 **Heróis:**
 - O berrante traz uma leva (~7 por toque).
@@ -305,7 +305,9 @@ Cada alavanca tem custo (ouro, reputação ou energia do prefeito) para que impo
 | Prefeitura | Decretos e energia do prefeito | — |
 | Joalheiro | Encantar, engastar | — |
 
-**Fonte termal.** Um marco fora dos lotes, sem nível nem preço: uma bacia de pedra com água quente que sobe do abismo. Heróis machucados, sem ânimo ou de luto vão sozinhos; a água recupera vida e energia, levanta o ânimo, alivia o luto e adianta a recuperação de lesões. É o lugar de respiro entre expedições — e um motivo para o prefeito reparar em quem voltou mal.
+**Fonte termal.** Um marco fora dos lotes, no lugar do antigo portão sul, sem nível nem preço: uma bacia de pedra com água quente que sobe do abismo. Heróis machucados, sem ânimo ou de luto vão sozinhos; a água recupera vida e energia, levanta o ânimo, alivia o luto e adianta a recuperação de lesões. É o lugar de respiro entre expedições — e um motivo para o prefeito reparar em quem voltou mal.
+
+**Cidadãos e incursões.** Moradores nomeados (de 6 a 24) trabalham nos prédios, andam pela vila, pagam imposto conforme o humor médio e podem deixar a vila quando o humor afunda. Cinco casinhas na borda sul servem de moradia: à noite a maioria entra e some, enquanto guardas e alguns noctívagos ficam no portão e na taverna. Quando um ato passa de 55 de corrupção, uma incursão pode subir às 22h: a defesa soma heróis em casa, aposentados e a milícia de guardas. O resultado é repelida, segurada com custo ou saqueada; prédios podem voltar a ruínas, moradores morrem, heróis se ferem e o tesouro sangra, mas a campanha nunca acaba. É a tensão fora da masmorra que o M3 pedia.
 
 ### 4.6 Economia
 
@@ -412,9 +414,9 @@ vigilia/
 | Marco | Entrega | Critério de pronto |
 |---|---|---|
 | **M0: Núcleo** ✅ | Simulação headless com heróis, necessidades, traços, expedição, combate, economia, save e balanceador | Simula 10 anos sem soft-lock; relatório de mortalidade e ouro coerente |
-| **M1: Fatia vertical** ✅ | Vila jogável com 6 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
-| **M2: Pessoas** | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
-| **M3: Vila viva** | Lotes e expansão, cidadãos, impostos e decretos, incursões noturnas, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
+| **M1: Fatia vertical** ✅ | Vila jogável com 7 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
+| **M2: Pessoas** ✅ | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
+| **M3: Vila viva** 🟡 | Cidadãos e incursões noturnas entregues; faltam lotes e expansão, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
 | **M4: Profundidade** | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
 | **M5: Lenda** | Atos V–VI, gerações, Eras e Pactos, profundezas infinitas, celular, polimento, PT/EN | Campanha completa e motivo para recomeçar |
 

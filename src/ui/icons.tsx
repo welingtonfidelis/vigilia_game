@@ -25,6 +25,14 @@ export const IconPeople = () => (
   </Svg>
 );
 
+export const IconHouse = () => (
+  <Svg>
+    <path d="M3.5 11.5L12 5l8.5 6.5" />
+    <path d="M6 10.5V20h12v-9.5" />
+    <path d="M10 20v-5h4v5" />
+  </Svg>
+);
+
 export const IconShield = () => (
   <Svg>
     <path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z" />

@@ -1,5 +1,6 @@
 import { BALANCE, SAVE_VERSION } from './config.ts';
 import { defaultRole, epitaph } from './people.ts';
+import { seedCitizens } from './citizens.ts';
 import type { World } from './types.ts';
 
 export function serialize(world: World): string {
@@ -17,6 +18,7 @@ export function deserialize(json: string): World {
 function migrate(world: World): World {
   if (world.version < 2) migrateToV2(world);
   if (world.version < 3) migrateToV3(world);
+  if (world.version < 4) migrateToV4(world);
   return world;
 }
 
@@ -25,6 +27,28 @@ function migrateToV3(world: World): void {
   const town = world.town as unknown as { festivalDay?: number };
   town.festivalDay ??= -1;
   world.version = 3;
+}
+
+/** v3 → v4 (M3): moradores nomeados, crescimento inteiro e incursões. */
+function migrateToV4(world: World): void {
+  type Loose<T> = { [K in keyof T]?: T[K] };
+  const w = world as Loose<World> & World;
+  w.citizens ??= [];
+  w.raids ??= [];
+  const town = world.town as Loose<World['town']> & World['town'];
+  town.popGrowth ??= 0;
+  town.lastRaidDay ??= -1;
+  town.population = Math.round(town.population);
+  const m = world.metrics as Loose<World['metrics']> & World['metrics'];
+  for (const k of ['raids', 'citizenDeaths', 'citizensLeft'] as const) m[k] ??= 0;
+  if (w.citizens.length === 0 && town.population > 0) {
+    const target = Math.min(
+      BALANCE.citizenRoster,
+      Math.max(BALANCE.citizenStart, Math.round(town.population / BALANCE.citizenPerPop)),
+    );
+    seedCitizens(world, target);
+  }
+  world.version = 4;
 }
 
 /** v1 → v2 (M2, Pessoas): lesões, casais, filhos, aposentados com função, epitáfios e prefeito. */

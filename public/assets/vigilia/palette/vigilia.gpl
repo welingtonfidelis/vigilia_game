@@ -1,0 +1,37 @@
+GIMP Palette
+Name: Vigilia 32
+Columns: 8
+# Paleta inicial de trabalho. Consolidar com o artista antes do lote.
+# O motor escurece (0,8) e dessatura (-55%); a arte pode sair um pouco mais clara.
+  7   6  10 Noite
+ 23  18  15 Contorno
+ 42  30  22 Sombra de madeira
+ 90  62  42 Madeira
+138  98  58 Madeira clara
+ 42  42  48 Ferro escuro
+106 112 120 Pedra
+154 163 171 Pedra clara
+224 176 136 Pele
+176 128  96 Pele sombra
+106  68  34 Cabelo castanho
+216 176  96 Cabelo loiro
+ 58  90  58 Verde escuro
+ 90 122  74 Verde
+138  58  58 Vermelho
+176  74  74 Vermelho claro
+ 58  90 138 Azul
+ 74 122 200 Azul claro
+ 90  74 106 Roxo
+ 47 122 120 Agua
+122 200 192 Agua clara
+200 160  80 Ouro
+233 192  73 Ouro claro
+232 224 208 Osso
+170 182 192 Pano
+106  74  42 Couro
+ 74  84  96 Metal
+ 74 106  58 Grama
+106  42 138 Abismo
+255 138  42 Brasa
+154  42  42 Sangue
+250 246 234 Branco

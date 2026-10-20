@@ -1,7 +1,8 @@
 // Planta da vila e para onde cada herói anda. Puro (sem Phaser) para dar para testar.
 
 import { buildingLevel } from '../sim/index.ts';
-import type { BuildingId, Hero, RetiredRole, World } from '../sim/index.ts';
+import { JOB_BUILDING } from '../sim/citizens.ts';
+import type { BuildingId, Citizen, Hero, RetiredRole, World } from '../sim/index.ts';
 
 /** Lado do tile no mundo: 16 px de arte × 2. */
 export const TILE = 32;
@@ -48,12 +49,51 @@ export const LOTS: Record<BuildingId, Lot> = Object.fromEntries(
 
 export const PLAZA_TILES: TileRect = { tx: 20, ty: 15, tw: 10, th: 6 };
 export const PLAZA = { x: 25 * TILE, y: 18 * TILE, r: 150 };
+
+/** Lavradores se espalham pelo movimento da vila; o campo de treino é dos heróis. */
+const LAVOR_ROUNDS: Point[] = [
+  { x: PLAZA.x - 110, y: PLAZA.y + 80 },
+  { x: PLAZA.x + 120, y: PLAZA.y - 50 },
+  { x: 24 * TILE, y: 22 * TILE },
+  { x: 24 * TILE, y: 12 * TILE },
+  { x: 7 * TILE, y: 18 * TILE },
+  { x: 38 * TILE, y: 18 * TILE },
+];
+
+/** Casinhas decorativas na borda sul: cada morador tem uma casa para onde volta à noite. */
+export const HOME_LOTS: TileRect[] = [
+  { tx: 8, ty: 28, tw: 4, th: 3 },
+  { tx: 15, ty: 28, tw: 4, th: 3 },
+  { tx: 29, ty: 28, tw: 4, th: 3 },
+  { tx: 36, ty: 28, tw: 4, th: 3 },
+  { tx: 44, ty: 28, tw: 4, th: 3 },
+];
+
+export interface Home {
+  lot: TileRect;
+  /** Ponto em frente à porta, onde o morador entra e some. */
+  door: Point;
+}
+
+export const HOMES: Home[] = HOME_LOTS.map((lot) => ({
+  lot,
+  door: { x: (lot.tx + 1.5) * TILE, y: (lot.ty + lot.th) * TILE + 8 },
+}));
+
+/** Caminhos de terra da estrada de baixo até a porta de cada casa. */
+export const HOME_PATHS: TileRect[] = HOME_LOTS.map((lot) => ({ tx: lot.tx + 1, ty: 27, tw: 2, th: 4 }));
+
+export const citizenHome = (citizen: Citizen): Point => HOMES[Math.abs(citizen.id) % HOMES.length]!.door;
+
+/** Quem fica acordado: copeiros da taverna e alguns noctívagos. */
+export const isNightOwl = (citizen: Citizen): boolean =>
+  citizen.job === 'copeiro' || Math.abs(citizen.id) % 9 === 0;
 export const ABYSS_EDGE_Y = 6 * TILE;
 
 /** Estradas de terra (no mínimo 2 tiles de largura, para o autotile ter borda dos dois lados). */
 export const ROADS: TileRect[] = [
   PLAZA_TILES,
-  { tx: 3, ty: 17, tw: 45, th: 2 }, // estrada de cima: berrante ↔ cemitério
+  { tx: 3, ty: 17, tw: 45, th: 2 }, // estrada de cima: entrada ↔ cemitério
   { tx: 8, ty: 26, tw: 38, th: 2 }, // estrada de baixo: estalagem, campo, ferreiro
   { tx: 24, ty: 7, tw: 2, th: 8 }, // praça → abismo (a abadia ocupa a linha 6)
   { tx: 24, ty: 21, tw: 2, th: 11 }, // praça → portão
@@ -61,28 +101,30 @@ export const ROADS: TileRect[] = [
   { tx: 17, ty: 15, tw: 3, th: 2 }, // porta da taverna
   { tx: 31, ty: 15, tw: 3, th: 2 }, // porta da guilda
   { tx: 42, ty: 14, tw: 3, th: 3 }, // portão do cemitério
-  { tx: 2, ty: 16, tw: 3, th: 3 }, // pé da torre do berrante
 ];
 
 /** Cemitério cercado (em tiles) e a grade das covas lá dentro. */
 export const CEMETERY_TILES: TileRect = { tx: 39, ty: 7, tw: 10, th: 7 };
 export const CEMETERY = { x: 40.5 * TILE + 8, y: 8.5 * TILE + 12, cols: 6, dx: 48, dy: 44 };
 
-/** Fonte termal a oeste da estalagem: a água quente que sobe do abismo. */
-export const THERMAL_TILES: TileRect = { tx: 2, ty: 21, tw: 5, th: 4 };
-/** Terreiro de terra em volta da fonte e o caminho curto até a estrada de cima. */
-export const THERMAL_YARD: TileRect = { tx: 1, ty: 20, tw: 7, th: 6 };
-export const THERMAL_PATH: TileRect = { tx: 4, ty: 19, tw: 2, th: 2 };
+/** Fonte termal no lugar do antigo portão: a água quente que sobe do abismo. */
+export const THERMAL_TILES: TileRect = { tx: 23, ty: 27, tw: 5, th: 4 };
+/** Terreiro de terra em volta da fonte, encostado na estrada de baixo. */
+export const THERMAL_YARD: TileRect = { tx: 22, ty: 26, tw: 7, th: 6 };
+export const THERMAL_PATH: TileRect = { tx: 24, ty: 25, tw: 2, th: 2 };
 
 export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
 
+/** Guarita de madeira com o berrante: agora é a entrada, no centro-esquerdo. */
+export const HORN_TOWER: TileRect = { tx: 1, ty: 11, tw: 5, th: 6 };
+
 export const LANDMARKS: Record<Landmark, Point> = {
-  berrante: { x: 3.5 * TILE, y: 13 * TILE },
+  berrante: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: 12.5 * TILE },
   quadro: { x: 28.5 * TILE, y: 16 * TILE },
   cofre: { x: 25 * TILE, y: 18.5 * TILE },
   abismo: { x: 25 * TILE, y: 6.5 * TILE },
   cemiterio: { x: 43.5 * TILE, y: 14 * TILE },
-  portao: { x: 25 * TILE, y: WORLD_H - 12 },
+  portao: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 10 },
   fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
   termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },
 };
@@ -206,6 +248,40 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
         : at(`vagar:${hero.id}`, 'praca', point);
     }
   }
+}
+
+/** Onde um morador passa o dia ou a noite (visual; o núcleo não guarda posição). */
+export function citizenSpot(world: World, citizen: Citizen, hour: number, day: number): Point {
+  const h = hash(citizen.id, day * 24 + hour);
+  const ox = ((h & 0xff) / 255 - 0.5) * 90;
+  const oy = (((h >>> 8) & 0xff) / 255 - 0.5) * 46;
+  const night = hour >= 21 || hour < 6;
+  if (night) {
+    if (citizen.job === 'guarda') return { x: LANDMARKS.portao.x + ox * 0.6, y: LANDMARKS.portao.y - 34 + oy * 0.4 };
+    if (isNightOwl(citizen)) {
+      const guest = buildingLevel(world, 'taverna') >= 1 ? door('taverna') : LANDMARKS.fogueira;
+      return { x: guest.x + ox * 0.7, y: guest.y + oy * 0.6 };
+    }
+    // Ponto fixo na porta: se mudasse a cada hora, o morador reapareceria para
+    // andar dois pixels e sumir de novo.
+    const home = citizenHome(citizen);
+    const hh = hash(citizen.id, 4242);
+    return { x: home.x + ((hh & 0xff) / 255 - 0.5) * 18, y: home.y + (((hh >>> 8) & 0xff) / 255 - 0.5) * 8 };
+  }
+  if (citizen.job === 'guarda') return { x: LANDMARKS.portao.x + ox * 0.6, y: LANDMARKS.portao.y - 34 + oy * 0.4 };
+  if (hour >= 11 && hour <= 13 && citizen.id % 4 === 0) return { x: PLAZA.x + ox, y: PLAZA.y + oy };
+  // Lavradores não têm prédio: circulam entre praça, estradas e fonte.
+  if (citizen.job === 'lavrador') {
+    const round = LAVOR_ROUNDS[Math.abs(citizen.id) % LAVOR_ROUNDS.length]!;
+    return { x: round.x + ox, y: round.y + oy };
+  }
+  const place = JOB_BUILDING[citizen.job];
+  if (place && buildingLevel(world, place) > 0) {
+    const d = door(place);
+    return { x: d.x + ox, y: d.y + oy };
+  }
+  // Sem o prédio do ofício, o morador fica na praça.
+  return { x: PLAZA.x + ox, y: PLAZA.y + oy };
 }
 
 /** Vaga numa fila diante de um lugar: até 5 lado a lado, depois outra fileira atrás. */

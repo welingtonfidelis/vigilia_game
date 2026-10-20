@@ -97,6 +97,15 @@ console.log(
 const retiredByRole = (role: string) => per((w) => w.heroes.filter((h) => h.status === 'retired' && h.retiredRole === role).length);
 console.log(`  aposentados vivos no fim: mentor ${retiredByRole('mentor')} · ferreiro ${retiredByRole('ferreiro')} · contador ${retiredByRole('contador')} · curandeiro ${retiredByRole('curandeiro')}`);
 
+console.log('\n── Vila (M3, por campanha) ──');
+console.log(
+  `  incursões ${per((w) => w.metrics.raids)} · mortes de moradores ${per((w) => w.metrics.citizenDeaths)} · moradores que saíram ${per((w) => w.metrics.citizensLeft)}`,
+);
+const finalPop = mean(all.map((w) => w.town.population));
+const ruined = mean(all.map((w) => Object.values(w.town.buildings).filter((lvl) => lvl === 0).length));
+const mood = mean(all.map((w) => (w.citizens.length ? w.citizens.reduce((s, c) => s + c.happiness, 0) / w.citizens.length : 60)));
+console.log(`  população final ${fmt(finalPop, 0)} · humor médio ${fmt(mood, 0)} · prédios em ruína no fim ${fmt(ruined, 1)}`);
+
 console.log('\n── Confiança ao descer × desfecho (calibra a escolha de andar) ──');
 const buckets = new Map<string, { n: number; deaths: number; wipes: number; conquests: number }>();
 for (const w of all) {

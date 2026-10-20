@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "pack": "vigilia-art",
+  "version": "0.1.0-skeleton",
+  "status": "handoff-skeleton",
+  "skeleton": true,
+  "updated": "2026-10-20",
+  "notes": "Contrato do pack de arte externo. Nenhum arquivo de imagem deste pack foi criado ainda. O campo 'current' descreve o que o jogo usa hoje; 'status' é o estado do asset NO pack novo.",
+  "docs": {
+    "brief": "docs/art/ART-BRIEF.md",
+    "assetList": "docs/art/ASSET-LIST.md",
+    "changelog": "docs/art/CHANGELOG.md"
+  },
+  "engine": {
+    "name": "Phaser",
+    "version": "3.90",
+    "artScale": 2,
+    "cameraZoom": 1.5,
+    "zoomControls": false,
+    "tileSize": 16,
+    "world": {
+      "cols": 50,
+      "rows": 32,
+      "width": 1600,
+      "height": 1024
+    },
+    "postProcessing": {
+      "saturate": -0.55,
+      "brightness": 0.8,
+      "contrast": 0.08,
+      "vignette": 0.32
+    }
+  },
+  "palette": "palette/vigilia.gpl",
+  "author": "TBD",
+  "license": "TBD",
+  "naming": {
+    "files": "kebab-case, ASCII, sem espacos ou acentos; prefixo por categoria",
+    "ids": "caminho com barras, usando os IDs do jogo em portugues",
+    "frames": "zero a esquerda; estados level-1, level-2, level-3, ruin, open, closed",
+    "version": "somente no manifesto, nunca no nome do arquivo"
+  },
+  "statusLegend": {
+    "third-party": "asset atual de Tiny Town/0x72; substituicao opcional",
+    "procedural": "asset atual gerado em codigo; alvo natural de arte externa",
+    "todo": "ainda nao existe no pack novo",
+    "wip": "em producao",
+    "review": "aguardando aprovacao",
+    "done": "aprovado e integrado"
+  },
+  "assets": [
+    {
+      "id": "tile/town/terrain",
+      "type": "tileset",
+      "file": "export/tiles/town-terrain.png",
+      "meta": "export/tiles/town-terrain.json",
+      "size": [16, 16],
+      "anchor": [0, 0],
+      "tile": true,
+      "autotile": true,
+      "priority": "P0",
+      "status": "todo",
+      "current": "third-party (Tiny Town)",
+      "license": "TBD",
+      "notes": "Grama, terra, estrada, pedra, agua, penhasco e abismo. 9 partes de terra, bordas de estrada; sem props nem personagens embutidos."
+    },
+    {
+      "id": "building/taverna/level-1",
+      "type": "building",
+      "file": "export/png/building-taverna-level-1.png",
+      "size": [112, 96],
+      "footprint": [7, 6],
+      "anchor": [0.5, 1],
+      "states": ["level-1"],
+      "priority": "P0",
+      "status": "todo",
+      "current": "third-party (Tiny Town)",
+      "license": "TBD",
+      "notes": "Teste de estilo dos predios. Porta central, placa sem texto, telhado vermelho, sem sombra/glow assados."
+    },
+    {
+      "id": "building/taverna/level-2",
+      "type": "building",
+      "file": "export/png/building-taverna-level-2.png",
+      "size": [112, 96],
+      "footprint": [7, 6],
+      "anchor": [0.5, 1],
+      "states": ["level-2"],
+      "priority": "P1",
+      "status": "todo",
+      "current": "third-party (Tiny Town)",
+      "license": "TBD"
+    },
+    {
+      "id": "building/taverna/level-3",
+      "type": "building",
+      "file": "export/png/building-taverna-level-3.png",
+      "size": [112, 96],
+      "footprint": [7, 6],
+      "anchor": [0.5, 1],
+      "states": ["level-3"],
+      "priority": "P1",
+      "status": "todo",
+      "current": "third-party (Tiny Town)",
+      "license": "TBD"
+    },
+    {
+      "id": "building/taverna/ruin",
+      "type": "building",
+      "file": "export/png/building-taverna-ruin.png",
+      "size": [112, 96],
+      "footprint": [7, 6],
+      "anchor": [0.5, 1],
+      "states": ["ruin"],
+      "priority": "P1",
+      "status": "todo",
+      "current": "third-party (Tiny Town)",
+      "license": "TBD"
+    },
+    {
+      "id": "building/house/01",
+      "type": "building",
+      "file": "export/png/building-house-01.png",
+      "size": [64, 48],
+      "footprint": [4, 3],
+      "anchor": [0.5, 1],
+      "states": ["default"],
+      "priority": "P1",
+      "status": "todo",
+      "current": "procedural (tiles)",
+      "license": "TBD",
+      "notes": "Uma das cinco casinhas da borda sul; variar madeira/pedra e telhado."
+    },
+    {
+      "id": "prop/gate-horn/open",
+      "type": "prop",
+      "file": "export/png/prop-gate-horn-open.png",
+      "size": [80, 96],
+      "footprint": [5, 6],
+      "anchor": [0.5, 1],
+      "states": ["open"],
+      "priority": "P0",
+      "status": "todo",
+      "current": "procedural (gate-horn)",
+      "license": "TBD",
+      "notes": "Portao + berrante numa imagem; passagem central transparente; berrante acima da viga, nao atras do portao; sem texto."
+    },
+    {
+      "id": "prop/thermal/basin",
+      "type": "prop",
+      "file": "export/png/prop-thermal-basin.png",
+      "size": [80, 64],
+      "footprint": [5, 4],
+      "anchor": [0.5, 1],
+      "states": ["full"],
+      "priority": "P0",
+      "status": "todo",
+      "current": "procedural",
+      "license": "TBD",
+      "notes": "Bacia de pedra no antigo portao sul; agua, vapor e glow sao separados."
+    },
+    {
+      "id": "char/villager/lavrador/f",
+      "type": "character",
+      "file": "export/png/char-villager-lavrador-f.png",
+      "meta": "export/png/char-villager-lavrador-f.json",
+      "size": [16, 21],
+      "anchor": [0.5, 1],
+      "priority": "P0",
+      "status": "todo",
+      "current": "procedural",
+      "license": "TBD",
+      "animations": {
+        "idle": { "frames": [0, 1], "fps": 3 },
+        "walk": { "frames": [0, 1], "fps": 8 }
+      },
+      "notes": "Perfil, flip horizontal; sem arma, sem rotulo, sem sombra; silhueta distinta dos herois."
+    },
+    {
+      "id": "char/hero/guardiao/m",
+      "type": "character",
+      "file": "export/png/char-hero-guardiao-m.png",
+      "meta": "export/png/char-hero-guardiao-m.json",
+      "size": [16, 28],
+      "anchor": [0.5, 1],
+      "priority": "P1",
+      "status": "todo",
+      "current": "third-party (0x72)",
+      "license": "TBD",
+      "animations": {
+        "idle": { "frames": [0, 1, 2, 3], "fps": 6 },
+        "run": { "frames": [4, 5, 6, 7], "fps": 10 },
+        "hit": { "frames": [8], "fps": 1 }
+      },
+      "notes": "Perfil, flip horizontal; 4 idle + 4 run + 1 hit."
+    },
+    {
+      "id": "ui/icon/activity/termas",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-activity-termas.svg",
+      "size": [24, 24],
+      "anchor": [0, 0],
+      "format": "svg",
+      "priority": "P1",
+      "status": "todo",
+      "current": "procedural",
+      "license": "TBD",
+      "notes": "Traco com currentColor; sem texto."
+    },
+    {
+      "id": "fx/steam",
+      "type": "fx",
+      "file": "export/fx/fx-steam.png",
+      "meta": "export/fx/fx-steam.json",
+      "size": [32, 32],
+      "anchor": [0.5, 1],
+      "frames": 8,
+      "fps": 8,
+      "blend": "additive",
+      "priority": "P1",
+      "status": "todo",
+      "current": "procedural",
+      "license": "TBD",
+      "notes": "Alpha limpo, sem fundo; nao assar glow difuso."
+    }
+  ],
+  "planned": {
+    "buildingIds": ["templo", "taverna", "guilda", "estalagem", "casa", "campo", "ferreiro"],
+    "buildingStates": ["level-1", "level-2", "level-3", "ruin"],
+    "buildingFootprints": {
+      "templo": [7, 6],
+      "taverna": [7, 6],
+      "guilda": [7, 6],
+      "estalagem": [7, 6],
+      "casa": [7, 6],
+      "campo": [9, 6],
+      "ferreiro": [7, 6]
+    },
+    "houseIds": ["01", "02", "03", "04", "05"],
+    "heroClasses": ["guardiao", "selvagem", "lanceiro", "arqueiro", "clerigo", "piromante"],
+    "heroGenders": ["m", "f"],
+    "villagerLooks": ["lavrador", "artesa", "acolito", "guarda"],
+    "villagerGenders": ["m", "f"],
+    "activityIcons": ["descansar", "beber", "rezar", "comprar", "treinar", "tumulo", "socializar", "aguardar", "tratar", "termas"],
+    "resourceIcons": ["gold", "materials", "population", "heroes", "energy"],
+    "fx": ["steam", "fire", "spark", "raid-shade", "raid-flash"],
+    "decals": ["grave", "sign", "banner", "rubble"]
+  }
+}

@@ -5,6 +5,8 @@ import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { formParties } from './party.ts';
 import { dailyPeople } from './people.ts';
+import { dailyCitizens } from './citizens.ts';
+import { maybeRaid } from './raids.ts';
 import { int } from './rng.ts';
 import { activeHeroes, dailyTown, hourlyTown, processArrivals, townHeroes, updateTownHeroes } from './town.ts';
 import type { World } from './types.ts';
@@ -19,6 +21,8 @@ export function step(world: World, hooks: Hooks = {}): void {
   if (world.tick % TICKS_PER_HOUR === 0) {
     hooks.onHour?.(world);
     hourlyTown(world);
+    // A incursão acontece antes de os grupos partirem: quem está em casa defende.
+    maybeRaid(world);
     formParties(world);
   }
   if (world.tick % TICKS_PER_DAY === 0) daily(world);
@@ -40,6 +44,7 @@ function daily(world: World): void {
   dailyCorruption(world);
   dailyTown(world);
   dailyPeople(world);
+  dailyCitizens(world);
   strayArrivals(world);
   trackIdle(world);
   sample(world);

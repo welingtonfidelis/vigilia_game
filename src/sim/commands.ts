@@ -19,6 +19,7 @@ import {
 } from './economy.ts';
 import { getBond, hasTrait, revealTrait } from './hero.ts';
 import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
+import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import { chance, int } from './rng.ts';
 import type { BuildingId, Doctrine, GiftKind, Hero, RetiredRole, World } from './types.ts';
@@ -55,6 +56,7 @@ export function build(world: World, id: BuildingId): CommandResult {
   pay(world, cost);
   world.town.buildings[id]++;
   const lvl = level(world, id);
+  refreshJobs(world);
   const { name, gender } = BUILDINGS[id];
   const article = gender === 'm' ? 'O' : 'A';
   const rebuilt = gender === 'm' ? 'reconstruído' : 'reconstruída';
@@ -290,6 +292,8 @@ export function holdFestival(world: World): CommandResult {
     hero.grief = Math.max(0, hero.grief - 15);
     hero.needs.fun = Math.min(100, hero.needs.fun + 30);
   }
+  festivalCitizens(world, B.festivalMorale);
+  syncCitizenRoster(world);
   record(
     world,
     'festival',

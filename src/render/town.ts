@@ -6,6 +6,8 @@ import { ABYSS_ROWS, AUTUMN, dirtMask, dirtTile, FORESTS, inRect } from './groun
 import {
   CEMETERY_TILES,
   COLS,
+  HOME_LOTS,
+  HORN_TOWER,
   LANDMARKS,
   LOT_TILES,
   PLAZA_TILES,
@@ -55,6 +57,25 @@ export function dungeonPiece(scene: Phaser.Scene, frame: string, x: number, y: n
   return scene.add.image(x, y, 'dungeon', frame).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(depth);
 }
 
+/** Casinhas dos moradores: quatro tiles de largura, telhado e parede alternados. */
+export function buildCottages(scene: Phaser.Scene): void {
+  HOME_LOTS.forEach((lot, i) => {
+    const baseX = lot.tx * TILE;
+    const baseY = (lot.ty + lot.th) * TILE;
+    const red = i % 2 === 0;
+    const roof = red ? T.roofRed : T.roofGray;
+    const wall = red ? T.wood : T.stone;
+    const rows = [
+      [roof.tl, roof.t, roof.t, roof.tr],
+      [wall.l, wall.win, wall.win, wall.r],
+      [wall.l, wall.door, wall.win, wall.r],
+    ];
+    rows.forEach((row, r) =>
+      row.forEach((frame, c) => townTile(scene, frame, baseX + c * TILE, baseY - (rows.length - 1 - r) * TILE, baseY)),
+    );
+  });
+}
+
 export function buildGround(scene: Phaser.Scene): boolean[][] {
   const mask = dirtMask();
   const map = scene.make.tilemap({ tileWidth: 16, tileHeight: 16, width: COLS, height: ROWS });
@@ -97,10 +118,10 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][]): void {
     ...AUTUMN,
     PLAZA_TILES,
     { tx: CEMETERY_TILES.tx - 1, ty: CEMETERY_TILES.ty - 1, tw: CEMETERY_TILES.tw + 2, th: CEMETERY_TILES.th + 3 },
-    { tx: 1, ty: 10, tw: 5, th: 7 }, // torre do berrante
+    { tx: 0, ty: 10, tw: 7, th: 7 }, // portão com berrante na entrada
     { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
-    { tx: 21, ty: 29, tw: 8, th: 3 }, // portão
     THERMAL_YARD,
+    ...HOME_LOTS,
   ];
   const nearDirt = (x: number, y: number): boolean =>
     [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => mask[y + dy]?.[x + dx] === true));
@@ -286,53 +307,121 @@ export function buildCemetery(scene: Phaser.Scene): void {
   label(scene, LANDMARKS.cemiterio.x, LANDMARKS.cemiterio.y + 4, 'Cemitério', 14, '#c8c0b0');
 }
 
-export function buildGate(scene: Phaser.Scene): void {
-  const y = ROWS * TILE;
-  const x0 = 23 * TILE;
-  townTile(scene, T.frameTL, x0, y - TILE);
-  townTile(scene, T.frameT, x0 + TILE, y - TILE);
-  townTile(scene, T.frameT, x0 + 2 * TILE, y - TILE);
-  townTile(scene, T.frameTR, x0 + 3 * TILE, y - TILE);
-  townTile(scene, T.frameL, x0, y);
-  townTile(scene, T.frameR, x0 + 3 * TILE, y);
-  smooth(scene.add.text(x0 + 2 * TILE, y - TILE - 22, 'VIGÍLIA', { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#f0dca0', stroke: '#000', strokeThickness: 3 }))
-    .setOrigin(0.5)
-    .setDepth(y + 1);
-}
-
 export interface HornView {
   ready: Phaser.GameObjects.Image;
   blast: () => void;
 }
 
-export function buildHornTower(scene: Phaser.Scene): HornView {
-  const x0 = 2 * TILE;
-  const base = 16 * TILE;
-  const rows: number[][] = [
-    [-1, T.hut, -1],
-    [T.logL, T.logM, T.logR],
-    [T.fenceVTop, -1, T.fenceVTop],
-    [T.fenceV, -1, T.fenceV],
-    [T.fenceV, T.shelf, T.fenceV],
-  ];
-  rows.forEach((row, ry) =>
-    row.forEach((frame, rx) => {
-      if (frame >= 0) townTile(scene, frame, x0 + rx * TILE, base - (rows.length - 1 - ry) * TILE, base);
-    }),
+/** Portão da cidade + berrante num só desenho, no espírito da referência. */
+function drawGateHorn(scene: Phaser.Scene): void {
+  if (scene.textures.exists('gate-horn')) return;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  const WD = 0x2a1a10;
+  const WM = 0x6a4a2e;
+  const WL = 0x9a6c3a;
+  const WH = 0xc89a52;
+  const IRON = 0x383840;
+  const IRONL = 0x8a8a96;
+  const HD = 0x2a241e;
+  const H = 0x8a8070;
+  const HL = 0xd0c4a8;
+  const BR = 0x8a6a2a;
+  const BRL = 0xd2a848;
+  const ROPE = 0xa28458;
+  const post = (x: number): void => {
+    g.fillStyle(WD).fillRect(x, 43, 12, 53);
+    g.fillStyle(WM).fillRect(x + 2, 45, 8, 51);
+    g.fillStyle(WL).fillRect(x + 3, 47, 2, 47);
+    g.fillStyle(WM).fillRect(x + 7, 45, 2, 51);
+    g.fillStyle(IRON).fillRect(x + 1, 62, 10, 3);
+    g.fillStyle(IRON).fillRect(x + 1, 80, 10, 3);
+    g.fillStyle(IRONL).fillRect(x + 2, 62, 2, 1);
+    g.fillStyle(IRONL).fillRect(x + 2, 80, 2, 1);
+  };
+  post(2);
+  post(68);
+  // Viga-mestra
+  g.fillStyle(WD).fillRect(0, 37, 80, 15);
+  g.fillStyle(WM).fillRect(2, 39, 76, 11);
+  g.fillStyle(WL).fillRect(2, 41, 76, 2);
+  g.fillStyle(WM).fillRect(2, 47, 76, 3);
+  g.fillStyle(IRON).fillRect(0, 42, 4, 8);
+  g.fillStyle(IRON).fillRect(76, 42, 4, 8);
+  // Folha do portão aberta à esquerda
+  g.fillStyle(WD).fillRect(9, 51, 20, 42);
+  g.fillStyle(WM).fillRect(11, 53, 16, 38);
+  for (let x = 13; x < 27; x += 4) {
+    g.fillStyle(WL, 0.7).fillRect(x, 53, 1, 38);
+    g.fillStyle(WD, 0.5).fillRect(x + 2, 53, 1, 38);
+  }
+  g.fillStyle(IRON).fillRect(11, 63, 16, 2);
+  g.fillStyle(IRON).fillRect(11, 82, 16, 2);
+  g.fillStyle(IRONL).fillRect(12, 63, 2, 1);
+  g.lineStyle(2, WL, 0.5).lineBetween(12, 88, 26, 54);
+  g.fillStyle(IRON).fillRect(8, 57, 3, 6);
+  g.fillStyle(IRON).fillRect(8, 75, 3, 6);
+  // Soleira
+  g.fillStyle(WD).fillRect(2, 92, 76, 4);
+  g.fillStyle(WM).fillRect(4, 93, 72, 2);
+  // Mão de madeira do berrante
+  g.fillStyle(WD).fillRect(24, 34, 36, 10);
+  g.fillStyle(WM).fillRect(26, 36, 32, 6);
+  g.fillStyle(WH).fillRect(28, 37, 28, 1);
+  // Berrante grande, curvado, com bocal à direita
+  const pts = [
+    { x: 52, y: 2 }, { x: 62, y: 0 }, { x: 68, y: 5 }, { x: 69, y: 15 }, { x: 63, y: 23 },
+    { x: 54, y: 27 }, { x: 44, y: 29 }, { x: 34, y: 35 }, { x: 25, y: 38 }, { x: 17, y: 35 },
+    { x: 13, y: 28 }, { x: 16, y: 21 }, { x: 24, y: 18 }, { x: 34, y: 21 }, { x: 44, y: 20 },
+    { x: 50, y: 15 }, { x: 49, y: 8 },
+  ].map((p) => new Phaser.Geom.Point(p.x, p.y));
+  g.fillStyle(HD).fillPoints(pts, true);
+  const inner = pts.map((p) => new Phaser.Geom.Point(40 + (p.x - 40) * 0.86, 19 + (p.y - 19) * 0.82));
+  g.fillStyle(H).fillPoints(inner, true);
+  g.lineStyle(2, HL, 0.55).strokePoints(
+    [new Phaser.Geom.Point(28, 22), new Phaser.Geom.Point(38, 20), new Phaser.Geom.Point(48, 16), new Phaser.Geom.Point(54, 10)],
+    false,
   );
-  const hornY = base - 4 * TILE + 6;
-  scene.add.image(x0 + 1.5 * TILE + 10, hornY, 'horn').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base + 1);
+  g.lineStyle(2, HD, 0.9).strokePoints(
+    [new Phaser.Geom.Point(24, 30), new Phaser.Geom.Point(36, 28), new Phaser.Geom.Point(46, 24), new Phaser.Geom.Point(56, 19)],
+    false,
+  );
+  // Boca e braçadeiras
+  g.fillStyle(BR).fillRect(58, 4, 9, 20);
+  g.fillStyle(BRL).fillRect(59, 5, 2, 18);
+  g.fillStyle(HD).fillPoints(
+    [new Phaser.Geom.Point(60, 7), new Phaser.Geom.Point(67, 7), new Phaser.Geom.Point(66, 17), new Phaser.Geom.Point(61, 20), new Phaser.Geom.Point(58, 15)],
+    true,
+  );
+  g.fillStyle(BR).fillRect(14, 26, 8, 7);
+  g.fillStyle(BRL).fillRect(15, 27, 2, 5);
+  // Cordas
+  g.lineStyle(3, ROPE, 1).lineBetween(36, 8, 32, 36);
+  g.lineStyle(3, ROPE, 1).lineBetween(48, 6, 44, 34);
+  g.lineStyle(2, WD, 1).lineBetween(33, 36, 34, 44);
+  g.fillStyle(WD).fillRect(30, 40, 20, 6);
+  g.fillStyle(WH).fillRect(32, 41, 16, 1);
+  g.generateTexture('gate-horn', 80, 96);
+  g.destroy();
+}
+
+export function buildHornTower(scene: Phaser.Scene): HornView {
+  drawGateHorn(scene);
+  const x0 = HORN_TOWER.tx * TILE;
+  const base = (HORN_TOWER.ty + HORN_TOWER.th) * TILE;
+  scene.add.image(x0, base, 'gate-horn').setOrigin(0, 1).setScale(ART_SCALE).setDepth(base);
+  const c = x0 + 2.5 * TILE;
+  const hornY = base - 4.5 * TILE;
   const ready = scene.add
-    .image(x0 + 1.5 * TILE + 4, hornY - 8, 'glow')
+    .image(c, hornY, 'glow')
     .setTint(0xffc46b)
-    .setScale(1.4)
+    .setScale(1.8)
     .setBlendMode(Phaser.BlendModes.ADD)
     .setDepth(DEPTH.lights);
   scene.tweens.add({ targets: ready, alpha: { from: 0.15, to: 0.6 }, yoyo: true, repeat: -1, duration: 900 });
-  label(scene, x0 + 1.5 * TILE, base + 2, 'Berrante');
+  label(scene, c, base - 6 * TILE - 18, 'Berrante', 13);
   const blast = () => {
     for (let i = 0; i < 3; i++) {
-      const ring = scene.add.circle(x0 + 1.5 * TILE - 6, hornY - 8, 10).setStrokeStyle(4, 0xffc46b, 0.9).setDepth(DEPTH.floating);
+      const ring = scene.add.circle(c - 6, hornY, 10).setStrokeStyle(4, 0xffc46b, 0.9).setDepth(DEPTH.floating);
       scene.tweens.add({ targets: ring, radius: 220, alpha: 0, duration: 1600, delay: i * 350, onComplete: () => ring.destroy() });
     }
   };

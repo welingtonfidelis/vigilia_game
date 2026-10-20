@@ -7,11 +7,12 @@ import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt } from './format.ts';
-import { IconAbyss, IconBone, IconBook, IconCoin, IconMenu, IconMoon, IconMute, IconPause, IconPeople, IconShield, IconSound, IconSun } from './icons.tsx';
+import { IconAbyss, IconBone, IconBook, IconCoin, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconPeople, IconShield, IconSound, IconSun } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
+import { VillagePanel } from './panels/VillagePanel.tsx';
 import { ActEndPanel, CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import type { Panel, UiStore } from './store.ts';
@@ -167,6 +168,7 @@ function Nav() {
   const { world, ui } = useGame();
   const parties = world.parties.length;
   const fighting = world.parties.some((p) => p.phase === 'combate');
+  const threat = Math.max(0, ...world.acts.filter((a) => a.unlocked).map((a) => a.corruption));
   const toggle = (kind: Panel['kind']) => () => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind } as Panel));
   const active = (kind: Panel['kind']) => (ui.panel?.kind === kind ? ' active' : '');
   return (
@@ -177,6 +179,10 @@ function Nav() {
       </button>
       <button class={`nav-btn${active('roster')}`} onClick={toggle('roster')} title="Heróis (H)">
         <IconShield /> <span>Heróis</span>
+      </button>
+      <button class={`nav-btn${active('village')}`} onClick={toggle('village')} title="A vila (V)">
+        <IconHouse /> <span>Vila</span>
+        {threat >= 55 && <b class="badge hot">!</b>}
       </button>
       <button class={`nav-btn${active('chronicle')}`} onClick={toggle('chronicle')} title="Crônica (C)">
         <IconBook /> <span>Crônica</span>
@@ -205,6 +211,8 @@ function PanelHost() {
       return <CofferPanel />;
     case 'thermal':
       return <ThermalPanel />;
+    case 'village':
+      return <VillagePanel />;
     case 'dungeon':
       return <DungeonPanel />;
     case 'chronicle':

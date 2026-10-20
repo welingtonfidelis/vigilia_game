@@ -1,3 +1,6 @@
 node_modules
 dist
 reports
+
+# macOS
+.DS_Store

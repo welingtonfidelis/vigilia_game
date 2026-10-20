@@ -22,10 +22,13 @@ import { moveAxis } from './keys.ts';
 import {
   ABYSS_EDGE_Y,
   CEMETERY_TILES,
+  citizenSpot,
   door,
   gravePoint,
   graveOrder,
+  HORN_TOWER,
   heroDestination,
+  isNightOwl,
   LANDMARKS,
   LOT_TILES,
   LOTS,
@@ -37,17 +40,17 @@ import {
   WORLD_W,
   type Point,
 } from './layout.ts';
-import { ChildSprite, HeroSprite, Mayor } from './sprites.ts';
+import { CitizenSprite, ChildSprite, HeroSprite, Mayor } from './sprites.ts';
 import {
   buildAbyss,
   buildBoard,
   buildCampfire,
   buildCemetery,
   buildCoffer,
-  buildGate,
   buildGround,
   buildHornTower,
   buildProps,
+  buildCottages,
   buildThermal,
   DEPTH,
   insetTownFrames,
@@ -68,16 +71,12 @@ const LINGER_S = 0.8;
 const MAX_COMMIT_S = 8;
 const MAYOR_SPEED = 250;
 const CHILD_SPEED = 80;
+const CITIZEN_SPEED = 90;
 /** Quem está lesionado anda mais devagar (manca). */
 const INJURED_PACE = 0.6;
 const INTERACT_RADIUS = 78;
-/**
- * Zooms da câmera em passos de 0,5: como cada pixel da arte vale 2 unidades do mundo,
- * todo zoom da lista vira um número inteiro de pixels de tela por pixel de arte.
- */
-const ZOOMS = [0.5, 1, 1.5, 2, 2.5, 3];
-/** Área mínima do mundo visível para escolher um zoom maior (em pé, o celular segue o prefeito). */
-const MIN_VIEW = { landscape: { w: 1000, h: 560 }, portrait: { w: 360, h: 560 } };
+/** Zoom fixo: o mapa é um recorte que acompanha o prefeito, como no Tristram. */
+const CAMERA_ZOOM = 1.5;
 
 interface Interactable {
   id: string;
@@ -113,6 +112,7 @@ export class VillageScene extends Phaser.Scene {
   private readonly ui: UiStore;
   private heroes = new Map<number, HeroSprite>();
   private kids = new Map<number, ChildSprite>();
+  private citizens = new Map<number, CitizenSprite>();
   private buildings = new Map<BuildingId, BuildingView>();
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
@@ -125,9 +125,6 @@ export class VillageScene extends Phaser.Scene {
   private moveTarget: Point | null = null;
   private pendingInteract: string | null = null;
   private labelScale = 1;
-  private zoomIndex = 1;
-  private autoZoom = true;
-  private pinch: { dist: number; index: number } | null = null;
   private treasurySeen = 0;
   private treasuryCheckAt = 0;
   private hoverCursor = '';
@@ -160,10 +157,10 @@ export class VillageScene extends Phaser.Scene {
     this.abyss = buildAbyss(this);
     scatterTrees(this, mask);
     buildCemetery(this);
-    buildGate(this);
     buildProps(this);
     buildCampfire(this);
     buildThermal(this);
+    buildCottages(this);
     this.horn = buildHornTower(this);
     this.board = buildBoard(this);
     this.coffer = buildCoffer(this);
@@ -197,11 +194,7 @@ export class VillageScene extends Phaser.Scene {
       if (this.downOnMap && this.onCanvas(p)) this.onTap(p);
       this.downOnMap = false;
     });
-    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
-      this.onPinch();
-      this.onHover(p);
-    });
-    this.input.on('wheel', (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => this.stepZoom(dy > 0 ? -1 : 1));
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.onHover(p));
 
     this.ui.interact = (id) => this.interact(id);
     this.unsubscribe = this.session.subscribe((e) => this.onSessionEvent(e));
@@ -221,15 +214,7 @@ export class VillageScene extends Phaser.Scene {
 
   private fitCamera(): void {
     const { width, height } = this.scale.gameSize;
-    if (this.autoZoom) {
-      const min = height > width ? MIN_VIEW.portrait : MIN_VIEW.landscape;
-      let index = 0;
-      ZOOMS.forEach((z, i) => {
-        if (width / z >= min.w && height / z >= min.h) index = i;
-      });
-      this.zoomIndex = index;
-    }
-    const zoom = ZOOMS[this.zoomIndex]!;
+    const zoom = CAMERA_ZOOM;
     const cam = this.cameras.main;
     cam.setZoom(zoom);
     // Tela maior que a vila: centraliza na horizontal e põe a sobra em cima, onde ela
@@ -244,38 +229,6 @@ export class VillageScene extends Phaser.Scene {
     for (const b of this.buildings.values()) b.sign.setScale(this.labelScale);
     for (const grave of this.graves.values()) grave.name.setScale(Math.min(this.labelScale, 1.4));
     this.layoutSigns();
-  }
-
-  /** Roda do mouse ou pinça: anda um passo na lista de zooms inteiros. */
-  private stepZoom(dir: 1 | -1): void {
-    const next = Phaser.Math.Clamp(this.zoomIndex + dir, 0, ZOOMS.length - 1);
-    if (next === this.zoomIndex) return;
-    this.autoZoom = false;
-    this.zoomIndex = next;
-    this.fitCamera();
-  }
-
-  private onPinch(): void {
-    const a = this.input.pointer1;
-    const b = this.input.pointer2;
-    if (!a?.isDown || !b?.isDown) {
-      this.pinch = null;
-      return;
-    }
-    const dist = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y);
-    if (!this.pinch) {
-      this.pinch = { dist, index: this.zoomIndex };
-      this.downOnMap = false;
-      return;
-    }
-    const ratio = dist / this.pinch.dist;
-    const steps = ratio >= 1 ? Math.floor((ratio - 1) / 0.35) : -Math.floor((1 / ratio - 1) / 0.35);
-    const target = Phaser.Math.Clamp(this.pinch.index + steps, 0, ZOOMS.length - 1);
-    if (target !== this.zoomIndex) {
-      this.autoZoom = false;
-      this.zoomIndex = target;
-      this.fitCamera();
-    }
   }
 
   /** Quadros do 0x72 a partir da tabela e as animações de heróis, monstros e moedas. */
@@ -395,8 +348,8 @@ export class VillageScene extends Phaser.Scene {
     this.interactables = [
       {
         id: 'berrante',
-        point: { x: berrante.x, y: 17.5 * TILE },
-        hit: { x: 2 * TILE, y: 10 * TILE, w: 3 * TILE, h: 6 * TILE },
+        point: { x: berrante.x, y: berrante.y + 8 },
+        hit: { x: HORN_TOWER.tx * TILE, y: HORN_TOWER.ty * TILE, w: HORN_TOWER.tw * TILE, h: 3 * TILE },
         label: () => 'Tocar o berrante',
         open: open({ kind: 'horn' }),
       },
@@ -438,6 +391,13 @@ export class VillageScene extends Phaser.Scene {
         hit: { x: cem.tx * TILE, y: cem.ty * TILE, w: cem.tw * TILE, h: (cem.th + 1) * TILE },
         label: () => 'Cemitério',
         open: open({ kind: 'memorial' }),
+      },
+      {
+        id: 'portao',
+        point: { x: LANDMARKS.portao.x, y: LANDMARKS.portao.y - 20 },
+        hit: { x: HORN_TOWER.tx * TILE, y: 14 * TILE, w: HORN_TOWER.tw * TILE, h: 3 * TILE },
+        label: () => 'Portão da vila',
+        open: open({ kind: 'village' }),
       },
       {
         id: 'termas',
@@ -484,7 +444,8 @@ export class VillageScene extends Phaser.Scene {
       this.pendingInteract = null;
       const len = Math.hypot(axis.x, axis.y);
       const step = MAYOR_SPEED * dt;
-      this.mayor.walkTo(this.clampWalk({ x: this.mayor.x + (axis.x / len) * step, y: this.mayor.y + (axis.y / len) * step }), step);
+      const next = this.clampWalk({ x: this.mayor.x + (axis.x / len) * step, y: this.mayor.y + (axis.y / len) * step });
+      this.mayor.walkBy(next.x - this.mayor.x, next.y - this.mayor.y);
     } else if (this.moveTarget) {
       const arrived = this.mayor.walkTo(this.moveTarget, MAYOR_SPEED * dt);
       if (arrived) this.moveTarget = null;
@@ -542,6 +503,11 @@ export class VillageScene extends Phaser.Scene {
       this.ui.open({ kind: 'hero', heroId: hero.id });
       return;
     }
+    const citizen = this.citizenAt(p.worldX, p.worldY);
+    if (citizen) {
+      this.ui.open({ kind: 'village' });
+      return;
+    }
     const child = [...this.kids.values()].find((c) => c.hits(p.worldX, p.worldY));
     if (child) {
       const parent = child.parents.find((id) => this.world.heroes.some((h) => h.id === id));
@@ -596,6 +562,7 @@ export class VillageScene extends Phaser.Scene {
     this.syncGraves(initial);
     this.syncHeroes(initial, dt);
     this.syncChildren(dt);
+    this.syncCitizens(dt);
 
     const night = nightFactor(world.tick);
     // De dia fica uma névoa fria; à noite escurece de vez.
@@ -731,6 +698,71 @@ export class VillageScene extends Phaser.Scene {
     }
   }
 
+  /** Moradores: horário comercial, praça no meio do dia e casa à noite. */
+  private syncCitizens(dt: number): void {
+    const world = this.world;
+    const hour = hourOf(world.tick);
+    const day = dayOf(world.tick);
+    const night = hour >= 21 || hour < 6;
+    const step = this.session.paused ? 0 : CITIZEN_SPEED * this.session.speed * dt;
+    const seen = new Set<number>();
+    for (const citizen of world.citizens) {
+      seen.add(citizen.id);
+      const target = citizenSpot(world, citizen, hour, day);
+      let sprite = this.citizens.get(citizen.id);
+      if (!sprite) {
+        sprite = new CitizenSprite(this, citizen, target);
+        this.citizens.set(citizen.id, sprite);
+      }
+      const arrived = sprite.walkTo(target, step);
+      // À noite, quem não é guarda nem noctívago entra em casa e some.
+      const staysOut = !night || citizen.job === 'guarda' || isNightOwl(citizen);
+      const inside = !staysOut && arrived;
+      sprite.setHidden(inside);
+      if (!inside) sprite.animate(this.session.paused ? 0 : this.session.speed, dt);
+    }
+    for (const [id, sprite] of this.citizens) {
+      if (seen.has(id)) continue;
+      sprite.destroy();
+      this.citizens.delete(id);
+    }
+  }
+
+  private citizenAt(x: number, y: number): CitizenSprite | null {
+    for (const sprite of this.citizens.values()) if (sprite.hits(x, y)) return sprite;
+    return null;
+  }
+
+  /** Susto visual da incursão: tremor, clarão vermelho e vultos saindo do abismo. */
+  private raidVisual(): void {
+    this.cameras.main.shake(320, 0.004);
+    const flash = this.add
+      .rectangle(-400, -400, WORLD_W + 800, WORLD_H + 800, 0x8a1a2a, 0.18)
+      .setOrigin(0)
+      .setDepth(DEPTH.night + 1);
+    this.tweens.add({ targets: flash, alpha: 0, duration: 1400, onComplete: () => flash.destroy() });
+    const frames = ['wogol_idle_anim_f0', 'chort_idle_anim_f0', 'imp_idle_anim_f0', 'skelet_idle_anim_f0'];
+    const start = LANDMARKS.abismo;
+    for (let i = 0; i < 6; i++) {
+      const shade = this.add
+        .sprite(start.x + (i - 2.5) * 26, start.y + 26, 'dungeon', frames[i % frames.length]!)
+        .setScale(ART_SCALE)
+        .setDepth(start.y + 40)
+        .setAlpha(0.9);
+      this.tweens.add({
+        targets: shade,
+        x: LANDMARKS.cofre.x + (i - 2.5) * 60,
+        y: LANDMARKS.cofre.y + 40 + (i % 3) * 24,
+        alpha: 0,
+        duration: 2200 + i * 120,
+        delay: i * 90,
+        ease: 'Cubic.easeIn',
+        onComplete: () => shade.destroy(),
+      });
+    }
+    this.floatText(LANDMARKS.cofre.x, LANDMARKS.cofre.y - 120, 'Incursão!', '#ff8a7a');
+  }
+
   private syncGraves(initial: boolean): void {
     const order = graveOrder(this.world);
     if (order.length === this.graves.size) return;
@@ -757,6 +789,8 @@ export class VillageScene extends Phaser.Scene {
       this.heroes.clear();
       for (const c of this.kids.values()) c.destroy();
       this.kids.clear();
+      for (const c of this.citizens.values()) c.destroy();
+      this.citizens.clear();
       for (const g of this.graves.values()) {
         g.stone.destroy();
         g.name.destroy();
@@ -772,6 +806,7 @@ export class VillageScene extends Phaser.Scene {
 
   private onEntry(entry: ChronicleEntry): void {
     if (entry.kind === 'berrante') this.horn.blast();
+    if (entry.kind === 'incursao') this.raidVisual();
     if (entry.kind === 'morte') {
       const p = LANDMARKS.abismo;
       this.floatText(p.x, p.y - 40, entry.heroIds.length > 1 ? 'Um grupo não voltou' : 'Um herói tombou', '#ff8a7a');

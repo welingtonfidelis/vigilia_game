@@ -1,6 +1,7 @@
 import { ACTS } from '../data/acts.ts';
 import { BUILDING_IDS, BUILDINGS, MAX_BUILDING_LEVEL, type LevelCost } from '../data/buildings.ts';
 import { record } from './chronicle.ts';
+import { citizenMood } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
 import type { BuildingId, MaterialId, World } from './types.ts';
 
@@ -69,18 +70,31 @@ export function populationCap(world: World): number {
 
 export function dailyEconomy(world: World): void {
   const town = world.town;
+  town.population = Math.round(town.population);
   const corruption = averageCorruption(world);
   const cap = populationCap(world);
   if (corruption < 60) {
-    town.population += Math.max(0, (cap - town.population) * 0.05);
+    // Crescimento em moradores inteiros: o acumulador guarda a fração entre dias.
+    town.popGrowth += Math.max(0, cap - town.population) * 0.05;
+    const room = Math.max(0, Math.ceil(cap - town.population));
+    const add = Math.min(Math.floor(town.popGrowth), room);
+    if (add > 0) {
+      town.population = Math.min(cap, town.population + add);
+      town.popGrowth -= add;
+    } else {
+      town.popGrowth = Math.min(town.popGrowth, 0.999);
+    }
   } else {
-    town.population = Math.max(B.startPopulation / 2, town.population * 0.98);
+    const loss = Math.max(1, Math.round(town.population * 0.02));
+    town.population = Math.max(B.startPopulation / 2, town.population - loss);
+    town.popGrowth = 0;
     const lastAlarm = world.chronicle.findLast((e) => e.kind === 'corrupcao');
     if (corruption >= 80 && (!lastAlarm || world.tick - lastAlarm.tick > 10 * 480)) {
       record(world, 'corrupcao', [], 'A corrupção do abismo assusta a vila: famílias fazem as malas.');
     }
   }
-  town.treasury += town.population * B.citizenTaxPerDay;
+  // O humor dos moradores regula quanto eles pagam de imposto.
+  town.treasury += town.population * B.citizenTaxPerDay * (0.8 + (B.citizenTaxMood * citizenMood(world)) / 100);
   town.treasury -= totalBuildingLevels(world) * B.upkeepPerLevelPerDay;
   town.treasury -= pensionPerDay(world);
   if (town.treasury < 0) town.treasury = 0;

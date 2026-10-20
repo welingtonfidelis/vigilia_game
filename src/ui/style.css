@@ -1601,3 +1601,88 @@ kbd {
 .gear-text small {
   color: var(--muted);
 }
+
+/* ── Painel da Vila (M3) ───────────────────────────────────────────────── */
+.jobs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.4rem 0 0.5rem;
+}
+
+.job {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.job b {
+  color: var(--text);
+}
+
+.citizens {
+  list-style: none;
+  margin: 0.2rem 0 0;
+  padding: 0;
+}
+
+.citizen-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.citizen-row .who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.citizen-row .who small {
+  color: var(--muted);
+}
+
+.citizen-row .mood {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 9rem;
+  flex: none;
+}
+
+.citizen-row .mood .bar {
+  flex: 1;
+}
+
+.raids {
+  list-style: none;
+  margin: 0.3rem 0;
+  padding: 0;
+}
+
+.raids li {
+  padding: 0.32rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.raids li small {
+  display: block;
+  color: var(--muted);
+}
+
+.raids .good {
+  color: var(--good);
+}
+
+.raids .warn {
+  color: var(--warn);
+}
+
+.raids .bad {
+  color: var(--bad);
+}

@@ -2,8 +2,8 @@
 // Só posição visual: quem decide para onde vão é o núcleo.
 
 import Phaser from 'phaser';
-import type { ActivityKind, Child, Hero } from '../sim/index.ts';
-import { ICON_KINDS } from './art.ts';
+import type { ActivityKind, Child, Citizen, Hero } from '../sim/index.ts';
+import { citizenLook, ICON_KINDS, villagerTexture } from './art.ts';
 import { ART_SCALE, heroSprite, MAYOR_SPRITE } from './assets.ts';
 import { DEPTH, smooth } from './town.ts';
 import type { Point } from './layout.ts';
@@ -63,6 +63,18 @@ abstract class Walker {
     }
     this.root.setDepth(this.root.y);
     return arrived;
+  }
+
+  /** Movimento por vetor (WASD): não trata o passo como um destino a alcançar. */
+  walkBy(dx: number, dy: number): void {
+    if (Math.abs(dx) + Math.abs(dy) < 0.001) {
+      this.moving = false;
+      return;
+    }
+    this.root.setPosition(this.root.x + dx, this.root.y + dy);
+    this.moving = true;
+    if (Math.abs(dx) > 2) this.face(dx < 0);
+    this.root.setDepth(this.root.y);
   }
 
   protected face(left: boolean): void {
@@ -222,5 +234,76 @@ export class Mayor extends Walker {
   placeLabels(labelScale: number, night: number): void {
     this.label.setPosition(this.root.x, this.root.y + 5).setScale(labelScale);
     this.lantern.setPosition(this.root.x + (this.body.flipX ? -10 : 10), this.root.y - 16).setAlpha(0.15 + 0.75 * night);
+  }
+}
+
+
+/** Morador com a folha própria da vila: 16×21, dois quadros, sem arma. */
+export class CitizenSprite {
+  readonly id: number;
+  readonly root: Phaser.GameObjects.Container;
+  private readonly body: Phaser.GameObjects.Sprite;
+  private readonly frames: [string, string];
+  private moving = false;
+  private left = false;
+  private frameTime = 0;
+  hidden = false;
+
+  constructor(scene: Phaser.Scene, citizen: Citizen, at: Point) {
+    this.id = citizen.id;
+    const look = citizenLook(citizen);
+    this.frames = [villagerTexture(look, citizen.gender, 0), villagerTexture(look, citizen.gender, 1)];
+    const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE);
+    this.body = scene.add.sprite(0, 2, this.frames[0]!).setOrigin(0.5, 1).setScale(ART_SCALE);
+    this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
+  }
+
+  /** Anda em direção ao ponto. Devolve true quando chegou. */
+  walkTo(target: Point, step: number): boolean {
+    const dx = target.x - this.root.x;
+    const dy = target.y - this.root.y;
+    const dist = Math.hypot(dx, dy);
+    const arrived = dist <= Math.max(step, 0.5);
+    if (arrived) {
+      this.root.setPosition(target.x, target.y);
+      this.moving = false;
+    } else {
+      this.root.setPosition(this.root.x + (dx / dist) * step, this.root.y + (dy / dist) * step);
+      this.moving = step > 0;
+      if (this.moving && Math.abs(dx) > 2) this.face(dx < 0);
+    }
+    this.root.setDepth(this.root.y);
+    return arrived;
+  }
+
+  private face(left: boolean): void {
+    if (left === this.left) return;
+    this.left = left;
+    this.body.setFlipX(left);
+  }
+
+  /** Quadro 0 parado; 1 e 0 alternando enquanto anda. */
+  animate(rate: number, dt: number): void {
+    if (!this.moving || rate <= 0) {
+      this.frameTime = 0;
+      if (this.body.texture.key !== this.frames[0]) this.body.setTexture(this.frames[0]!);
+      return;
+    }
+    this.frameTime += dt * rate;
+    const key = this.frames[Math.floor(this.frameTime * 6) % 2]!;
+    if (this.body.texture.key !== key) this.body.setTexture(key);
+  }
+
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden;
+    this.root.setVisible(!hidden);
+  }
+
+  hits(x: number, y: number): boolean {
+    return !this.hidden && Math.abs(x - this.root.x) < 14 && y > this.root.y - 44 && y < this.root.y + 16;
+  }
+
+  destroy(): void {
+    this.root.destroy();
   }
 }

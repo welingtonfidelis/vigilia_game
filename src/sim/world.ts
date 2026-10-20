@@ -2,6 +2,7 @@ import { ACTS } from '../data/acts.ts';
 import { BUILDINGS, BUILDING_IDS } from '../data/buildings.ts';
 import { BALANCE as B, SAVE_VERSION, START_HOUR, TICKS_PER_HOUR } from './config.ts';
 import { seedRng } from './rng.ts';
+import { seedCitizens } from './citizens.ts';
 import type { BuildingId, MaterialId, Metrics, World } from './types.ts';
 
 export function emptyMetrics(): Metrics {
@@ -29,6 +30,9 @@ export function emptyMetrics(): Metrics {
     births: 0,
     comeOfAge: 0,
     oldAgeDeaths: 0,
+    raids: 0,
+    citizenDeaths: 0,
+    citizensLeft: 0,
     byConfidence: {},
     daily: [],
   };
@@ -61,6 +65,8 @@ export function createWorld(seed: number): World {
       mayorEnergy: B.mayorEnergy,
       speechDay: -1,
       festivalDay: -1,
+      popGrowth: 0,
+      lastRaidDay: -1,
     },
     acts: ACTS.map((_, i) => ({
       unlocked: i === 0,
@@ -73,9 +79,12 @@ export function createWorld(seed: number): World {
     remains: [],
     chronicle: [],
     children: [],
+    citizens: [],
+    raids: [],
     pendingFugitives: [],
     metrics: emptyMetrics(),
     endedTick: null,
   };
+  seedCitizens(world);
   return world;
 }

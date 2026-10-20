@@ -52,6 +52,8 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   funcao: 'info',
   festival: 'good',
   doacao: 'gold',
+  cidadao: 'info',
+  incursao: 'bad',
 };
 
 let bossesSeen = new Set(session.world.acts.flatMap((a, i) => (a.bossDefeated ? [i] : [])));
@@ -106,7 +108,7 @@ window.addEventListener(
   'keydown',
   (e) => {
     if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
-    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle') => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind }));
+    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village') => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind }));
     switch (e.code) {
       case 'Space':
         e.preventDefault();
@@ -139,6 +141,9 @@ window.addEventListener(
         break;
       case 'KeyC':
         toggle('chronicle');
+        break;
+      case 'KeyV':
+        toggle('village');
         break;
       case 'KeyN':
         ui.setPrefs({ muted: !ui.prefs.muted });

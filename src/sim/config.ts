@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -53,6 +53,29 @@ export const BALANCE = {
   templeTithe: 0.08,
   templeTitheFrom: 100,
   startPopulation: 10,
+  // Vila viva (M3): moradores nomeados, humor e incursões
+  citizenStart: 6,
+  citizenRoster: 24,
+  /** Um morador nomeado a cada N de população (até citizenRoster). */
+  citizenPerPop: 4,
+  /** Quanto o humor médio mexe no imposto (0,8 + citizenTaxMood × humor/100). */
+  citizenTaxMood: 0.4,
+  citizenHappinessBase: 55,
+  citizenLeaveBelow: 30,
+  citizenLeaveChance: 0.15,
+  citizenGuardPerPop: 25,
+  citizenGuardMax: 6,
+  /** Incursões noturnas: disparam quando um ato passa deste limiar de corrupção. */
+  raidMinCorruption: 55,
+  raidChanceAtMin: 0.1,
+  raidChanceAtMax: 0.35,
+  raidCooldownDays: 14,
+  raidPowerBase: 60,
+  raidPowerPerAct: 220,
+  /** Defesa/(defesa+poder) acima disto repele; abaixo do segundo, a vila é saqueada. */
+  raidRepelRatio: 0.55,
+  raidCostlyRatio: 0.35,
+  raidGoldSteal: 0.08,
   populationPerBuildingLevel: 6,
   hornBaseCost: 25,
   hornCostGrowth: 0.1,

@@ -42,6 +42,8 @@ const ENTRY_CUES: Partial<Record<ChronicleKind, Cue>> = {
   nascimento: { sfx: 'birth', priority: 7 },
   maioridade: { sfx: 'conquest', priority: 7 },
   funcao: { sfx: 'reveal', priority: 2 },
+  cidadao: { sfx: 'arrival', priority: 2 },
+  incursao: { sfx: 'bell', priority: 9 },
   // 'prefeito' fica de fora: as ações do prefeito já soam na hora do comando.
   // 'berrante' fica de fora: o som sai na hora do comando, não quando a crônica registra.
 };

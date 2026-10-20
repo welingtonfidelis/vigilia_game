@@ -54,6 +54,36 @@ export interface Injury {
 /** O que um herói aposentado faz na vila. */
 export type RetiredRole = 'mentor' | 'ferreiro' | 'contador' | 'curandeiro';
 
+/** Ofícios dos moradores que aparecem na vila. */
+export type CitizenJob = 'lavrador' | 'pedreiro' | 'copeiro' | 'ferreiro' | 'acolito' | 'guarda';
+
+/** Morador nomeado da vila. A população total continua em Town.population. */
+export interface Citizen {
+  id: number;
+  name: string;
+  gender: Gender;
+  job: CitizenJob;
+  happiness: number;
+  workplace: BuildingId | null;
+  arrivedDay: number;
+}
+
+export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
+
+/** Relatório de uma incursão noturna. */
+export interface Raid {
+  day: number;
+  act: number;
+  corruption: number;
+  power: number;
+  defense: number;
+  outcome: RaidOutcome;
+  building: BuildingId | null;
+  citizenLoss: number;
+  goldLost: number;
+  injuries: number;
+}
+
 export type GiftKind = 'bebida' | 'reliquia' | 'arma';
 
 /** Filho de um casal da vila; vira herói aos 16 anos. */
@@ -269,6 +299,10 @@ export interface Town {
   speechDay: number;
   /** Último dia em que houve festa na praça (−1 = nunca). */
   festivalDay: number;
+  /** Acumulador fracionário do crescimento da população. */
+  popGrowth: number;
+  /** Último dia de incursão (−1 = nunca). */
+  lastRaidDay: number;
 }
 
 export type ChronicleKind =
@@ -305,6 +339,8 @@ export type ChronicleKind =
   | 'vinculo'
   | 'festival'
   | 'doacao'
+  | 'cidadao'
+  | 'incursao'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -338,6 +374,9 @@ export interface Metrics {
   births: number;
   comeOfAge: number;
   oldAgeDeaths: number;
+  raids: number;
+  citizenDeaths: number;
+  citizensLeft: number;
   /** Desfecho das expedições por faixa de confiança (0,25 em 0,25). Calibra a escolha de andar. */
   byConfidence: Record<string, { n: number; deaths: number; wipes: number; conquests: number }>;
   daily: DailySample[];
@@ -368,6 +407,8 @@ export interface World {
   remains: Remains[];
   chronicle: ChronicleEntry[];
   children: Child[];
+  citizens: Citizen[];
+  raids: Raid[];
   /** Heróis que fugiram sozinhos neste tick e ainda precisam virar um retorno solo. */
   pendingFugitives: { heroId: number; act: number; floor: number }[];
   metrics: Metrics;

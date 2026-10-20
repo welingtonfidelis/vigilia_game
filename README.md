@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Pessoas, mais a Fase A de polimento.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar o Ato I do zero até o Guardião das Urnas, com heróis que se ferem, casam, têm filhos, se aposentam com uma função na vila e ganham epitáfio quando morrem. O abismo agora cobra mais caro, o mapa não vira uma pilha de nomes, o fim da campanha tem tela e o ouro tem para onde ir.
+**Estado atual: M2, Fase A e a primeira fatia da Fase B (cidadãos e incursões noturnas).** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -22,7 +22,7 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 ## Rodar as ferramentas
 
 ```bash
-npm test                                        # 77 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm test                                        # 82 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
@@ -76,23 +76,26 @@ O RNG (mulberry32) vive dentro do `World`. Por isso salvar no meio de um combate
 
 A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da sessão, `commands.*` para as alavancas do prefeito e consultas somente-leitura (custos, vagas, limiar de fuga, salas do andar). Um teste confirma que jogar pela sessão, quadro a quadro, dá o mesmo mundo que rodar o núcleo direto.
 
+A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pinça.
+
 **Atalhos de depuração** (só em `npm run dev`, no console do navegador): `vigilia.days(n)` avança n dias, `vigilia.advance(ticks)`, `vigilia.autoplay(n)` deixa o prefeito automático jogar n dias e `vigilia.frames(n)` roda quadros do Phaser na mão (útil com a aba em segundo plano, quando o navegador para o `requestAnimationFrame`).
 
 ## Retrato do balanceamento (10 sementes × 30 anos, prefeito automático)
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 1,2 | 0,7 h | 0,8–1,8 | 100% |
-| Minas Inundadas | 2,9 | 1,6 h | 2,4–3,8 | 100% |
-| Jardim de Fungos | 4,5 | 2,4 h | 3,4–5,8 | 100% |
-| Cidade Afogada | 9,0 | 4,8 h | 5,8–11,8 | 100% |
-| Forja Abissal | 13,2 | 7,0 h | 10,8–17,3 | 100% |
-| Coração do Abismo | 18,7 | 10,0 h | 12,7–28,6 | 70% |
+| Catacumbas | 1,1 | 0,6 h | 0,3–1,8 | 100% |
+| Minas Inundadas | 3,2 | 1,7 h | 1,1–5,0 | 100% |
+| Jardim de Fungos | 4,3 | 2,3 h | 2,6–6,3 | 100% |
+| Cidade Afogada | 7,4 | 4,0 h | 4,0–11,0 | 100% |
+| Forja Abissal | 16,4 | 8,7 h | 10,8–24,3 | 100% |
+| Coração do Abismo | 20,4 | 10,9 h | 14,8–25,1 | 70% |
 
-- **Mortalidade:** 4,3 mortes/ano com elenco de ~18 (antes da Fase A: 2,8). Ninguém é mais dispensado: são cerca de 17 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~66 lesões, ~7 cicatrizes, ~19 casamentos, ~17 filhos e ~6 deles chegando à maioridade como heróis.
-- **Expedições:** ~88 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas** (antes: 3%). A confiança ao descer agora separa o risco: ≥0,5 → 0,28 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro fica entre ~1 e 2,8 mil e o ouro dos heróis entre ~19 e 67 mil. **Festa na praça**, **pensão dos aposentados** e **ofertas no templo** puxam o ouro para fora do bolso dos heróis; **a fonte termal** é conforto, não sumidouro. Ainda faltam sumidouros de fim de jogo (relíquias e propriedades), que entram na Fase B/M3.
+- **Mortalidade:** 4,6 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 18 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~85 lesões, ~7 cicatrizes, ~19 casamentos, ~17 filhos e ~7 deles chegando à maioridade como heróis.
+- **Vila (M3), por campanha:** ~33 incursões, ~31 moradores mortos e ~1 que deixa a vila; a população termina no teto (~136), o humor médio fica em ~59 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
+- **Expedições:** ~90 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,40 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,02.
+- **Ouro:** o tesouro fica entre ~1 e 3,7 mil e o ouro dos heróis entre ~11 e 35 mil. **Festa**, **pensão**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
 - **Desempenho:** ~0,8 s para simular uma campanha de 30 anos.
 
 ## O que o M0 entrega
@@ -132,7 +135,7 @@ As duas licenças são CC0 (domínio público), com uso livre inclusive comercia
 - [x] HUD (tesouro, data e hora, população, heróis/vagas, materiais, velocidade), objetivos abertos, avisos da crônica e fim de ato
 - [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
 - [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
-- [x] Pixel art CC0 (Tiny Town + DungeonTileset II): zoom em passos de pixel inteiro, cena dessaturada e escurecida para a fantasia sombria
+- [x] Pixel art CC0 (Tiny Town + DungeonTileset II): câmera fixa que acompanha o prefeito, cena dessaturada e escurecida para a fantasia sombria
 - [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
 
 ## O que o M2 entrega
@@ -166,8 +169,19 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 ## Ajustes antes do M3
 
 - [x] **Arma de classe fora do mapa.** O desenho ao lado do herói era um enfeite fixo da classe, não o equipamento comprado — e ficava enorme. O herói anda sem arma na mão; a ficha mostra a arma de classe, o tier comprado e o bônus exato de ataque, vida e defesa (o tier sempre entrou no combate).
-- [x] **Fonte termal.** Bacia de pedra a oeste da estalagem, com vapor e água quente que sobe do abismo. Não tem nível nem preço: heróis machucados, sem ânimo ou de luto vão sozinhos, e a água recupera 20% da vida, 12 de energia, 12 de ânimo, alivia o luto e adianta meio dia de lesão. O painel mostra quem está na água.
+- [x] **Fonte termal.** Bacia de pedra no lugar do antigo portão sul, com vapor e água quente que sobe do abismo. Não tem nível nem preço: heróis machucados, sem ânimo ou de luto vão sozinhos, e a água recupera 20% da vida, 12 de energia, 12 de ânimo, alivia o luto e adianta meio dia de lesão. O painel mostra quem está na água.
 
-## Próximo: M3 (vila viva)
+## O que a Fase B entrega (primeira fatia: vila viva)
 
-Lotes e expansão, cidadãos, impostos e decretos, incursões noturnas e eventos sazonais. Ver a seção 9 do [GDD.md](GDD.md).
+- [x] **Cidadãos nomeados.** A vila começa com 6 moradores e chega a 24 nomes (um a cada 4 de população), com ofícios que saem dos prédios reconstruídos: guarda, copeiro, ferreiro, acólito, pedreiro e lavrador. Eles andam pela vila (trabalho de dia, praça no meio do dia, estalagem ou fogueira à noite), aparecem no mapa sem rótulo e abrem o painel da Vila quando clicados. **Lavradores**, que não têm prédio próprio, circulam entre a praça, as estradas e a fonte; o campo de treino fica para os heróis.
+- [x] **Humor e imposto.** O humor médio (0–100) puxa o imposto dos moradores e decide quem fica: abaixo de 30, o morador pode deixar a vila. Festa na praça e pouca corrupção levantam o humor; incursões derrubam.
+- [x] **Incursões noturnas.** Às 22h, o ato mais corrompido (≥55) pode subir à vila. A defesa soma heróis em casa, aposentados e guardas; o resultado é **repelida**, **segurada com custo** ou **saqueada**. No pior caso, prédios voltam a ruínas, moradores morrem, heróis se ferem e o tesouro sangra — a campanha nunca acaba. Aviso na crônica, no toast, no mapa (vultos saindo do abismo) e na navegação.
+- [x] **Painel da Vila** com população, humor, guardas, ameaça, ofícios, a lista de moradores com a barra de humor e as últimas incursões.
+- [x] **Sprites próprios de morador:** quatro corpos desenhados no projeto — lavrador, artesã, acólito e guarda — em dois gêneros e dois quadros de caminhada. Heróis e moradores não dividem mais o mesmo corpo; o prefeito segue com o `doc`.
+- [x] **Casinhas e noite:** cinco casas na borda sul, com caminhos de terra. À noite a maioria entra em casa e some; os guardas ficam no portão e copeiros/alguns noctívagos, na taverna.
+- [x] **Entrada e câmera:** portão de madeira com o berrante grande montado sobre a viga, no centro-esquerdo. A câmera fixa em 1,5× acompanha o prefeito; o zoom por roda/pinça saiu.
+- [x] **Save v3 → v4** migra sozinho (moradores, crescimento, incursões).
+
+## Próximo: resto do M3
+
+Decretos e salários, eventos sazonais, lotes e expansão. Ver a seção 9 do [GDD.md](GDD.md).

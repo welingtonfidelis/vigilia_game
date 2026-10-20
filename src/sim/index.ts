@@ -5,6 +5,8 @@ export * as commands from './commands.ts';
 export type { CommandResult } from './commands.ts';
 export { serialize, deserialize, checksum } from './save.ts';
 export { autoMayor } from './bot.ts';
+export { JOB_NAMES, JOB_ORDER, citizenMood, guardDefense, guardTarget } from './citizens.ts';
+export { defensePower, raidPower, resolveRaid, threatOf, maybeRaid, type Threat } from './raids.ts';
 export { formatDate, dayOf, hourOf, yearOf, seasonOf, isNight } from './calendar.ts';
 export { describeHero, heroStats, type HeroStats } from './hero.ts';
 export * from './config.ts';

@@ -14,7 +14,7 @@ const FILTERS: Record<Filter, { label: string; kinds: ChronicleKind[] | null }> 
     label: 'Heróis',
     kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao'],
   },
-  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito', 'festival', 'doacao'] },
+  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito', 'festival', 'doacao', 'cidadao', 'incursao'] },
 };
 
 const TONE: Partial<Record<ChronicleKind, string>> = {
@@ -37,6 +37,8 @@ const TONE: Partial<Record<ChronicleKind, string>> = {
   maioridade: 'gold',
   festival: 'good',
   doacao: 'gold',
+  cidadao: 'info',
+  incursao: 'bad',
 };
 
 const PAGE = 150;
