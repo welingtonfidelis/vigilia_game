@@ -11,6 +11,7 @@ import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { EventPanel } from './panels/EventPanel.tsx';
+import { BattlePanel } from './panels/BattlePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
@@ -221,6 +222,8 @@ function PanelHost() {
       return <ThermalPanel />;
     case 'event':
       return <EventPanel />;
+    case 'battle':
+      return <BattlePanel partyId={p.partyId} />;
     case 'village':
       return <VillagePanel />;
     case 'dungeon':

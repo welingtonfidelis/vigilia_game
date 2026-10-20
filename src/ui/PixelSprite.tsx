@@ -46,11 +46,11 @@ export function PixelSprite(props: { base: string; scale?: number; animate?: boo
 export const HERO_CROP = 7;
 
 /** Sprite do pack 1.7 para o painel do Abismo: idle 4 quadros, normais a 2x e chefes a 1x. */
-export function MonsterSprite(props: { asset: string; boss: boolean; animate: boolean }) {
+export function MonsterSprite(props: { asset: string; boss: boolean; animate: boolean; scale?: number }) {
   const asset = packAsset(props.asset);
   if (!asset) return null;
   const [w, h] = asset.frameSize ?? [16, 16];
-  const scale = props.boss ? 1 : 2;
+  const scale = props.scale ?? (props.boss ? 1 : 2);
   const style: Record<string, string> = {
     width: `${w * scale}px`,
     height: `${h * scale}px`,

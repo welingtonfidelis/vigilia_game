@@ -94,6 +94,7 @@ function EnemyRow(props: { unit: Unit; world: World; act: number }) {
 function PartyCard(props: { world: World; party: Party }) {
   const { world, party } = props;
   const command = useCommand();
+  const { ui } = useGame();
   const doctrine = world.town.doctrine;
   const combat = party.combat;
   const heroes = party.startMemberIds.map((id) => heroById(world, id)).filter((h) => !!h);
@@ -111,16 +112,21 @@ function PartyCard(props: { world: World; party: Party }) {
             {combat?.enraged ? ' · fúria!' : ''}
           </p>
         </div>
-        {!solo && (
-          <button
-            class="btn bell"
-            disabled={!canRecall}
-            onClick={() => command(commands.recall, party.id)}
-            title="Chama o grupo de volta. Custa reputação; os vingativos ignoram."
-          >
-            {party.recallRequested ? 'O sino tocou' : 'Tocar o sino'}
+        <div class="party-actions">
+          <button class="btn small" onClick={() => ui.open({ kind: 'battle', partyId: party.id })}>
+            Acompanhar
           </button>
-        )}
+          {!solo && (
+            <button
+              class="btn bell"
+              disabled={!canRecall}
+              onClick={() => command(commands.recall, party.id)}
+              title="Chama o grupo de volta. Custa reputação; os vingativos ignoram."
+            >
+              {party.recallRequested ? 'O sino tocou' : 'Tocar o sino'}
+            </button>
+          )}
+        </div>
       </header>
       {!solo && <Rooms world={world} party={party} />}
       <div class="combat">

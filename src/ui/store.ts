@@ -18,6 +18,7 @@ export type Panel =
   | { kind: 'welcome' }
   | { kind: 'thermal' }
   | { kind: 'event' }
+  | { kind: 'battle'; partyId: number }
   | { kind: 'village' }
   | { kind: 'campaignEnd' }
   | { kind: 'actEnd'; act: number };

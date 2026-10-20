@@ -1807,3 +1807,223 @@ kbd {
 @media (max-width: 420px) {
   .expansion-lots { grid-template-columns: 1fr; }
 }
+
+/* Visualizador de dungeon (M4). */
+.party-actions { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; }
+.battle-view {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: #07080a;
+  color: var(--text);
+}
+.battle-top {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid #2a2520;
+  background: rgba(10, 9, 8, 0.96);
+}
+.battle-close {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.4rem;
+  background: #171310;
+  color: var(--text);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.battle-title { flex: 1; min-width: 0; }
+.battle-title h2 { margin: 0; font-family: var(--serif); font-weight: normal; color: var(--gold); font-size: 1.1rem; }
+.battle-title p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.82rem; }
+.battle-loot { position: relative; text-align: right; flex: none; }
+.battle-loot span { display: block; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.battle-loot strong { display: block; color: var(--gold); font-size: 1rem; }
+.battle-loot small { display: block; color: var(--muted); font-size: 0.7rem; }
+.battle-gold-float { position: absolute; right: 0; top: 1.6rem; color: var(--gold); animation: battle-float 1s ease-out forwards; }
+.battle-tabs { display: flex; gap: 0.35rem; padding: 0.35rem 0.8rem; background: #0d0c0b; }
+.battle-tabs .tab { font-size: 0.76rem; }
+.battle-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 100%, #30332d 0%, #161a18 48%, #08090a 100%);
+}
+.battle-backdrop {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 18% 72%, rgba(8, 8, 8, 0.85) 0 8%, transparent 9%),
+    radial-gradient(ellipse at 82% 70%, rgba(8, 8, 8, 0.8) 0 9%, transparent 10%),
+    radial-gradient(ellipse at 50% 28%, rgba(60, 56, 45, 0.22), transparent 55%);
+  pointer-events: none;
+}
+.battle-teams {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 100%;
+  padding: 1.2rem 2rem 3.2rem;
+}
+.battle-team { display: flex; align-items: flex-end; justify-content: center; gap: 0.9rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.battle-team.enemies { justify-content: center; }
+.battle-vs { align-self: center; color: rgba(232, 214, 168, 0.35); font-size: 1.5rem; flex: none; }
+.battle-unit { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.18rem; min-width: 3.2rem; }
+.battle-unit.down { opacity: 0.35; filter: grayscale(0.8); }
+.battle-unit.fled { opacity: 0.45; }
+.battle-hero-sprite {
+  display: block;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  animation: battle-idle 0.7s steps(4) infinite;
+}
+@keyframes battle-idle {
+  from { background-position: 0 0; }
+  to { background-position: var(--battle-to) 0; }
+}
+.battle-hero-sprite.dead { animation: none; }
+.battle-name { max-width: 7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.74rem; color: #e8d6a8; }
+.battle-unit.enemy .battle-name { color: #e0a090; }
+.battle-unit.boss .battle-name { color: var(--bad); font-weight: 700; }
+.battle-hp {
+  display: block;
+  width: 3.4rem;
+  height: 0.42rem;
+  background: #2a1715;
+  border: 1px solid #080606;
+  border-radius: 0.2rem;
+  overflow: hidden;
+}
+.battle-hp i { display: block; height: 100%; background: linear-gradient(90deg, #7d1f1f, #d04a32); transition: width 0.12s linear; }
+.battle-unit.hero .battle-hp i { background: linear-gradient(90deg, #2f6d3a, #6fbf6a); }
+.battle-damage-float {
+  position: absolute;
+  z-index: 5;
+  color: #ffd28a;
+  font-weight: 700;
+  font-size: 1rem;
+  text-shadow: 0 2px 0 #000;
+  animation: battle-float 1s ease-out forwards;
+  pointer-events: none;
+}
+.battle-gold-float { animation: battle-float 1s ease-out forwards; }
+@keyframes battle-float {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-2.2rem); opacity: 0; }
+}
+.battle-banner {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 18%;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--gold);
+  border-radius: 0.4rem;
+  background: rgba(10, 8, 6, 0.9);
+  color: var(--gold);
+  font-family: var(--serif);
+  animation: battle-banner 1.6s ease-out forwards;
+}
+@keyframes battle-banner {
+  0% { opacity: 0; transform: translate(-50%, 0.5rem); }
+  15%, 70% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -0.5rem); }
+}
+.battle-room-progress { position: absolute; z-index: 2; left: 50%; bottom: 0.7rem; transform: translateX(-50%); display: flex; gap: 0.25rem; }
+.battle-room { display: flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border: 1px solid #3a3328; border-radius: 0.3rem; color: #6a6256; background: rgba(8, 7, 6, 0.7); }
+.battle-room.cleared { color: #bfa77a; }
+.battle-room.current { border-color: var(--gold); color: var(--gold); }
+.battle-room .ico { width: 0.9rem; height: 0.9rem; }
+.battle-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.45rem 0.8rem; border-top: 1px solid #2a2520; background: #0b0a08; color: var(--muted); font-size: 0.76rem; }
+.battle-bottom span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.battle-empty { color: var(--muted); font-style: italic; align-self: center; padding: 1rem; }
+.battle-view > .battle-empty { display: grid; place-items: center; flex: 1; }
+@media (max-width: 720px) {
+  .battle-teams { padding: 0.8rem 0.6rem 3rem; gap: 0.4rem; }
+  .battle-team { gap: 0.45rem; }
+  .battle-vs { display: none; }
+  .battle-top { flex-wrap: wrap; }
+  .battle-loot { text-align: left; }
+  .battle-bottom span:nth-child(2) { display: none; }
+}
+
+.battle-unit-floats { position: absolute; top: -0.3rem; left: 50%; transform: translateX(-50%); z-index: 4; pointer-events: none; }
+.battle-unit-float { display: block; color: #ffd28a; font-weight: 700; font-size: 0.95rem; text-shadow: 0 2px 0 #000; animation: battle-float 1s ease-out forwards; }
+.battle-unit.hit { animation: battle-shake 0.18s linear; }
+@keyframes battle-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+
+/* Ajustes de escala/cena do visualizador. */
+.battle-stage {
+  background:
+    radial-gradient(ellipse at 50% 32%, rgba(91, 82, 62, 0.24), transparent 58%),
+    linear-gradient(180deg, #0a0c0b 0%, #171a16 60%, #090a09 100%);
+}
+.battle-backdrop {
+  background:
+    radial-gradient(ellipse at 50% 78%, rgba(80, 70, 48, 0.2), transparent 55%),
+    linear-gradient(180deg, transparent 0 62%, rgba(4, 4, 4, 0.55) 100%);
+}
+.battle-scenery { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.battle-cave {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  width: 22rem;
+  height: auto;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  opacity: 0.28;
+  filter: brightness(0.55) saturate(0.7);
+}
+.battle-rock {
+  position: absolute;
+  bottom: 8%;
+  width: 5.5rem;
+  height: auto;
+  image-rendering: pixelated;
+  opacity: 0.55;
+  filter: brightness(0.55) saturate(0.6);
+}
+.battle-rock.left { left: 4%; }
+.battle-rock.right { right: 4%; transform: scaleX(-1); }
+.battle-teams {
+  position: absolute;
+  inset: 7% 5% 13%;
+  height: auto;
+  align-items: center;
+  padding: 0;
+}
+.battle-team { align-items: flex-end; }
+.battle-hero-sprite { filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45)); }
+.battle-hp { width: 4.6rem; height: 0.5rem; }
+.battle-name { font-size: 0.82rem; }
+.battle-unit { min-width: 4rem; }
+.battle-vs { opacity: 0.8; }
+
+
+/* Ataque visual simples: o time inteiro avança por um instante ao causar dano. */
+.battle-team.heroes.attacking .battle-unit { animation: battle-lunge-right 0.24s ease-out; }
+.battle-team.enemies.attacking .battle-unit { animation: battle-lunge-left 0.24s ease-out; }
+@keyframes battle-lunge-right {
+  0%, 100% { transform: translateX(0); }
+  40% { transform: translateX(0.7rem); }
+}
+@keyframes battle-lunge-left {
+  0%, 100% { transform: translateX(0); }
+  40% { transform: translateX(-0.7rem); }
+}

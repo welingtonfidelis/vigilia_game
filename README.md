@@ -2,7 +2,7 @@
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo em [GDD.md](GDD.md).
 
-**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), os primeiros blocos do M3 (salários, decretos, eventos sazonais e expansão sul) e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M2, Fase A, a primeira fatia da Fase B (cidadãos e incursões), o M3 fechado (salários, decretos, eventos sazonais e expansão sul) e o visualizador de dungeon do M4 e o pack de arte Vigília 1.7 no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ## Jogar
 
@@ -194,6 +194,14 @@ Especificação na seção 9.1 do [GDD.md](GDD.md).
 - [x] **Expansão sul:** limpar a floresta abre três lotes de moradia; o jogador escolhe em qual lote construir. Cada casa aumenta a capacidade populacional em 6 e as vagas de herói em 1.
 - [x] **Save v6 → v7** migra sozinho (distrito sul e casas).
 
-## Próximo: M4 — Profundidade
+## M4 — Profundidade (primeira fatia)
 
-Visualizador de dungeon (acompanhar heróis, monstros, dano, vida e ouro em tempo real), itens nomeados, fabricação e especializações de nível 3. Mudança de local dos prédios ficou de fora. Ver a seção 9 do [GDD.md](GDD.md).
+- [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela mostra heróis e monstros na sala, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste.
+- [ ] Itens nomeados e afixos.
+- [ ] Fabricação no ferreiro.
+- [ ] Especializações de nível 3 dos prédios.
+- [ ] Mais variações de chefe e sala.
+
+## Próximo: M4
+
+Itens nomeados, fabricação e especializações. Mudança de local dos prédios ficou de fora. Ver a seção 9 do [GDD.md](GDD.md).
