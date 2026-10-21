@@ -889,11 +889,18 @@ export class LaneRenderer {
   }
 
   private drawShadow(a: Actor): void {
+    const x = Math.round(a.x + this.lungeOffset(a));
+    const { ctx } = this;
     const w = a.boss ? 22 : 9;
-    this.ctx.fillStyle = 'rgba(0,0,0,0.38)';
-    this.ctx.beginPath();
-    this.ctx.ellipse(Math.round(a.x + this.lungeOffset(a)), a.y, w, 2.2, 0, 0, Math.PI * 2);
-    this.ctx.fill();
+    // Sombra macia em dois planos + pixels de contato para assentar os sprites no chão.
+    ctx.fillStyle = a.boss ? 'rgba(0,0,0,0.52)' : 'rgba(0,0,0,0.40)';
+    ctx.beginPath();
+    ctx.ellipse(x, a.y, w, a.boss ? 3.2 : 2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = a.side === 'hero' ? 'rgba(226, 185, 91, 0.28)' : 'rgba(145, 65, 55, 0.25)';
+    ctx.fillRect(x - (a.boss ? 5 : 2), Math.round(a.y), a.boss ? 10 : 4, 1);
+    ctx.fillStyle = 'rgba(0,0,0,0.38)';
+    ctx.fillRect(x - (a.boss ? 9 : 4), Math.round(a.y) + 1, a.boss ? 18 : 8, 1);
   }
 
   private drawActor(a: Actor): void {
