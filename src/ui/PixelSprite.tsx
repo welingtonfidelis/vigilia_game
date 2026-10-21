@@ -1,9 +1,11 @@
 // Sprites do 0x72 na UI em DOM: um recorte da folha em CSS, animado com steps().
 
-import { ACTS } from '../sim/index.ts';
-import type { ClassId, Hero, Unit, World } from '../sim/index.ts';
-import { animFrames, DUNGEON_URL, frameRect, heroSprite, MONSTERS, SHEET_0X72_SIZE, type MonsterLook } from '../render/assets.ts';
+import type { ClassId, Hero } from '../sim/index.ts';
+import { animFrames, DUNGEON_URL, frameRect, SHEET_0X72_SIZE } from '../render/assets.ts';
 import { armorIconUrl, heroPortraitUrl, packAsset, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
+
+/** Qual visual desenha cada monstro: mora em render/assets.ts (o corredor em canvas também usa). */
+export { monsterBase } from '../render/assets.ts';
 
 /** Arma de classe no ícone do pack (24×24), para a ficha do herói. */
 export function WeaponIcon(props: { classId: ClassId; scale?: number }) {
@@ -85,19 +87,6 @@ export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: bool
     />
   );
 };
-
-/** Qual visual desenha esta unidade (pack 1.7 ou eco 0x72 de um herói morto). */
-export function monsterBase(world: World, unit: Unit, act: number): MonsterLook {
-  const def = ACTS[act];
-  if (!def) return { base: 'skelet' };
-  if (unit.tags.includes('boss')) return MONSTERS[def.boss.id] ?? { base: 'big_demon' };
-  if (unit.name.startsWith('Eco de ')) {
-    const lost = world.heroes.find((h) => h.name === unit.name.slice('Eco de '.length));
-    return { base: lost ? heroSprite(lost.classId, lost.gender) : 'wogol', ghost: true };
-  }
-  const enemy = def.enemies.find((e) => unit.name.startsWith(e.name));
-  return (enemy && MONSTERS[enemy.id]) || { base: 'skelet' };
-}
 
 /** Criança do pack (16×21, dois quadros) na lista do elenco; quadro 0 parado. */
 export function ChildIcon(props: { gender: 'm' | 'f'; scale?: number }) {

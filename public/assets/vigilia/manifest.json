@@ -13246,6 +13246,1140 @@
       "notes": null,
       "license": "CC0-1.0",
       "status": "review"
+    },
+    {
+      "id": "corridor/I/wall-a",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-i-wall-a.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-a",
+      "act": "I",
+      "actName": "Catacumbas",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/I/wall-b",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-i-wall-b.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-b",
+      "act": "I",
+      "actName": "Catacumbas",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/I/floor",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-i-floor.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        64
+      ],
+      "layer": "floor",
+      "act": "I",
+      "actName": "Catacumbas",
+      "opaque": true,
+      "stageY": 128,
+      "tileX": true
+    },
+    {
+      "id": "corridor/I/fore",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-i-fore.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        32
+      ],
+      "layer": "fore",
+      "act": "I",
+      "actName": "Catacumbas",
+      "stageY": 160,
+      "tileX": true,
+      "parallax": 1.25
+    },
+    {
+      "id": "corridor/I/door",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-i-door.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        48,
+        192
+      ],
+      "layer": "door",
+      "act": "I",
+      "actName": "Catacumbas"
+    },
+    {
+      "id": "corridor/I/entry",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-i-entry.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        72,
+        192
+      ],
+      "layer": "entry",
+      "act": "I",
+      "actName": "Catacumbas",
+      "opaque": true
+    },
+    {
+      "id": "char/hero/guardiao/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-guardiao-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/arqueiro/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-arqueiro-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/guardiao/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-guardiao-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/selvagem/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-selvagem-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/selvagem/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-selvagem-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/lanceiro/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-lanceiro-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/lanceiro/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-lanceiro-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/arqueiro/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-arqueiro-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/clerigo/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-clerigo-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/clerigo/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-clerigo-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/piromante/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-piromante-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "char/hero/piromante/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-piromante-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        28
+      ],
+      "frameSize": [
+        16,
+        28
+      ],
+      "sheetSize": [
+        128,
+        28
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 16
+        }
+      },
+      "stride": 48,
+      "variant": "profile"
+    },
+    {
+      "id": "corridor/II/wall-a",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-ii-wall-a.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-a",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/II/wall-b",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-ii-wall-b.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-b",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/II/floor",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-ii-floor.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        64
+      ],
+      "layer": "floor",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "opaque": true,
+      "stageY": 128,
+      "tileX": true
+    },
+    {
+      "id": "corridor/II/fore",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-ii-fore.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        32
+      ],
+      "layer": "fore",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "stageY": 160,
+      "tileX": true,
+      "parallax": 1.25
+    },
+    {
+      "id": "corridor/II/door",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-ii-door.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        48,
+        192
+      ],
+      "layer": "door",
+      "act": "II",
+      "actName": "Minas Inundadas"
+    },
+    {
+      "id": "corridor/II/entry",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-ii-entry.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        72,
+        192
+      ],
+      "layer": "entry",
+      "act": "II",
+      "actName": "Minas Inundadas",
+      "opaque": true
+    },
+    {
+      "id": "corridor/III/wall-a",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iii-wall-a.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-a",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/III/wall-b",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iii-wall-b.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-b",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/III/floor",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iii-floor.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        64
+      ],
+      "layer": "floor",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "opaque": true,
+      "stageY": 128,
+      "tileX": true
+    },
+    {
+      "id": "corridor/III/fore",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iii-fore.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        32
+      ],
+      "layer": "fore",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "stageY": 160,
+      "tileX": true,
+      "parallax": 1.25
+    },
+    {
+      "id": "corridor/III/door",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iii-door.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        48,
+        192
+      ],
+      "layer": "door",
+      "act": "III",
+      "actName": "Jardim de Fungos"
+    },
+    {
+      "id": "corridor/III/entry",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iii-entry.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        72,
+        192
+      ],
+      "layer": "entry",
+      "act": "III",
+      "actName": "Jardim de Fungos",
+      "opaque": true
+    },
+    {
+      "id": "corridor/IV/wall-a",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iv-wall-a.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-a",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/IV/wall-b",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iv-wall-b.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-b",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/IV/floor",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iv-floor.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        64
+      ],
+      "layer": "floor",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "opaque": true,
+      "stageY": 128,
+      "tileX": true
+    },
+    {
+      "id": "corridor/IV/fore",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iv-fore.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        32
+      ],
+      "layer": "fore",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "stageY": 160,
+      "tileX": true,
+      "parallax": 1.25
+    },
+    {
+      "id": "corridor/IV/door",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iv-door.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        48,
+        192
+      ],
+      "layer": "door",
+      "act": "IV",
+      "actName": "Cidade Afogada"
+    },
+    {
+      "id": "corridor/IV/entry",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-iv-entry.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        72,
+        192
+      ],
+      "layer": "entry",
+      "act": "IV",
+      "actName": "Cidade Afogada",
+      "opaque": true
+    },
+    {
+      "id": "corridor/V/wall-a",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-v-wall-a.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-a",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/V/wall-b",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-v-wall-b.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-b",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/V/floor",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-v-floor.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        64
+      ],
+      "layer": "floor",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "opaque": true,
+      "stageY": 128,
+      "tileX": true
+    },
+    {
+      "id": "corridor/V/fore",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-v-fore.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        32
+      ],
+      "layer": "fore",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "stageY": 160,
+      "tileX": true,
+      "parallax": 1.25
+    },
+    {
+      "id": "corridor/V/door",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-v-door.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        48,
+        192
+      ],
+      "layer": "door",
+      "act": "V",
+      "actName": "Forja Abissal"
+    },
+    {
+      "id": "corridor/V/entry",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-v-entry.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        72,
+        192
+      ],
+      "layer": "entry",
+      "act": "V",
+      "actName": "Forja Abissal",
+      "opaque": true
+    },
+    {
+      "id": "corridor/VI/wall-a",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-vi-wall-a.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-a",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/VI/wall-b",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-vi-wall-b.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        192
+      ],
+      "layer": "wall-b",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "opaque": true,
+      "tileX": true
+    },
+    {
+      "id": "corridor/VI/floor",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-vi-floor.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        64
+      ],
+      "layer": "floor",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "opaque": true,
+      "stageY": 128,
+      "tileX": true
+    },
+    {
+      "id": "corridor/VI/fore",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-vi-fore.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        320,
+        32
+      ],
+      "layer": "fore",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "stageY": 160,
+      "tileX": true,
+      "parallax": 1.25
+    },
+    {
+      "id": "corridor/VI/door",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-vi-door.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        48,
+        192
+      ],
+      "layer": "door",
+      "act": "VI",
+      "actName": "Coração do Abismo"
+    },
+    {
+      "id": "corridor/VI/entry",
+      "type": "arena-layer",
+      "file": "export/corridor/corridor-vi-entry.png",
+      "anchor": [
+        0,
+        0
+      ],
+      "size": [
+        72,
+        192
+      ],
+      "layer": "entry",
+      "act": "VI",
+      "actName": "Coração do Abismo",
+      "opaque": true
     }
   ],
   "planned": {

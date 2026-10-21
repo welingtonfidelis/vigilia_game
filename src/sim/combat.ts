@@ -8,7 +8,7 @@ import { makeEnemy, spawnRoom } from './dungeon.ts';
 import { epitaph, maybeInjure, widow } from './people.ts';
 import { addBond, fleeThreshold, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
 import { chance, int, pick, range, shuffle, weighted } from './rng.ts';
-import type { Combat, Hero, Party, Room, Unit, World } from './types.ts';
+import type { Combat, CombatEvent, Hero, Party, Room, Unit, World } from './types.ts';
 
 export type CombatResult = 'andamento' | 'vitoria' | 'retirada' | 'massacre';
 
@@ -139,8 +139,10 @@ function heroAct(world: World, party: Party, c: Combat, u: Unit): void {
         const beloved = hurt.find((a) => a.heroId !== null && a.hp / a.maxHp < 0.6 && getBond(world, hero.id, a.heroId) > 50);
         const target = beloved ?? hurt.reduce((lo, a) => (a.hp / a.maxHp < lo.hp / lo.maxHp ? a : lo));
         const heal = atk * B.healMult * (c.enraged ? B.enrageHealMult : 1);
+        const before = target.hp;
         target.hp = Math.min(target.maxHp, target.hp + heal);
         target.poisonTicks = 0;
+        logEvent(c, 'heal', u, target, target.hp - before, false);
         return;
       }
       atk *= 0.6;
@@ -203,16 +205,31 @@ function enemyAct(world: World, party: Party, c: Combat, u: Unit): void {
   if (u.affixes.includes('vampirico')) u.hp = Math.min(u.maxHp, u.hp + dealt * 0.3);
 }
 
+/** Guarda o golpe para a tela (no máximo os últimos LOG_SIZE). */
+const LOG_SIZE = 40;
+
+function logEvent(c: Combat, kind: CombatEvent['kind'], from: Unit, to: Unit, amount: number, crit: boolean): CombatEvent {
+  const log = (c.log ??= []);
+  const event: CombatEvent = { n: (c.seq = (c.seq ?? 0) + 1), t: c.ticks, kind, from: from.uid, to: to.uid, amount, crit, kill: false };
+  log.push(event);
+  if (log.length > LOG_SIZE) log.splice(0, log.length - LOG_SIZE);
+  return event;
+}
+
 function strike(world: World, party: Party, c: Combat, attacker: Unit, target: Unit, base: number): number {
   if (!target.alive) return 0;
   const crit = chance(world.rng, attacker.crit) ? B.critMult : 1;
   const dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - attacker.pierce));
   target.hp -= dmg;
+  const event = logEvent(c, 'hit', attacker, target, dmg, crit > 1);
   if (target.side === 'hero') {
     const hero = heroOf(world, target)!;
     if (target.hp / target.maxHp < 0.3) hero.morale = Math.max(0, hero.morale - (hasTrait(hero, 'bravo') ? 3 : 6));
   }
-  if (target.hp <= 0) kill(world, party, c, target, attacker, attacker.name);
+  if (target.hp <= 0) {
+    event.kill = true;
+    kill(world, party, c, target, attacker, attacker.name);
+  }
   return dmg;
 }
 
@@ -251,7 +268,11 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
     if (unit.affixes.includes('explosivo')) {
       for (const h of activeHeroUnits(c)) {
         h.hp -= unit.maxHp * 0.08;
-        if (h.hp <= 0) kill(world, party, c, h, unit, `a explosão de ${unit.name}`);
+        const blast = logEvent(c, 'blast', unit, h, unit.maxHp * 0.08, false);
+        if (h.hp <= 0) {
+          blast.kill = true;
+          kill(world, party, c, h, unit, `a explosão de ${unit.name}`);
+        }
       }
     }
     return;

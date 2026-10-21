@@ -229,6 +229,27 @@ export interface Combat {
   mechCd: number;
   echoesSpawned: boolean;
   nextUid: number;
+  /**
+   * Últimos golpes e curas, só para a tela animar quem atacou quem. A simulação
+   * escreve e nunca lê (não muda resultado). Opcional: saves antigos não têm.
+   */
+  log?: CombatEvent[];
+  /** Contador do registro (o `n` do próximo evento). */
+  seq?: number;
+}
+
+export interface CombatEvent {
+  /** Número sequencial dentro deste combate. */
+  n: number;
+  /** Tick do combate em que aconteceu. */
+  t: number;
+  kind: 'hit' | 'heal' | 'blast';
+  /** uid de quem agiu e de quem recebeu. */
+  from: number;
+  to: number;
+  amount: number;
+  crit: boolean;
+  kill: boolean;
 }
 
 export type RoomKind = 'matilha' | 'elite' | 'bau' | 'santuario' | 'vazia' | 'prisioneiro' | 'restos' | 'chefe';

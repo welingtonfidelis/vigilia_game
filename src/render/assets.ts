@@ -3,7 +3,8 @@
 //   Kenney · Tiny Town ........ vila (tiles 16×16, folha 12×11 sem espaçamento)
 //   0x72 · DungeonTileset II .. heróis, monstros, moedas e a masmorra
 
-import type { ClassId, Gender } from '../sim/index.ts';
+import { ACTS } from '../sim/index.ts';
+import type { ClassId, Gender, Unit, World } from '../sim/index.ts';
 import { FRAMES_0X72, SHEET_0X72_SIZE } from './atlas0x72.ts';
 
 const BASE = import.meta.env?.BASE_URL ?? '/';
@@ -167,6 +168,19 @@ export const MONSTERS: Record<string, MonsterLook> = {
   arauto: { asset: 'char/monster/arauto', frameSize: [16, 23] },
   aquiloQueVigia: { asset: 'char/boss/aquiloQueVigia', frameSize: [32, 36] },
 };
+
+/** Qual visual desenha esta unidade (pack 1.7 ou eco 0x72 de um herói morto). */
+export function monsterBase(world: World, unit: Unit, act: number): MonsterLook {
+  const def = ACTS[act];
+  if (!def) return { base: 'skelet' };
+  if (unit.tags.includes('boss')) return MONSTERS[def.boss.id] ?? { base: 'big_demon' };
+  if (unit.name.startsWith('Eco de ')) {
+    const lost = world.heroes.find((h) => h.name === unit.name.slice('Eco de '.length));
+    return { base: lost ? heroSprite(lost.classId, lost.gender) : 'wogol', ghost: true };
+  }
+  const enemy = def.enemies.find((e) => unit.name.startsWith(e.name));
+  return (enemy && MONSTERS[enemy.id]) || { base: 'skelet' };
+}
 
 /** Quadros de uma animação (idle/run quando existe, senão a animação única). */
 export function animFrames(base: string, kind: 'idle' | 'run'): string[] {

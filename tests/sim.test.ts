@@ -762,3 +762,29 @@ describe('vila e incursões (M3)', () => {
     expect(loaded.town.lastRaidDay).toBe(-1);
   });
 });
+
+describe('registro de golpes do combate (para a tela)', () => {
+  it('registra quem atacou quem, com teto, mortes marcadas e uids válidos', () => {
+    const world = createWorld(41);
+    let checked = 0;
+    for (let i = 0; i < 40 * TICKS_PER_DAY && checked < 3; i++) {
+      runTicks(world, 1, bot);
+      for (const party of world.parties) {
+        const c = party.combat;
+        if (!c || !c.log || c.log.length < 10) continue;
+        const uids = new Set(c.units.map((u) => u.uid));
+        expect(c.log.length).toBeLessThanOrEqual(40);
+        for (const e of c.log) {
+          expect(uids.has(e.from)).toBe(true);
+          expect(uids.has(e.to)).toBe(true);
+          expect(['hit', 'heal', 'blast']).toContain(e.kind);
+          if (e.kill) expect(c.units.find((u) => u.uid === e.to)!.alive).toBe(false);
+        }
+        const ns = c.log.map((e) => e.n);
+        expect([...ns].sort((a, b) => a - b)).toEqual(ns);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+});

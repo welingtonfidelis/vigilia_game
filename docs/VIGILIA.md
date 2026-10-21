@@ -1,6 +1,6 @@
 # Vigília — documentação única
 
-Versão do documento: 2026-10-20
+Versão do documento: 2026-10-21
 Jogo: **Vigília** — simulação de vila + expedições automáticas ao abismo.
 Stack: TypeScript, Vite, Preact e Phaser 3.
 Pack de arte atual: **Vigília Art Pack 1.9.0** (CC0 1.0, Equipe Vigília).
@@ -16,7 +16,8 @@ O README da raiz é apenas uma porta de entrada.
 2. [Game Design Document](#2-game-design-document)
 3. [Direção de arte e pipeline](#3-direção-de-arte-e-pipeline)
 4. [Kit de arena da dungeon — pedido entregue no pack 1.9](#4-kit-de-arena-da-dungeon--pedido-entregue-no-pack-19)
-5. [Histórico de decisões e pedidos antigos](#5-histórico-de-decisões-e-pedidos-antigos)
+5. [Corredor da dungeon — pedido de arte (pack 2.0, em aberto)](#5-corredor-da-dungeon--pedido-de-arte-pack-20-em-aberto)
+6. [Histórico de decisões e pedidos antigos](#6-histórico-de-decisões-e-pedidos-antigos)
 
 ---
 
@@ -70,6 +71,7 @@ src/render/ Phaser: só lê o World a cada quadro
   buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
   sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
+  lane/          corredor da dungeon em Canvas 2D (sem Phaser): model.ts (posições, câmera, névoa, golpes novos; puro, testado), sprites.ts, renderer.ts
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
 src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
   director.ts    eventos → efeitos (prioridade e intervalo mínimo) e clima do mundo → música (puro, testado)
@@ -222,7 +224,7 @@ Especificação na seção 9.1 do GDD (neste documento).
 
 - [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela usa as **arenas em camadas do pack 1.9** (fundo por ato e por andar, piso, primeiro plano, props e moldura), heróis e monstros com animações de idle/ataque/dano/morte, variantes de profundidade dos monstros, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste. Até três expedições aparecem empilhadas, cada card tem seu próprio sino (chama só aquele grupo, ao custo de 1 de reputação) e, ao terminar, cada uma gera um relatório com XP, ouro, salas, andar vencido, heróis caídos e heróis que subiram de nível.
 - [x] **Efeitos e retratos:** impacto/corte do ato no alvo e retratos 32×36 dos monstros no painel do Abismo.
-- [x] **Avanço pela dungeon:** fora do combate o chão e o primeiro plano correm, o fundo faz parallax e os heróis usam a animação de corrida; ao voltar, o sentido inverte.
+- [x] **Corredor lateral:** o andar inteiro virou uma faixa em canvas (`src/render/lane/`). O grupo anda de verdade de sala em sala, no compasso da simulação, e as pernas seguem a distância percorrida (sem deslizar em 4×); a câmera acompanha; a névoa esconde o que falta explorar, com olhos nas salas de luta; cada golpe vem do registro do combate (`combat.log`) com investida corpo a corpo ou projétil, número, flash e sangue que fica no chão junto com os corpos. A lista do grupo fica numa coluna ao lado (faixa embaixo no celular). A arte ainda é a 1.9 montada por sala; o pedido da arte contínua está na seção 5.
 - [x] **Chefes e fases:** fundo do quarto do chefe, portão, círculo ritual, faixa de chefe, posicionamento dos lacaios e troca para a variante de fase 2 abaixo de 50% de vida. Teste cobre os seis atos e as 24 variantes.
 - [x] **Mobile:** até três dungeons empilhadas com escala proporcional ao espaço, sem overflow horizontal.
 - [x] **Histórico:** os últimos 10 relatórios ficam no armazenamento local e podem ser reabertos pelo Abismo ou pelo botão Relatórios.
@@ -1475,7 +1477,119 @@ desceu mais fundo no abismo.
 
 ---
 
-## 5. Histórico de decisões e pedidos antigos
+## 5. Corredor da dungeon — pedido de arte (pack 2.0, em aberto)
+
+Jogo: Vigília · Pack atual: 1.9.0 · Data: 2026-10-21 · Status: **corredor dos 6 atos e caminhada de perfil dos 12 heróis entregues e no jogo** (paredes A/B, piso, primeiro plano, arco e escada por ato; 6 classes × 2 gêneros andando de lado). Seguem pedidos: caminhada de perfil dos monstros, objetos de sala próprios do corredor, projéteis e variantes `wall-deep`. A montagem com a arte 1.9 fica só como reserva, para um ato sem peças `corridor/<ato>/*`.
+
+### 5.1 Por que um pedido novo
+
+O visualizador de dungeon deixou de ser um palco por sala e virou um **corredor lateral contínuo**, como no jogo de referência: o andar inteiro é uma faixa, o grupo anda de verdade de sala em sala, a câmera acompanha, os monstros esperam na névoa e o sangue e os corpos ficam no caminho. A arte 1.9 foi desenhada para o palco antigo e não serve bem para isso:
+
+- **Os fundos são composições frontais fechadas** (centro limpo, laterais pesadas). Lado a lado, repetem a cada 320 px e a emenda vira um pilar duplo com duas tochas.
+- **Os heróis e monstros andam de frente.** O quadro de corrida 1.9 é frontal, com as pernas quase paradas; deslizando de lado, parece patinação. É a principal causa do "andar ruim".
+- **O primeiro plano** foi pensado para a borda de um palco e cobre os pés da fileira da frente quando passa.
+
+Este lote pede arte que **flui na horizontal**: camadas sem emenda, peças de porta para marcar as salas e ciclos de caminhada **de perfil**.
+
+### 5.2 Como a tela funciona (o contrato)
+
+| Item | Valor |
+|---|---|
+| Altura da faixa | **192 px** de arte (1×) |
+| Sala | **320 px** de largura; o andar tem 5 a 8 salas (1.700 a 2.700 px) |
+| Patamar de entrada | 72 px antes da primeira sala (o grupo sai da escada e espera ali enquanto desce) |
+| Escala na tela | inteira, 2× a 5× conforme o espaço; nearest-neighbor |
+| Largura à mostra | ~280–340 px de arte no computador, ~200–280 px no celular |
+| Faixa sempre visível | **y 56..192**; o teto (y 0..56) pode ser cortado em telas baixas |
+| Linha do piso | a parede encontra o chão perto de **y 128–136** |
+| Fileiras dos pés | **y 154** (trás) e **y 168** (frente) |
+| Onde o grupo para | x 136 da sala; os monstros esperam a partir de x 214 |
+| Desenhado pelo jogo | névoa à frente, vida, números, ouro, sombras, partículas de sangue, flash de dano, investidas e projéteis em movimento |
+
+Ordem de desenho: `far` (opcional, parallax 0,5) → `wall` → `door` → `floor` → props de sala → decalques → personagens → projéteis/FX → `fore` (parallax 1,25) → névoa → HUD.
+
+### 5.3 Camadas contínuas por ato (6 atos)
+
+Paleta, motivos e props de cada ato são os da seção 4 (catacumbas, minas inundadas, jardim de fungos, cidade afogada, forja abissal, coração do abismo).
+
+| ID | Tamanho | Fundo | Regra |
+|---|---|---|---|
+| `corridor/<ato>/wall-a` | 320×192 | opaco | parede contínua; a coluna 0 continua a coluna 319 |
+| `corridor/<ato>/wall-b` | 320×192 | opaco | variação que emenda com a A em qualquer ordem (A·B, B·A, B·B) |
+| `corridor/<ato>/floor` | 320×64 | opaco | piso visto de lado, y 128..192 da faixa; sem emenda |
+| `corridor/<ato>/fore` | 320×32 | transparente | entulho/raízes na base (y 160..192); nada acima de 20 px de altura; no máximo 30% da largura coberta |
+| `corridor/<ato>/door` | 48×192 | transparente | passagem entre salas (arco, batente, viga); o jogo põe uma em cada divisa |
+| `corridor/<ato>/entry` | 72×192 | opaco | patamar com a escada que desce da esquerda |
+| `corridor/<ato>/door-boss` | 64×192 | transparente | portão do chefe; dois estados: fechado e arrombado |
+
+Regras das camadas:
+
+- **Sem marcos únicos na parede.** Uma rachadura grande ou uma estátua na `wall` repete a cada 320 px e denuncia a repetição; marcos vão para `door` e para os props.
+- **Luz de cima, uniforme.** Nada de foco de luz assado num ponto da parede; tochas e velas são props animados que o jogo posiciona.
+- **Profundidade por andar** continua como na seção 4: o jogo escurece e tinge a parede conforme o andar. Se houver orçamento, `wall-deep-a` e `wall-deep-b` por ato para o andar 3 (núcleo), com veios, rachaduras e corrupção.
+
+### 5.4 Personagens de perfil (o que conserta o andar)
+
+Acrescentar às folhas existentes, **sem mudar os quadros atuais**, uma animação `walk` de perfil voltada para a direita (o jogo espelha para a esquerda):
+
+| Conjunto | Quadros | Tamanho | Pés |
+|---|---|---|---|
+| 12 heróis (6 classes × 2 gêneros) | 8 | 16×28 | y 27 do quadro |
+| 18 monstros normais | 6 a 8 | o canvas atual (16×16 ou 16×23) | última linha do quadro |
+| 6 chefes | 6 a 8 | 32×36 | última linha do quadro |
+
+- Ciclo completo de dois passos; informe no manifesto quantos px o personagem avança por ciclo (`stride`, por exemplo 48). O jogo troca de quadro pela distância percorrida, então o pé de apoio fica parado no chão em qualquer velocidade (1×, 2×, 4×).
+- Mesma silhueta, paleta e arma da versão frontal; a classe precisa ser reconhecível de lado.
+- Recomendado no mesmo lote: `attack-side` (4 quadros) de perfil, para a investida ler melhor. O idle pode continuar 3/4.
+- As variantes `deep`, `core` e `phase2` herdam os mesmos quadros de caminhada.
+
+### 5.5 Salas, projéteis e decalques
+
+| ID | Tamanho | Quadros | Uso |
+|---|---|---|---|
+| `prop/corridor/chest` | 24×20 | 3: fechado, abrindo, aberto | sala de baú |
+| `prop/corridor/shrine` | 32×40 | 4 de brilho | santuário |
+| `prop/corridor/prisoner` | 24×32 | 2: preso, solto | prisioneiro (grilhões na parede) |
+| `prop/corridor/remains` | 24×12 | 1 | restos de um herói |
+| `prop/corridor/<ato>/light` | 16×32 | 4 | luz própria do ato (vela, lanterna afogada, cogumelo, coral, braseiro, olho) |
+| `fx/projectile/arrow` | 8×3 | 1 | arqueiro |
+| `fx/projectile/fire` | 8×8 | 4 | piromante |
+| `fx/projectile/holy` | 8×8 | 4 | clérigo |
+| `fx/projectile/dark` | 8×8 | 4 | monstros à distância |
+| `decal/corridor/<ato>/blood` | 8×3 | 6 variações | sangue que fica no chão (cor do ato) |
+| `fx/fog-edge` | 64×192 | 1 | borda da névoa em dither, preto para transparente |
+
+### 5.6 Lotes
+
+**Lote A — essencial**
+- [ ] `wall-a`, `wall-b`, `floor`, `fore`, `door`, `entry` dos 6 atos
+- [ ] `walk` de perfil dos 12 heróis
+
+**Lote B — leitura do combate e das salas**
+- [ ] `walk` de perfil dos 18 monstros e 6 chefes
+- [ ] `door-boss` dos 6 atos
+- [ ] baú, santuário, prisioneiro, restos
+- [ ] 4 projéteis
+
+**Lote C — polimento**
+- [ ] `wall-deep-a/b` por ato, camada `far` e teto opcional (`ceiling`, 320×56, correntes e estalactites)
+- [ ] `attack-side` de heróis e monstros
+- [ ] luz própria por ato, sangue por ato, borda da névoa
+
+### 5.7 Critérios de aceite
+
+- Montar uma faixa de teste `entry · A · door · B · door · A · door · A · door-boss` (cerca de 1.400 px) e olhar a 3×: **nenhuma emenda visível**, nenhuma repetição óbvia.
+- Herói andando a 96 px/s com o `stride` informado: o pé de apoio não escorrega.
+- Fileira da frente (pés em y 168) inteira à vista com o `fore` por cima.
+- Mesmas regras técnicas da seção 3.2.3: PNG-32, 1×, sem anti-alias, sem sombra ou glow assados, sem texto.
+- Folha de contato com uma faixa por ato e os ciclos de caminhada no tamanho do jogo.
+
+### 5.8 Como está no jogo
+
+- **Arte do corredor:** gerada pelos módulos `source/generator/corridor.py` (Ato I, caminhadas, exportação) e `corridor_acts.py` (atos II a VI) do pack, o mesmo gerador em Python das outras peças (`python corridor.py <saída>`); a folha `preview/corridor-acts-contact-x2.png` mostra as seis faixas de teste. As peças ficam em `public/assets/vigilia/export/corridor/` e as entradas `corridor/<ato>/*` (seis atos) e `char/hero/<classe>/<g>/walk` (os 12 heróis) no manifesto; a folha de conferência fica em `preview/corridor-heroes-walk-x4.png` do pack. A parede de cada sala sai de `wallVariant` (fixa por andar, ~40% de `b`); o arco fica em cada divisa e as tochas ao lado dele. A caminhada de perfil troca de quadro pela distância andada (`stride` 48 px por ciclo, 16 quadros/s no passo normal); parado, o herói volta à pose de frente.
+- **Reserva:** sem as peças de corredor de um ato, `src/render/lane/` monta o corredor com a arte 1.9: um painel `back`/`back-N` por sala com os pilares `mid` escondendo a emenda, tochas nas divisas, piso e primeiro plano repetidos (o primeiro plano 18 px mais baixo). 
+
+## 6. Histórico de decisões e pedidos antigos
 
 Pedidos já concluídos ou descartados; não são mais documentos separados:
 
