@@ -129,12 +129,13 @@ describe('formação de grupos', () => {
     expect(world.parties.length).toBeGreaterThan(0);
   });
 
+  // Campanha inteira: ~2 s aqui, mais de 5 s no servidor do GitHub; o prazo padrão não basta.
   it('semente 6 joga 30 anos sem ócio prolongado', () => {
     const world = createWorld(6);
     runDays(world, 30 * DAYS_PER_YEAR, bot);
     expect(world.metrics.longestIdleStreak).toBeLessThanOrEqual(4);
     expect(world.metrics.stalemates).toBe(0);
-  });
+  }, 30_000);
 });
 
 describe('combate', () => {
