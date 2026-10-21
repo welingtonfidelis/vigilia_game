@@ -113,18 +113,21 @@ function HeroModel(props: { hero: Hero; asset: PackAsset; scale: number; animate
   return <span class={`hero-model${props.animate ? ' animate' : ''}${ghost}`} style={style} aria-hidden="true" />;
 }
 
-/** Criança do pack (16×21, dois quadros) na lista do elenco; quadro 0 parado. */
+/** Criança do pack na lista do elenco: quadro 0 parado, no tamanho que a folha tiver. */
 export function ChildIcon(props: { gender: 'm' | 'f'; scale?: number }) {
   const s = props.scale ?? 1;
+  const asset = packAsset(`char/child/${props.gender}`);
+  if (!asset) return null;
+  const [w, h] = asset.frameSize ?? [16, 24];
   return (
     <span
       class="pack-child"
       aria-hidden="true"
       style={{
-        width: `${16 * s}px`,
-        height: `${21 * s}px`,
-        backgroundImage: `url(${PACK_BASE}export/png/char-child-${props.gender}.png)`,
-        backgroundSize: `${32 * s}px ${21 * s}px`,
+        width: `${w * s}px`,
+        height: `${h * s}px`,
+        backgroundImage: `url(${PACK_BASE}${asset.file})`,
+        backgroundSize: `${w * (asset.columns ?? 1) * s}px ${h * s}px`,
         backgroundPosition: '0 0',
       }}
     />

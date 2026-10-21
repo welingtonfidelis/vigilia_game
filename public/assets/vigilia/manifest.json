@@ -1614,37 +1614,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/lavrador/f",
@@ -1660,37 +1661,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/artesa/m",
@@ -1706,37 +1708,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/artesa/f",
@@ -1752,37 +1755,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/acolito/m",
@@ -1798,37 +1802,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/acolito/f",
@@ -1844,37 +1849,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/guarda/m",
@@ -1890,37 +1896,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/villager/guarda/f",
@@ -1936,37 +1943,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Sem arma.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. 0 parado, 1 passo esquerdo, 2 passo direito.",
       "size": [
-        16,
-        21
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        21
+        24,
+        32
       ],
       "sheetSize": [
-        32,
-        21
+        72,
+        32
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/hero/guardiao/m",
@@ -2911,24 +2919,24 @@
           "fps": 10
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Jogador: casaco teal, corrente de oficio, chapeu com pena, lanterna (cor ambar, sem glow).",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. Idle 0-3, corrida 4-7.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        128,
-        23
+        192,
+        32
       ],
       "columns": 8,
       "rows": 1,
       "frames": 8,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/mayor/f",
@@ -2961,24 +2969,24 @@
           "fps": 10
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Jogador: casaco teal, corrente de oficio, chapeu com pena, lanterna (cor ambar, sem glow). Variante feminina.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. Idle 0-3, corrida 4-7.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        128,
-        23
+        192,
+        32
       ],
       "columns": 8,
       "rows": 1,
       "frames": 8,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/icon/activity/descansar",
@@ -3784,37 +3792,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Mais baixa que os adultos dentro do mesmo canvas 16x21.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. Criança 16x22: 0 parado, 1 e 2 passos.",
       "size": [
         16,
-        21
+        22
       ],
       "frameSize": [
         16,
-        21
+        22
       ],
       "sheetSize": [
-        32,
-        21
+        48,
+        22
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/child/f",
@@ -3830,37 +3839,38 @@
       "animations": {
         "idle": {
           "frames": [
-            0,
-            1
+            0
           ],
-          "fps": 3
+          "fps": 1
         },
         "walk": {
           "frames": [
+            1,
             0,
-            1
+            2,
+            0
           ],
           "fps": 8
         }
       },
-      "notes": "De frente, com leve giro 3/4 para a direita; o flip X do motor continua valendo. Pes no pivo 0.5,1 em todos os quadros. Mais baixa que os adultos dentro do mesmo canvas 16x21.",
+      "notes": "Estilo do Sentinela. De frente com leve giro 3/4; o motor espelha. Pés no pivô 0.5,1. Criança 16x22: 0 parado, 1 e 2 passos.",
       "size": [
         16,
-        21
+        22
       ],
       "frameSize": [
         16,
-        21
+        22
       ],
       "sheetSize": [
-        32,
-        21
+        48,
+        22
       ],
-      "columns": 2,
+      "columns": 3,
       "rows": 1,
-      "frames": 2,
+      "frames": 3,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "tile/town/cemetery-fence",
@@ -4132,22 +4142,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        16
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/rato",
@@ -4212,22 +4222,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
+        24,
         16
       ],
       "frameSize": [
-        16,
+        24,
         16
       ],
       "sheetSize": [
-        304,
+        456,
         16
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/acolito",
@@ -4292,22 +4302,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/mineiro",
@@ -4372,22 +4382,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/enguia",
@@ -4452,22 +4462,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        16
+        24,
+        24
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        24
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/golem",
@@ -4532,22 +4542,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/esporento",
@@ -4612,22 +4622,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        16
+        24,
+        24
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        24
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/aranha",
@@ -4692,22 +4702,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        32,
+        24
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        24
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/brotado",
@@ -4772,22 +4782,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        16
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        16
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        16
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/sacerdote",
@@ -4852,22 +4862,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/sereia",
@@ -4932,22 +4942,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        16
+        24,
+        28
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        28
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        28
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/cavaleiroSalobro",
@@ -5012,22 +5022,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/ferreiroCinzento",
@@ -5092,22 +5102,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/caoBrasa",
@@ -5172,22 +5182,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        16
+        24,
+        18
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        18
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        18
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/escravoForja",
@@ -5252,22 +5262,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/sombra",
@@ -5332,22 +5342,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/lamento",
@@ -5412,22 +5422,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/arauto",
@@ -5492,22 +5502,22 @@
       "panelScale": 2,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo.",
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/boss/guardiaoUrnas",
@@ -5572,22 +5582,22 @@
       "panelScale": 1,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
-        32,
-        36
+        48,
+        56
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        56
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        56
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/boss/couraca",
@@ -5652,22 +5662,22 @@
       "panelScale": 1,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
-        32,
-        36
+        56,
+        48
       ],
       "frameSize": [
-        32,
-        36
+        56,
+        48
       ],
       "sheetSize": [
-        608,
-        36
+        1064,
+        48
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/boss/maeBolor",
@@ -5732,22 +5742,22 @@
       "panelScale": 1,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
-        32,
-        36
+        48,
+        56
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        56
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        56
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/boss/arcebispo",
@@ -5812,22 +5822,22 @@
       "panelScale": 1,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
-        32,
-        36
+        48,
+        60
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        60
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        60
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/boss/martelo",
@@ -5892,22 +5902,22 @@
       "panelScale": 1,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
-        32,
-        36
+        48,
+        56
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        56
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        56
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/boss/aquiloQueVigia",
@@ -5972,22 +5982,22 @@
       "panelScale": 1,
       "notes": "Painel do Abismo: usa so idle (0-3, 6 fps); run 4-7, ataque 8-11, dano 12-13, morte 14-18. De frente, sem flip. Paleta propria: remover o tint do 0x72 no jogo. Desenho unico (nao repete base).",
       "size": [
-        32,
-        36
+        64,
+        64
       ],
       "frameSize": [
-        32,
-        36
+        64,
+        64
       ],
       "sheetSize": [
-        608,
-        36
+        1216,
+        64
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "tile/town/autumn-grass-0",
@@ -9187,22 +9197,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/esqueleto-core",
@@ -9271,22 +9281,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/esqueleto",
@@ -9375,22 +9385,22 @@
         }
       },
       "size": [
-        16,
+        24,
         16
       ],
       "frameSize": [
-        16,
+        24,
         16
       ],
       "sheetSize": [
-        304,
+        456,
         16
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/rato-core",
@@ -9459,22 +9469,22 @@
         }
       },
       "size": [
-        16,
+        24,
         16
       ],
       "frameSize": [
-        16,
+        24,
         16
       ],
       "sheetSize": [
-        304,
+        456,
         16
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/rato",
@@ -9563,22 +9573,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/acolito-core",
@@ -9647,22 +9657,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/acolito",
@@ -9751,22 +9761,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/mineiro-core",
@@ -9835,22 +9845,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/mineiro",
@@ -9939,22 +9949,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        24
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        24
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/enguia-core",
@@ -10023,22 +10033,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        24
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        24
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/enguia",
@@ -10127,22 +10137,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/golem-core",
@@ -10211,22 +10221,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/golem",
@@ -10315,22 +10325,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        24
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        24
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/esporento-core",
@@ -10399,22 +10409,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        24
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        24
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/esporento",
@@ -10503,22 +10513,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        24
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        24
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/aranha-core",
@@ -10587,22 +10597,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        24
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        24
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        24
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/aranha",
@@ -10691,22 +10701,22 @@
         }
       },
       "size": [
-        16,
-        16
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        16
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        16
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/brotado-core",
@@ -10775,22 +10785,22 @@
         }
       },
       "size": [
-        16,
-        16
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        16
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        16
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/brotado",
@@ -10879,22 +10889,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/sacerdote-core",
@@ -10963,22 +10973,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/sacerdote",
@@ -11067,22 +11077,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        28
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        28
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        28
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/sereia-core",
@@ -11151,22 +11161,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        28
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        28
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        28
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/sereia",
@@ -11255,22 +11265,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/cavaleiroSalobro-core",
@@ -11339,22 +11349,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/cavaleiroSalobro",
@@ -11443,22 +11453,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/ferreiroCinzento-core",
@@ -11527,22 +11537,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/ferreiroCinzento",
@@ -11631,22 +11641,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        18
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        18
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        18
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/caoBrasa-core",
@@ -11715,22 +11725,22 @@
         }
       },
       "size": [
-        16,
-        16
+        24,
+        18
       ],
       "frameSize": [
-        16,
-        16
+        24,
+        18
       ],
       "sheetSize": [
-        304,
-        16
+        456,
+        18
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/caoBrasa",
@@ -11819,22 +11829,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/escravoForja-core",
@@ -11903,22 +11913,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/escravoForja",
@@ -12007,22 +12017,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/sombra-core",
@@ -12091,22 +12101,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/sombra",
@@ -12195,22 +12205,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/lamento-core",
@@ -12279,22 +12289,22 @@
         }
       },
       "size": [
-        16,
-        23
+        24,
+        32
       ],
       "frameSize": [
-        16,
-        23
+        24,
+        32
       ],
       "sheetSize": [
-        304,
-        23
+        456,
+        32
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/lamento",
@@ -12383,22 +12393,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "char/monster/arauto-core",
@@ -12467,22 +12477,22 @@
         }
       },
       "size": [
-        16,
-        23
+        32,
+        40
       ],
       "frameSize": [
-        16,
-        23
+        32,
+        40
       ],
       "sheetSize": [
-        304,
-        23
+        608,
+        40
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/monster/arauto",
@@ -12570,22 +12580,22 @@
         }
       },
       "size": [
-        32,
-        36
+        48,
+        56
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        56
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        56
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/boss/guardiaoUrnas",
@@ -12673,22 +12683,22 @@
         }
       },
       "size": [
-        32,
-        36
+        56,
+        48
       ],
       "frameSize": [
-        32,
-        36
+        56,
+        48
       ],
       "sheetSize": [
-        608,
-        36
+        1064,
+        48
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/boss/couraca",
@@ -12776,22 +12786,22 @@
         }
       },
       "size": [
-        32,
-        36
+        48,
+        56
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        56
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        56
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/boss/maeBolor",
@@ -12879,22 +12889,22 @@
         }
       },
       "size": [
-        32,
-        36
+        48,
+        60
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        60
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        60
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/boss/arcebispo",
@@ -12982,22 +12992,22 @@
         }
       },
       "size": [
-        32,
-        36
+        48,
+        56
       ],
       "frameSize": [
-        32,
-        36
+        48,
+        56
       ],
       "sheetSize": [
-        608,
-        36
+        912,
+        56
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/boss/martelo",
@@ -13085,22 +13095,22 @@
         }
       },
       "size": [
-        32,
-        36
+        64,
+        64
       ],
       "frameSize": [
-        32,
-        36
+        64,
+        64
       ],
       "sheetSize": [
-        608,
-        36
+        1216,
+        64
       ],
       "columns": 19,
       "rows": 1,
       "frames": 19,
       "license": "CC0-1.0",
-      "status": "review"
+      "status": "draft"
     },
     {
       "id": "ui/portrait/boss/aquiloQueVigia",

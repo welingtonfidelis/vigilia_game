@@ -245,7 +245,7 @@ export class ChildSprite extends Walker {
   }
 
   hits(x: number, y: number): boolean {
-    return !this.hidden && Math.abs(x - this.root.x) < 14 && y > this.root.y - 38 && y < this.root.y + 16;
+    return !this.hidden && Math.abs(x - this.root.x) < 14 && y > this.root.y - 42 && y < this.root.y + 16;
   }
 
   destroy(): void {
@@ -330,7 +330,7 @@ export class CitizenSprite {
     this.body.setFlipX(left);
   }
 
-  /** Quadro 0 parado; 1 e 0 alternando enquanto anda. */
+  /** Quadro parado; andando, a sequência de passos da folha (esquerdo, parado, direito, parado). */
   animate(rate: number, dt: number): void {
     if (!this.moving || rate <= 0) {
       this.frameTime = 0;
@@ -338,7 +338,8 @@ export class CitizenSprite {
       return;
     }
     this.frameTime += dt * rate;
-    const frame = Math.floor(this.frameTime * 6) % 2;
+    const walk = packAsset(this.texture)?.animations?.walk ?? { frames: [0, 1], fps: 6 };
+    const frame = walk.frames[Math.floor(this.frameTime * walk.fps) % walk.frames.length] ?? 0;
     if (this.body.frame.name !== String(frame)) this.body.setTexture(this.texture, frame);
   }
 
@@ -348,7 +349,7 @@ export class CitizenSprite {
   }
 
   hits(x: number, y: number): boolean {
-    return !this.hidden && Math.abs(x - this.root.x) < 14 && y > this.root.y - 44 && y < this.root.y + 16;
+    return !this.hidden && Math.abs(x - this.root.x) < 16 && y > this.root.y - 58 && y < this.root.y + 16;
   }
 
   destroy(): void {

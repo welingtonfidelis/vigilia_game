@@ -1,4 +1,4 @@
-// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: Sentinela e os outros 11 heróis). Não editar à mão.
+// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores e crianças). Não editar à mão.
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -851,35 +851,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -892,35 +893,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -933,35 +935,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -974,35 +977,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -1015,35 +1019,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -1056,35 +1061,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -1097,35 +1103,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -1138,35 +1145,36 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      21
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      21
+      24,
+      32
     ],
     "sheetSize": [
-      32,
-      21
+      72,
+      32
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -2019,16 +2027,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      128,
-      23
+      192,
+      32
     ],
     "frames": 8,
     "animations": {
@@ -2064,16 +2072,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      128,
-      23
+      192,
+      32
     ],
     "frames": 8,
     "animations": {
@@ -2691,34 +2699,35 @@ export const PACK_ASSETS: PackAsset[] = [
     ],
     "size": [
       16,
-      21
+      22
     ],
     "frameSize": [
       16,
-      21
+      22
     ],
     "sheetSize": [
-      32,
-      21
+      48,
+      22
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -2732,34 +2741,35 @@ export const PACK_ASSETS: PackAsset[] = [
     ],
     "size": [
       16,
-      21
+      22
     ],
     "frameSize": [
       16,
-      21
+      22
     ],
     "sheetSize": [
-      32,
-      21
+      48,
+      22
     ],
-    "frames": 2,
+    "frames": 3,
     "animations": {
       "idle": {
         "frames": [
-          0,
-          1
+          0
         ],
-        "fps": 3
+        "fps": 1
       },
       "walk": {
         "frames": [
+          1,
           0,
-          1
+          2,
+          0
         ],
         "fps": 8
       }
     },
-    "columns": 2,
+    "columns": 3,
     "rows": 1
   },
   {
@@ -2911,16 +2921,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -2985,15 +2995,15 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
+      24,
       16
     ],
     "frameSize": [
-      16,
+      24,
       16
     ],
     "sheetSize": [
-      304,
+      456,
       16
     ],
     "frames": 19,
@@ -3059,16 +3069,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -3133,16 +3143,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -3207,16 +3217,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      24
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      24
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -3281,16 +3291,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -3355,16 +3365,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      24
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      24
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -3429,16 +3439,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      24
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      24
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -3503,16 +3513,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      16
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      16
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -3577,16 +3587,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -3651,16 +3661,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      28
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      28
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      28
     ],
     "frames": 19,
     "animations": {
@@ -3725,16 +3735,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -3799,16 +3809,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -3873,16 +3883,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      18
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      18
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      18
     ],
     "frames": 19,
     "animations": {
@@ -3947,16 +3957,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -4021,16 +4031,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -4095,16 +4105,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -4169,16 +4179,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -4243,16 +4253,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      56
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      56
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      56
     ],
     "frames": 19,
     "animations": {
@@ -4317,16 +4327,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      56,
+      48
     ],
     "frameSize": [
-      32,
-      36
+      56,
+      48
     ],
     "sheetSize": [
-      608,
-      36
+      1064,
+      48
     ],
     "frames": 19,
     "animations": {
@@ -4391,16 +4401,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      56
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      56
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      56
     ],
     "frames": 19,
     "animations": {
@@ -4465,16 +4475,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      60
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      60
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      60
     ],
     "frames": 19,
     "animations": {
@@ -4539,16 +4549,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      56
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      56
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      56
     ],
     "frames": 19,
     "animations": {
@@ -4613,16 +4623,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      64,
+      64
     ],
     "frameSize": [
-      32,
-      36
+      64,
+      64
     ],
     "sheetSize": [
-      608,
-      36
+      1216,
+      64
     ],
     "frames": 19,
     "animations": {
@@ -7123,16 +7133,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -7203,16 +7213,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -7296,15 +7306,15 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
+      24,
       16
     ],
     "frameSize": [
-      16,
+      24,
       16
     ],
     "sheetSize": [
-      304,
+      456,
       16
     ],
     "frames": 19,
@@ -7376,15 +7386,15 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
+      24,
       16
     ],
     "frameSize": [
-      16,
+      24,
       16
     ],
     "sheetSize": [
-      304,
+      456,
       16
     ],
     "frames": 19,
@@ -7469,16 +7479,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -7549,16 +7559,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -7642,16 +7652,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -7722,16 +7732,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -7815,16 +7825,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      24
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      24
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -7895,16 +7905,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      24
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      24
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -7988,16 +7998,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -8068,16 +8078,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -8161,16 +8171,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      24
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      24
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -8241,16 +8251,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      24
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      24
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -8334,16 +8344,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      24
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      24
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -8414,16 +8424,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      24
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      24
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      24
     ],
     "frames": 19,
     "animations": {
@@ -8507,16 +8517,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      16
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      16
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -8587,16 +8597,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      16
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      16
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -8680,16 +8690,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -8760,16 +8770,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -8853,16 +8863,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      28
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      28
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      28
     ],
     "frames": 19,
     "animations": {
@@ -8933,16 +8943,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      28
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      28
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      28
     ],
     "frames": 19,
     "animations": {
@@ -9026,16 +9036,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -9106,16 +9116,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -9199,16 +9209,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -9279,16 +9289,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -9372,16 +9382,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      18
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      18
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      18
     ],
     "frames": 19,
     "animations": {
@@ -9452,16 +9462,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      16
+      24,
+      18
     ],
     "frameSize": [
-      16,
-      16
+      24,
+      18
     ],
     "sheetSize": [
-      304,
-      16
+      456,
+      18
     ],
     "frames": 19,
     "animations": {
@@ -9545,16 +9555,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -9625,16 +9635,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -9718,16 +9728,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -9798,16 +9808,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -9891,16 +9901,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -9971,16 +9981,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      24,
+      32
     ],
     "frameSize": [
-      16,
-      23
+      24,
+      32
     ],
     "sheetSize": [
-      304,
-      23
+      456,
+      32
     ],
     "frames": 19,
     "animations": {
@@ -10064,16 +10074,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -10144,16 +10154,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      16,
-      23
+      32,
+      40
     ],
     "frameSize": [
-      16,
-      23
+      32,
+      40
     ],
     "sheetSize": [
-      304,
-      23
+      608,
+      40
     ],
     "frames": 19,
     "animations": {
@@ -10237,16 +10247,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      56
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      56
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      56
     ],
     "frames": 19,
     "animations": {
@@ -10330,16 +10340,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      56,
+      48
     ],
     "frameSize": [
-      32,
-      36
+      56,
+      48
     ],
     "sheetSize": [
-      608,
-      36
+      1064,
+      48
     ],
     "frames": 19,
     "animations": {
@@ -10423,16 +10433,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      56
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      56
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      56
     ],
     "frames": 19,
     "animations": {
@@ -10516,16 +10526,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      60
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      60
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      60
     ],
     "frames": 19,
     "animations": {
@@ -10609,16 +10619,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      48,
+      56
     ],
     "frameSize": [
-      32,
-      36
+      48,
+      56
     ],
     "sheetSize": [
-      608,
-      36
+      912,
+      56
     ],
     "frames": 19,
     "animations": {
@@ -10702,16 +10712,16 @@ export const PACK_ASSETS: PackAsset[] = [
       1
     ],
     "size": [
-      32,
-      36
+      64,
+      64
     ],
     "frameSize": [
-      32,
-      36
+      64,
+      64
     ],
     "sheetSize": [
-      608,
-      36
+      1216,
+      64
     ],
     "frames": 19,
     "animations": {

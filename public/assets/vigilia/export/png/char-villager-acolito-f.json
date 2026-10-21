@@ -4,8 +4,8 @@
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 16,
-    "h": 21
+    "w": 24,
+    "h": 32
    },
    "pivot": {
     "x": 0.5,
@@ -14,10 +14,22 @@
   },
   "char-villager-acolito-f-01": {
    "frame": {
-    "x": 16,
+    "x": 24,
     "y": 0,
-    "w": 16,
-    "h": 21
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-villager-acolito-f-02": {
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 24,
+    "h": 32
    },
    "pivot": {
     "x": 0.5,
@@ -28,8 +40,8 @@
  "meta": {
   "image": "char-villager-acolito-f.png",
   "size": {
-   "w": 32,
-   "h": 21
+   "w": 72,
+   "h": 32
   },
   "frameSize": {
    "w": 16,
