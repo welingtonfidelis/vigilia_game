@@ -417,6 +417,7 @@ export function HeroPanel(props: { heroId: number }) {
         <Stat label="Perfuração" value={pct(stats.pierce)} />
         <Stat label="Crítico" value={pct(stats.crit)} />
         <Stat label="Ouro" value={fmt(hero.gold)} />
+        <Stat label="Descidas providas" value={fmt(hero.stats.provisions ?? 0)} hint="Vezes em que comprou ração e tochas ao partir" />
       </div>
 
       <h3>Traços</h3>

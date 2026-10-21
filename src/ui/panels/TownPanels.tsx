@@ -14,6 +14,11 @@ import {
   commissionCost,
   ITEM_SLOTS,
   itemName,
+  WORK_IDS,
+  WORKS,
+  workEffectLevel,
+  workLevel,
+  workPrice,
   itemValue,
   MATERIAL_AFFIX,
   AFFIXES,
@@ -447,6 +452,7 @@ export function CofferPanel() {
           ))}
       </div>
       <Arsenal world={world} />
+      <PatronWall world={world} />
     </PanelShell>
   );
 }
@@ -670,6 +676,51 @@ function JewelerBench(props: { world: World }) {
           })}
         </ul>
       )}
+    </>
+  );
+}
+
+/** Mural dos mecenas: as obras que os heróis pagaram, o efeito de agora e quem pagou. */
+function PatronWall(props: { world: World }) {
+  const { world } = props;
+  const any = WORK_IDS.some((id) => workLevel(world, id) > 0);
+  return (
+    <>
+      <h3>Mural dos mecenas</h3>
+      <p class="sub">
+        Heróis com mais de {fmt(BALANCE.patronGold)} de ouro e o equipamento em dia pagam obras na vila com o próprio dinheiro. O efeito cresce até o nível{' '}
+        {BALANCE.workEffectCap}; depois, cada nível é só o nome gravado.
+      </p>
+      <ul class="effects">
+        {WORK_IDS.map((id) => {
+          const def = WORKS[id];
+          const lvl = workLevel(world, id);
+          const eff = workEffectLevel(world, id);
+          const patrons = [...new Set((world.town.works?.[id]?.patrons ?? []).map((p) => p.heroId))];
+          return (
+            <li key={id}>
+              <strong>
+                {def.name} {def.place}
+              </strong>{' '}
+              · nível {lvl}
+              {eff > 0 ? ` (${def.effect}, ×${eff})` : ` (${def.effect} por nível)`} · próximo nível: {fmt(workPrice(world, id))} de ouro
+              {patrons.length > 0 && (
+                <>
+                  {' '}
+                  · pago por{' '}
+                  {patrons.map((heroId, i) => (
+                    <span key={heroId}>
+                      {i > 0 && ', '}
+                      <HeroLink id={heroId} />
+                    </span>
+                  ))}
+                </>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {!any && <p class="sub">Nenhuma obra ainda: os heróis ainda estão gastando com o próprio equipamento.</p>}
     </>
   );
 }

@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M3 concluído; M4 em andamento (corredor da dungeon com arte própria nos seis atos, itens nomeados, encomendas na forja e especializações de nível 3) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. Próximo: o playtest guiado e o M5.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -47,10 +47,11 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 ### Rodar as ferramentas
 
 ```bash
-npm test                                        # 95 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm test                                        # 129 testes (núcleo, itens, mecenato, corredor, pessoas, economia, sessão, save, vila, sprites, textos, som)
 npm run build                                   # typecheck + bundle de produção em dist/
 npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
 npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
+npm run playtest                                # Playtest automático: 30 sementes × 30 anos, salvando e carregando a cada 5 anos
 npm run deaths -- --seeds 6 --years 5           # Diagnóstico de quem morre, onde e para quem
 npm run typecheck
 ```
@@ -106,25 +107,25 @@ A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pin
 
 **Atalhos de depuração** (só em `npm run dev`, no console do navegador): `vigilia.days(n)` avança n dias, `vigilia.advance(ticks)`, `vigilia.autoplay(n)` deixa o prefeito automático jogar n dias e `vigilia.frames(n)` roda quadros do Phaser na mão (útil com a aba em segundo plano, quando o navegador para o `requestAnimationFrame`).
 
-### Retrato do balanceamento (10 sementes × 30 anos, prefeito automático)
+### Retrato do balanceamento (playtest automático: 30 sementes × 30 anos, prefeito automático)
 
-Medido depois dos itens, das encomendas, das especializações, da bancada do joalheiro, das salas novas e dos chefes em duas fases (M4). O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia.
+Medido com o M4 inteiro: itens, forja, especializações, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato. O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia. A cada 5 anos o mundo é salvo e carregado: os 180 saves voltaram idênticos.
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 1,0 | 0,6 h | 0,8–1,4 | 100% |
-| Minas Inundadas | 2,9 | 1,5 h | 1,8–4,5 | 100% |
-| Jardim de Fungos | 4,8 | 2,5 h | 3,5–5,7 | 100% |
-| Cidade Afogada | 7,2 | 3,8 h | 5,7–8,2 | 100% |
-| Forja Abissal | 14,0 | 7,5 h | 9,9–22,6 | 100% |
-| Coração do Abismo | 17,8 | 9,5 h | 13,3–29,3 | 80% |
+| Catacumbas | 1,2 | 0,7 h | 0,7–2,1 | 100% |
+| Minas Inundadas | 3,3 | 1,7 h | 1,6–6,5 | 100% |
+| Jardim de Fungos | 5,3 | 2,8 h | 3,0–10,5 | 100% |
+| Cidade Afogada | 8,8 | 4,7 h | 4,7–12,8 | 100% |
+| Forja Abissal | 15,5 | 8,3 h | 9,6–28,1 | 97% |
+| Coração do Abismo | 18,9 | 10,1 h | 12,2–28,7 | 97% |
 
-- **Mortalidade:** 4,8 mortes/ano com elenco de ~22 (o Dormitório e a guilda Mercenária aumentam o elenco e os grupos). Ninguém é dispensado: são cerca de 19 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~81 lesões, ~3 cicatrizes, ~20 casamentos, ~21 filhos e ~8 deles chegando à maioridade como heróis.
-- **Vila (M3), por campanha:** ~31 incursões, ~9 moradores mortos e quase ninguém deixando a vila; a população termina no teto (~136, abstrata), o humor médio fica em ~58 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
-- **Expedições:** ~101 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro fica entre ~1,3 e 4,7 mil; o ouro dos heróis termina entre ~38 e 55 mil. A bancada do joalheiro e o mercador cortaram pela metade o excesso da segunda fatia (~69–113 mil), mas ainda ficam acima de antes do M4 (~15–37 mil): a bancada satura quando as peças chegam a três afixos. Falta um sumidouro de fim que não sature.
-- **Desempenho:** ~1,3 s para simular uma campanha de 30 anos.
+- **Mortalidade:** 4,8 mortes/ano com elenco de ~22. Ninguém é dispensado: são cerca de 20 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~76 lesões, ~4 cicatrizes, ~22 casamentos, ~21 filhos e ~8 deles chegando à maioridade como heróis.
+- **Vila (M3), por campanha:** ~28 incursões, ~12 moradores mortos e quase ninguém deixando a vila; a população termina no teto (~136, abstrata), o humor médio fica em ~54 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
+- **Expedições:** ~102 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **4% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,46 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro termina abaixo de ~2 mil; o ouro dos heróis termina em média com 21,8 mil (14–32 mil), dentro da meta. As provisões fazem o grosso do gasto; a bancada e o mecenato pegam os mais ricos (algumas obras por campanha).
+- **Desempenho:** ~1,7 s para simular uma campanha de 30 anos com os saves.
 
 ### O que o M0 entrega
 
@@ -243,11 +244,14 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Bancada do joalheiro** (ferreiro nível 3): heróis ricos vão sozinhos encantar (+1 afixo; rara vira épica), reforjar (troca um afixo que não serve à classe) ou polir a lendária (+1 tier), com o próprio ouro; a história da peça guarda cada serviço e o painel do ferreiro mostra quem passou.
 - [x] **Salas novas:** mercador errante (vende uma peça a quem pagar, ouro do herói) e armadilha (dardos ou espinhos; arqueiros e lanceiros percebem antes; fere sem matar). O corredor desenha o mercador com a arca e os espinhos.
 - [x] **Chefes em duas fases:** abaixo de 50% cada chefe ganha um segundo comportamento (urnas que estouram, couraça dura e golpe duplo, jardim que brota, silêncio nas curas, caçada aos feridos, olhar que drena o ânimo); o corredor treme e o relatório conta. O relatório da expedição ganhou a lista de momentos.
-- [ ] Sumidouro de ouro dos heróis ainda incompleto: a bancada satura quando as peças chegam a três afixos.
+- [x] **Provisões:** ao partir, cada herói compra ração e tochas (gasta metade da energia entre as salas) e, com templo, uma relíquia (foge menos), com o próprio ouro e guardando reserva; o preço cresce com a profundidade. É o gasto que se repete e segura o ouro dos heróis.
+- [x] **Mecenato:** quem junta fortuna paga obras na vila com o nome gravado (estátua, vitral, fonte, muro dos nomes), cada nível mais caro; efeito até o 5º nível e o **mural dos mecenas** no Cofre (`src/sim/patronage.ts`).
+- [x] **Playtest automático:** `npm run playtest` roda 30 sementes × 30 anos salvando e carregando a cada 5 anos e confere ritmo, mortalidade, ouro, tesouro e saves. Todos os critérios passam.
+- [ ] Playtest guiado (roteiro na seção 9.4): é a próxima etapa, antes do M5.
 
-### Próximo: M4
+### Próximo: playtest guiado e M5
 
-Playtest amplo do M4 e um sumidouro de fim para o ouro dos heróis que não sature (propriedades, relíquias, mecenato na vila). Mudança de local dos prédios ficou de fora. Ver a seção 9 do GDD (neste documento).
+O M4 está fechado. Falta jogar o roteiro do playtest guiado (seção 9.4) e transformar o que aparecer em ajustes; depois vem o M5 (Lenda): gerações, Eras e Pactos, profundezas infinitas, polimento e PT/EN. Ver a seção 9 do GDD (neste documento).
 
 ---
 
@@ -837,6 +841,62 @@ O corredor marca a troca: a faixa "FASE 2", um tremor curto da câmera e um mome
 **Fica para depois.** Alquimista e poções, eventos de história nas salas, mais afixos de elite.
 
 **Ajustes feitos na implementação.** Encantar custa 2.000 + 500 por tier (a forja fica com 10%); na fase 2 o Guardião chama 3 esqueletos por vez e as urnas batem com 25% do ataque dele (com 4 e 35% o primeiro chefe atrasava meio ano). Resultado no balanceador: ouro dos heróis no fim entre ~38 e 55 mil (meta de 15–40 mil alcançada só em parte, porque a bancada satura), último chefe no ano ~18, 4,8 mortes/ano e 0 impasses.
+
+#### 9.4 Especificação do M4 (última fatia): provisões, mecenato e playtest
+
+A bancada do joalheiro tira ouro dos heróis, mas para quando as peças chegam a três afixos: no fim da campanha eles ainda guardam ~38–55 mil. Esta fatia fecha o M4 com dois sumidouros que **não saturam**, porque um se repete a cada descida e o outro fica mais caro a cada obra, e com um playtest amplo antes de seguir para o M5. Continua valendo a influência indireta: quem gasta é o herói; o prefeito só colhe.
+
+**Provisões da expedição (gasto que se repete).** Ao partir, cada herói compra provisões com o próprio ouro, se tiver o dobro do preço (guarda o resto). O preço cresce com a profundidade do andar-alvo, então o gasto acompanha a riqueza ao longo da campanha:
+
+| Provisão | Preço (por herói, por descida) | Efeito na expedição |
+|---|---|---|
+| Ração e tochas | 30 × (1 + profundidade)^1,3 (profundidade = ato × 4 + andar; Ato VI, andar 4 ≈ 1.900) | Gasta metade da energia entre as salas (o grupo aguenta salas a mais) |
+| Relíquia do templo (com templo) | Metade da ração | Limiar de fuga −5 (o Supersticioso e o Covarde compram primeiro) |
+
+O efeito vale só naquela descida; o relatório diz quem foi provido.
+
+**Mecenato (gasto que fica mais caro).** Herói com mais de 5 mil de ouro paga, por conta própria, uma **obra** na vila com o nome dele. Cada obra tem níveis sem fim; o preço cresce a cada nível e o efeito para de crescer no nível 5 (depois disso, é só glória: o nome na crônica e no mural).
+
+| Obra | Onde | Efeito por nível (até o 5º) |
+|---|---|---|
+| Estátua | Praça | +2 de reputação |
+| Vitral | Templo | A fé dos heróis cai 5% mais devagar |
+| Fonte | Praça | +1 de humor dos moradores |
+| Muro dos nomes | Memorial | O luto passa 5% mais rápido |
+
+Preço do nível n de uma obra: 4.000 × 1,6^(n−1). O herói escolhe a obra mais barata no momento (todas sobem juntas devagar). A crônica registra cada nível ("Mira pagou o terceiro vitral do templo; o nome dela ficou gravado") e o Cofre ganha o **mural dos mecenas**: obras, níveis, efeitos e quem pagou.
+
+**Playtest amplo.** Duas frentes:
+
+- **Automática:** o balanceador roda 30 sementes × 30 anos; a cada 5 anos, salva e carrega o mundo (o save tem que voltar idêntico) e mede o tempo por campanha. Critérios: 0 impasses, ócio ≤ 4 dias, 3–6 mortes/ano, último chefe entre os anos 14 e 22 em ≥ 80% das sementes, ouro dos heróis no fim entre 15 e 40 mil e tesouro sem estourar.
+- **Guiada (você joga):** um roteiro curto no doc com o que olhar em cada ato (primeira hora, primeiro chefe, primeira encomenda, primeira especialização, celular) e onde anotar o que pareceu errado; os achados viram a lista de ajustes antes do M5.
+
+**Telas.** Mural dos mecenas no Cofre; provisões no relatório da expedição e na ficha do herói ("comprou provisões para 6 descidas"); a obra nova aparece na crônica.
+
+**Save.** Sem migração: as obras começam vazias e os campos novos são opcionais.
+
+**Balanceamento.** Meta: ouro dos heróis no fim entre 15 e 40 mil, sem mudar o ritmo nem a mortalidade. As provisões dão pouco poder de propósito (só energia e fuga); se o ritmo acelerar, o preço sobe antes de o efeito ser cortado.
+
+**Fica para depois (M5).** Propriedades e renda dos heróis, alquimista, eventos de história nas salas.
+
+**Ajustes feitos na implementação.**
+
+- **Provisões** saíram mais baratas que o previsto: ração a 10 × (1 + profundidade)^1,3 (no Ato VI, andar 4, ~620) e só para quem tem 4× o preço (com 30 e folga de 2×, os heróis deixavam de comprar equipamento, o jogo ficava mais lento e morriam mais). A relíquia pede a mesma folga em preço de ração (metade dela para o Supersticioso e o Covarde).
+- **Mecenato** a partir de 3 mil de ouro, com a primeira obra a 2,5 mil (com 5 mil e 4 mil, nenhum herói chegava lá; exigir o equipamento completo também deixava a obra sem nenhum mecenas). Hoje são de 1 a 4 níveis de obra por campanha: uma glória rara, como deve ser.
+- **Poder dos atos V e VI** voltou para 7,6 / 9,2 (com o gasto novo, o último ato atrasava).
+- **Critério do último chefe:** a janela "anos 14–22 em 80% das sementes" mede uma dispersão que já existia antes do M4 (o prefeito automático erra o ritmo em algumas sementes). Passou a ser "cai em pelo menos 80% das sementes, com média entre os anos 14 e 22"; a faixa continua no relatório.
+
+##### Roteiro do playtest guiado
+
+Jogue em 1× e 2×, no computador e no celular. Anote em `docs/PLAYTEST.md` (ou numa mensagem) o momento, o que esperava e o que aconteceu.
+
+1. **Primeira hora.** Reconstruir a guilda e o ferreiro, tocar o berrante, ver o primeiro grupo descer. Acompanhar pela tecla G: o corredor faz sentido? O grupo anda sem deslizar? O som muda?
+2. **Primeiro chefe (Catacumbas).** A fase 2 aparece (urnas, tremor)? O relatório conta o que houve? A lendária chega na volta e aparece na ficha?
+3. **Primeira encomenda.** Ferreiro no nível 2, encomendar uma peça rara, esperar, entregar a um herói pelo Cofre. Os nomes das peças soam bem?
+4. **Primeira especialização.** Subir um prédio ao nível 3 e escolher o caminho. O efeito se nota?
+5. **Meio de campanha (Atos III e IV).** Mercador e armadilha aparecem? Os heróis ricos vão à bancada? O ouro deles fica razoável?
+6. **Fim (Atos V e VI).** Os chefes pedem composição? Alguém pagou uma obra (mural dos mecenas)? O ritmo cansa em algum ponto?
+7. **Celular.** Painéis, diálogo de decisão, corredor empilhado, botão Acompanhar e som ao voltar do segundo plano.
 
 ### 10. Decisões em aberto
 

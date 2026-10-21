@@ -130,6 +130,15 @@ export interface Item {
   history?: string[];
 }
 
+/** Obras que os heróis pagam na vila (mecenato, M4). */
+export type WorkId = 'estatua' | 'vitral' | 'fonte' | 'muro';
+
+export interface TownWork {
+  level: number;
+  /** Quem pagou cada nível, em ordem. */
+  patrons: { heroId: number; level: number; tick: number; price: number }[];
+}
+
 /** Serviços da bancada do joalheiro. */
 export type BenchService = 'encantar' | 'reforjar' | 'polir';
 
@@ -236,6 +245,8 @@ export interface Hero {
     bossKills: number;
     fled: number;
     alliesLost: number;
+    /** Descidas em que comprou provisões (opcional: saves antigos não têm). */
+    provisions?: number;
   };
   death: { tick: number; where: string; by: string } | null;
   /** Lesão em tratamento (não desce enquanto houver). */
@@ -384,6 +395,10 @@ export interface Party {
   /** O quanto o grupo se achava capaz ao descer (1 = no limite). */
   confidence: number;
   moments: string[];
+  /** Quem levou ração e tochas nesta descida (gasta metade da energia entre as salas). */
+  provisioned?: number[];
+  /** Quem levou relíquia do templo (foge menos nesta descida). */
+  relics?: number[];
 }
 
 export interface ActState {
@@ -459,6 +474,8 @@ export interface Town {
   specs: Partial<Record<BuildingId, SpecId>>;
   /** Últimas visitas à bancada do joalheiro (para o painel do ferreiro). */
   bench?: BenchVisit[];
+  /** Obras pagas pelos heróis (mecenato). */
+  works?: Partial<Record<WorkId, TownWork>>;
 }
 
 export type ChronicleKind =

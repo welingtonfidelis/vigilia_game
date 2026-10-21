@@ -8,6 +8,7 @@ import { confidence, travelTicks } from './dungeon.ts';
 import { maxParties, maxPartySize } from './economy.ts';
 import { getBond, hasTrait, traitSum } from './hero.ts';
 import { townHeroes } from './town.ts';
+import { buyProvisions } from './patronage.ts';
 import type { Hero, Party, World } from './types.ts';
 
 export const busyParties = (world: World): Party[] => world.parties.filter((p) => p.phase !== 'voltando');
@@ -146,6 +147,7 @@ function depart(world: World, members: Hero[]): void {
     h.vengeful = false;
     h.morale = Math.min(100, h.morale + 5 * veterans);
   }
+  buyProvisions(world, party, members);
   world.parties.push(party);
   world.metrics.expeditions++;
   const why = target.contractId !== null ? ' atrás do contrato do prefeito' : '';

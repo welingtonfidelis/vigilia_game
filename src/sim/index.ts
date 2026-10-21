@@ -52,6 +52,8 @@ export {
   upgradeGain,
 } from './items.ts';
 export { hasSpec, specOf } from './economy.ts';
+export { carriesRelic, cheapestWork, isProvisioned, rationPrice, relicPrice, workEffectLevel, workLevel, workPrice } from './patronage.ts';
+export { WORK_IDS, WORKS, type WorkDef } from '../data/works.ts';
 export { AFFIXES, MATERIAL_AFFIX, RARITY_NAMES, SLOT_NAMES } from '../data/items.ts';
 export { SPEC_DEFS, SPECS, type SpecDef } from '../data/specs.ts';
 export { activeHeroes, townHeroes } from './town.ts';

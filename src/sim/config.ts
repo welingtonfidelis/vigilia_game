@@ -126,6 +126,18 @@ export const BALANCE = {
   trapDamageMin: 0.1,
   trapDamageMax: 0.2,
   trapSpotChance: 0.5,
+  // Provisões e mecenato (M4, última fatia): onde o ouro dos heróis vai parar.
+  rationBase: 10,
+  /** Só compra provisão quem tem este múltiplo do preço (o resto é para o equipamento). */
+  provisionReserve: 4,
+  rationExp: 1.3,
+  relicPriceFraction: 0.5,
+  relicFlee: 5,
+  provisionTreasuryShare: 0.1,
+  patronGold: 3000,
+  workBasePrice: 2500,
+  workPriceGrowth: 1.6,
+  workEffectCap: 5,
   // Chefes em duas fases (abaixo de 50% de vida).
   phase2SecondHit: 0.6,
   phase2UrnBlast: 0.25,

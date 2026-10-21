@@ -28,6 +28,7 @@ import {
 } from './hero.ts';
 import { forgePrice, retireHero, roleCount } from './people.ts';
 import { benchOffer, nextTierWorth, upgradeTier, useBench } from './items.ts';
+import { workEffectLevel } from './patronage.ts';
 import { chance, pick, range } from './rng.ts';
 import type { ActivityKind, Hero, World } from './types.ts';
 
@@ -78,7 +79,9 @@ export function hourlyTown(world: World): void {
     const resting = hero.activity?.kind === 'descansar';
     if (!resting) hero.needs.energy = clamp(hero.needs.energy - B.needDecayPerHour.energy);
     hero.needs.fun = clamp(hero.needs.fun - B.needDecayPerHour.fun * traitMult(hero, 'funDecay'));
-    hero.needs.faith = clamp(hero.needs.faith - B.needDecayPerHour.faith * traitMult(hero, 'faithDecay'));
+    // O vitral do templo segura a fé um pouco mais.
+    const glass = 1 - 0.05 * workEffectLevel(world, 'vitral');
+    hero.needs.faith = clamp(hero.needs.faith - B.needDecayPerHour.faith * traitMult(hero, 'faithDecay') * glass);
     const maxHp = heroStats(world, hero).maxHp;
     hero.hp = Math.min(maxHp, hero.hp + maxHp * B.passiveRegenPerHour);
     const base = moraleBaseline(hero);
@@ -92,7 +95,8 @@ export function hourlyTown(world: World): void {
 export function dailyTown(world: World): void {
   for (const hero of activeHeroes(world)) {
     if (hero.grief > 0) {
-      hero.grief = Math.max(0, hero.grief - 3);
+      // O muro dos nomes ajuda o luto a passar.
+      hero.grief = Math.max(0, hero.grief - 3 * (1 + 0.05 * workEffectLevel(world, 'muro')));
       if (hero.grief === 0) hero.griefFor = null;
     }
     if (hero.status !== 'town') continue;

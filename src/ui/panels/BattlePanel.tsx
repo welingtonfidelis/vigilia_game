@@ -27,6 +27,8 @@ interface PartySnapshot {
   loot: { gold: number; materials: Partial<Record<MaterialId, number>>; xp: number };
   items: { name: string; rarity: Rarity }[];
   moments: string[];
+  provisioned: number[];
+  relics: number[];
   rooms: { kind: string; cleared: boolean }[];
   roomIndex: number;
   outcome: Party['outcome'];
@@ -61,6 +63,8 @@ export interface DungeonReport {
   items?: { name: string; rarity: Rarity }[];
   /** Momentos marcantes: compras do mercador, armadilhas, fases de chefe… */
   moments?: string[];
+  /** Quem desceu com ração e tochas, e quem com relíquia. */
+  provisions?: { rations: string[]; relics: string[] };
   roomsCleared: number;
   roomsTotal: number;
   duration: number;
@@ -81,6 +85,8 @@ function snapshot(party: Party, endTick: number): PartySnapshot {
     loot: { gold: party.loot.gold, materials: { ...party.loot.materials }, xp: party.loot.xp },
     items: (party.loot.items ?? []).map((i) => ({ name: itemName(i, null), rarity: i.rarity })),
     moments: [...party.moments],
+    provisioned: [...(party.provisioned ?? [])],
+    relics: [...(party.relics ?? [])],
     rooms: party.rooms.map((r) => ({ kind: r.kind, cleared: r.cleared })),
     roomIndex: party.roomIndex,
     outcome: party.outcome,
@@ -126,6 +132,10 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
     materials: Object.entries(last.loot.materials) as [MaterialId, number][],
     items: last.items,
     moments: last.moments.slice(-B_MOMENTS),
+    provisions: {
+      rations: last.provisioned.map((id) => heroById(world, id)?.name ?? '').filter(Boolean),
+      relics: last.relics.map((id) => heroById(world, id)?.name ?? '').filter(Boolean),
+    },
     roomsCleared: last.rooms.filter((r) => r.cleared).length,
     roomsTotal: last.rooms.length,
     duration: Math.max(0, last.endTick - last.startedTick),
@@ -175,6 +185,13 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
           </p>
         )}
         {report.contract !== null && <p class="report-materials">Contrato cumprido: {fmt(report.contract)} de ouro.</p>}
+        {report.provisions && (report.provisions.rations.length > 0 || report.provisions.relics.length > 0) && (
+          <p class="report-materials">
+            Provisões:{' '}
+            {report.provisions.rations.length > 0 ? `ração e tochas para ${report.provisions.rations.join(', ')}` : 'ninguém levou ração'}
+            {report.provisions.relics.length > 0 ? ` · relíquia do templo com ${report.provisions.relics.join(', ')}` : ''}.
+          </p>
+        )}
         {report.moments && report.moments.length > 0 && (
           <>
             <h3>Momentos</h3>

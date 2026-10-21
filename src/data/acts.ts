@@ -124,7 +124,7 @@ export const ACTS: ActDef[] = [
     name: 'Forja Abissal',
     of: 'da Forja Abissal',
     material: 'brasas',
-    power: 7.9,
+    power: 7.6,
     defBonus: 40,
     enemies: [
       { id: 'ferreiroCinzento', name: 'Ferreiro Cinzento', hp: 80, atk: 10, def: 25, interval: 15, tags: [] },
@@ -147,7 +147,7 @@ export const ACTS: ActDef[] = [
     name: 'Coração do Abismo',
     of: 'do Coração do Abismo',
     material: 'almas',
-    power: 10.6,
+    power: 9.2,
     defBonus: 50,
     enemies: [
       { id: 'sombra', name: 'Sombra Faminta', hp: 55, atk: 10, def: 10, interval: 11, tags: [] },

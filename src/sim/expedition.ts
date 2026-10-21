@@ -8,6 +8,7 @@ import { BALANCE as B } from './config.ts';
 import { enterFloor, isBossFloor, partyRooms, reduceCorruption, travelTicks } from './dungeon.ts';
 import { hasSpec, heroCapacity } from './economy.ts';
 import { affixCount, merchantVisit, rollDrop, shareLoot } from './items.ts';
+import { isProvisioned } from './patronage.ts';
 import {
   addBond,
   addTrait,
@@ -233,7 +234,8 @@ function recoverBetweenRooms(world: World, party: Party): void {
   for (const h of heroes) {
     const max = heroStats(world, h).maxHp;
     h.hp = Math.min(max, h.hp + max * (0.03 + herbs) + healAmount);
-    h.needs.energy = Math.max(0, h.needs.energy - 4);
+    // Quem levou ração e tochas cansa pela metade entre as salas.
+    h.needs.energy = Math.max(0, h.needs.energy - (isProvisioned(party, h.id) ? 2 : 4));
   }
 }
 

@@ -102,8 +102,11 @@ export function fleeThreshold(hero: Hero, doctrine: Doctrine): number {
 }
 
 /** O limiar de fuga com o que vem da vila (doutrina e o templo da Penitência). */
-export const fleeLimit = (world: World, hero: Hero): number =>
-  fleeThreshold(hero, world.town.doctrine) - (hasSpec(world, 'penitencia') ? B.specPenitenciaFlee : 0);
+export const fleeLimit = (world: World, hero: Hero): number => {
+  const party = hero.partyId !== null ? world.parties.find((p) => p.id === hero.partyId) : undefined;
+  const relic = party?.relics?.includes(hero.id) ? B.relicFlee : 0;
+  return fleeThreshold(hero, world.town.doctrine) - (hasSpec(world, 'penitencia') ? B.specPenitenciaFlee : 0) - relic;
+};
 
 const RANK_WEIGHTS: Record<Rank, [number, number]> = {
   // [peso com reputação 0, variação a cada 10 de reputação]

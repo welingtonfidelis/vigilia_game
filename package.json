@@ -9,6 +9,7 @@
     "typecheck": "tsc",
     "test": "vitest run",
     "balance": "node tools/balance.ts",
+    "playtest": "node tools/balance.ts --seeds 30 --years 30 --saves",
     "chronicle": "node tools/chronicle.ts",
     "deaths": "node tools/deaths.ts"
   },

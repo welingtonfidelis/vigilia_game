@@ -1,9 +1,11 @@
 // Balanceador headless: roda várias campanhas com o prefeito automático e resume
-// ritmo, mortalidade e economia. Uso: npm run balance -- --seeds 20 --years 10 [--json]
+// ritmo, mortalidade e economia. Uso: npm run balance -- --seeds 20 --years 10 [--json] [--saves]
+// Com --saves (o playtest automático: npm run playtest), a cada 5 anos salva e carrega o
+// mundo e segue jogando com o carregado; o save tem que voltar idêntico.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { ACTS } from '../src/data/acts.ts';
-import { autoMayor, createWorld, runDays, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
+import { ACT_COUNT, autoMayor, checksum, createWorld, deserialize, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { World } from '../src/sim/index.ts';
 import { parseArgs, num } from './args.ts';
 
@@ -11,6 +13,11 @@ const args = parseArgs(process.argv.slice(2));
 const seeds = num(args.seeds, 12);
 const years = num(args.years, 10);
 const firstSeed = num(args.from, 1);
+const checkSaves = !!args.saves;
+/** De quantos em quantos anos o playtest salva e carrega. */
+const SAVE_EVERY = 5;
+let saveChecks = 0;
+let saveFailures = 0;
 
 interface Run {
   seed: number;
@@ -21,8 +28,15 @@ interface Run {
 const runs: Run[] = [];
 for (let s = firstSeed; s < firstSeed + seeds; s++) {
   const t0 = performance.now();
-  const world = createWorld(s);
-  runDays(world, years * DAYS_PER_YEAR, { onHour: autoMayor });
+  let world = createWorld(s);
+  for (let y = 0; y < years; y += SAVE_EVERY) {
+    runDays(world, Math.min(SAVE_EVERY, years - y) * DAYS_PER_YEAR, { onHour: autoMayor });
+    if (!checkSaves) continue;
+    const loaded = deserialize(serialize(world));
+    saveChecks++;
+    if (checksum(loaded) !== checksum(world)) saveFailures++;
+    world = loaded;
+  }
   runs.push({ seed: s, world, ms: performance.now() - t0 });
 }
 
@@ -142,6 +156,30 @@ console.log('\n── Saúde ──');
 console.log(`  ${stalemates === 0 ? '✔' : '✘'} sem impasses de combate (${stalemates})`);
 console.log(`  ${idleMax <= 4 ? '✔' : '✘'} sem ócio prolongado: maior sequência de dias sem expedição = ${idleMax}`);
 console.log(`  ${emptyTown === 0 ? '✔' : '✘'} vila nunca fica sem heróis depois do 1º mês (${emptyTown} sementes)`);
+
+// Critérios do M4 (playtest amplo): ritmo, mortalidade e o ouro do fim de jogo.
+const deathsPerYear = sum((w) => w.metrics.deaths) / all.length / years;
+const lastBoss = all.map((w) => w.metrics.bossKills.find((b) => b.act === ACT_COUNT - 1)?.day).map((d) => (d === undefined ? null : yearOfDay(d)));
+const lastBossYears = lastBoss.filter((y): y is number => y !== null);
+const lastBossReach = lastBossYears.length / all.length;
+const lastBossMean = mean(lastBossYears);
+const heroGold = all.map((w) => w.metrics.daily[w.metrics.daily.length - 1]!.heroGold);
+const goldMean = mean(heroGold);
+const treasuryMax = Math.max(...all.map((w) => w.metrics.daily[w.metrics.daily.length - 1]!.treasury));
+console.log(`  ${deathsPerYear >= 3 && deathsPerYear <= 6 ? '✔' : '✘'} mortalidade entre 3 e 6 por ano (${fmt(deathsPerYear)})`);
+if (years >= 22) {
+  // A dispersão entre sementes é grande desde antes do M4 (o prefeito automático erra); o que
+  // se cobra é que quase todas cheguem lá e que a média fique na janela.
+  const ok = lastBossReach >= 0.8 && lastBossMean >= 14 && lastBossMean <= 22;
+  console.log(
+    `  ${ok ? '✔' : '✘'} último chefe cai em pelo menos 80% das sementes, com média entre os anos 14 e 22 (${pct(lastBossReach)} · média ${fmt(lastBossMean)} · ${fmt(Math.min(...lastBossYears))}–${fmt(Math.max(...lastBossYears))})`,
+  );
+}
+console.log(
+  `  ${goldMean >= 15000 && goldMean <= 40000 ? '✔' : '✘'} ouro dos heróis no fim entre 15 e 40 mil (média ${fmt(goldMean / 1000)} mil · ${fmt(Math.min(...heroGold) / 1000)}–${fmt(Math.max(...heroGold) / 1000)} mil)`,
+);
+console.log(`  ${treasuryMax <= 20000 ? '✔' : '✘'} tesouro sem estourar no fim (máximo ${fmt(treasuryMax / 1000)} mil)`);
+if (checkSaves) console.log(`  ${saveFailures === 0 ? '✔' : '✘'} salvar e carregar volta idêntico (${saveChecks - saveFailures}/${saveChecks})`);
 console.log(`  tempo médio por campanha: ${fmt(mean(runs.map((r) => r.ms)), 0)} ms\n`);
 
 if (args.json) {
