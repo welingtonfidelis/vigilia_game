@@ -121,7 +121,10 @@ export const ROADS: TileRect[] = [
 
 /** Cemitério cercado (em tiles) e a grade das covas lá dentro. */
 export const CEMETERY_TILES: TileRect = { tx: 1, ty: 2, tw: 12, th: 6 };
-export const CEMETERY = { x: 3 * TILE, y: 3.5 * TILE, cols: 9, dx: 32, dy: 26, rows: 6 };
+export const CEMETERY = { x: 3 * TILE, y: 3.5 * TILE, cols: 9, dx: 32, dy: 26, rows: 5 };
+
+/** Covas que cabem dentro da cerca; quando lota, a nova toma o lugar da mais antiga. */
+export const GRAVE_SLOTS = CEMETERY.cols * CEMETERY.rows;
 
 /** Fonte termal no lugar do antigo portão: a água quente que sobe do abismo. */
 export const THERMAL_TILES: TileRect = { tx: 23, ty: 27, tw: 5, th: 4 };
@@ -153,10 +156,12 @@ export const door = (id: BuildingId): Point => {
   return { x: lot.x, y: lot.y + lot.h / 2 + TILE / 2 };
 };
 
+/** Lugar da cova de número `index` (na ordem das mortes): as vagas giram dentro da cerca. */
 export function gravePoint(index: number): Point {
+  const slot = index % GRAVE_SLOTS;
   return {
-    x: CEMETERY.x + (index % CEMETERY.cols) * CEMETERY.dx,
-    y: CEMETERY.y + Math.floor(index / CEMETERY.cols) * CEMETERY.dy,
+    x: CEMETERY.x + (slot % CEMETERY.cols) * CEMETERY.dx,
+    y: CEMETERY.y + Math.floor(slot / CEMETERY.cols) * CEMETERY.dy,
   };
 }
 
@@ -165,6 +170,16 @@ export function graveOrder(world: World): Hero[] {
   return world.heroes
     .filter((h) => h.status === 'dead')
     .sort((a, b) => (a.death?.tick ?? 0) - (b.death?.tick ?? 0) || a.id - b.id);
+}
+
+/**
+ * Covas que estão no chão agora: as GRAVE_SLOTS mais recentes, com o número de cada uma
+ * na ordem das mortes. Os mais antigos seguem no Memorial.
+ */
+export function standingGraves(world: World): { hero: Hero; index: number }[] {
+  const order = graveOrder(world);
+  const first = Math.max(0, order.length - GRAVE_SLOTS);
+  return order.slice(first).map((hero, i) => ({ hero, index: first + i }));
 }
 
 export type PlaceKey = BuildingId | Landmark | 'praca' | 'heroi' | 'cova';

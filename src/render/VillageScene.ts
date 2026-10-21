@@ -26,7 +26,7 @@ import {
   citizenSpot,
   door,
   gravePoint,
-  graveOrder,
+  standingGraves,
   HORN_TOWER,
   heroDestination,
   isNightOwl,
@@ -103,9 +103,9 @@ interface BuildingView {
   level: number;
 }
 
+/** Lápide sem nome: quem está ali se vê no Memorial, ao clicar no cemitério. */
 interface GraveView {
   stone: Phaser.GameObjects.Image;
-  name: Phaser.GameObjects.Text;
 }
 
 /** 0 = dia claro, 1 = noite fechada. */
@@ -139,6 +139,8 @@ export class VillageScene extends Phaser.Scene {
   private overgrowth: Phaser.GameObjects.Image[] | null = null;
   private expansionLights: (Phaser.GameObjects.Image | undefined)[] = [];
   private graves = new Map<number, GraveView>();
+  /** Mortos na última sincronização das covas (−1 = refazer). */
+  private graveCount = -1;
   private interactables: Interactable[] = [];
   private mayor!: Mayor;
   private night!: Phaser.GameObjects.Rectangle;
@@ -274,7 +276,6 @@ export class VillageScene extends Phaser.Scene {
       if (obj.name === 'label' && obj instanceof Phaser.GameObjects.Text) obj.setScale(this.labelScale);
     }
     for (const b of this.buildings.values()) b.sign.setScale(this.labelScale);
-    for (const grave of this.graves.values()) grave.name.setScale(Math.min(this.labelScale, 1.4));
     this.layoutSigns();
   }
 
@@ -431,7 +432,6 @@ export class VillageScene extends Phaser.Scene {
       entries.push({ obj: sprite.label, force: forced, priority: 2 });
     }
     for (const kid of this.kids.values()) if (!kid.hidden) entries.push({ obj: kid.label, force: false, priority: 3 });
-    for (const grave of this.graves.values()) entries.push({ obj: grave.name, force: false, priority: 4 });
     entries.sort((a, b) => Number(b.force) - Number(a.force) || a.priority - b.priority || a.obj.y - b.obj.y);
     const taken: Phaser.Geom.Rectangle[] = [];
     for (const entry of entries) {
@@ -826,11 +826,6 @@ export class VillageScene extends Phaser.Scene {
       if (parent !== undefined) this.ui.open({ kind: 'hero', heroId: parent });
       return;
     }
-    const grave = this.graveAt(p.worldX, p.worldY);
-    if (grave !== null) {
-      this.ui.open({ kind: 'hero', heroId: grave });
-      return;
-    }
     const it = this.interactableAt(p.worldX, p.worldY);
     if (it) {
       const dist = Math.hypot(it.point.x - this.mayor.x, it.point.y - this.mayor.y);
@@ -848,17 +843,10 @@ export class VillageScene extends Phaser.Scene {
   }
 
   /** Lápide sob o ponteiro: abre a ficha do morto, com o epitáfio. */
-  private graveAt(x: number, y: number): number | null {
-    for (const [id, g] of this.graves) {
-      if (Math.abs(x - g.stone.x) < 14 && y > g.stone.y - 28 && y < g.stone.y + 8) return id;
-    }
-    return null;
-  }
-
   private onHover(p: Phaser.Input.Pointer): void {
     const hero = this.heroAt(p.worldX, p.worldY);
     this.hoverHeroId = hero?.id ?? null;
-    const over = hero || this.petAt(p.worldX, p.worldY) || this.graveAt(p.worldX, p.worldY) !== null || this.interactableAt(p.worldX, p.worldY);
+    const over = hero || this.petAt(p.worldX, p.worldY) || this.interactableAt(p.worldX, p.worldY);
     const cursor = over ? 'pointer' : 'default';
     if (cursor !== this.hoverCursor) {
       this.hoverCursor = cursor;
@@ -918,7 +906,8 @@ export class VillageScene extends Phaser.Scene {
 
   private syncHeroes(initial: boolean, dt: number): void {
     const world = this.world;
-    const graveIndex = new Map(graveOrder(world).map((h, i) => [h.id, i]));
+    // Só quem ainda tem cova no chão; o túmulo de quem saiu para o Memorial vira "o cemitério".
+    const graveIndex = new Map(standingGraves(world).map(({ hero, index }) => [hero.id, index]));
     const speed = this.session.paused ? 0 : HERO_SPEED * this.session.speed;
     const seen = new Set<number>();
     const groups = new Map<string, Hero[]>();
@@ -1086,23 +1075,29 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private syncGraves(initial: boolean): void {
-    const order = graveOrder(this.world);
-    if (order.length === this.graves.size) return;
-    order.forEach((hero, index) => {
-      if (this.graves.has(hero.id)) return;
+    // Roda todo quadro: só refaz quando alguém morreu desde a última vez.
+    const dead = this.world.heroes.reduce((n, h) => n + (h.status === 'dead' ? 1 : 0), 0);
+    if (dead === this.graveCount) return;
+    this.graveCount = dead;
+    const standing = standingGraves(this.world);
+    const keep = new Set(standing.map(({ hero }) => hero.id));
+    // Cemitério lotado: a cova mais antiga sai do chão (o nome segue no Memorial).
+    for (const [id, view] of this.graves) {
+      if (keep.has(id)) continue;
+      view.stone.destroy();
+      this.graves.delete(id);
+    }
+    for (const { hero, index } of standing) {
+      if (this.graves.has(hero.id)) continue;
       const p = gravePoint(index);
       const stone = this.add.image(p.x, p.y, 'decal/grave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y);
-      const name = smooth(this.add.text(p.x, p.y + 2, hero.name, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#cfc8bb', stroke: '#000', strokeThickness: 3 }))
-        .setOrigin(0.5, 0)
-        .setDepth(DEPTH.labels)
-        .setScale(Math.min(this.labelScale, 1.4));
       if (!initial) {
         stone.setAlpha(0);
         this.tweens.add({ targets: stone, alpha: 1, duration: 1200 });
         this.add.image(p.x, p.y + 6, 'mound').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y - 1);
       }
-      this.graves.set(hero.id, { stone, name });
-    });
+      this.graves.set(hero.id, { stone });
+    }
   }
 
   private onSessionEvent(event: SessionEvent): void {
@@ -1117,11 +1112,9 @@ export class VillageScene extends Phaser.Scene {
       this.pets.clear();
       this.petsReady = false;
       this.pendingPet = null;
-      for (const g of this.graves.values()) {
-        g.stone.destroy();
-        g.name.destroy();
-      }
+      for (const g of this.graves.values()) g.stone.destroy();
       this.graves.clear();
+      this.graveCount = -1;
       for (const b of this.buildings.values()) b.level = -1;
       this.syncAll(true);
       this.treasurySeen = this.world.town.treasury;

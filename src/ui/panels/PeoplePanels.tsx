@@ -6,7 +6,7 @@ import type { Hero, HeroStatus, RetiredRole } from '../../sim/index.ts';
 import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../../game/storage.ts';
 import { Bar, HeroLink, PanelShell, Stat, useGame } from '../components.tsx';
 import { activityText, className, fmt, liveHp, plural } from '../format.ts';
-import { graveOrder } from '../../render/layout.ts';
+import { GRAVE_SLOTS, graveOrder } from '../../render/layout.ts';
 import { ChildIcon, HeroPortrait } from '../PixelSprite.tsx';
 
 const ORDER: Record<HeroStatus, number> = { expedition: 0, town: 1, retired: 2, left: 3, dead: 4 };
@@ -154,6 +154,9 @@ export function MemorialPanel() {
             ))}
           </ul>
         </>
+      )}
+      {dead.length > GRAVE_SLOTS && (
+        <p class="sub">Cabem {GRAVE_SLOTS} covas dentro da cerca; as mais antigas foram para o ossário, mas os nomes ficam aqui.</p>
       )}
       <ul class="graves">
         {dead.map((h) => (
