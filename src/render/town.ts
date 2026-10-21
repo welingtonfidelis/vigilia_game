@@ -99,6 +99,8 @@ function packDirtName(mask: boolean[][], paths: boolean[][], x: number, y: numbe
 }
 
 function packTree(scene: Phaser.Scene, solids: Solid[], name: string, px: number, py: number): void {
+  const broad = name.includes('pine') || name.includes('autumn');
+  groundShadow(scene, px, py, broad ? 28 : 20, broad ? 7 : 5, 0.3);
   scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py);
   solids.push({ key: name, x: px, y: py, opts: TRUNK });
 }
@@ -110,6 +112,7 @@ export function buildCottages(scene: Phaser.Scene, solids: Solid[]): Phaser.Game
     const x = (lot.tx + lot.tw / 2) * TILE;
     const y = (lot.ty + lot.th) * TILE;
     const id = `building/house/0${i + 1}`;
+    groundShadow(scene, x, y, lot.tw * TILE * 0.72, 9, 0.38);
     scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: id, x, y });
     const light = scene.add
@@ -159,7 +162,97 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   baked.draw(ground, 0, 0);
   baked.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   ground.setActive(false).setVisible(false);
+
+  // Microdetalhes estáticos no gramado: pequenos tufos e flores em pixels.
+  // São desenhados uma única vez, sem tweens, texturas extras ou custo por frame.
+  const accents = scene.add.graphics().setDepth(DEPTH.ground + 0.5);
+  const detailRnd = seeded(41);
+
+  // Relevo quebrado e assimétrico: evitar linhas contínuas que pareçam
+  // contornos de grade. Sombras e reflexos aparecem em pequenos trechos.
+  const hasPath = (x: number, y: number): boolean => paths[y]?.[x] === true;
+  for (let ty = 0; ty < ROWS; ty++) {
+    for (let tx = 0; tx < COLS; tx++) {
+      if (!hasPath(tx, ty)) continue;
+      const x = tx * TILE;
+      const y = ty * TILE;
+      const edgeN = !hasPath(tx, ty - 1);
+      const edgeW = !hasPath(tx - 1, ty);
+      const edgeE = !hasPath(tx + 1, ty);
+
+      // Sombra em trechos descontínuos apenas na borda superior/esquerda.
+      // Não contornamos todos os lados para preservar a leitura orgânica.
+      accents.fillStyle(0x171411, 0.13);
+      if (edgeN && detailRnd() < 0.58) {
+        const sx = x + 2 + Math.floor(detailRnd() * 8);
+        accents.fillRect(sx, y + 1, 5 + Math.floor(detailRnd() * 7), 1);
+      }
+      if (edgeW && detailRnd() < 0.44) {
+        const sy = y + 3 + Math.floor(detailRnd() * 8);
+        accents.fillRect(x + 1, sy, 1, 4 + Math.floor(detailRnd() * 5));
+      }
+
+      // Reflexos ocres raros, como pequenas irregularidades do solo.
+      accents.fillStyle(0xc3a078, 0.22);
+      if ((edgeN || edgeW) && detailRnd() < 0.22) {
+        const sx = x + 4 + Math.floor(detailRnd() * (TILE - 9));
+        const sy = y + 3 + Math.floor(detailRnd() * (TILE - 7));
+        accents.fillRect(sx, sy, 3 + Math.floor(detailRnd() * 3), 1);
+      }
+
+      // Menos pedras e menores, concentradas fora do centro de passagem.
+      if (detailRnd() < 0.14) {
+        const sx = x + 3 + Math.floor(detailRnd() * (TILE - 7));
+        const sy = y + 3 + Math.floor(detailRnd() * (TILE - 7));
+        accents.fillStyle(0x55463b, 0.48);
+        accents.fillRect(sx, sy, 2, 1);
+        accents.fillStyle(0x9b8166, 0.32);
+        accents.fillRect(sx, sy, 1, 1);
+      }
+    }
+  }
+
+  // Microdetalhes estáticos no gramado: tufos e flores discretas.
+  // São desenhados uma única vez, sem tweens, texturas extras ou custo por frame.
+  for (let i = 0; i < 150; i++) {
+    const tx = Math.floor(detailRnd() * COLS);
+    const ty = Math.floor(detailRnd() * ROWS);
+    if (mask[ty]?.[tx]) continue;
+    const x = tx * TILE + 4 + Math.floor(detailRnd() * (TILE - 8));
+    const y = ty * TILE + 4 + Math.floor(detailRnd() * (TILE - 8));
+    const kind = detailRnd();
+    if (kind < 0.62) {
+      accents.fillStyle(kind < 0.3 ? 0x314b32 : 0x54734a, 0.62);
+      accents.fillRect(x, y, 2, 2);
+      if (kind > 0.42) {
+        accents.fillStyle(0x80945a, 0.65);
+        accents.fillRect(x + 2, y - 2, 2, 2);
+      }
+    } else {
+      accents.fillStyle(0xd6b978, 0.8);
+      accents.fillRect(x, y, 2, 2);
+      accents.fillStyle(0x8b9d5c, 0.8);
+      accents.fillRect(x - 2, y + 2, 2, 2);
+    }
+  }
+  accents.setScrollFactor(1);
+
   return mask;
+}
+
+/** Sombra de contato estática: separa a silhueta do cenário sem blur nem textura nova. */
+export function groundShadow(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height = 7,
+  alpha = 0.34,
+): Phaser.GameObjects.Ellipse {
+  return scene.add
+    .ellipse(Math.round(x), Math.round(y - 1), width, height, 0x080706, alpha)
+    .setOrigin(0.5, 0.5)
+    .setDepth(y - 2);
 }
 
 /** Árvores soltas e enfeites nos espaços livres. */

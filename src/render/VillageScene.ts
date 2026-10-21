@@ -49,6 +49,7 @@ import {
   buildCemetery,
   buildCoffer,
   buildGround,
+  groundShadow,
   buildHornTower,
   buildOvergrowth,
   buildProps,
@@ -327,6 +328,8 @@ export class VillageScene extends Phaser.Scene {
   private createBuilding(id: BuildingId): void {
     const lot = LOTS[id];
     const y = lot.y + lot.h / 2;
+    // A sombra fica sob a fachada e acompanha a posição estática do prédio.
+    groundShadow(this, lot.x, y, lot.w * 0.76, 10, 0.4);
     const base = this.add.image(lot.x, y, buildingTexture(id, 1)).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
     const lights = this.add.image(lot.x, y, lightsTexture(buildingTexture(id, 1))).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.lights).setAlpha(0);
     const sign = label(this, lot.x, y + 2, '', 14);
