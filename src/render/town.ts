@@ -167,6 +167,44 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   // São desenhados uma única vez, sem tweens, texturas extras ou custo por frame.
   const accents = scene.add.graphics().setDepth(DEPTH.ground + 0.5);
   const detailRnd = seeded(41);
+
+  // Bordas de trilha em segmentos curtos: uma borda de terra mais funda e
+  // reflexos quentes pontuais dão relevo sem desenhar contornos quadriculados.
+  const hasPath = (x: number, y: number): boolean => paths[y]?.[x] === true;
+  for (let ty = 0; ty < ROWS; ty++) {
+    for (let tx = 0; tx < COLS; tx++) {
+      if (!hasPath(tx, ty)) continue;
+      const x = tx * TILE;
+      const y = ty * TILE;
+      const edgeN = !hasPath(tx, ty - 1);
+      const edgeS = !hasPath(tx, ty + 1);
+      const edgeW = !hasPath(tx - 1, ty);
+      const edgeE = !hasPath(tx + 1, ty);
+      accents.fillStyle(0x211b18, 0.24);
+      if (edgeN) accents.fillRect(x + 2, y, TILE - 4, 2);
+      if (edgeS) accents.fillRect(x + 2, y + TILE - 2, TILE - 4, 2);
+      if (edgeW) accents.fillRect(x, y + 2, 2, TILE - 4);
+      if (edgeE) accents.fillRect(x + TILE - 2, y + 2, 2, TILE - 4);
+
+      // Luz ambiente em pequenos trechos, não em toda a borda.
+      accents.fillStyle(0xc3a078, 0.32);
+      if (edgeN && detailRnd() < 0.72) accents.fillRect(x + 5 + Math.floor(detailRnd() * 15), y + 2, 5 + Math.floor(detailRnd() * 6), 1);
+      if (edgeW && detailRnd() < 0.55) accents.fillRect(x + 2, y + 5 + Math.floor(detailRnd() * 15), 1, 4 + Math.floor(detailRnd() * 5));
+
+      // Pedras miúdas na terra, mantendo o centro das trilhas livre.
+      if (detailRnd() < 0.32) {
+        const sx = x + 6 + Math.floor(detailRnd() * (TILE - 12));
+        const sy = y + 6 + Math.floor(detailRnd() * (TILE - 12));
+        accents.fillStyle(0x55463b, 0.72);
+        accents.fillRect(sx, sy, 3, 2);
+        accents.fillStyle(0x9b8166, 0.5);
+        accents.fillRect(sx, sy, 2, 1);
+      }
+    }
+  }
+
+  // Microdetalhes estáticos no gramado: tufos e flores discretas.
+  // São desenhados uma única vez, sem tweens, texturas extras ou custo por frame.
   for (let i = 0; i < 150; i++) {
     const tx = Math.floor(detailRnd() * COLS);
     const ty = Math.floor(detailRnd() * ROWS);
