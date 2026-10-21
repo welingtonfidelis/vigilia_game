@@ -38,6 +38,7 @@ export const ACTS: ActDef[] = [
       { id: 'esqueleto', name: 'Esqueleto Rangente', hp: 55, atk: 7, def: 10, interval: 14, tags: [] },
       { id: 'rato', name: 'Rato-de-ossuário', hp: 30, atk: 5, def: 0, interval: 9, tags: ['swarm'] },
       { id: 'acolito', name: 'Acólito Caído', hp: 45, atk: 9, def: 5, interval: 16, tags: ['backline'] },
+      { id: 'aranhaOssaria', name: 'Aranha Ossária', hp: 38, atk: 8, def: 4, interval: 11, tags: ['backline'] },
     ],
     boss: {
       id: 'guardiaoUrnas',
