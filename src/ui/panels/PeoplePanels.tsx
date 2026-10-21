@@ -237,7 +237,7 @@ export function MenuPanel() {
   const prefs = ui.prefs;
   const scale = (d: number) => ui.setPrefs({ uiScale: Math.round(Math.max(0.8, Math.min(1.6, prefs.uiScale + d)) * 10) / 10 });
   return (
-    <PanelShell title="Menu" subtitle={`Semente ${session.world.seed}`}>
+    <PanelShell title="Menu" subtitle={`Versão ${__APP_VERSION__} (em construção) · semente ${session.world.seed}`}>
       <h3>Jogo</h3>
       <div class="row">
         <button

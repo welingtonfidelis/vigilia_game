@@ -19,6 +19,7 @@ import { makeTextures } from './art.ts';
 import { animFrames, ART_SCALE, CLASS_LOOK, DUNGEON_URL, FRAMES_0X72, MAYOR_SPRITE, TOWN_URL } from './assets.ts';
 import { PACK_ASSETS, buildingTexture, lightsTexture, packUrl } from './pack.ts';
 import { moveAxis } from './keys.ts';
+import { CELL, NavGrid, type AlphaMask, type Route } from './nav.ts';
 import {
   ABYSS_EDGE_Y,
   CEMETERY_TILES,
@@ -61,6 +62,7 @@ import {
   type BoardView,
   type CofferView,
   type HornView,
+  type Solid,
 } from './town.ts';
 
 /** Velocidade de caminhada dos heróis em 1× (px de mundo por segundo real). */
@@ -135,6 +137,10 @@ export class VillageScene extends Phaser.Scene {
   private hoverHeroId: number | null = null;
   private downOnMap = false;
   private walkClock = 0;
+  /** O que ocupa chão na vila: rotas contornam, o prefeito escorrega. */
+  readonly nav = new NavGrid(WORLD_W, WORLD_H);
+  private readonly alphas = new Map<string, AlphaMask>();
+  private navDebug: Phaser.GameObjects.Graphics | null = null;
   private unsubscribe: (() => void) | null = null;
 
   constructor(session: Session, ui: UiStore) {
@@ -174,15 +180,17 @@ export class VillageScene extends Phaser.Scene {
     // portão, quadro, árvores) usa UVs um pouco para dentro contra o vazamento do atlas.
     insetTownFrames(this);
     this.abyss = buildAbyss(this);
-    scatterTrees(this, mask);
-    buildCemetery(this);
-    this.propLights = buildProps(this);
-    buildCampfire(this);
-    buildThermal(this);
-    this.houseLights = buildCottages(this);
-    this.horn = buildHornTower(this);
-    this.board = buildBoard(this);
-    this.coffer = buildCoffer(this);
+    const solids: Solid[] = [];
+    scatterTrees(this, mask, solids);
+    buildCemetery(this, solids);
+    this.propLights = buildProps(this, solids);
+    buildCampfire(this, solids);
+    buildThermal(this, solids);
+    this.houseLights = buildCottages(this, solids);
+    this.horn = buildHornTower(this, solids);
+    this.board = buildBoard(this, solids);
+    this.coffer = buildCoffer(this, solids);
+    this.nav.setLayer('cenario', this.cellsOf(solids));
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createInteractables();
     this.layoutSigns();
@@ -319,6 +327,7 @@ export class VillageScene extends Phaser.Scene {
     } else {
       view.lights.setVisible(false);
     }
+    this.nav.setLayer(`predio:${id}`, this.cellsOf([{ key: texture, x: lot.x, y: lot.y + lot.h / 2 }]));
     view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}`);
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
     if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y + lot.h / 4);
@@ -401,6 +410,7 @@ export class VillageScene extends Phaser.Scene {
         const y = (lot.ty + lot.th) * TILE;
         const id = `building/house/0${i + 1}`;
         this.expansionHouses[i] = this.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+        this.nav.setLayer(`casa-nova:${i}`, this.cellsOf([{ key: id, x, y }]));
         this.expansionLights[i] = this.add
           .image(x, y, `${id}-lights`)
           .setOrigin(0.5, 1)
@@ -412,6 +422,7 @@ export class VillageScene extends Phaser.Scene {
         this.expansionLights[i]?.destroy();
         this.expansionHouses[i] = undefined;
         this.expansionLights[i] = undefined;
+        this.nav.setLayer(`casa-nova:${i}`, []);
       }
     });
   }
@@ -520,9 +531,11 @@ export class VillageScene extends Phaser.Scene {
       const len = Math.hypot(axis.x, axis.y);
       const step = MAYOR_SPEED * dt;
       const next = this.clampWalk({ x: this.mayor.x + (axis.x / len) * step, y: this.mayor.y + (axis.y / len) * step });
-      this.mayor.walkBy(next.x - this.mayor.x, next.y - this.mayor.y);
+      const free = this.nav.slide(this.mayor, next.x - this.mayor.x, next.y - this.mayor.y);
+      this.mayor.walkBy(free.x - this.mayor.x, free.y - this.mayor.y);
+      this.mayor.route.reset();
     } else if (this.moveTarget) {
-      const arrived = this.mayor.walkTo(this.moveTarget, MAYOR_SPEED * dt);
+      const arrived = this.travel(this.mayor, this.moveTarget, MAYOR_SPEED * dt, false);
       if (arrived) this.moveTarget = null;
     } else {
       this.mayor.walkTo({ x: this.mayor.x, y: this.mayor.y }, 0);
@@ -536,6 +549,64 @@ export class VillageScene extends Phaser.Scene {
       near.open();
     }
     this.ui.setPrompt(near ? { id: near.id, label: near.label(this.world) } : null);
+  }
+
+  // ── Chão ocupado ────────────────────────────────────────────────────────
+
+  /** Transparência de uma textura do pack (lida uma vez por quadro de imagem). */
+  private alphaOf(key: string, frame?: number): AlphaMask | null {
+    const id = `${key}#${frame ?? ''}`;
+    const cached = this.alphas.get(id);
+    if (cached) return cached;
+    if (!this.textures.exists(key)) return null;
+    const f = this.textures.getFrame(key, frame);
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    if (!f || !ctx) return null;
+    ctx.canvas.width = f.cutWidth;
+    ctx.canvas.height = f.cutHeight;
+    ctx.drawImage(f.source.image as CanvasImageSource, f.cutX, f.cutY, f.cutWidth, f.cutHeight, 0, 0, f.cutWidth, f.cutHeight);
+    const rgba = ctx.getImageData(0, 0, f.cutWidth, f.cutHeight).data;
+    const alpha = new Uint8Array(f.cutWidth * f.cutHeight);
+    for (let i = 0; i < alpha.length; i++) alpha[i] = rgba[i * 4 + 3]!;
+    const mask = { w: f.cutWidth, h: f.cutHeight, alpha };
+    this.alphas.set(id, mask);
+    return mask;
+  }
+
+  private cellsOf(solids: Solid[]): number[] {
+    const cells: number[] = [];
+    for (const s of solids) {
+      const mask = this.alphaOf(s.key, s.frame);
+      if (!mask) continue;
+      const [ox, oy] = s.origin ?? [0.5, 1];
+      cells.push(...this.nav.footprint(mask, s.x - mask.w * ART_SCALE * ox, s.y - mask.h * ART_SCALE * oy, ART_SCALE, s.opts));
+    }
+    return cells;
+  }
+
+  /**
+   * Anda pela rota que contorna o que ocupa chão. `hurry` acelera o passo nos desvios
+   * (heróis e moradores têm hora para chegar); o prefeito anda no próprio ritmo.
+   */
+  private travel(sprite: { x: number; y: number; route: Route; walkTo(p: Point, step: number): boolean }, target: Point, step: number, hurry = true): boolean {
+    const pace = hurry ? step * sprite.route.stretch : step;
+    const next = sprite.route.toward(this.nav, sprite, target, pace);
+    return sprite.walkTo(next, hurry ? step * sprite.route.stretch : step) && sprite.route.last;
+  }
+
+  /** Para conferir: pinta as células bloqueadas (vigilia.renderer → cena 'village'). */
+  debugNav(on = true): void {
+    this.navDebug?.destroy();
+    this.navDebug = null;
+    if (!on) return;
+    const g = this.add.graphics().setDepth(DEPTH.floating - 1);
+    g.fillStyle(0xff3030, 0.35);
+    for (let cy = 0; cy < this.nav.rows; cy++) {
+      for (let cx = 0; cx < this.nav.cols; cx++) {
+        if (this.nav.blockedCell(cx, cy)) g.fillRect(cx * CELL, cy * CELL, CELL, CELL);
+      }
+    }
+    this.navDebug = g;
   }
 
   private nearestInteractable(): Interactable | null {
@@ -719,6 +790,7 @@ export class VillageScene extends Phaser.Scene {
         sprite.root.setPosition(LANDMARKS.abismo.x, LANDMARKS.abismo.y + 20);
         sprite.setHidden(false);
         sprite.commit = null;
+        sprite.route.reset();
       }
       // Uma hora do jogo dura 2 s em 1×: sem isto, quem vai ao túmulo vira as costas
       // antes de chegar. O herói termina a caminhada atual, para um instante e só
@@ -732,7 +804,7 @@ export class VillageScene extends Phaser.Scene {
       }
       const commit = sprite.commit!;
       sprite.sync(hero);
-      const arrived = sprite.hidden ? true : sprite.walkTo(commit.point, hero.injury ? step * INJURED_PACE : step);
+      const arrived = sprite.hidden ? true : this.travel(sprite, commit.point, hero.injury ? step * INJURED_PACE : step);
       if (arrived && commit.arrivedAt === null) commit.arrivedAt = this.walkClock;
       if (arrived && commit.hide && !sprite.hidden) sprite.setHidden(true);
       sprite.animate(this.session.paused ? 0 : this.session.speed);
@@ -766,7 +838,7 @@ export class VillageScene extends Phaser.Scene {
         this.kids.set(child.id, sprite);
       }
       sprite.setHidden(!day);
-      if (!sprite.hidden) sprite.walkTo(target, step);
+      if (!sprite.hidden) this.travel(sprite, target, step, false);
       sprite.animate(this.session.paused ? 0 : this.session.speed);
       sprite.placeLabels(this.labelScale);
     }
@@ -793,7 +865,7 @@ export class VillageScene extends Phaser.Scene {
         sprite = new CitizenSprite(this, citizen, target);
         this.citizens.set(citizen.id, sprite);
       }
-      const arrived = sprite.walkTo(target, step);
+      const arrived = this.travel(sprite, target, step);
       // À noite, quem não é guarda nem noctívago entra em casa e some.
       const staysOut = !night || citizen.job === 'guarda' || isNightOwl(citizen);
       const inside = !staysOut && arrived;

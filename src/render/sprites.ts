@@ -6,6 +6,7 @@ import type { ActivityKind, Child, Citizen, Hero } from '../sim/index.ts';
 import { citizenLook, ICON_KINDS } from './art.ts';
 import { ART_SCALE, heroSprite } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
+import { Route } from './nav.ts';
 import { DEPTH, smooth } from './town.ts';
 import type { Point } from './layout.ts';
 import { RANK_COLORS } from './palette.ts';
@@ -34,6 +35,8 @@ abstract class Walker {
   protected readonly base: string;
   protected readonly visual: WalkerVisual | undefined;
   protected moving = false;
+  /** Caminho em volta dos prédios até o destino atual. */
+  readonly route = new Route();
   private playing = '';
   private left = false;
 
@@ -283,6 +286,8 @@ export class CitizenSprite {
   private moving = false;
   private left = false;
   private frameTime = 0;
+  /** Caminho em volta dos prédios até o destino atual. */
+  readonly route = new Route();
   hidden = false;
 
   constructor(scene: Phaser.Scene, citizen: Citizen, at: Point) {
@@ -292,6 +297,13 @@ export class CitizenSprite {
     const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE);
     this.body = scene.add.sprite(0, 2, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
     this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
+  }
+
+  get x(): number {
+    return this.root.x;
+  }
+  get y(): number {
+    return this.root.y;
   }
 
   /** Anda em direção ao ponto. Devolve true quando chegou. */
