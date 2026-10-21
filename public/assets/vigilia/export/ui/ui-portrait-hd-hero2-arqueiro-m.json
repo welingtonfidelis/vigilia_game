@@ -1,0 +1,59 @@
+{
+ "frames": {
+  "ui-portrait-hd-hero2-arqueiro-m-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "ui-portrait-hd-hero2-arqueiro-m-01": {
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "ui-portrait-hd-hero2-arqueiro-m-02": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "ui-portrait-hd-hero2-arqueiro-m-03": {
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "size": {
+   "w": 192,
+   "h": 64
+  },
+  "scale": 1
+ }
+}

@@ -357,15 +357,11 @@ export function MenuPanel() {
 
       <h3>Créditos</h3>
       <p class="sub">
-        Arte em pixel com licença CC0:{' '}
-        <a href="https://kenney.nl/assets/tiny-town" target="_blank" rel="noopener noreferrer">
-          Tiny Town
-        </a>
-        , de Kenney (a vila), e{' '}
+        Arte em pixel do Vigília Art Pack (CC0), feita para o jogo: vila, heróis, monstros e masmorra. Algumas peças ainda vêm do{' '}
         <a href="https://0x72.itch.io/dungeontileset-ii" target="_blank" rel="noopener noreferrer">
           16x16 DungeonTileset II
         </a>
-        , de 0x72 (heróis, monstros e masmorra).
+        , de 0x72 (CC0): o baú e a flecha do corredor, os vultos da incursão e os ecos de heróis mortos.
       </p>
     </PanelShell>
   );

@@ -4,7 +4,7 @@
 
 import type { Hero, Party, Unit, World } from '../../sim/index.ts';
 import { animFrames, DUNGEON_URL, frameRect, heroSprite, monsterBase } from '../assets.ts';
-import { packAsset, packUrl } from '../pack.ts';
+import { heroSpriteId, packAsset, packUrl } from '../pack.ts';
 import { WALK_SPEED } from './model.ts';
 
 export type Anim = 'idle' | 'run' | 'attack' | 'hit' | 'death';
@@ -98,7 +98,7 @@ export function x72Sprite(base: string, ghost = false): SpriteSource | null {
 }
 
 export function heroSource(hero: Hero): SpriteSource | null {
-  const id = `char/hero/${hero.classId}/${hero.gender}`;
+  const id = heroSpriteId(hero.classId, hero.gender);
   return packSprite(id, `${id}/walk`) ?? x72Sprite(heroSprite(hero.classId, hero.gender));
 }
 

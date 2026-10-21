@@ -1,4 +1,4 @@
-// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis). Não editar à mão.
+// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: Sentinela e os outros 11 heróis). Não editar à mão.
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -12009,6 +12009,1770 @@ export const PACK_ASSETS: PackAsset[] = [
     "act": "VI",
     "actName": "Coração do Abismo",
     "opaque": true
+  },
+  {
+    "id": "char/hero/guerreiro/m",
+    "type": "character",
+    "file": "export/png/char-hero-guerreiro-m.png",
+    "meta": "export/png/char-hero-guerreiro-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero/guerreiro/m/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero-guerreiro-m-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero/guerreiro/m",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero-guerreiro-m.png",
+    "meta": "export/ui/ui-portrait-hd-hero-guerreiro-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/guardiao/f",
+    "type": "character",
+    "file": "export/png/char-hero2-guardiao-f.png",
+    "meta": "export/png/char-hero2-guardiao-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/guardiao/f/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-guardiao-f-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/guardiao/f",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-guardiao-f.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-guardiao-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/selvagem/m",
+    "type": "character",
+    "file": "export/png/char-hero2-selvagem-m.png",
+    "meta": "export/png/char-hero2-selvagem-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/selvagem/m/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-selvagem-m-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/selvagem/m",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-selvagem-m.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-selvagem-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/selvagem/f",
+    "type": "character",
+    "file": "export/png/char-hero2-selvagem-f.png",
+    "meta": "export/png/char-hero2-selvagem-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/selvagem/f/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-selvagem-f-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/selvagem/f",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-selvagem-f.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-selvagem-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/lanceiro/m",
+    "type": "character",
+    "file": "export/png/char-hero2-lanceiro-m.png",
+    "meta": "export/png/char-hero2-lanceiro-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/lanceiro/m/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-lanceiro-m-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/lanceiro/m",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-lanceiro-m.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-lanceiro-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/lanceiro/f",
+    "type": "character",
+    "file": "export/png/char-hero2-lanceiro-f.png",
+    "meta": "export/png/char-hero2-lanceiro-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/lanceiro/f/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-lanceiro-f-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/lanceiro/f",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-lanceiro-f.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-lanceiro-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/arqueiro/m",
+    "type": "character",
+    "file": "export/png/char-hero2-arqueiro-m.png",
+    "meta": "export/png/char-hero2-arqueiro-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/arqueiro/m/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-arqueiro-m-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/arqueiro/m",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-arqueiro-m.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-arqueiro-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/arqueiro/f",
+    "type": "character",
+    "file": "export/png/char-hero2-arqueiro-f.png",
+    "meta": "export/png/char-hero2-arqueiro-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/arqueiro/f/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-arqueiro-f-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/arqueiro/f",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-arqueiro-f.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-arqueiro-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/clerigo/m",
+    "type": "character",
+    "file": "export/png/char-hero2-clerigo-m.png",
+    "meta": "export/png/char-hero2-clerigo-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/clerigo/m/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-clerigo-m-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/clerigo/m",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-clerigo-m.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-clerigo-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/clerigo/f",
+    "type": "character",
+    "file": "export/png/char-hero2-clerigo-f.png",
+    "meta": "export/png/char-hero2-clerigo-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/clerigo/f/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-clerigo-f-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/clerigo/f",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-clerigo-f.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-clerigo-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/piromante/m",
+    "type": "character",
+    "file": "export/png/char-hero2-piromante-m.png",
+    "meta": "export/png/char-hero2-piromante-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/piromante/m/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-piromante-m-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/piromante/m",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-piromante-m.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-piromante-m.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/hero2/piromante/f",
+    "type": "character",
+    "file": "export/png/char-hero2-piromante-f.png",
+    "meta": "export/png/char-hero2-piromante-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      432,
+      32
+    ],
+    "columns": 18,
+    "rows": 1,
+    "frames": 18,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 6
+      },
+      "run": {
+        "frames": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 10
+      },
+      "hit": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      },
+      "attack": {
+        "frames": [
+          9,
+          10,
+          11,
+          12
+        ],
+        "fps": 12
+      },
+      "death": {
+        "frames": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "fps": 8
+      }
+    }
+  },
+  {
+    "id": "char/hero2/piromante/f/walk",
+    "type": "character",
+    "file": "export/corridor/char-hero2-piromante-f-walk.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      192,
+      32
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "animations": {
+      "walk": {
+        "frames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fps": 14
+      }
+    },
+    "stride": 56,
+    "variant": "profile"
+  },
+  {
+    "id": "ui/portrait-hd/hero2/piromante/f",
+    "type": "portrait",
+    "file": "export/ui/ui-portrait-hd-hero2-piromante-f.png",
+    "meta": "export/ui/ui-portrait-hd-hero2-piromante-f.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      48,
+      64
+    ],
+    "frameSize": [
+      48,
+      64
+    ],
+    "sheetSize": [
+      192,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fps": 4
+      }
+    }
   }
 ];
 
@@ -12276,8 +14040,24 @@ export const buildingTexture = (id: string, level: number): string =>
 
 export const lightsTexture = (texture: string): string => `${texture}-lights`;
 
+/**
+ * Estilo novo dos heróis (sprite 24×32 e modelo detalhado 48×64). O Guardião é o Sentinela
+ * entregue no piloto (hero/guerreiro); os outros 11 saíram do mesmo gerador (hero2/<classe>).
+ * A arte antiga de 16×28 segue no pack: voltar é trocar este mapa.
+ */
+const HERO_ART: Record<string, string> = { 'guardiao/m': 'hero/guerreiro/m' };
+
+/** Pasta da arte do herói: "hero2/arqueiro/f", ou "hero/guerreiro/m" no Guardião. */
+export const heroArt = (classId: string, gender: string): string => HERO_ART[`${classId}/${gender}`] ?? `hero2/${classId}/${gender}`;
+
+export const heroSpriteId = (classId: string, gender: string): string => `char/${heroArt(classId, gender)}`;
+
+/** Modelo detalhado animado (48×64) para a ficha e o relatório. */
+export const heroPortraitHd = (classId: string, gender: string): PackAsset | undefined =>
+  packAsset(`ui/portrait-hd/${heroArt(classId, gender)}`);
+
 export const heroPortraitUrl = (classId: string, gender: string, small = false): string =>
-  `${PACK_BASE}export/ui/ui-portrait-hero-${classId}-${gender}${small ? '-small' : ''}.png`;
+  `${PACK_BASE}export/ui/ui-portrait-${heroArt(classId, gender).replaceAll('/', '-')}${small ? '-small' : ''}.png`;
 
 export const mayorPortraitUrl = (female = false, small = false): string =>
   `${PACK_BASE}export/ui/ui-portrait-mayor${female ? '-f' : ''}${small ? '-small' : ''}.png`;

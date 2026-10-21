@@ -14380,6 +14380,1890 @@
       "act": "VI",
       "actName": "Coração do Abismo",
       "opaque": true
+    },
+    {
+      "id": "char/hero/guerreiro/m",
+      "type": "character",
+      "file": "export/png/char-hero-guerreiro-m.png",
+      "meta": "export/png/char-hero-guerreiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "maca flangeada + escudo",
+      "status": "draft",
+      "license": "CC0-1.0",
+      "notes": "Mesma ordem de quadros dos outros herois (idle 0-3, run 4-7, hit 8, ataque 9-12, morte 13-17), mas quadro 24x32. Pes no pivo 0.5,1. Sem flip proprio: o motor espelha."
+    },
+    {
+      "id": "char/hero/guerreiro/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero-guerreiro-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "status": "draft",
+      "license": "CC0-1.0",
+      "notes": "Caminhada de perfil do guerreiro piloto para o corredor, virado para a direita; mesmo ciclo de 8 quadros das outras, em 24x32."
+    },
+    {
+      "id": "ui/portrait-hd/hero/guerreiro/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero-guerreiro-m.png",
+      "meta": "export/ui/ui-portrait-hd-hero-guerreiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "status": "draft",
+      "license": "CC0-1.0",
+      "notes": "Modelo detalhado de corpo inteiro para a ficha do heroi e telas de destaque. Escalar so por inteiros (3x, 4x, 6x), image-rendering: pixelated. Nao usar no mapa."
+    },
+    {
+      "id": "char/hero2/guardiao/f",
+      "type": "character",
+      "file": "export/png/char-hero2-guardiao-f.png",
+      "meta": "export/png/char-hero2-guardiao-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "maça flangeada + escudo",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/guardiao/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-guardiao-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/guardiao/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-guardiao-f.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-guardiao-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/selvagem/m",
+      "type": "character",
+      "file": "export/png/char-hero2-selvagem-m.png",
+      "meta": "export/png/char-hero2-selvagem-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "machado de guerra",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/selvagem/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-selvagem-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/selvagem/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-selvagem-m.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-selvagem-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/selvagem/f",
+      "type": "character",
+      "file": "export/png/char-hero2-selvagem-f.png",
+      "meta": "export/png/char-hero2-selvagem-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "machado de guerra",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/selvagem/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-selvagem-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/selvagem/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-selvagem-f.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-selvagem-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/lanceiro/m",
+      "type": "character",
+      "file": "export/png/char-hero2-lanceiro-m.png",
+      "meta": "export/png/char-hero2-lanceiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "alabarda + broquel",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/lanceiro/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-lanceiro-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/lanceiro/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-lanceiro-m.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-lanceiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/lanceiro/f",
+      "type": "character",
+      "file": "export/png/char-hero2-lanceiro-f.png",
+      "meta": "export/png/char-hero2-lanceiro-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "alabarda + broquel",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/lanceiro/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-lanceiro-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/lanceiro/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-lanceiro-f.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-lanceiro-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/arqueiro/m",
+      "type": "character",
+      "file": "export/png/char-hero2-arqueiro-m.png",
+      "meta": "export/png/char-hero2-arqueiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "arco recurvo",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/arqueiro/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-arqueiro-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/arqueiro/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-arqueiro-m.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-arqueiro-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/arqueiro/f",
+      "type": "character",
+      "file": "export/png/char-hero2-arqueiro-f.png",
+      "meta": "export/png/char-hero2-arqueiro-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "arco recurvo",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/arqueiro/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-arqueiro-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/arqueiro/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-arqueiro-f.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-arqueiro-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/clerigo/m",
+      "type": "character",
+      "file": "export/png/char-hero2-clerigo-m.png",
+      "meta": "export/png/char-hero2-clerigo-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "martelo + lanterna",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/clerigo/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-clerigo-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/clerigo/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-clerigo-m.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-clerigo-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/clerigo/f",
+      "type": "character",
+      "file": "export/png/char-hero2-clerigo-f.png",
+      "meta": "export/png/char-hero2-clerigo-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "martelo + lanterna",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/clerigo/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-clerigo-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/clerigo/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-clerigo-f.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-clerigo-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/piromante/m",
+      "type": "character",
+      "file": "export/png/char-hero2-piromante-m.png",
+      "meta": "export/png/char-hero2-piromante-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "cajado de fogo",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/piromante/m/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-piromante-m-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/piromante/m",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-piromante-m.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-piromante-m.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
+    },
+    {
+      "id": "char/hero2/piromante/f",
+      "type": "character",
+      "file": "export/png/char-hero2-piromante-f.png",
+      "meta": "export/png/char-hero2-piromante-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        432,
+        32
+      ],
+      "columns": 18,
+      "rows": 1,
+      "frames": 18,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6
+        },
+        "run": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 10
+        },
+        "hit": {
+          "frames": [
+            8
+          ],
+          "fps": 1
+        },
+        "attack": {
+          "frames": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "fps": 12
+        },
+        "death": {
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "fps": 8
+        }
+      },
+      "weapon": "cajado de fogo",
+      "notes": "Estilo do Sentinela (24x32): idle 0-3, corrida 4-7, dano 8, ataque 9-12, morte 13-17. Pés no pivô 0.5,1."
+    },
+    {
+      "id": "char/hero2/piromante/f/walk",
+      "type": "character",
+      "file": "export/corridor/char-hero2-piromante-f-walk.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        24,
+        32
+      ],
+      "frameSize": [
+        24,
+        32
+      ],
+      "sheetSize": [
+        192,
+        32
+      ],
+      "columns": 8,
+      "rows": 1,
+      "frames": 8,
+      "animations": {
+        "walk": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 14
+        }
+      },
+      "stride": 56,
+      "variant": "profile",
+      "notes": "Caminhada de perfil para o corredor, virada para a direita."
+    },
+    {
+      "id": "ui/portrait-hd/hero2/piromante/f",
+      "type": "portrait",
+      "file": "export/ui/ui-portrait-hd-hero2-piromante-f.png",
+      "meta": "export/ui/ui-portrait-hd-hero2-piromante-f.json",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "draft",
+      "license": "CC0-1.0",
+      "size": [
+        48,
+        64
+      ],
+      "frameSize": [
+        48,
+        64
+      ],
+      "sheetSize": [
+        192,
+        64
+      ],
+      "columns": 4,
+      "rows": 1,
+      "frames": 4,
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4
+        }
+      },
+      "notes": "Modelo detalhado para a ficha e o relatório. Escala só inteira, image-rendering: pixelated."
     }
   ],
   "planned": {

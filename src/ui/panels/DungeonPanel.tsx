@@ -118,7 +118,7 @@ function PartyCard(props: { world: World; party: Party }) {
           </button>
           {!solo && (
             <button
-              class="btn bell"
+              class="btn small bell"
               disabled={!canRecall}
               onClick={() => command(commands.recall, party.id)}
               title="Chama o grupo de volta. Custa reputação; os vingativos ignoram."

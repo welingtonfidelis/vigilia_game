@@ -1,0 +1,74 @@
+{
+ "frames": {
+  "ui-portrait-hd-hero-guerreiro-m-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "ui-portrait-hd-hero-guerreiro-m-01": {
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "ui-portrait-hd-hero-guerreiro-m-02": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "ui-portrait-hd-hero-guerreiro-m-03": {
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 48,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "ui-portrait-hd-hero-guerreiro-m.png",
+  "size": {
+   "w": 192,
+   "h": 64
+  },
+  "frameSize": {
+   "w": 48,
+   "h": 64
+  },
+  "columns": 4,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "idle",
+    "from": 0,
+    "to": 3,
+    "fps": 4
+   }
+  ]
+ }
+}

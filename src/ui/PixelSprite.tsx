@@ -2,7 +2,8 @@
 
 import type { ClassId, Hero } from '../sim/index.ts';
 import { animFrames, DUNGEON_URL, frameRect, SHEET_0X72_SIZE } from '../render/assets.ts';
-import { armorIconUrl, heroPortraitUrl, packAsset, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
+import { armorIconUrl, heroPortraitHd, heroPortraitUrl, packAsset, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
+import type { PackAsset } from '../render/pack.ts';
 
 /** Qual visual desenha cada monstro: mora em render/assets.ts (o corredor em canvas também usa). */
 export { monsterBase } from '../render/assets.ts';
@@ -78,6 +79,8 @@ export function MonsterPortrait(props: { asset: string; scale?: number }) {
 
 export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: boolean; variant?: 'detail' | 'small' }) => {
   const detail = props.variant === 'detail';
+  const hd = detail ? heroPortraitHd(props.hero.classId, props.hero.gender) : undefined;
+  if (hd) return <HeroModel hero={props.hero} asset={hd} scale={props.scale ?? 1} animate={props.animate !== false && props.hero.status !== 'dead'} />;
   return (
     <img
       class={`portrait-img ${detail ? 'portrait-detail' : 'portrait-small'}${props.hero.status === 'dead' ? ' portrait-ghost' : ''}`}
@@ -87,6 +90,28 @@ export const HeroPortrait = (props: { hero: Hero; scale?: number; animate?: bool
     />
   );
 };
+
+/**
+ * Modelo detalhado do estilo novo (48×64, idle de 4 quadros a 4 fps), para as telas de
+ * perto. Só escala inteira, para o pixel não borrar.
+ */
+function HeroModel(props: { hero: Hero; asset: PackAsset; scale: number; animate: boolean }) {
+  const { asset } = props;
+  const [w, h] = asset.frameSize ?? [48, 64];
+  const s = Math.max(1, Math.round(props.scale));
+  const idle = asset.animations?.idle ?? { frames: [0], fps: 1 };
+  const style: Record<string, string> = {
+    width: `${w * s}px`,
+    height: `${h * s}px`,
+    backgroundImage: `url(${PACK_BASE}${asset.file})`,
+    backgroundSize: `${w * (asset.columns ?? 1) * s}px ${h * s}px`,
+    '--model-to': `${-w * idle.frames.length * s}px`,
+    '--model-steps': String(idle.frames.length),
+    '--model-time': `${idle.frames.length / (idle.fps || 1)}s`,
+  };
+  const ghost = props.hero.status === 'dead' ? ' portrait-ghost' : '';
+  return <span class={`hero-model${props.animate ? ' animate' : ''}${ghost}`} style={style} aria-hidden="true" />;
+}
 
 /** Criança do pack (16×21, dois quadros) na lista do elenco; quadro 0 parado. */
 export function ChildIcon(props: { gender: 'm' | 'f'; scale?: number }) {

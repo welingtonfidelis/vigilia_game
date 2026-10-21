@@ -1,0 +1,266 @@
+{
+ "frames": {
+  "char-hero-guerreiro-m-00": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-01": {
+   "frame": {
+    "x": 24,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-02": {
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-03": {
+   "frame": {
+    "x": 72,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-04": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-05": {
+   "frame": {
+    "x": 120,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-06": {
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-07": {
+   "frame": {
+    "x": 168,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-08": {
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-09": {
+   "frame": {
+    "x": 216,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-10": {
+   "frame": {
+    "x": 240,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-11": {
+   "frame": {
+    "x": 264,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-12": {
+   "frame": {
+    "x": 288,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-13": {
+   "frame": {
+    "x": 312,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-14": {
+   "frame": {
+    "x": 336,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-15": {
+   "frame": {
+    "x": 360,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-16": {
+   "frame": {
+    "x": 384,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  },
+  "char-hero-guerreiro-m-17": {
+   "frame": {
+    "x": 408,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 1
+   }
+  }
+ },
+ "meta": {
+  "image": "char-hero-guerreiro-m.png",
+  "size": {
+   "w": 432,
+   "h": 32
+  },
+  "frameSize": {
+   "w": 24,
+   "h": 32
+  },
+  "columns": 18,
+  "rows": 1,
+  "scale": "1",
+  "frameTags": [
+   {
+    "name": "idle",
+    "from": 0,
+    "to": 3,
+    "fps": 6
+   },
+   {
+    "name": "run",
+    "from": 4,
+    "to": 7,
+    "fps": 10
+   },
+   {
+    "name": "hit",
+    "from": 8,
+    "to": 8,
+    "fps": 1
+   },
+   {
+    "name": "attack",
+    "from": 9,
+    "to": 12,
+    "fps": 12
+   },
+   {
+    "name": "death",
+    "from": 13,
+    "to": 17,
+    "fps": 8
+   }
+  ]
+ }
+}

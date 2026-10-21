@@ -282,7 +282,7 @@ export function HeroPanel(props: { heroId: number }) {
     >
       <div class="hero-head">
         <span class="hero-portrait">
-          <HeroPortrait hero={hero} variant="detail" />
+          <HeroPortrait hero={hero} variant="detail" scale={2} />
         </span>
         <p class={`status status-${hero.status}`}>{activityText(world, hero)}</p>
       </div>

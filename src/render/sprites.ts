@@ -5,6 +5,7 @@ import Phaser from 'phaser';
 import type { ActivityKind, Child, Citizen, Hero } from '../sim/index.ts';
 import { citizenLook, ICON_KINDS } from './art.ts';
 import { ART_SCALE, heroSprite } from './assets.ts';
+import { heroSpriteId, packAsset } from './pack.ts';
 import { DEPTH, smooth } from './town.ts';
 import type { Point } from './layout.ts';
 import { RANK_COLORS } from './palette.ts';
@@ -136,28 +137,31 @@ export class HeroSprite extends Walker {
   private readonly ring: Phaser.GameObjects.Image;
   private readonly bandage: Phaser.GameObjects.Image;
   private rank = '';
+  /** Altura da cabeça deste herói (o estilo novo tem 32 px de quadro, não 28). */
+  private readonly headY: number;
   hidden = false;
   /** Para onde está andando agora (pode estar uma atividade atrás do núcleo). */
   commit: Commit | null = null;
 
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
     // Heróis redesenhados do pack 1.4 (direção sombria), com a arma de classe no sprite.
-    const texture = `char/hero/${hero.classId}/${hero.gender}`;
+    const texture = heroSpriteId(hero.classId, hero.gender);
     super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null, ART_SCALE, {
       texture,
       idle: `${texture}:idle`,
       run: `${texture}:run`,
     });
     this.id = hero.id;
+    this.headY = HEAD_Y - ((packAsset(texture)?.frameSize?.[1] ?? 28) - 28) * ART_SCALE;
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
     this.root.addAt(this.ring, 0);
-    this.icon = scene.add.image(0, HEAD_Y - 10, 'icon-aguardar').setOrigin(0.5, 1).setScale(ART_SCALE).setVisible(false);
-    this.bandage = scene.add.image(-5, HEAD_Y + 10, 'bandage').setScale(ART_SCALE).setVisible(false);
+    this.icon = scene.add.image(0, this.headY - 10, 'icon-aguardar').setOrigin(0.5, 1).setScale(ART_SCALE).setVisible(false);
+    this.bandage = scene.add.image(-5, this.headY + 10, 'bandage').setScale(ART_SCALE).setVisible(false);
     this.root.add([this.bandage, this.icon]);
     this.label = smooth(scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE)).setOrigin(0.5, 0).setDepth(DEPTH.labels);
     this.badgeDot = scene.add.circle(0, 0, 7, 0xffffff).setStrokeStyle(2, 0x0b0a08);
     this.badgeText = smooth(scene.add.text(0, 0, '', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#0b0a08', fontStyle: 'bold' })).setOrigin(0.5);
-    this.badge = scene.add.container(at.x + 13, at.y + HEAD_Y, [this.badgeDot, this.badgeText]).setDepth(DEPTH.labels);
+    this.badge = scene.add.container(at.x + 13, at.y + this.headY, [this.badgeDot, this.badgeText]).setDepth(DEPTH.labels);
     this.sync(hero);
   }
 
@@ -192,11 +196,11 @@ export class HeroSprite extends Walker {
 
   placeLabels(labelScale: number): void {
     this.label.setPosition(this.root.x, this.root.y + 5).setScale(labelScale);
-    this.badge.setPosition(this.root.x + 13, this.root.y + HEAD_Y).setScale(labelScale);
+    this.badge.setPosition(this.root.x + 13, this.root.y + this.headY).setScale(labelScale);
   }
 
   hits(x: number, y: number): boolean {
-    return !this.hidden && Math.abs(x - this.root.x) < 18 && y > this.root.y - 50 && y < this.root.y + 22;
+    return !this.hidden && Math.abs(x - this.root.x) < 18 && y > this.root.y + this.headY - 6 && y < this.root.y + 22;
   }
 
   destroy(): void {

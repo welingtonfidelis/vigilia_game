@@ -17,7 +17,7 @@ import {
 import { autoMayor, CLASSES, createWorld, runTicks } from '../src/sim/index.ts';
 import type { Combat, CombatEvent, Party, Room, World } from '../src/sim/index.ts';
 import { LaneRenderer, type LaneHost } from '../src/render/lane/renderer.ts';
-import { packAsset } from '../src/render/pack.ts';
+import { heroPortraitHd, heroSpriteId, packAsset } from '../src/render/pack.ts';
 
 const rooms = (n: number, cleared = 0): Room[] =>
   Array.from({ length: n }, (_, i) => ({ kind: i === n - 1 ? 'chefe' : 'matilha', cleared: i < cleared, remainsOf: null }));
@@ -71,6 +71,19 @@ describe('corredor: arte', () => {
         const walk = packAsset(`char/hero/${cls}/${g}/walk`);
         expect(walk?.animations?.walk?.frames, `${cls}/${g}`).toHaveLength(8);
         expect(walk?.stride).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('os 12 heróis usam o estilo novo: mapa e caminhada 24×32, modelo 48×64', () => {
+    expect(heroSpriteId('guardiao', 'm')).toBe('char/hero/guerreiro/m');
+    for (const cls of Object.keys(CLASSES)) {
+      for (const g of ['m', 'f']) {
+        const id = heroSpriteId(cls, g);
+        expect(packAsset(id)?.frameSize, id).toEqual([24, 32]);
+        expect(packAsset(id)?.animations?.death?.frames, id).toHaveLength(5);
+        expect(packAsset(`${id}/walk`)?.frameSize, id).toEqual([24, 32]);
+        expect(heroPortraitHd(cls, g)?.animations?.idle?.frames, id).toHaveLength(4);
       }
     }
   });

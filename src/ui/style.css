@@ -1701,6 +1701,14 @@ kbd {
 .hero-portrait .portrait-detail { max-width: 100%; max-height: 100%; width: auto; height: auto; }
 .roster-art .portrait-small { height: 1.55rem; width: auto; }
 .portrait-ghost { filter: grayscale(1); opacity: 0.45; }
+/* Modelo detalhado do estilo novo (48×64, piloto do guerreiro): escala inteira, idle em steps. */
+.hero-model { display: block; flex: none; background-repeat: no-repeat; background-position: 0 0; image-rendering: pixelated; }
+.hero-model.animate { animation: hero-model var(--model-time) steps(var(--model-steps)) infinite; }
+@keyframes hero-model {
+  from { background-position: 0 0; }
+  to { background-position: var(--model-to) 0; }
+}
+.hero-portrait:has(.hero-model) { width: auto; height: auto; padding: 0.35rem 0.6rem 0.25rem; }
 .pack-child { display: inline-block; image-rendering: pixelated; background-repeat: no-repeat; }
 
 /* Ícones de recurso do pack 1.4: SVG de traço usado como máscara, herdando a cor. */
@@ -2294,8 +2302,9 @@ kbd {
 }
 .party-frame .portrait-img {
   flex: none;
-  width: 16px;
-  height: 28px;
+  /* Tamanho natural: 16×28, ou 24×32 no estilo novo. */
+  width: auto;
+  height: auto;
   image-rendering: pixelated;
 }
 .pf-info {
