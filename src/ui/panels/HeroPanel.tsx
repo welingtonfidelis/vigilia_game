@@ -8,7 +8,7 @@ import {
   commands,
   dayOf,
   defaultRole,
-  fleeThreshold,
+  fleeLimit,
   forgePrice,
   formatDate,
   getBond,
@@ -25,6 +25,7 @@ import {
 import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { ArmorIcon, HeroPortrait, WeaponIcon } from '../PixelSprite.tsx';
+import { ItemCard, SlotIcon } from '../items.tsx';
 import { WEAPON_NAMES } from '../../render/assets.ts';
 import { activityText, bondLabel, cap, className, fmt, g, injuryName, liveHp, pct, plural } from '../format.ts';
 import { EnergyCandles } from '../Energy.tsx';
@@ -204,7 +205,7 @@ function MayorActions(props: { world: World; hero: Hero }) {
       <div class="row">
         {GIFTS.map(({ kind, label, fan }) => {
           const price = commands.giftPrice(world, hero.id, kind);
-          const maxed = kind === 'arma' && hero.gear.weapon + 1 > maxGearTier(world);
+          const maxed = kind === 'arma' && hero.gear.weapon + 1 > maxGearTier(world, 'weapon');
           const poor = world.town.treasury < price;
           const loves = fan && hero.traits.some((t) => t.id === fan && t.revealed);
           const why = noEnergy ?? (maxed ? 'O ferreiro ainda não forja uma arma melhor.' : poor ? `Faltam ${fmt(price - world.town.treasury)} de ouro.` : '');
@@ -258,7 +259,7 @@ export function HeroPanel(props: { heroId: number }) {
   }
   const stats = heroStats(world, hero);
   const { hp, max } = liveHp(world, hero);
-  const flee = fleeThreshold(hero, world.town.doctrine);
+  const flee = fleeLimit(world, hero);
   const alive = hero.status === 'town' || hero.status === 'expedition';
   const capped = hero.level >= maxLevel(hero);
   const bonds = bondsOf(world, hero);
@@ -357,28 +358,54 @@ export function HeroPanel(props: { heroId: number }) {
 
       <h3>Equipamento</h3>
       <div class="gear">
-        <div class="gear-item">
-          <span class="gear-icon">
-            <WeaponIcon classId={hero.classId} />
-          </span>
-          <span class="gear-text">
-            <strong>
-              {WEAPON_NAMES[hero.classId]} · tier {hero.gear.weapon}
-            </strong>
-            <small>{weaponBonus > 0 ? `+${weaponBonus}% de ataque` : 'Ainda é a arma de sempre'}</small>
-          </span>
-        </div>
-        <div class="gear-item">
-          <span class="gear-icon">
-            <ArmorIcon />
-          </span>
-          <span class="gear-text">
-            <strong>Armadura · tier {hero.gear.armor}</strong>
-            <small>{armorHpBonus > 0 ? `+${armorHpBonus}% de vida e +${armorDefBonus} de defesa` : 'Ainda é a roupa de sempre'}</small>
-          </span>
-        </div>
+        {hero.items?.weapon ? (
+          <ItemCard world={world} item={hero.items.weapon} classId={hero.classId}>
+            {weaponBonus > 0 && <small class="item-bonus">+{weaponBonus}% de ataque pelo tier</small>}
+          </ItemCard>
+        ) : (
+          <div class="gear-item">
+            <span class="gear-icon">
+              <WeaponIcon classId={hero.classId} />
+            </span>
+            <span class="gear-text">
+              <strong>{WEAPON_NAMES[hero.classId]}</strong>
+              <small>Ainda é a arma de sempre</small>
+            </span>
+          </div>
+        )}
+        {hero.items?.armor ? (
+          <ItemCard world={world} item={hero.items.armor} classId={hero.classId}>
+            {armorHpBonus > 0 && <small class="item-bonus">+{armorHpBonus}% de vida e +{armorDefBonus} de defesa pelo tier</small>}
+          </ItemCard>
+        ) : (
+          <div class="gear-item">
+            <span class="gear-icon">
+              <ArmorIcon />
+            </span>
+            <span class="gear-text">
+              <strong>Armadura</strong>
+              <small>Ainda é a roupa de sempre</small>
+            </span>
+          </div>
+        )}
+        {hero.items?.amulet ? (
+          <ItemCard world={world} item={hero.items.amulet} classId={hero.classId} />
+        ) : (
+          <div class="gear-item empty">
+            <span class="gear-icon">
+              <SlotIcon slot="amulet" classId={null} />
+            </span>
+            <span class="gear-text">
+              <strong>Amuleto</strong>
+              <small>Nenhum. Amuletos vêm do abismo, da forja ou de presente.</small>
+            </span>
+          </div>
+        )}
       </div>
-      <p class="sub">É o que o herói compra na forja; os números de vida, ataque e defesa abaixo já incluem esses bônus. No mapa ele anda sem arma na mão — o tier fica aqui.</p>
+      <p class="sub">
+        O herói compra o tier comum na forja com o próprio ouro e só troca uma peça com nome por outra melhor. Peças raras, épicas e lendárias vêm do abismo, das
+        encomendas e do cofre da vila. Os números abaixo já incluem tudo.
+      </p>
 
       <h3>Atributos</h3>
       <p class="sub">{cls.blurb}</p>

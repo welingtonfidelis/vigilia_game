@@ -99,6 +99,58 @@ export interface Raid {
 
 export type GiftKind = 'bebida' | 'reliquia' | 'arma';
 
+// ── Itens (M4) ────────────────────────────────────────────────────────────
+
+export type ItemSlot = 'weapon' | 'armor' | 'amulet';
+export type Rarity = 'comum' | 'rara' | 'epica' | 'lendaria';
+export type ItemAffix = 'afiado' | 'perfurante' | 'guardiao' | 'robusto' | 'sereno' | 'agil' | 'sanguessuga' | 'afortunado';
+
+/** Uma peça de equipamento. O nome de tela sai do encaixe, do afixo e da classe de quem usa. */
+export interface Item {
+  id: number;
+  slot: ItemSlot;
+  rarity: Rarity;
+  /** Qualidade base (arma: ataque; armadura: vida e defesa). O amuleto não tem tier (0). */
+  tier: number;
+  affixes: ItemAffix[];
+  /** Material de que foi feito, quando veio da forja ou do abismo. */
+  material: MaterialId | null;
+  /** Nome próprio das lendárias. */
+  title: string | null;
+  /** De onde veio: "forjado na vila no ano 2", "achado no andar 3 das Catacumbas". */
+  origin: string;
+  /** Quem já usou, em ordem. */
+  owners: number[];
+  createdTick: number;
+}
+
+/** Encomenda na forja: sai pronta no arsenal em `readyTick`. */
+export interface ForgeOrder {
+  id: number;
+  slot: ItemSlot;
+  material: MaterialId;
+  rarity: 'rara' | 'epica';
+  tier: number;
+  readyTick: number;
+}
+
+/** Especializações de nível 3 dos prédios. */
+export type SpecId =
+  | 'cervejaria'
+  | 'apostas'
+  | 'luxo'
+  | 'dormitorio'
+  | 'laminas'
+  | 'couracas'
+  | 'luz'
+  | 'penitencia'
+  | 'mercenaria'
+  | 'ordem'
+  | 'disciplina'
+  | 'arena'
+  | 'cirurgia'
+  | 'ervas';
+
 /** Filho de um casal da vila; vira herói aos 16 anos. */
 export interface Child {
   id: number;
@@ -109,8 +161,8 @@ export interface Child {
   /** Traço herdado de um dos pais. */
   trait: TraitId;
   classId: ClassId;
-  /** Tier da arma herdada. */
-  heirloom: number;
+  /** Peça herdada dos pais (null = nenhuma). */
+  heirloom: Item | null;
 }
 
 export interface Activity {
@@ -148,7 +200,10 @@ export interface Hero {
   loyalty: number;
   needs: { energy: number; fun: number; faith: number };
   gold: number;
+  /** Tier da arma e da armadura em uso (espelha `items`; os ecos dos mortos usam este número). */
   gear: { weapon: number; armor: number };
+  /** Peças equipadas. */
+  items: Record<ItemSlot, Item | null>;
   grief: number;
   griefFor: number | null;
   vengeful: boolean;
@@ -218,6 +273,8 @@ export interface Unit {
   xp: number;
   gold: number;
   material: MaterialId | null;
+  /** Fração do dano causado que volta como vida (afixo sanguessuga). */
+  lifesteal?: number;
 }
 
 export interface Combat {
@@ -277,7 +334,7 @@ export interface Party {
   roomIndex: number;
   retreating: boolean;
   combat: Combat | null;
-  loot: { gold: number; materials: Partial<Record<MaterialId, number>>; xp: number };
+  loot: { gold: number; materials: Partial<Record<MaterialId, number>>; xp: number; items?: Item[] };
   contractId: number | null;
   rescued: number;
   dead: number[];
@@ -303,6 +360,8 @@ export interface Remains {
   act: number;
   floor: number;
   gold: number;
+  /** Peças que ficaram com o morto (voltam com quem achar os restos). */
+  items?: Item[];
 }
 
 export interface Contract {
@@ -352,6 +411,12 @@ export interface Town {
   lastEventKey: string;
   /** Expansão sul: limpeza e casas construídas. */
   expansion: ExpansionState;
+  /** Peças sem dono guardadas no cofre (o prefeito presenteia ou vende). */
+  arsenal: Item[];
+  /** Encomendas na forja. */
+  forge: ForgeOrder[];
+  /** Especialização escolhida ao chegar no nível 3. */
+  specs: Partial<Record<BuildingId, SpecId>>;
 }
 
 export type ChronicleKind =
@@ -392,6 +457,7 @@ export type ChronicleKind =
   | 'doacao'
   | 'cidadao'
   | 'incursao'
+  | 'item'
   | 'fim';
 
 export interface ChronicleEntry {

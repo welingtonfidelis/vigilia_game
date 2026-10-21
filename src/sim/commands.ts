@@ -1,7 +1,8 @@
 // Alavancas do prefeito. Toda interação do jogador passa por aqui.
 
-import { ACTS } from '../data/acts.ts';
-import { BUILDINGS } from '../data/buildings.ts';
+import { ACTS, MATERIAL_NAMES } from '../data/acts.ts';
+import { BUILDINGS, MAX_BUILDING_LEVEL } from '../data/buildings.ts';
+import { SPEC_DEFS, SPECS } from '../data/specs.ts';
 import { dayOf } from './calendar.ts';
 import { record, floorLabel, heroLabel } from './chronicle.ts';
 import { DECREES, DECREE_IDS } from './decrees.ts';
@@ -20,11 +21,12 @@ import {
   recruitsPerHorn,
 } from './economy.ts';
 import { getBond, hasTrait, revealTrait } from './hero.ts';
+import { commissionBlocker, commissionCost, commissionReadyTick, equip, itemName, sellPrice, stash, upgradeTier } from './items.ts';
 import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
 import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import { chance, int } from './rng.ts';
-import type { BuildingId, DecreeId, Doctrine, GiftKind, Hero, RetiredRole, World } from './types.ts';
+import type { BuildingId, DecreeId, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
@@ -51,9 +53,15 @@ export function blowHorn(world: World): CommandResult {
   return OK;
 }
 
-export function build(world: World, id: BuildingId): CommandResult {
+/**
+ * Sobe o prédio um nível. Chegar ao nível 3 pede a especialização (uma das duas do
+ * prédio); a escolha é definitiva.
+ */
+export function build(world: World, id: BuildingId, spec?: SpecId): CommandResult {
   const cost = nextLevelCost(world, id);
   if (!cost) return fail('Já está no nível máximo.');
+  const toMax = level(world, id) + 1 === MAX_BUILDING_LEVEL;
+  if (toMax && (!spec || !SPECS[id].some((s) => s.id === spec))) return fail('Escolha a especialização do nível 3.');
   if (!canAfford(world, cost)) return fail('Recursos insuficientes.');
   pay(world, cost);
   world.town.buildings[id]++;
@@ -62,7 +70,64 @@ export function build(world: World, id: BuildingId): CommandResult {
   const { name, gender } = BUILDINGS[id];
   const article = gender === 'm' ? 'O' : 'A';
   const rebuilt = gender === 'm' ? 'reconstruído' : 'reconstruída';
+  if (toMax && spec) {
+    (world.town.specs ??= {})[id] = spec;
+    record(world, 'construcao', [], `${article} ${name.toLowerCase()} chegou ao nível ${lvl}, com a especialização ${SPEC_DEFS[spec].name}.`);
+    return OK;
+  }
   record(world, 'construcao', [], lvl === 1 ? `${article} ${name.toLowerCase()} foi ${rebuilt}.` : `${article} ${name.toLowerCase()} chegou ao nível ${lvl}.`);
+  return OK;
+}
+
+/** Escolhe a especialização de um prédio que já está no nível 3 (saves de antes do M4). */
+export function chooseSpecialization(world: World, id: BuildingId, spec: SpecId): CommandResult {
+  if (level(world, id) < MAX_BUILDING_LEVEL) return fail('Só no nível 3.');
+  if (world.town.specs?.[id]) return fail('A especialização já foi escolhida.');
+  if (!SPECS[id].some((s) => s.id === spec)) return fail('Essa especialização não é deste prédio.');
+  (world.town.specs ??= {})[id] = spec;
+  const { name, gender } = BUILDINGS[id];
+  record(world, 'construcao', [], `${gender === 'm' ? 'O' : 'A'} ${name.toLowerCase()} ganhou a especialização ${SPEC_DEFS[spec].name}.`);
+  return OK;
+}
+
+/** Encomenda uma peça na forja: paga ouro e material agora, a peça cai no cofre depois. */
+export function commission(world: World, slot: ItemSlot, material: MaterialId, rarity: 'rara' | 'epica'): CommandResult {
+  const blocked = commissionBlocker(world, slot, rarity);
+  if (blocked) return fail(blocked);
+  const cost = commissionCost(world, slot, rarity);
+  if (world.town.treasury < cost.gold) return fail(`Faltam ${Math.ceil(cost.gold - world.town.treasury)} de ouro.`);
+  if (world.town.materials[material] < cost.material) return fail(`Faltam ${cost.material - world.town.materials[material]} de ${MATERIAL_NAMES[material].toLowerCase()}.`);
+  world.town.treasury -= cost.gold;
+  world.town.materials[material] -= cost.material;
+  (world.town.forge ??= []).push({ id: world.nextId++, slot, material, rarity, tier: cost.tier, readyTick: commissionReadyTick(world, cost.days) });
+  const what = slot === 'weapon' ? 'uma arma' : slot === 'armor' ? 'uma armadura' : 'um amuleto';
+  record(world, 'prefeito', [], `O prefeito encomendou ${what} ${rarity === 'epica' ? 'épica' : 'rara'} de ${MATERIAL_NAMES[material].toLowerCase()} ao ferreiro.`);
+  return OK;
+}
+
+/** Dá uma peça do cofre a um herói na vila. A peça antiga dele volta para o cofre. */
+export function giftItem(world: World, itemId: number, heroId: number): CommandResult {
+  const hero = heroInTown(world, heroId);
+  if (typeof hero === 'string') return fail(hero);
+  const arsenal = world.town.arsenal ?? [];
+  const item = arsenal.find((i) => i.id === itemId);
+  if (!item) return fail('Essa peça não está no cofre.');
+  const noEnergy = spendEnergy(world, 1);
+  if (noEnergy) return fail(noEnergy);
+  arsenal.splice(arsenal.indexOf(item), 1);
+  stash(world, equip(world, hero, item));
+  hero.loyalty = Math.min(100, hero.loyalty + (hasTrait(hero, 'ganancioso') ? 15 : 10));
+  record(world, 'prefeito', [hero.id], `O prefeito entregou ${itemName(item, hero.classId).toLowerCase()} a ${hero.name}.`);
+  return OK;
+}
+
+/** Vende uma peça do cofre por metade do valor. */
+export function sellItem(world: World, itemId: number): CommandResult {
+  const arsenal = world.town.arsenal ?? [];
+  const item = arsenal.find((i) => i.id === itemId);
+  if (!item) return fail('Essa peça não está no cofre.');
+  arsenal.splice(arsenal.indexOf(item), 1);
+  world.town.treasury += sellPrice(item);
   return OK;
 }
 
@@ -227,7 +292,7 @@ export const giftPrice = (world: World, heroId: number, kind: GiftKind): number 
 export function gift(world: World, heroId: number, kind: GiftKind): CommandResult {
   const hero = heroInTown(world, heroId);
   if (typeof hero === 'string') return fail(hero);
-  if (kind === 'arma' && hero.gear.weapon + 1 > maxGearTier(world)) return fail('O ferreiro ainda não forja uma arma melhor que a dele.');
+  if (kind === 'arma' && hero.gear.weapon + 1 > maxGearTier(world, 'weapon')) return fail('O ferreiro ainda não forja uma arma melhor que a dele.');
   const price = giftPrice(world, heroId, kind);
   if (world.town.treasury < price) return fail(`Faltam ${Math.ceil(price - world.town.treasury)} de ouro.`);
   const noEnergy = spendEnergy(world, 1);
@@ -253,7 +318,7 @@ export function gift(world: World, heroId: number, kind: GiftKind): CommandResul
       break;
     }
     case 'arma': {
-      hero.gear.weapon++;
+      upgradeTier(world, hero, 'weapon', 'presente do prefeito');
       hero.loyalty = Math.min(100, hero.loyalty + (hasTrait(hero, 'ganancioso') ? 15 : 10));
       what = 'uma arma nova da forja';
       break;

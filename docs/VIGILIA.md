@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M3 concluído; M4 em andamento (visualizador de dungeon, arenas, relatórios, histórico e mobile) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M3 concluído; M4 em andamento (corredor da dungeon com arte própria nos seis atos, itens nomeados, encomendas na forja e especializações de nível 3) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -108,21 +108,23 @@ A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pin
 
 ### Retrato do balanceamento (10 sementes × 30 anos, prefeito automático)
 
+Medido depois dos itens, das encomendas e das especializações (M4). O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia.
+
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 1,1 | 0,6 h | 0,3–1,8 | 100% |
-| Minas Inundadas | 3,2 | 1,7 h | 1,1–5,0 | 100% |
-| Jardim de Fungos | 4,3 | 2,3 h | 2,6–6,3 | 100% |
-| Cidade Afogada | 7,4 | 4,0 h | 4,0–11,0 | 100% |
-| Forja Abissal | 16,4 | 8,7 h | 10,8–24,3 | 100% |
-| Coração do Abismo | 20,4 | 10,9 h | 14,8–25,1 | 70% |
+| Catacumbas | 1,0 | 0,5 h | 0,5–1,5 | 100% |
+| Minas Inundadas | 3,3 | 1,7 h | 1,9–5,0 | 100% |
+| Jardim de Fungos | 4,7 | 2,5 h | 3,0–6,0 | 100% |
+| Cidade Afogada | 9,5 | 5,1 h | 6,2–13,7 | 100% |
+| Forja Abissal | 14,1 | 7,5 h | 10,6–19,6 | 100% |
+| Coração do Abismo | 17,4 | 9,3 h | 13,4–22,2 | 90% |
 
-- **Mortalidade:** 4,2 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 16 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~71 lesões, ~6 cicatrizes, ~17 casamentos, ~16 filhos e ~6 deles chegando à maioridade como heróis.
-- **Vila (M3), por campanha:** ~33 incursões, ~34 moradores mortos e ~0,3 que deixa a vila; a população termina no teto (~136, abstrata) com **8 aldeões visíveis**, o humor médio fica em ~59 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
-- **Expedições:** ~89 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro fica entre ~0,8 e 4,6 mil e o ouro dos heróis entre ~13 e 52 mil. **Festa**, **pensão**, **salários dos guardas**, **decretos**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
-- **Desempenho:** ~0,7 s para simular uma campanha de 30 anos.
+- **Mortalidade:** 5,1 mortes/ano com elenco de ~22 (o Dormitório e a guilda Mercenária aumentam o elenco e os grupos). Ninguém é dispensado: são cerca de 19 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~84 lesões, ~5 cicatrizes, ~21 casamentos, ~21 filhos e ~7 deles chegando à maioridade como heróis.
+- **Vila (M3), por campanha:** ~30 incursões, ~6 moradores mortos e ~0,5 que deixa a vila; a população termina no teto (~136, abstrata), o humor médio fica em ~62 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
+- **Expedições:** ~99 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro fica entre ~1 e 4,6 mil; o ouro dos heróis termina entre ~69 e 113 mil, bem acima de antes do M4 (~15–37 mil), porque o elenco e o saque cresceram e a forja deixa de ser sumidouro quando a peça nomeada já vale mais que o tier comum. Faltam sumidouros de fim para os heróis (joalheiro, relíquias, propriedades).
+- **Desempenho:** ~1,3 s para simular uma campanha de 30 anos.
 
 ### O que o M0 entrega
 
@@ -234,14 +236,16 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Mobile:** até três dungeons empilhadas com escala proporcional ao espaço, sem overflow horizontal.
 - [x] **Histórico:** os últimos 10 relatórios ficam no armazenamento local e podem ser reabertos pelo Abismo ou pelo botão Relatórios.
 - [x] **HUD:** moldura de vida e nós de sala do pack 1.9.
-- [ ] Itens nomeados e afixos.
-- [ ] Fabricação no ferreiro.
-- [ ] Especializações de nível 3 dos prédios.
+- [x] **Itens nomeados e afixos:** três encaixes (arma, armadura, amuleto), raridades comum/rara/épica/lendária, 8 afixos ligados aos números do combate e nome que muda com a classe de quem usa ("Machado afiado de osso"). As peças caem de baús, elites e do primeiro chefe de cada ato (uma lendária com nome próprio) só em andar ainda não conquistado; voltam dos restos de quem caiu; passam de pai para filho. Na volta, cada peça vai para quem mais ganha com ela; o resto fica no **arsenal** do Cofre, de onde o prefeito presenteia (1 de energia) ou vende. Ficha do herói com a história de cada peça e relatório da expedição com as peças trazidas (`src/sim/items.ts`, `src/data/items.ts`).
+- [x] **Fabricação no ferreiro:** encomenda de arma, armadura ou amuleto com ouro e material do abismo; rara a partir do nível 2, épica com a especialização do encaixe; fila com prazo e entrega no cofre.
+- [x] **Especializações de nível 3:** ao subir um prédio para o nível 3, um diálogo oferece os dois caminhos (Cervejaria × Casa de apostas, Quartos de luxo × Dormitório, Lâminas × Couraças, Luz × Penitência, Mercenária × Ordem, Disciplina × Arena, Cirurgia × Ervas); prédios que já estavam no nível 3 escolhem pelo painel (`src/data/specs.ts`). Save v8 → v9 migra sozinho.
+- [x] **Andares mais claros:** o cabeçalho do corredor diz "andar 2 de 4" e onde fica o chefe; cada sala mostra "sala 3 de 5" ao passar o mouse.
 - [ ] Mais variações de chefe e sala.
+- [ ] Sumidouros de ouro para os heróis no fim do jogo.
 
 ### Próximo: M4
 
-Itens nomeados, fabricação e especializações. Mudança de local dos prédios ficou de fora. Ver a seção 9 do GDD (neste documento).
+Mais variações de chefe e de sala, sumidouros de ouro para os heróis (o joalheiro é o candidato) e playtest amplo. Mudança de local dos prédios ficou de fora. Ver a seção 9 do GDD (neste documento).
 
 ---
 
@@ -715,6 +719,76 @@ Vínculos, luto, vingança, envelhecimento e crônica já existem desde o M0. O 
 **Critério de pronto:** saves antigos carregam (migração v1 → v2), o balanceador mantém 0 impasses e ócio ≤ 4 dias, e a crônica de 3 anos tem casamentos, lesões e epitáfios que contam histórias.
 
 ---
+
+#### 9.2 Especificação do M4 (segunda fatia): itens nomeados, fabricação e especializações
+
+O equipamento hoje é só um número por encaixe (tier de arma e de armadura). Esta fatia transforma as peças em **itens com nome, raridade e história**, dá uso aos **materiais** além das obras e fecha os prédios com uma **escolha de especialização no nível 3**. Continua valendo a influência indireta: o prefeito encomenda, guarda e presenteia; quem usa é o herói.
+
+**Itens.** Três encaixes por herói: **arma**, **armadura** e **amuleto** (novo, só afixos). Toda peça equipada vira um item com:
+
+| Campo | O que é |
+|---|---|
+| Tier | A qualidade base de hoje (arma dá ataque, armadura dá vida e defesa). O amuleto não tem tier. |
+| Raridade | Comum (0 afixos), rara (1), épica (2), lendária (3 e nome único). |
+| Afixos | Bônus que entram nos números do combate que já existem. |
+| Nome | Comum: "Espada de ferro (tier 3)". Rara em diante: base + qualificativo do afixo ou do material ("Machado de osso afiado"). Lendária: nome próprio de uma lista ("Vigia Partida", "Lamento de Ferro-negro"). |
+| História | Onde nasceu ("forjado no ano 2", "achado no andar 3 das Catacumbas") e quem o usou; a crônica e a ficha contam. |
+
+Oito afixos, ligados a estatísticas que o combate já usa:
+
+| Afixo | Efeito | Material que o dá na forja |
+|---|---|---|
+| Afiado | +5% de crítico | Ossos |
+| Perfurante | +15% de perfuração | Ferro-negro |
+| Guardião | +4 de defesa | Ferro-negro |
+| Robusto | +10% de vida máxima | Esporos |
+| Sereno | limiar de fuga −8 (foge menos) | Pérolas negras |
+| Ágil | ataques 10% mais rápidos | Brasas |
+| Sanguessuga | recupera 8% do dano causado | Fragmentos de alma |
+| Afortunado | +10% do ouro do saque do grupo | (só no saque e nas lendárias) |
+
+**De onde vêm.** Baú (chance de rara e, nos andares fundos, de épica); elite (chance); chefe (épica garantida; o primeiro chefe de cada ato deixa uma **lendária**); **restos de um herói** devolvem as peças dele; filho de herói **herda** uma peça dos pais (substitui o "tier de herança" de hoje). A peça achada vai para quem a pegou, se for melhor que a dele; senão, para o **arsenal da vila**.
+
+**Arsenal da vila.** Um baú no Cofre com as peças sem dono (achadas, deixadas por quem trocou de equipamento, de mortos sem restos, aposentados). O prefeito pode **presentear** uma peça a um herói na vila (1 de energia, +lealdade; o temperamento conta como nos presentes de hoje) ou **vender** (metade do valor para o tesouro).
+
+**Como o herói escolhe.** Valor de uma peça = tier + 0,8 por afixo. O herói só compra um tier novo no ferreiro se ele valer mais que a peça atual; ao trocar, a antiga vai para o arsenal ("deixou o machado no cofre da vila"). Os heróis continuam pagando o tier comum com o próprio ouro.
+
+**Fabricação no ferreiro.** O prefeito **encomenda** uma peça: escolhe o encaixe (arma, armadura ou amuleto) e o material, paga ouro e material do tesouro e espera alguns dias; a peça cai no arsenal e a crônica registra.
+
+| Encomenda | Exige | Custo | Prazo |
+|---|---|---|---|
+| Rara (1 afixo do material) | Ferreiro nível 2 | 1,5× o preço do tier máximo + 10 do material | 2 dias |
+| Épica (afixo do material + 1 sorteado) | Ferreiro nível 3 com a especialização daquele encaixe | 3× o preço + 25 do material | 4 dias |
+
+A forja faz uma encomenda por vez (duas com a especialização "Lâminas" ou "Couraças" no seu encaixe). O tier da peça é o máximo que o ferreiro forja hoje; o amuleto não tem tier.
+
+**Especializações (nível 3).** Ao subir um prédio para o nível 3, abre um diálogo com duas escolhas, como os eventos sazonais. A escolha é definitiva.
+
+| Prédio | Escolha A | Escolha B |
+|---|---|---|
+| Taverna | **Cervejaria**: bebida dá o dobro de ânimo e diversão | **Casa de apostas**: rende ouro por herói na vila, mas os heróis gastam mais |
+| Estalagem | **Quartos de luxo**: descanso recupera +20% de vida e dá ânimo | **Dormitório**: +4 vagas de herói |
+| Ferreiro | **Lâminas**: armas épicas na encomenda, +1 tier máximo de arma, 2 encomendas de arma | **Couraças**: o mesmo para armaduras |
+| Templo | **Luz**: fé e luto se recuperam no dobro da velocidade | **Penitência**: limiar de fuga −6 para todos e a corrupção cai 10% mais rápido ao limpar andares |
+| Guilda | **Mercenária**: +1 grupo simultâneo e contratos pagam +25% | **Ordem**: grupos de até 6 e +10 de lealdade ao voltar |
+| Campo de treino | **Disciplina**: XP sem descer +50% | **Arena**: diversão alta, apostas dão ouro ao tesouro e uma chance pequena de lesão leve |
+| Casa de cura | **Cirurgia**: lesões curam no dobro e nunca viram cicatriz | **Ervas**: o grupo recupera 10% da vida entre as salas |
+
+**Telas.** Ficha do herói com os três encaixes (nome com cor da raridade, afixos e história); arsenal no Cofre com presentear e vender; encomenda e fila no painel do ferreiro; diálogo de especialização ao chegar no nível 3 e a escolha à mostra no painel do prédio; relatório da expedição com os itens achados. Ícones: armas por classe e armadura do pack; o amuleto e a moldura de raridade, em CSS até chegar arte.
+
+**Save v8 → v9.** As peças de hoje viram itens comuns do mesmo tier; o "tier de herança" das crianças vira uma peça comum; arsenal, fila da forja e especializações começam vazios.
+
+**Balanceamento.** Afixos somam pouco por peça; uma lendária completa vale cerca de 2 tiers. Validar com `npm run balance -- --seeds 10 --years 30` (0 impasses, ócio ≤ 4 dias, ~3 mortes/ano) e acrescentar ao balanceador um prefeito automático que encomenda e presenteia.
+
+**Fica para depois.** Joalheiro (encantar/engastar), alquimista e poções, mercador errante, armadilhas, mais variações de chefe e de sala.
+
+**Ajustes feitos na implementação (balanceamento).** O primeiro corte deixava o jogo curto demais (o último chefe caía no ano 9, contra 22 antes) e criava ouro do nada. Ficou assim:
+
+- **Peças só em terreno novo.** Baú, elite e chefe só dão peça em andar ainda não conquistado; refazer um andar dá ouro e experiência. O total da campanha cabe no mapa. O chefe repetido não dá nada (a lendária é só a do primeiro).
+- **Tier das peças achadas** limitado ao que a forja já faz; o ganho está nos afixos.
+- **Encomenda** custa 150 + 60 por tier de ouro (épica ×2,5) e 40 de material (épica, 100). O valor de uma peça é o da encomenda; a venda paga 25% e o cofre cheio derrete a pior peça, sem dar ouro.
+- **Sanguessuga** soma no máximo 12%. Na fúria, a cura (e o sanguessuga) cai pela metade e continua caindo, e os inimigos passam a ignorar a defesa aos poucos: um grupo de curandeiros bem equipado não empata mais com o chefe.
+- **Poder dos atos IV, V e VI** subiu de 4,8 / 6,4 / 8,2 para 5,3 / 7,9 / 10,6, para o ritmo voltar perto do de antes com o poder novo dos heróis.
 
 ### 10. Decisões em aberto
 

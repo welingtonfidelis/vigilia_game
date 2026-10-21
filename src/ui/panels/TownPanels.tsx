@@ -1,5 +1,6 @@
 // Painéis dos lugares da vila: prédios, berrante, quadro de contratos e cofre.
 
+import { createPortal } from 'preact/compat';
 import { useState } from 'preact/hooks';
 import {
   activeHeroes,
@@ -9,6 +10,17 @@ import {
   canAfford,
   citizenTaxesPerDay,
   commands,
+  commissionBlocker,
+  commissionCost,
+  ITEM_SLOTS,
+  itemValue,
+  MATERIAL_AFFIX,
+  AFFIXES,
+  SPEC_DEFS,
+  SPECS,
+  sellPrice,
+  specOf,
+  upgradeGain,
   dayOf,
   DECREES,
   DECREE_IDS,
@@ -28,9 +40,11 @@ import {
   recruitsPerHorn,
   totalBuildingLevels,
   townHeroes,
+  TICKS_PER_DAY,
 } from '../../sim/index.ts';
-import type { ActivityKind, BuildingId, Doctrine, MaterialId, World } from '../../sim/index.ts';
+import type { ActivityKind, BuildingId, Doctrine, Item, ItemSlot, MaterialId, SpecId, World } from '../../sim/index.ts';
 import { HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
+import { ItemCard } from '../items.tsx';
 import { buildingEffects, DOCTRINES, fmt, pct, plural } from '../format.ts';
 import { ROLE_PLACE } from '../../render/layout.ts';
 
@@ -87,9 +101,13 @@ export function BuildingPanel(props: { id: BuildingId }) {
   const workers = world.heroes.filter((h) => h.status === 'retired' && h.retiredRole && ROLE_PLACE[h.retiredRole] === id).map((h) => h.id);
   const inside = [...(activity ? townHeroes(world).filter((h) => h.activity?.kind === activity).map((h) => h.id) : []), ...workers];
   const affordable = cost ? canAfford(world, cost) : false;
+  const spec = specOf(world, id);
+  const [specDialog, setSpecDialog] = useState<'build' | 'choose' | null>(null);
+  const toSpec = lvl + 1 === MAX_BUILDING_LEVEL;
   return (
-    <PanelShell title={def.name} subtitle={lvl === 0 ? 'Em ruínas' : `Nível ${lvl} de ${MAX_BUILDING_LEVEL}`}>
+    <PanelShell title={def.name} subtitle={lvl === 0 ? 'Em ruínas' : `Nível ${lvl} de ${MAX_BUILDING_LEVEL}${spec ? ` · ${SPEC_DEFS[spec].name}` : ''}`}>
       <p>{def.blurb}</p>
+      {specDialog && <SpecDialog id={id} mode={specDialog} onClose={() => setSpecDialog(null)} />}
       <h3>Agora</h3>
       <ul class="effects">
         {buildingEffects(id, lvl).map((t) => (
@@ -104,14 +122,41 @@ export function BuildingPanel(props: { id: BuildingId }) {
               <li key={t}>{t}</li>
             ))}
           </ul>
+          {toSpec && (
+            <p class="sub">
+              No nível 3 {def.gender === 'm' ? 'o' : 'a'} {def.name.toLowerCase()} escolhe um caminho: {SPECS[id][0].name} ou {SPECS[id][1].name}.
+            </p>
+          )}
           <Cost world={world} id={id} />
-          <button class="btn primary" disabled={!affordable} onClick={() => command(commands.build, id)}>
+          <button
+            class="btn primary"
+            disabled={!affordable}
+            onClick={() => (toSpec ? setSpecDialog('build') : command(commands.build, id))}
+          >
             {lvl === 0 ? `Reconstruir ${def.gender === 'm' ? 'o' : 'a'} ${def.name.toLowerCase()}` : `Melhorar para o nível ${lvl + 1}`}
           </button>
           {!affordable && cost.materials && <p class="sub">Materiais vêm do abismo: os heróis trazem ao voltar.</p>}
         </>
       )}
       {!cost && <p class="tag gold">Nível máximo.</p>}
+      {lvl >= MAX_BUILDING_LEVEL && (
+        <>
+          <h3>Especialização</h3>
+          {spec ? (
+            <p>
+              <strong>{SPEC_DEFS[spec].name}.</strong> {SPEC_DEFS[spec].effect}
+            </p>
+          ) : (
+            <>
+              <p class="sub">Ainda sem caminho escolhido.</p>
+              <button class="btn primary" onClick={() => setSpecDialog('choose')}>
+                Escolher a especialização
+              </button>
+            </>
+          )}
+        </>
+      )}
+      {id === 'ferreiro' && lvl >= 2 && <ForgeOrders world={world} />}
       {id === 'guilda' && lvl >= 1 && <DoctrinePicker world={world} />}
       {id === 'guilda' && (
         <button class="btn" onClick={() => ui.open({ kind: 'board' })}>
@@ -398,6 +443,7 @@ export function CofferPanel() {
             <Stat key={m} label={MATERIAL_NAMES[m]} value={town.materials[m]} />
           ))}
       </div>
+      <Arsenal world={world} />
     </PanelShell>
   );
 }
@@ -421,5 +467,171 @@ export function ThermalPanel() {
       <h3>Na água agora</h3>
       <HeroList ids={bathers} empty="Ninguém agora. O vapor sobe sozinho." />
     </PanelShell>
+  );
+}
+
+/** Diálogo do nível 3: duas especializações, escolha definitiva (dá para deixar para depois). */
+function SpecDialog(props: { id: BuildingId; mode: 'build' | 'choose'; onClose: () => void }) {
+  const command = useCommand();
+  const def = BUILDINGS[props.id];
+  const pick = (spec: SpecId): void => {
+    const ok = props.mode === 'build' ? command(commands.build, props.id, spec) : command(commands.chooseSpecialization, props.id, spec);
+    if (ok) props.onClose();
+  };
+  // Fora do painel (portal), para o diálogo ficar por cima de tudo, inclusive da navegação.
+  return createPortal(
+    <div class="dialog-backdrop" onPointerDown={(e) => e.target === e.currentTarget && props.onClose()}>
+      <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="spec-title">
+        <header class="dialog-head">
+          <p class="dialog-kicker">{def.name} · nível 3</p>
+          <h2 id="spec-title">Escolha o caminho</h2>
+        </header>
+        <p class="event-intro">A escolha é definitiva: {def.gender === 'm' ? 'o' : 'a'} {def.name.toLowerCase()} segue por um deles para sempre.</p>
+        <div class="event-choices">
+          {SPECS[props.id].map((s) => (
+            <button key={s.id} class="event-choice" onClick={() => pick(s.id)}>
+              <strong>{s.name}</strong>
+              <span>{s.effect}</span>
+            </button>
+          ))}
+        </div>
+        <div class="row">
+          <button class="btn" onClick={props.onClose}>
+            Agora não
+          </button>
+        </div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
+const ORDER_SLOT_LABEL: Record<ItemSlot, string> = { weapon: 'Arma', armor: 'Armadura', amulet: 'Amuleto' };
+
+/** Encomendas no ferreiro: encaixe, material e raridade; a fila mostra quando cada uma fica pronta. */
+function ForgeOrders(props: { world: World }) {
+  const { world } = props;
+  const command = useCommand();
+  const town = world.town;
+  const [slot, setSlot] = useState<ItemSlot>('weapon');
+  const materials = (Object.keys(town.materials) as MaterialId[]).filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked);
+  const [material, setMaterial] = useState<MaterialId>(materials[0] ?? 'ossos');
+  const epicBlocked = commissionBlocker(world, slot, 'epica');
+  const [epic, setEpic] = useState(false);
+  const rarity = epic && !epicBlocked ? 'epica' : 'rara';
+  const cost = commissionCost(world, slot, rarity);
+  const blocked = commissionBlocker(world, slot, rarity);
+  const short = town.treasury < cost.gold ? 'ouro' : town.materials[material] < cost.material ? 'material' : null;
+  const affixes = MATERIAL_AFFIX[material].map((a) => AFFIXES[a].effect).join(' ou ');
+  return (
+    <>
+      <h3>Encomendas</h3>
+      <p class="sub">
+        O prefeito paga com o tesouro e o material do abismo; a peça sai com o tier mais alto da forja e cai no cofre da vila, de onde vai de presente para um
+        herói.
+      </p>
+      <div class="seg">
+        {ITEM_SLOTS.map((s) => (
+          <button key={s} class={`btn small${slot === s ? ' active' : ''}`} onClick={() => setSlot(s)} aria-pressed={slot === s}>
+            {ORDER_SLOT_LABEL[s]}
+          </button>
+        ))}
+      </div>
+      <div class="seg">
+        {materials.map((m) => (
+          <button key={m} class={`btn small${material === m ? ' active' : ''}`} onClick={() => setMaterial(m)} aria-pressed={material === m}>
+            {MATERIAL_NAMES[m]} ({town.materials[m]})
+          </button>
+        ))}
+      </div>
+      <div class="seg">
+        <button class={`btn small${!epic ? ' active' : ''}`} onClick={() => setEpic(false)} aria-pressed={!epic}>
+          Rara
+        </button>
+        <button class={`btn small${epic ? ' active' : ''}`} onClick={() => setEpic(true)} aria-pressed={epic} disabled={!!epicBlocked && epicBlocked.startsWith('Peças')}>
+          Épica
+        </button>
+      </div>
+      <p class="sub">
+        {slot === 'amulet' ? 'Amuleto' : `Tier ${cost.tier}`} · {rarity === 'epica' ? 'dois afixos' : 'um afixo'}: {affixes}
+        {rarity === 'epica' ? ' e mais um sorteado' : ''}. Custa {fmt(cost.gold)} de ouro e {cost.material} de {MATERIAL_NAMES[material].toLowerCase()}; fica pronta em{' '}
+        {cost.days} dias.
+      </p>
+      {epic && epicBlocked && <p class="sub">{epicBlocked}</p>}
+      <button class="btn primary" disabled={!!blocked || !!short} onClick={() => command(commands.commission, slot, material, rarity)}>
+        Encomendar
+      </button>
+      {!blocked && short && <p class="sub">Falta {short === 'ouro' ? 'ouro no tesouro' : MATERIAL_NAMES[material].toLowerCase()}.</p>}
+      {blocked && <p class="sub">{blocked}</p>}
+      {town.forge.length > 0 && (
+        <ul class="effects">
+          {town.forge.map((o) => {
+            const days = Math.max(1, Math.ceil((o.readyTick - world.tick) / TICKS_PER_DAY));
+            return (
+              <li key={o.id}>
+                {ORDER_SLOT_LABEL[o.slot]} {o.rarity === 'epica' ? 'épica' : 'rara'} de {MATERIAL_NAMES[o.material].toLowerCase()} · pronta em {days}{' '}
+                {days === 1 ? 'dia' : 'dias'}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
+  );
+}
+
+/** Peças sem dono guardadas no cofre: presentear a um herói na vila ou vender. */
+function Arsenal(props: { world: World }) {
+  const { world } = props;
+  const command = useCommand();
+  const items = [...world.town.arsenal].sort((a, b) => itemValue(b) - itemValue(a));
+  const heroes = townHeroes(world);
+  return (
+    <>
+      <h3>
+        Arsenal <span class="sub">({items.length}/{BALANCE.arsenalMax})</span>
+      </h3>
+      {items.length === 0 ? (
+        <p class="sub">Vazio. Peças achadas que ninguém quis, deixadas por quem trocou de equipamento ou encomendadas na forja ficam aqui.</p>
+      ) : (
+        items.map((item) => <ArsenalItem key={item.id} world={world} item={item} heroes={heroes} onGift={(heroId) => command(commands.giftItem, item.id, heroId)} onSell={() => command(commands.sellItem, item.id)} />)
+      )}
+    </>
+  );
+}
+
+function ArsenalItem(props: { world: World; item: Item; heroes: ReturnType<typeof townHeroes>; onGift: (heroId: number) => void; onSell: () => void }) {
+  const { world, item } = props;
+  // Quem mais ganha com a peça aparece primeiro na lista.
+  const ranked = [...props.heroes].sort((a, b) => upgradeGain(b, item) - upgradeGain(a, item));
+  const [heroId, setHeroId] = useState<number | null>(ranked[0]?.id ?? null);
+  const chosen = ranked.find((h) => h.id === heroId) ?? ranked[0];
+  return (
+    <ItemCard world={world} item={item} classId={chosen?.classId ?? null}>
+      <span class="item-actions">
+        {ranked.length > 0 ? (
+          <>
+            <select value={chosen?.id ?? ''} onChange={(e) => setHeroId(Number((e.target as HTMLSelectElement).value))} aria-label="Para quem">
+              {ranked.map((h) => {
+                const gain = upgradeGain(h, item);
+                return (
+                  <option key={h.id} value={h.id}>
+                    {h.name} {gain > 0 ? `(+${gain.toFixed(1)})` : '(não melhora)'}
+                  </option>
+                );
+              })}
+            </select>
+            <button class="btn small primary" disabled={!chosen} onClick={() => chosen && props.onGift(chosen.id)} title="Custa 1 de energia do prefeito">
+              Entregar
+            </button>
+          </>
+        ) : (
+          <small class="sub">Nenhum herói na vila agora.</small>
+        )}
+        <button class="btn small" onClick={props.onSell}>
+          Vender (+{fmt(sellPrice(item))})
+        </button>
+      </span>
+    </ItemCard>
   );
 }

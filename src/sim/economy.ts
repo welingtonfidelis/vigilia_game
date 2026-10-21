@@ -4,9 +4,14 @@ import { record } from './chronicle.ts';
 import { citizenMood } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
 import { decreeDailyCost, decreeTaxMultiplier } from './decrees.ts';
-import type { BuildingId, MaterialId, World } from './types.ts';
+import type { BuildingId, ItemSlot, MaterialId, SpecId, World } from './types.ts';
 
 export const level = (world: World, id: BuildingId): number => world.town.buildings[id];
+
+/** A especialização escolhida no nível 3 (undefined = nenhuma ainda). */
+export const specOf = (world: World, id: BuildingId): SpecId | undefined => world.town.specs?.[id];
+
+export const hasSpec = (world: World, spec: SpecId): boolean => Object.values(world.town.specs ?? {}).includes(spec);
 
 export const totalBuildingLevels = (world: World): number =>
   BUILDING_IDS.reduce((sum, id) => sum + world.town.buildings[id], 0);
@@ -36,19 +41,22 @@ export function pay(world: World, cost: LevelCost): void {
 
 export const heroCapacity = (world: World): number => {
   const houses = world.town.expansion.houses.filter(Boolean).length;
-  return 6 + 4 * level(world, 'estalagem') + houses * B.expansionHouseHeroSlots;
+  return 6 + 4 * level(world, 'estalagem') + houses * B.expansionHouseHeroSlots + (hasSpec(world, 'dormitorio') ? 4 : 0);
 };
-export const maxParties = (world: World): number => 1 + level(world, 'guilda');
-export const maxPartySize = (world: World): number => (level(world, 'guilda') >= 2 ? 5 : 4);
-export const maxGearTier = (world: World): number => 4 * level(world, 'ferreiro');
-export const restHpGain = (world: World): number => [0.25, 0.4, 0.55, 0.7][level(world, 'estalagem')]!;
+export const maxParties = (world: World): number => 1 + level(world, 'guilda') + (hasSpec(world, 'mercenaria') ? 1 : 0);
+export const maxPartySize = (world: World): number => (hasSpec(world, 'ordem') ? 6 : level(world, 'guilda') >= 2 ? 5 : 4);
+/** O tier mais alto que o ferreiro forja; a especialização dá +1 no encaixe dela. */
+export const maxGearTier = (world: World, slot?: ItemSlot): number =>
+  4 * level(world, 'ferreiro') + ((slot === 'weapon' && hasSpec(world, 'laminas')) || (slot === 'armor' && hasSpec(world, 'couracas')) ? 1 : 0);
+export const restHpGain = (world: World): number => [0.25, 0.4, 0.55, 0.7][level(world, 'estalagem')]! + (hasSpec(world, 'luxo') ? B.specLuxoHp : 0);
 export const restEnergyGain = (world: World): number => [35, 45, 55, 65][level(world, 'estalagem')]!;
 export const recruitsPerHorn = (world: World): number => B.hornRecruits + Math.max(0, level(world, 'taverna') - 1);
 
 // ── Preços ────────────────────────────────────────────────────────────────
 
 export const gearPrice = (tier: number): number => Math.round(B.gearBasePrice * Math.pow(B.gearPriceGrowth, tier - 1));
-export const drinkPrice = (world: World): number => B.drinkPrice + level(world, 'taverna');
+export const drinkPrice = (world: World): number =>
+  B.drinkPrice + level(world, 'taverna') + (hasSpec(world, 'apostas') ? B.specApostasExtraPrice : 0);
 export const restPrice = (world: World): number => level(world, 'estalagem');
 export const trainPrice = (world: World): number => B.trainPrice * level(world, 'campo');
 
@@ -114,6 +122,8 @@ export function dailyEconomy(world: World): void {
   town.treasury -= pensionPerDay(world);
   town.treasury -= guardSalaryPerDay(world);
   town.treasury -= decreeDailyCost(world);
+  // Casa de apostas: a mesa rende pelo número de heróis na vila.
+  if (hasSpec(world, 'apostas')) town.treasury += B.specApostasGoldPerHero * world.heroes.filter((h) => h.status === 'town').length;
   if (town.treasury < 0) town.treasury = 0;
 }
 

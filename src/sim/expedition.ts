@@ -6,7 +6,8 @@ import { dayOf } from './calendar.ts';
 import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
 import { enterFloor, isBossFloor, partyRooms, reduceCorruption, travelTicks } from './dungeon.ts';
-import { heroCapacity } from './economy.ts';
+import { hasSpec, heroCapacity } from './economy.ts';
+import { affixCount, rollDrop, shareLoot } from './items.ts';
 import {
   addBond,
   addTrait,
@@ -65,6 +66,12 @@ function stepParty(world: World, party: Party): void {
         finish(world, party, 'massacre');
         return;
       }
+      if (result === 'vitoria') {
+        // Elite e chefe deixam peças (o chefe antes de o andar contar como conquistado).
+        const kind = partyRooms(world, party)[party.roomIndex]?.kind;
+        if (kind === 'elite') rollDrop(world, party, 'elite');
+        if (kind === 'chefe') rollDrop(world, party, 'chefe');
+      }
       if (result === 'vitoria' && !party.retreating) {
         lastStandCheck(world, party);
         afterRoom(world, party, true);
@@ -98,6 +105,7 @@ function enterRoom(world: World, party: Party, room: Room): void {
       party.loot.gold += gold;
       addMaterial(party, act.material, int(world.rng, 2, 4));
       party.moments.push(`Encontraram um baú com ${Math.round(gold)} de ouro.`);
+      rollDrop(world, party, 'bau');
       break;
     }
     case 'santuario': {
@@ -131,6 +139,8 @@ function enterRoom(world: World, party: Party, room: Room): void {
       if (idx >= 0 && lost) {
         const rem = world.remains.splice(idx, 1)[0]!;
         party.loot.gold += rem.gold;
+        // As peças do morto voltam com o grupo.
+        if (rem.items?.length) (party.loot.items ??= []).push(...rem.items);
         const mourners = heroes.filter((h) => getBond(world, h.id, lost.id) > 30);
         for (const h of mourners) {
           h.grief = Math.max(0, h.grief - 30);
@@ -192,9 +202,11 @@ function recoverBetweenRooms(world: World, party: Party): void {
   const heroes = members(world, party);
   const healer = heroes.find((h) => h.classId === 'clerigo');
   const healAmount = healer ? heroStats(world, healer).atk * 3 : 0;
+  // Ervas da Casa de cura: o grupo leva remédio para o caminho.
+  const herbs = hasSpec(world, 'ervas') ? B.specErvasHeal : 0;
   for (const h of heroes) {
     const max = heroStats(world, h).maxHp;
-    h.hp = Math.min(max, h.hp + max * 0.03 + healAmount);
+    h.hp = Math.min(max, h.hp + max * (0.03 + herbs) + healAmount);
     h.needs.energy = Math.max(0, h.needs.energy - 4);
   }
 }
@@ -318,6 +330,13 @@ function finish(world: World, party: Party, outcome: PartyOutcome): void {
   }
   releaseContract(world, party, false);
   mourn(world, party);
+  // Ninguém voltou: as peças achadas ficam com os restos de quem caiu por último.
+  const lostItems = party.loot.items ?? [];
+  if (lostItems.length > 0) {
+    const rem = world.remains.findLast((r) => party.dead.includes(r.heroId));
+    if (rem) (rem.items ??= []).push(...lostItems);
+    party.loot.items = [];
+  }
   if (outcome === 'massacre' && party.dead.length > 0) {
     const fallen = party.dead.map((id) => world.heroes.find((h) => h.id === id)!);
     record(world, 'morte', party.dead, `Ninguém voltou do ${floorLabel(party.act, party.floor)}. ${listNames(fallen)} não verão outro amanhecer.`);
@@ -355,6 +374,9 @@ function arrive(world: World, party: Party): void {
   const outcome = party.outcome ?? 'retirada';
   const town = world.town;
 
+  // Afortunado: cada peça com o afixo engorda o saque do grupo.
+  const lucky = heroes.reduce((n, h) => n + affixCount(h, 'afortunado'), 0);
+  party.loot.gold *= 1 + B.affixGold * lucky;
   // Ouro: o imposto vai para o tesouro, o resto é dividido por fatias.
   const tax = party.loot.gold * town.lootTax;
   town.treasury += tax;
@@ -364,16 +386,19 @@ function arrive(world: World, party: Party): void {
   heroes.forEach((h, i) => (h.gold += ((party.loot.gold - tax) * shares[i]!) / Math.max(1, totalShares)));
   for (const [mat, qty] of Object.entries(party.loot.materials) as [MaterialId, number][]) town.materials[mat] += qty;
   for (const h of heroes) gainXp(world, h, party.loot.xp / Math.max(1, heroes.length));
+  shareLoot(world, party, heroes);
 
   // Contrato
   const contract = town.contracts.find((c) => c.id === party.contractId);
   const done = !!contract && world.acts[contract.act]!.conquered[contract.floor] === true;
   if (contract && done && heroes.length > 0) {
+    // A guilda Mercenária completa a recompensa do bolso dela.
+    const reward = Math.round(contract.reward * (hasSpec(world, 'mercenaria') ? B.specMercenariaReward : 1));
     for (const h of heroes) {
-      h.gold += contract.reward / heroes.length;
+      h.gold += reward / heroes.length;
       h.loyalty = Math.min(100, h.loyalty + 5);
     }
-    record(world, 'contrato', party.memberIds, `${listNames(heroes)} cumpriram o contrato do prefeito e dividiram ${contract.reward} de ouro.`);
+    record(world, 'contrato', party.memberIds, `${listNames(heroes)} cumpriram o contrato do prefeito e dividiram ${reward} de ouro.`);
   }
   releaseContract(world, party, done);
 
@@ -408,6 +433,7 @@ function arrive(world: World, party: Party): void {
       }
     }
     if (outcome === 'fuga') h.morale = Math.max(0, h.morale - 10);
+    if (hasSpec(world, 'ordem') && outcome !== 'fuga') h.loyalty = Math.min(100, h.loyalty + B.specOrdemLoyalty);
   }
   for (let i = 0; i < heroes.length; i++) {
     for (let j = i + 1; j < heroes.length; j++) {

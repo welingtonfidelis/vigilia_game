@@ -1,7 +1,7 @@
 import {
   ACTS,
   commands,
-  fleeThreshold,
+  fleeLimit,
   floorLabel,
   formatDate,
   isBossFloor,
@@ -96,7 +96,6 @@ function PartyCard(props: { world: World; party: Party }) {
   const { world, party } = props;
   const command = useCommand();
   const { ui } = useGame();
-  const doctrine = world.town.doctrine;
   const combat = party.combat;
   const heroes = party.startMemberIds.map((id) => heroById(world, id)).filter((h) => !!h);
   const contract = party.contractId === null ? null : world.town.contracts.find((c) => c.id === party.contractId);
@@ -136,7 +135,7 @@ function PartyCard(props: { world: World; party: Party }) {
             const inParty = party.memberIds.includes(hero.id);
             const dead = party.dead.includes(hero.id);
             const { hp, max } = liveHp(world, hero);
-            const flee = fleeThreshold(hero, doctrine);
+            const flee = fleeLimit(world, hero);
             const unit = combat?.units.find((u) => u.heroId === hero.id);
             const state = dead ? 'tombou' : !inParty ? 'fugiu' : unit?.fled ? 'recuando' : '';
             return (

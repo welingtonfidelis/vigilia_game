@@ -22,6 +22,7 @@ import {
   dayOf,
   DAYS_PER_SEASON,
   DAYS_PER_YEAR,
+  SAVE_VERSION,
   TICKS_PER_DAY,
 } from '../src/sim/index.ts';
 import { startCombat, combatTick } from '../src/sim/combat.ts';
@@ -420,7 +421,7 @@ describe('pessoas (M2)', () => {
     for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths', 'raids', 'citizenDeaths', 'citizensLeft']) delete v1.metrics[k];
     for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
     const loaded = deserialize(JSON.stringify(v1));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.town.buildings.casa).toBe(0);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.children).toEqual([]);
@@ -645,7 +646,7 @@ describe('economia da vila (Fase A)', () => {
     delete v2.raids;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v2.metrics[k];
     const loaded = deserialize(JSON.stringify(v2));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.town.festivalDay).toBe(-1);
     expect(loaded.town.lastRaidDay).toBe(-1);
     expect(loaded.citizens.length).toBeGreaterThan(0);
@@ -706,12 +707,12 @@ describe('vila e incursões (M3)', () => {
     expect(world.chronicle.some((e) => e.kind === 'incursao')).toBe(true);
   });
 
-  it('save v7 carrega na versão 8', () => {
+  it('save v7 carrega na versão atual', () => {
     const world = createWorld(51);
     const v7 = JSON.parse(serialize(world));
     v7.version = 7;
     const loaded = deserialize(JSON.stringify(v7));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
   });
 
   it('save v6 ganha a expansão sul vazia ao carregar', () => {
@@ -720,7 +721,7 @@ describe('vila e incursões (M3)', () => {
     v6.version = 6;
     delete v6.town.expansion;
     const loaded = deserialize(JSON.stringify(v6));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.town.expansion).toEqual({ cleared: false, houses: [false, false, false] });
   });
 
@@ -731,7 +732,7 @@ describe('vila e incursões (M3)', () => {
     delete v5.town.event;
     delete v5.town.lastEventKey;
     const loaded = deserialize(JSON.stringify(v5));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.town.event).toBeNull();
     expect(loaded.town.lastEventKey).toBe('');
   });
@@ -742,7 +743,7 @@ describe('vila e incursões (M3)', () => {
     v4.version = 4;
     delete v4.town.decrees;
     const loaded = deserialize(JSON.stringify(v4));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.town.decrees).toEqual([]);
   });
 
@@ -756,7 +757,7 @@ describe('vila e incursões (M3)', () => {
     delete v3.town.lastRaidDay;
     for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v3.metrics[k];
     const loaded = deserialize(JSON.stringify(v3));
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.citizens.length).toBe(BALANCE.citizenStart);
     expect(loaded.raids).toEqual([]);
     expect(loaded.town.lastRaidDay).toBe(-1);

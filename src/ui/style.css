@@ -2524,3 +2524,98 @@ kbd {
 @media (max-width: 620px) {
   .watch-btn kbd { display: none; }
 }
+
+/* ── Itens (M4): cartão da peça, cor da raridade, arsenal e encomendas ─ */
+
+.item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+.item-card + .item-card { margin-top: 0.4rem; }
+.item-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+.item-icon .ui-icon { width: 2.8rem; height: 2.8rem; image-rendering: pixelated; }
+.amulet-icon {
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.item-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.item-text strong { font-family: var(--serif); font-weight: normal; font-size: 1rem; }
+.item-rarity,
+.item-origin,
+.item-bonus { color: var(--muted); font-size: 0.8rem; }
+.item-affixes {
+  margin: 0.1rem 0;
+  padding-left: 1rem;
+  color: #d8ccb4;
+  font-size: 0.84rem;
+}
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.item-actions select {
+  max-width: 13rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+}
+.rarity-comum { border-left-color: var(--line); }
+.rarity-rara { border-left-color: #6fa8e8; }
+.rarity-rara strong,
+.rarity-text.rarity-rara { color: #8cbcf0; }
+.rarity-epica { border-left-color: #b98ae6; }
+.rarity-epica strong,
+.rarity-text.rarity-epica { color: #c9a2f0; }
+.rarity-lendaria { border-left-color: var(--gold); background: rgba(233, 185, 73, 0.05); }
+.rarity-lendaria strong,
+.rarity-text.rarity-lendaria { color: var(--gold); }
+.gear-item.empty { opacity: 0.7; }
+/* Grupo de botões lado a lado (encaixe, material, raridade). */
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.35rem 0;
+}
+.seg .btn.active {
+  border-color: var(--gold);
+  background: #33291c;
+  color: var(--gold);
+}
+.lane-boss-hint {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.62rem;
+}

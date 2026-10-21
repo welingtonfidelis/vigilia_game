@@ -1,0 +1,178 @@
+import { describe, expect, it } from 'vitest';
+import { commands, createWorld, deserialize, heroCapacity, heroStats, maxGearTier, SAVE_VERSION, serialize, TICKS_PER_DAY } from '../src/sim/index.ts';
+import type { Hero, Party, World } from '../src/sim/index.ts';
+import { createHero } from '../src/sim/hero.ts';
+import { commissionBlocker, equip, itemName, newItem, offer, processForge, rollDrop, shareLoot } from '../src/sim/items.ts';
+
+function townWith(heroes = 2): { world: World; list: Hero[] } {
+  const world = createWorld(77);
+  const list = Array.from({ length: heroes }, () => createHero(world));
+  return { world, list };
+}
+
+const fakeParty = (world: World, persistent: boolean, floor = 1): Party =>
+  ({
+    id: 999,
+    memberIds: [],
+    startMemberIds: [],
+    act: 0,
+    floor,
+    phase: 'explorando',
+    phaseEndsAt: 0,
+    persistent,
+    rooms: [],
+    roomIndex: 0,
+    retreating: false,
+    combat: null,
+    loot: { gold: 0, materials: {}, xp: 0, items: [] },
+    contractId: null,
+    rescued: 0,
+    dead: [],
+    recallRequested: false,
+    outcome: null,
+    startedTick: world.tick,
+    confidence: 1,
+    moments: [],
+  }) as Party;
+
+describe('itens: nomes e números', () => {
+  it('a arma muda de nome conforme a classe e concorda no gênero', () => {
+    const { world, list } = townWith(1);
+    const item = newItem(world, { slot: 'weapon', rarity: 'rara', tier: 3, material: 'ossos', affixes: ['afiado'], origin: 'teste' });
+    list[0]!.classId = 'guardiao';
+    expect(itemName(item, 'guardiao')).toBe('Espada afiada de osso');
+    expect(itemName(item, 'selvagem')).toBe('Machado afiado de osso');
+    expect(itemName(item, null)).toBe('Arma afiada de osso');
+    const legend = newItem(world, { slot: 'armor', rarity: 'lendaria', tier: 5, origin: 'teste' });
+    expect(legend.affixes).toHaveLength(3);
+    expect(legend.title).toBeTruthy();
+    expect(itemName(legend, 'clerigo')).toBe(legend.title);
+  });
+
+  it('os afixos entram nos atributos do herói', () => {
+    const { world, list } = townWith(1);
+    const hero = list[0]!;
+    const before = heroStats(world, hero);
+    equip(world, hero, newItem(world, { slot: 'amulet', rarity: 'epica', tier: 0, affixes: ['robusto', 'afiado'], origin: 'teste' }));
+    const after = heroStats(world, hero);
+    expect(after.maxHp).toBe(Math.round(before.maxHp * 1.1));
+    expect(after.crit).toBeCloseTo(before.crit + 0.05);
+    equip(world, hero, newItem(world, { slot: 'weapon', rarity: 'rara', tier: 1, affixes: ['agil'], origin: 'teste' }));
+    expect(heroStats(world, hero).interval).toBeLessThan(before.interval);
+  });
+
+  it('peça melhor substitui a antiga; a nomeada vai para o cofre e a comum derrete', () => {
+    const { world, list } = townWith(1);
+    const hero = list[0]!;
+    const rare = newItem(world, { slot: 'weapon', rarity: 'rara', tier: 2, affixes: ['afiado'], origin: 'teste' });
+    expect(offer(world, hero, rare)).toBe(true);
+    expect(hero.gear.weapon).toBe(2);
+    const epic = newItem(world, { slot: 'weapon', rarity: 'epica', tier: 3, origin: 'teste' });
+    expect(offer(world, hero, epic)).toBe(true);
+    expect(world.town.arsenal.map((i) => i.id)).toEqual([rare.id]);
+    expect(offer(world, hero, newItem(world, { slot: 'weapon', rarity: 'comum', tier: 3, origin: 'teste' }))).toBe(false);
+    expect(epic.owners).toEqual([hero.id]);
+  });
+});
+
+describe('itens: abismo', () => {
+  it('só terreno novo dá peças; o primeiro chefe do ato deixa uma lendária', () => {
+    const { world } = townWith(0);
+    expect(rollDrop(world, fakeParty(world, false), 'chefe')).toBeNull();
+    const boss = rollDrop(world, fakeParty(world, true, 3), 'chefe');
+    expect(boss?.rarity).toBe('lendaria');
+    world.acts[0]!.bossDefeated = true;
+    expect(rollDrop(world, fakeParty(world, true, 3), 'chefe')).toBeNull();
+  });
+
+  it('na volta cada peça vai para quem mais ganha; o resto vai para o cofre', () => {
+    const { world, list } = townWith(2);
+    const [a, b] = list as [Hero, Hero];
+    equip(world, a, newItem(world, { slot: 'weapon', rarity: 'epica', tier: 6, origin: 'teste' }));
+    const party = fakeParty(world, true);
+    const sword = newItem(world, { slot: 'weapon', rarity: 'rara', tier: 3, origin: 'teste' });
+    const ring = newItem(world, { slot: 'amulet', rarity: 'rara', tier: 0, origin: 'teste' });
+    party.loot.items = [sword, ring];
+    shareLoot(world, party, [a, b]);
+    expect(b.items.weapon?.id).toBe(sword.id);
+    expect([a.items.amulet?.id, b.items.amulet?.id]).toContain(ring.id);
+    expect(world.town.arsenal).toHaveLength(0);
+  });
+});
+
+describe('forja e especializações', () => {
+  it('encomenda pede ferreiro nível 2, cobra na hora e entrega no cofre', () => {
+    const { world } = townWith(0);
+    expect(commissionBlocker(world, 'weapon', 'rara')).toMatch(/nível 2/);
+    world.town.buildings.ferreiro = 2;
+    world.town.treasury = 5000;
+    world.town.materials.ossos = 100;
+    expect(commands.commission(world, 'weapon', 'ossos', 'epica').ok).toBe(false);
+    expect(commands.commission(world, 'weapon', 'ossos', 'rara').ok).toBe(true);
+    expect(world.town.treasury).toBeLessThan(5000);
+    expect(world.town.forge).toHaveLength(1);
+    expect(commands.commission(world, 'armor', 'ossos', 'rara').ok).toBe(false);
+    world.tick += 3 * TICKS_PER_DAY;
+    processForge(world);
+    expect(world.town.forge).toHaveLength(0);
+    expect(world.town.arsenal[0]?.affixes).toContain('afiado');
+    expect(world.town.arsenal[0]?.tier).toBe(maxGearTier(world, 'weapon'));
+  });
+
+  it('nível 3 exige especialização; os efeitos valem na hora', () => {
+    const { world } = townWith(0);
+    world.town.buildings.estalagem = 2;
+    world.town.treasury = 99999;
+    world.town.materials.ferroNegro = 999;
+    const before = heroCapacity(world);
+    expect(commands.build(world, 'estalagem').ok).toBe(false);
+    expect(commands.build(world, 'estalagem', 'laminas').ok).toBe(false);
+    expect(commands.build(world, 'estalagem', 'dormitorio').ok).toBe(true);
+    expect(heroCapacity(world)).toBe(before + 4 + 4);
+    world.town.buildings.ferreiro = 3;
+    expect(commands.chooseSpecialization(world, 'ferreiro', 'laminas').ok).toBe(true);
+    expect(commands.chooseSpecialization(world, 'ferreiro', 'couracas').ok).toBe(false);
+    expect(maxGearTier(world, 'weapon')).toBe(13);
+    expect(maxGearTier(world, 'armor')).toBe(12);
+  });
+
+  it('presentear e vender peças do cofre', () => {
+    const { world, list } = townWith(1);
+    const hero = list[0]!;
+    hero.status = 'town';
+    const item = newItem(world, { slot: 'amulet', rarity: 'rara', tier: 0, origin: 'teste' });
+    world.town.arsenal.push(item);
+    const energy = world.town.mayorEnergy;
+    expect(commands.giftItem(world, item.id, hero.id).ok).toBe(true);
+    expect(hero.items.amulet?.id).toBe(item.id);
+    expect(world.town.mayorEnergy).toBe(energy - 1);
+    const other = newItem(world, { slot: 'weapon', rarity: 'epica', tier: 4, origin: 'teste' });
+    world.town.arsenal.push(other);
+    const gold = world.town.treasury;
+    expect(commands.sellItem(world, other.id).ok).toBe(true);
+    expect(world.town.treasury).toBeGreaterThan(gold);
+    expect(world.town.arsenal).toHaveLength(0);
+  });
+});
+
+describe('save v8 → v9', () => {
+  it('tiers viram peças comuns; a herança das crianças também', () => {
+    const { world, list } = townWith(1);
+    const v8 = JSON.parse(serialize(world));
+    v8.version = 8;
+    v8.heroes[0].gear = { weapon: 3, armor: 2 };
+    delete v8.heroes[0].items;
+    v8.children = [{ id: 1, name: 'Nina', gender: 'f', parents: [list[0]!.id, list[0]!.id], bornDay: 0, trait: 'leal', classId: 'arqueiro', heirloom: 2 }];
+    delete v8.town.arsenal;
+    delete v8.town.forge;
+    delete v8.town.specs;
+    const loaded = deserialize(JSON.stringify(v8));
+    expect(loaded.version).toBe(SAVE_VERSION);
+    expect(loaded.heroes[0]!.items.weapon).toMatchObject({ rarity: 'comum', tier: 3 });
+    expect(loaded.heroes[0]!.items.armor).toMatchObject({ rarity: 'comum', tier: 2 });
+    expect(loaded.children[0]!.heirloom).toMatchObject({ slot: 'weapon', tier: 2 });
+    expect(loaded.town.arsenal).toEqual([]);
+    expect(loaded.town.forge).toEqual([]);
+    expect(loaded.town.specs).toEqual({});
+  });
+});

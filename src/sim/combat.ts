@@ -6,7 +6,8 @@ import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
 import { makeEnemy, spawnRoom } from './dungeon.ts';
 import { epitaph, maybeInjure, widow } from './people.ts';
-import { addBond, fleeThreshold, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
+import { addBond, fleeLimit, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
+import { affixCount, takeItems } from './items.ts';
 import { chance, int, pick, range, shuffle, weighted } from './rng.ts';
 import type { Combat, CombatEvent, Hero, Party, Room, Unit, World } from './types.ts';
 
@@ -44,6 +45,7 @@ function heroUnit(world: World, combat: Combat, hero: Hero): Unit {
     xp: 0,
     gold: 0,
     material: null,
+    lifesteal: Math.min(B.lifestealCap, B.affixLifesteal * affixCount(hero, 'sanguessuga')),
   };
 }
 
@@ -138,7 +140,7 @@ function heroAct(world: World, party: Party, c: Combat, u: Unit): void {
       if (hurt.length > 0) {
         const beloved = hurt.find((a) => a.heroId !== null && a.hp / a.maxHp < 0.6 && getBond(world, hero.id, a.heroId) > 50);
         const target = beloved ?? hurt.reduce((lo, a) => (a.hp / a.maxHp < lo.hp / lo.maxHp ? a : lo));
-        const heal = atk * B.healMult * (c.enraged ? B.enrageHealMult : 1);
+        const heal = atk * B.healMult * enrageHealFactor(c);
         const before = target.hp;
         target.hp = Math.min(target.maxHp, target.hp + heal);
         target.poisonTicks = 0;
@@ -177,6 +179,16 @@ function heroAct(world: World, party: Party, c: Combat, u: Unit): void {
   }
 }
 
+/**
+ * Quanto a cura rende: na fúria cai pela metade e continua caindo com o tempo, para a
+ * luta terminar (um grupo de curandeiros não segura a fúria para sempre).
+ */
+function enrageHealFactor(c: Combat): number {
+  if (!c.enraged) return 1;
+  const secs = (c.ticks - (c.isBoss ? B.bossEnrageTicks : B.enrageTicks)) / TICKS_PER_SECOND;
+  return B.enrageHealMult * Math.max(0.2, 1 - B.enrageHealDecayPerSecond * secs);
+}
+
 function enemyAct(world: World, party: Party, c: Combat, u: Unit): void {
   const heroes = activeHeroUnits(c);
   if (heroes.length === 0) return;
@@ -197,11 +209,16 @@ function enemyAct(world: World, party: Party, c: Combat, u: Unit): void {
     );
   }
   let atk = u.atk;
+  let pierce = 0;
   if (c.enraged) {
     const enrageAt = c.isBoss ? B.bossEnrageTicks : B.enrageTicks;
-    atk *= 1 + (B.enrageDamagePerSecond * (c.ticks - enrageAt)) / TICKS_PER_SECOND;
+    const secs = (c.ticks - enrageAt) / TICKS_PER_SECOND;
+    atk *= 1 + B.enrageDamagePerSecond * secs;
+    // Na fúria a armadura vai deixando de segurar: sem isso, um grupo de curandeiros
+    // bem equipado empata com o chefe.
+    pierce = B.enragePiercePerSecond * secs;
   }
-  const dealt = strike(world, party, c, u, target, atk);
+  const dealt = strike(world, party, c, u, target, atk, pierce);
   if (u.affixes.includes('vampirico')) u.hp = Math.min(u.maxHp, u.hp + dealt * 0.3);
 }
 
@@ -216,11 +233,18 @@ function logEvent(c: Combat, kind: CombatEvent['kind'], from: Unit, to: Unit, am
   return event;
 }
 
-function strike(world: World, party: Party, c: Combat, attacker: Unit, target: Unit, base: number): number {
+function strike(world: World, party: Party, c: Combat, attacker: Unit, target: Unit, base: number, pierceBonus = 0): number {
   if (!target.alive) return 0;
   const crit = chance(world.rng, attacker.crit) ? B.critMult : 1;
-  const dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - attacker.pierce));
+  const pierce = Math.min(0.95, attacker.pierce + pierceBonus);
+  const dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - pierce));
   target.hp -= dmg;
+  // Sanguessuga: parte do golpe volta como vida para quem bateu. Na fúria, como a cura,
+  // rende menos (senão a luta não acaba).
+  if (attacker.lifesteal && attacker.alive) {
+    const steal = attacker.lifesteal * enrageHealFactor(c);
+    attacker.hp = Math.min(attacker.maxHp, attacker.hp + dmg * steal);
+  }
   const event = logEvent(c, 'hit', attacker, target, dmg, crit > 1);
   if (target.side === 'hero') {
     const hero = heroOf(world, target)!;
@@ -304,7 +328,8 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
   party.memberIds = party.memberIds.filter((id) => id !== hero.id);
   party.dead.push(hero.id);
   world.metrics.deaths++;
-  world.remains.push({ heroId: hero.id, act: party.act, floor: party.floor, gold: hero.gold });
+  // As peças ficam com o corpo: voltam com quem achar os restos.
+  world.remains.push({ heroId: hero.id, act: party.act, floor: party.floor, gold: hero.gold, items: takeItems(hero) });
   hero.gold = 0;
   hero.injury = null;
   hero.epitaph = epitaph(world, hero);
@@ -327,7 +352,7 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
 function checkFlee(world: World, party: Party, c: Combat): void {
   for (const u of activeHeroUnits(c)) {
     const hero = heroOf(world, u)!;
-    if (hero.morale >= fleeThreshold(hero, world.town.doctrine)) continue;
+    if (hero.morale >= fleeLimit(world, hero)) continue;
     if (activeHeroUnits(c).length === 1 && party.startMemberIds.length === 1) continue;
     partingStrikes(world, party, c, [u]);
     if (!u.alive) continue;

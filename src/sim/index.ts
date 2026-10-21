@@ -37,7 +37,23 @@ export {
   recruitsPerHorn,
   totalBuildingLevels,
 } from './economy.ts';
-export { ageYears, className, fleeThreshold, getBond, maxLevel, moraleBaseline, xpToNext } from './hero.ts';
+export { ageYears, className, fleeLimit, fleeThreshold, getBond, maxLevel, moraleBaseline, xpToNext } from './hero.ts';
+// Itens, forja e especializações (M4).
+export {
+  affixCount,
+  commissionBlocker,
+  commissionCost,
+  forgeCapacity,
+  ITEM_SLOTS,
+  itemName,
+  itemPrice,
+  itemValue,
+  sellPrice,
+  upgradeGain,
+} from './items.ts';
+export { hasSpec, specOf } from './economy.ts';
+export { AFFIXES, MATERIAL_AFFIX, RARITY_NAMES, SLOT_NAMES } from '../data/items.ts';
+export { SPEC_DEFS, SPECS, type SpecDef } from '../data/specs.ts';
 export { activeHeroes, townHeroes } from './town.ts';
 export { busyParties } from './party.ts';
 export { floorPower, isBossFloor, partyRooms, travelTicks } from './dungeon.ts';

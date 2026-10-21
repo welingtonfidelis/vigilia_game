@@ -101,7 +101,7 @@ export const ACTS: ActDef[] = [
     name: 'Cidade Afogada',
     of: 'da Cidade Afogada',
     material: 'perolas',
-    power: 4.8,
+    power: 5.3,
     defBonus: 30,
     enemies: [
       { id: 'sacerdote', name: 'Sacerdote Afogado', hp: 50, atk: 10, def: 10, interval: 15, tags: ['backline'] },
@@ -124,7 +124,7 @@ export const ACTS: ActDef[] = [
     name: 'Forja Abissal',
     of: 'da Forja Abissal',
     material: 'brasas',
-    power: 6.4,
+    power: 7.9,
     defBonus: 40,
     enemies: [
       { id: 'ferreiroCinzento', name: 'Ferreiro Cinzento', hp: 80, atk: 10, def: 25, interval: 15, tags: [] },
@@ -147,7 +147,7 @@ export const ACTS: ActDef[] = [
     name: 'Coração do Abismo',
     of: 'do Coração do Abismo',
     material: 'almas',
-    power: 8.2,
+    power: 10.6,
     defBonus: 50,
     enemies: [
       { id: 'sombra', name: 'Sombra Faminta', hp: 55, atk: 10, def: 10, interval: 11, tags: [] },

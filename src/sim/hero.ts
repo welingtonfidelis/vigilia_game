@@ -5,6 +5,8 @@ import { dayOf } from './calendar.ts';
 import { record, g, heroLabel, className } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_YEAR } from './config.ts';
 import { chance, int, next, pick, range, weighted } from './rng.ts';
+import { hasSpec } from './economy.ts';
+import { affixCount, emptyItems } from './items.ts';
 import type { Doctrine, Hero, InjuryKind, Rank, TraitId, World } from './types.ts';
 
 export interface HeroStats {
@@ -47,13 +49,16 @@ export function heroStats(world: World, hero: Hero): HeroStats {
   const age = ageYears(world, hero);
   const decline = age > B.declineAge ? Math.max(0.6, 1 - 0.02 * (age - B.declineAge)) : 1;
   const hurt = woundEffects(hero);
+  const fx = (a: Parameters<typeof affixCount>[1]) => affixCount(hero, a);
   return {
-    maxHp: Math.round(c.hp * (1 + B.levelHpGrowth * lv) * rm * (1 + B.armorHpPerTier * hero.gear.armor) * decline * hurt.hp),
+    maxHp: Math.round(
+      c.hp * (1 + B.levelHpGrowth * lv) * rm * (1 + B.armorHpPerTier * hero.gear.armor) * decline * hurt.hp * (1 + B.affixHp * fx('robusto')),
+    ),
     atk: c.atk * (1 + B.levelAtkGrowth * lv) * rm * (1 + B.weaponAtkPerTier * hero.gear.weapon) * decline * hurt.atk,
-    def: c.def * (1 + B.levelDefGrowth * lv) * rm + B.armorDefPerTier * hero.gear.armor,
-    interval: Math.round(c.interval * hurt.interval),
-    pierce: c.pierce,
-    crit: c.crit * hurt.crit,
+    def: c.def * (1 + B.levelDefGrowth * lv) * rm + B.armorDefPerTier * hero.gear.armor + B.affixDef * fx('guardiao'),
+    interval: Math.max(3, Math.round(c.interval * hurt.interval * Math.pow(B.affixInterval, fx('agil')))),
+    pierce: Math.min(0.9, c.pierce + B.affixPierce * fx('perfurante')),
+    crit: c.crit * hurt.crit + B.affixCrit * fx('afiado'),
   };
 }
 
@@ -93,8 +98,12 @@ export function moraleBaseline(hero: Hero): number {
 export function fleeThreshold(hero: Hero, doctrine: Doctrine): number {
   if (hero.vengeful) return -Infinity;
   const doc = doctrine === 'cautelosa' ? 10 : doctrine === 'agressiva' ? -5 : 0;
-  return B.baseFleeThreshold + traitSum(hero, 'flee') + doc;
+  return B.baseFleeThreshold + traitSum(hero, 'flee') + doc - B.affixFlee * affixCount(hero, 'sereno');
 }
+
+/** O limiar de fuga com o que vem da vila (doutrina e o templo da Penitência). */
+export const fleeLimit = (world: World, hero: Hero): number =>
+  fleeThreshold(hero, world.town.doctrine) - (hasSpec(world, 'penitencia') ? B.specPenitenciaFlee : 0);
 
 const RANK_WEIGHTS: Record<Rank, [number, number]> = {
   // [peso com reputação 0, variação a cada 10 de reputação]
@@ -167,6 +176,7 @@ export function createHero(world: World, opts: { rankCap?: Rank } = {}): Hero {
     needs: { energy: range(world.rng, 60, 90), fun: range(world.rng, 40, 80), faith: range(world.rng, 40, 80) },
     gold: int(world.rng, 5, 15),
     gear: { weapon: 0, armor: 0 },
+    items: emptyItems(),
     grief: 0,
     griefFor: null,
     vengeful: false,

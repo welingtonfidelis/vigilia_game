@@ -178,7 +178,8 @@ function Prompt() {
 function WatchButton() {
   const { world, ui } = useGame();
   const parties = world.parties.length;
-  if (parties === 0 || ui.panel?.kind === 'battle' || ui.panel?.kind === 'event') return null;
+  // Com um painel aberto o botão sairia por cima dele: some até o painel fechar.
+  if (parties === 0 || ui.panel) return null;
   const fighting = world.parties.some((p) => p.phase === 'combate');
   return (
     <button class={`watch-btn${fighting ? ' hot' : ''}`} onClick={() => ui.watch(world)} title="Acompanhar as dungeons (G)">

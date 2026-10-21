@@ -5,9 +5,9 @@ import { dayOf, isNight } from './calendar.ts';
 import { BALANCE as B, DAYS_PER_YEAR, TICKS_PER_HOUR } from './config.ts';
 import {
   drinkPrice,
+  hasSpec,
   heroCapacity,
   level,
-  maxGearTier,
   restEnergyGain,
   restHpGain,
   restPrice,
@@ -27,7 +27,8 @@ import {
   maxLevel,
 } from './hero.ts';
 import { forgePrice, retireHero, roleCount } from './people.ts';
-import { pick, range } from './rng.ts';
+import { nextTierWorth, upgradeTier } from './items.ts';
+import { chance, pick, range } from './rng.ts';
 import type { ActivityKind, Hero, World } from './types.ts';
 
 const DURATION_HOURS: Record<ActivityKind, number> = {
@@ -130,12 +131,17 @@ export function updateTownHeroes(world: World): void {
   }
 }
 
+/**
+ * O encaixe que o herói melhoraria agora com o próprio ouro: o mais fraco primeiro, e só
+ * se o tier novo valer mais que a peça que ele já tem (uma rara não troca por comum igual).
+ */
 function affordableUpgrade(world: World, hero: Hero): 'weapon' | 'armor' | null {
-  const cap = maxGearTier(world);
-  const slot = hero.gear.weapon <= hero.gear.armor ? 'weapon' : 'armor';
-  const tier = hero.gear[slot] + 1;
-  if (tier > cap) return null;
-  return hero.gold >= forgePrice(world, tier) ? slot : null;
+  const order: ('weapon' | 'armor')[] = hero.gear.weapon <= hero.gear.armor ? ['weapon', 'armor'] : ['armor', 'weapon'];
+  for (const slot of order) {
+    const tier = nextTierWorth(world, hero, slot);
+    if (tier !== null && hero.gold >= forgePrice(world, tier)) return slot;
+  }
+  return null;
 }
 
 function idlePartners(world: World, hero: Hero): Hero[] {
@@ -223,14 +229,17 @@ function finishActivity(world: World, hero: Hero): void {
       const hpGain = paid ? restHpGain(world) : 0.25;
       hero.needs.energy = clamp(hero.needs.energy + (paid ? restEnergyGain(world) : 35));
       hero.hp = Math.min(maxHp, hero.hp + maxHp * (hpGain + 0.05 * level(world, 'templo')));
+      if (paid && hasSpec(world, 'luxo')) hero.morale = clamp(hero.morale + 5);
       break;
     }
     case 'beber': {
       const price = drinkPrice(world);
       hero.gold -= price;
-      town.treasury += price * 0.7;
-      hero.needs.fun = clamp(hero.needs.fun + 35);
-      hero.morale = clamp(hero.morale + (hasTrait(hero, 'beberrao') ? 20 : 10) + 5 * roleCount(world, 'contador'));
+      // Na casa de apostas a mesa fica com tudo; na cervejaria a bebida rende o dobro.
+      town.treasury += price * (hasSpec(world, 'apostas') ? 1 : 0.7);
+      const brew = hasSpec(world, 'cervejaria') ? 2 : 1;
+      hero.needs.fun = clamp(hero.needs.fun + 35 * brew);
+      hero.morale = clamp(hero.morale + ((hasTrait(hero, 'beberrao') ? 20 : 10) + 5 * roleCount(world, 'contador')) * brew);
       for (const other of townHeroes(world)) {
         if (other.id !== hero.id && other.activity?.kind === 'beber') addBond(world, hero, other, 1 + 3 * temperament(hero, other));
       }
@@ -242,9 +251,10 @@ function finishActivity(world: World, hero: Hero): void {
       const gift = Math.min(hero.gold, B.donation + tithe);
       hero.gold -= gift;
       town.treasury += gift;
-      hero.needs.faith = clamp(hero.needs.faith + 40);
+      const light = hasSpec(world, 'luz') ? 2 : 1;
+      hero.needs.faith = clamp(hero.needs.faith + 40 * light);
       hero.morale = clamp(hero.morale + (hasTrait(hero, 'devoto') ? 15 : 5));
-      hero.grief = Math.max(0, hero.grief - 10);
+      hero.grief = Math.max(0, hero.grief - 10 * light);
       if (gift >= 50) {
         record(world, 'doacao', [hero.id], `${hero.name} deixou ${gift} de ouro no templo e acendeu uma vela por quem ficou no abismo.`);
       }
@@ -253,19 +263,28 @@ function finishActivity(world: World, hero: Hero): void {
     case 'comprar': {
       const slot = affordableUpgrade(world, hero);
       if (!slot) break;
-      const price = forgePrice(world, hero.gear[slot] + 1);
+      const price = forgePrice(world, nextTierWorth(world, hero, slot)!);
       hero.gold -= price;
-      hero.gear[slot]++;
+      upgradeTier(world, hero, slot, 'comprado na forja da vila');
       town.treasury += price * B.gearMargin;
-      if (slot === 'armor') hero.hp = Math.min(heroStats(world, hero).maxHp, hero.hp + (heroStats(world, hero).maxHp - maxHp));
       break;
     }
     case 'treinar': {
       const price = trainPrice(world);
       hero.gold -= price;
       town.treasury += price * 0.5;
-      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo') * (1 + 0.5 * roleCount(world, 'mentor')));
+      const discipline = hasSpec(world, 'disciplina') ? B.specDisciplinaXp : 1;
+      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo') * (1 + 0.5 * roleCount(world, 'mentor')) * discipline);
       hero.needs.energy = clamp(hero.needs.energy - 10);
+      if (hasSpec(world, 'arena')) {
+        // Arena: luta entre heróis com plateia e apostas; às vezes alguém sai machucado.
+        hero.needs.fun = clamp(hero.needs.fun + 30);
+        town.treasury += B.specArenaGold;
+        if (!hero.injury && chance(world.rng, B.specArenaInjury)) {
+          hero.injury = { kind: 'braco', daysLeft: 1.5, total: 1.5 };
+          record(world, 'lesao', [hero.id], `${hero.name} torceu o braço numa luta da arena.`);
+        }
+      }
       break;
     }
     case 'tumulo': {
@@ -278,7 +297,7 @@ function finishActivity(world: World, hero: Hero): void {
           `${hero.name} visitou o túmulo de ${lost.name} e ficou um tempo em silêncio.`,
         );
       }
-      hero.grief = Math.max(0, hero.grief - 25);
+      hero.grief = Math.max(0, hero.grief - 25 * (hasSpec(world, 'luz') ? 2 : 1));
       hero.morale = clamp(hero.morale + 5);
       break;
     }

@@ -4,11 +4,24 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { blowHorn, build, comfort, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { blowHorn, build, comfort, commission, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
+import { MATERIAL_AFFIX } from '../data/items.ts';
 import { canAfford, festivalCost, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
 import { BALANCE as B } from './config.ts';
 import { activeHeroes, townHeroes } from './town.ts';
-import type { BuildingId, World } from './types.ts';
+import type { BuildingId, ItemSlot, MaterialId, SpecId, World } from './types.ts';
+
+/** O que o prefeito automático escolhe ao chegar no nível 3. */
+const BOT_SPECS: Record<BuildingId, SpecId> = {
+  taverna: 'cervejaria',
+  estalagem: 'dormitorio',
+  ferreiro: 'laminas',
+  templo: 'penitencia',
+  guilda: 'mercenaria',
+  campo: 'disciplina',
+  casa: 'cirurgia',
+};
 
 /** Ordem em que o prefeito automático reconstrói a vila. */
 const BUILD_ORDER: [BuildingId, number][] = [
@@ -49,7 +62,7 @@ export function autoMayor(world: World): void {
     if (!cost) continue;
     const materialsOk = canAfford(world, { gold: 0, ...(cost.materials ? { materials: cost.materials } : {}) });
     if (!materialsOk) continue;
-    if (town.treasury - cost.gold >= reserve) build(world, id);
+    if (town.treasury - cost.gold >= reserve) build(world, id, lvl === 3 ? BOT_SPECS[id] : undefined);
     break;
   }
 
@@ -68,6 +81,9 @@ export function autoMayor(world: World): void {
     if (town.treasury >= reward + reserve * 2) postContract(world, frontier.act, frontier.floor, reward);
   }
 
+  if (hourOf(world.tick) === 11) giveFromArsenal(world);
+  if (hourOf(world.tick) === 13 && dayOf(world.tick) % 3 === 0) orderFromForge(world, reserve);
+
   // Uma vez por dia, patrocina o equipamento do herói mais mal-equipado.
   if (hourOf(world.tick) === 12 && town.treasury > reserve + 400) {
     const cap = maxGearTier(world);
@@ -79,6 +95,37 @@ export function autoMayor(world: World): void {
       if (gift >= 30) sponsor(world, hero.id, gift);
     }
   }
+}
+
+/** Dá a melhor peça do cofre a quem mais ganha com ela (uma por dia). */
+function giveFromArsenal(world: World): void {
+  const items = [...(world.town.arsenal ?? [])].sort((a, b) => itemValue(b) - itemValue(a));
+  const heroes = townHeroes(world);
+  for (const item of items) {
+    const taker = heroes.reduce<{ id: number; gain: number } | null>((best, h) => {
+      const gain = upgradeGain(h, item);
+      return gain > 0.5 && (!best || gain > best.gain) ? { id: h.id, gain } : best;
+    }, null);
+    if (taker) {
+      giftItem(world, item.id, taker.id);
+      return;
+    }
+  }
+}
+
+/** Encomenda uma peça quando o tesouro sobra: arma, armadura e amuleto, em rodízio. */
+function orderFromForge(world: World, reserve: number): void {
+  if ((world.town.arsenal ?? []).length >= 4) return;
+  const slots: ItemSlot[] = ['weapon', 'armor', 'amulet'];
+  const slot = slots[Math.floor(dayOf(world.tick) / 3) % 3]!;
+  const rarity = commissionBlocker(world, slot, 'epica') === null ? 'epica' : 'rara';
+  if (commissionBlocker(world, slot, rarity)) return;
+  const cost = commissionCost(world, slot, rarity);
+  if (world.town.treasury < reserve + cost.gold * 2) return;
+  const mats = (Object.keys(MATERIAL_AFFIX) as MaterialId[]).filter((m) => world.town.materials[m] >= cost.material + 20);
+  if (mats.length === 0) return;
+  const material = mats.reduce((best, m) => (world.town.materials[m] > world.town.materials[best] ? m : best));
+  commission(world, slot, material, rarity);
 }
 
 function frontierFloors(world: World): { act: number; floor: number }[] {

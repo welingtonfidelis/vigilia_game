@@ -2,7 +2,8 @@ import { BALANCE, SAVE_VERSION } from './config.ts';
 import { DECREE_IDS } from './decrees.ts';
 import { defaultRole, epitaph } from './people.ts';
 import { seedCitizens } from './citizens.ts';
-import type { World } from './types.ts';
+import { commonItem, emptyItems } from './items.ts';
+import type { Hero, Item, Town, World } from './types.ts';
 
 export function serialize(world: World): string {
   return JSON.stringify(world);
@@ -24,6 +25,7 @@ function migrate(world: World): World {
   if (world.version < 6) migrateToV6(world);
   if (world.version < 7) migrateToV7(world);
   if (world.version < 8) migrateToV8(world);
+  if (world.version < 9) migrateToV9(world);
   return world;
 }
 
@@ -58,6 +60,35 @@ function migrateToV4(world: World): void {
 
 function migrateToV8(world: World): void {
   world.version = 8;
+}
+
+/**
+ * v8 → v9 (M4, itens): o tier de arma e armadura vira uma peça comum do mesmo tier; o
+ * tier herdado das crianças também. Cofre, forja e especializações começam vazios.
+ */
+function migrateToV9(world: World): void {
+  for (const hero of world.heroes) {
+    const h = hero as Hero & { items?: Hero['items'] };
+    h.items ??= emptyItems();
+    if (hero.status === 'dead' || hero.status === 'left') continue;
+    for (const slot of ['weapon', 'armor'] as const) {
+      if (hero.gear[slot] > 0 && !h.items[slot]) {
+        const item = commonItem(world, slot, hero.gear[slot], 'equipamento de antes do cofre');
+        item.owners.push(hero.id);
+        h.items[slot] = item;
+      }
+    }
+  }
+  for (const child of world.children) {
+    const old = child.heirloom as unknown as number | Item | null;
+    if (typeof old === 'number') child.heirloom = old > 0 ? commonItem(world, 'weapon', old, 'herança') : null;
+  }
+  const town = world.town as Town & Partial<Pick<Town, 'arsenal' | 'forge' | 'specs'>>;
+  town.arsenal ??= [];
+  town.forge ??= [];
+  town.specs ??= {};
+  for (const r of world.remains) r.items ??= [];
+  world.version = 9;
 }
 
 /** v6 → v7 (M3): expansão sul com três lotes de moradia. */

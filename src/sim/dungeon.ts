@@ -3,6 +3,7 @@
 import { ACTS } from '../data/acts.ts';
 import { record } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
+import { hasSpec } from './economy.ts';
 import { hasTrait, heroStrength } from './hero.ts';
 import { chance, int, pick, range, weighted } from './rng.ts';
 import type { Affix, Combat, EnemyUnitDef, Hero, Party, Room, RoomKind, Unit, World } from './types.ts';
@@ -177,7 +178,8 @@ export function dailyCorruption(world: World): void {
 
 export function reduceCorruption(world: World, act: number, amount: number): void {
   const a = world.acts[act]!;
-  a.corruption = Math.max(0, a.corruption - amount);
+  // A Penitência do templo pesa mais na corrupção a cada andar limpo.
+  a.corruption = Math.max(0, a.corruption - amount * (hasSpec(world, 'penitencia') ? B.specPenitenciaCorruption : 1));
 }
 
 // ── Estimativa de dificuldade (o que os heróis "acham" do andar) ─────────

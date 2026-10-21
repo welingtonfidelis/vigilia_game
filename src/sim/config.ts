@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -93,6 +93,49 @@ export const BALANCE = {
   gearBasePrice: 25,
   gearPriceGrowth: 1.8,
   gearMargin: 0.3,
+
+  // Itens (M4)
+  /** Quanto cada afixo vale na hora de comparar peças (em tiers). */
+  affixValue: 0.8,
+  arsenalMax: 24,
+  dropTierMax: 12,
+  // Chances por sala, só em andar ainda não conquistado.
+  eliteEpicChance: 0.06,
+  eliteRareChance: 0.25,
+  chestEpicChance: 0.05,
+  chestEpicPerFloor: 0.03,
+  chestRareChance: 0.3,
+  chestRarePerFloor: 0.05,
+  itemSellFraction: 0.25,
+  commissionBase: 150,
+  commissionPerTier: 60,
+  commissionEpicMult: 2.5,
+  commissionRareMaterial: 40,
+  commissionEpicMaterial: 100,
+  commissionRareDays: 2,
+  commissionEpicDays: 4,
+  affixCrit: 0.05,
+  affixPierce: 0.15,
+  affixDef: 4,
+  affixHp: 0.1,
+  affixFlee: 8,
+  affixInterval: 0.9,
+  affixLifesteal: 0.08,
+  lifestealCap: 0.12,
+  affixGold: 0.1,
+
+  // Especializações de nível 3 (M4)
+  specLuxoHp: 0.2,
+  specErvasHeal: 0.1,
+  specPenitenciaFlee: 6,
+  specPenitenciaCorruption: 1.1,
+  specMercenariaReward: 1.25,
+  specOrdemLoyalty: 10,
+  specDisciplinaXp: 1.5,
+  specArenaInjury: 0.03,
+  specArenaGold: 2,
+  specApostasGoldPerHero: 1.5,
+  specApostasExtraPrice: 2,
   drinkPrice: 3,
   trainPrice: 4,
   donation: 2,
@@ -123,6 +166,10 @@ export const BALANCE = {
   hardCapTicks: 1800,
   enrageDamagePerSecond: 0.04,
   enrageHealMult: 0.5,
+  /** Na fúria, os inimigos passam a ignorar a defesa aos poucos (fração por segundo). */
+  enragePiercePerSecond: 0.01,
+  /** Na fúria, a cura vai rendendo menos (fração por segundo, até 20% da cura da fúria). */
+  enrageHealDecayPerSecond: 0.01,
   partingStrikeChance: 0.5,
   healMult: 2.2,
   healThreshold: 0.75,

@@ -8,7 +8,8 @@ import { dayOf } from './calendar.ts';
 import { record, className, g, heroLabel, listNames } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_SEASON, DAYS_PER_YEAR } from './config.ts';
 import { DECREES, hasDecree } from './decrees.ts';
-import { gearPrice, level } from './economy.ts';
+import { gearPrice, hasSpec, level } from './economy.ts';
+import { equip, heirloomFor, stash, takeItems } from './items.ts';
 import { addBond, addTrait, ageYears, createHero, getBond, heroStats, rollRank, WOUNDS } from './hero.ts';
 import { chance, int, pick } from './rng.ts';
 import type { Child, Hero, InjuryKind, RetiredRole, World } from './types.ts';
@@ -55,6 +56,8 @@ export const forgePrice = (world: World, tier: number): number =>
   Math.round(gearPrice(tier) * (1 - 0.1 * roleCount(world, 'ferreiro')));
 
 export function retireHero(world: World, hero: Hero, reason: string, role: RetiredRole = defaultRole(hero, world)): void {
+  // Quem pendura as armas deixa as peças no cofre da vila.
+  for (const item of takeItems(hero)) stash(world, item);
   hero.status = 'retired';
   hero.activity = null;
   hero.lfgSince = null;
@@ -90,7 +93,7 @@ const injuryPhrase = (kind: InjuryKind): string =>
 
 /** Quanto a lesão melhora por dia: Casa de cura e curandeiros aposentados aceleram. */
 export function recoveryPerDay(world: World): number {
-  return 1 + 0.5 * level(world, 'casa') + 0.5 * roleCount(world, 'curandeiro');
+  return (1 + 0.5 * level(world, 'casa') + 0.5 * roleCount(world, 'curandeiro')) * (hasSpec(world, 'cirurgia') ? 2 : 1);
 }
 
 function healInjuries(world: World): void {
@@ -101,7 +104,8 @@ function healInjuries(world: World): void {
     if (hero.injury.daysLeft > 0) continue;
     const kind = hero.injury.kind;
     hero.injury = null;
-    const scarChance = Math.max(0.05, B.scarChance - 0.1 * level(world, 'casa'));
+    // Com Cirurgia na Casa de cura, lesão nenhuma vira cicatriz.
+    const scarChance = hasSpec(world, 'cirurgia') ? 0 : Math.max(0.05, B.scarChance - 0.1 * level(world, 'casa'));
     if (!chance(world.rng, scarChance)) continue;
     hero.scars.push(kind);
     world.metrics.scars++;
@@ -161,7 +165,7 @@ function births(world: World): void {
       bornDay: dayOf(world.tick),
       trait: traits.length ? pick(world.rng, traits).id : pick(world.rng, INNATE_TRAITS),
       classId: chance(world.rng, 0.6) ? pick(world.rng, [a, b]).classId : pick(world.rng, CLASS_IDS),
-      heirloom: Math.max(0, Math.max(a.gear.weapon, b.gear.weapon) - 1),
+      heirloom: heirloomFor(world, a, b),
     };
     world.children.push(child);
     world.metrics.births++;
@@ -192,7 +196,7 @@ function comingOfAge(world: World): void {
     hero.parents = [...child.parents];
     hero.level = 1;
     hero.xp = 0;
-    hero.gear.weapon = child.heirloom;
+    if (child.heirloom) equip(world, hero, child.heirloom);
     // Cresceu ouvindo histórias do abismo: o talento fica perto do melhor dos pais.
     const bestIdx = parents.reduce((top, p) => Math.max(top, RANKS.indexOf(p.rank)), 0);
     const rolled = RANKS.indexOf(rollRank(world, Math.min(100, world.town.reputation + 20)));

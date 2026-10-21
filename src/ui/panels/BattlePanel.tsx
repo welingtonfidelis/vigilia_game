@@ -1,8 +1,8 @@
 // Visualizador de dungeon do M4: várias expedições empilhadas (cada uma um corredor
 // lateral, em LaneCard) e o relatório ao fim.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { floorLabel, formatDate, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
-import type { Hero, MaterialId, Party } from '../../sim/index.ts';
+import { floorLabel, formatDate, itemName, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
+import type { Hero, MaterialId, Party, Rarity } from '../../sim/index.ts';
 import { fmt, heroById } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
 import { useGame } from '../components.tsx';
@@ -25,6 +25,7 @@ interface PartySnapshot {
   memberIds: number[];
   dead: number[];
   loot: { gold: number; materials: Partial<Record<MaterialId, number>>; xp: number };
+  items: { name: string; rarity: Rarity }[];
   rooms: { kind: string; cleared: boolean }[];
   roomIndex: number;
   outcome: Party['outcome'];
@@ -52,6 +53,8 @@ export interface DungeonReport {
   xp: number;
   gold: number;
   materials: [MaterialId, number][];
+  /** Peças trazidas (relatórios antigos não têm). */
+  items?: { name: string; rarity: Rarity }[];
   roomsCleared: number;
   roomsTotal: number;
   duration: number;
@@ -70,6 +73,7 @@ function snapshot(party: Party, endTick: number): PartySnapshot {
     memberIds: [...party.memberIds],
     dead: [...party.dead],
     loot: { gold: party.loot.gold, materials: { ...party.loot.materials }, xp: party.loot.xp },
+    items: (party.loot.items ?? []).map((i) => ({ name: itemName(i, null), rarity: i.rarity })),
     rooms: party.rooms.map((r) => ({ kind: r.kind, cleared: r.cleared })),
     roomIndex: party.roomIndex,
     outcome: party.outcome,
@@ -113,6 +117,7 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
     xp: last.loot.xp,
     gold: last.loot.gold,
     materials: Object.entries(last.loot.materials) as [MaterialId, number][],
+    items: last.items,
     roomsCleared: last.rooms.filter((r) => r.cleared).length,
     roomsTotal: last.rooms.length,
     duration: Math.max(0, last.endTick - last.startedTick),
@@ -150,6 +155,17 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
           <div><span>Resgatados</span><strong>{report.rescued}</strong></div>
         </div>
         {report.materials.length > 0 && <p class="report-materials">Materiais: {report.materials.map(([m, n]) => `${n} ${MATERIAL_NAMES[m].toLowerCase()}`).join(' · ')}</p>}
+        {report.items && report.items.length > 0 && (
+          <p class="report-materials">
+            Peças:{' '}
+            {report.items.map((it, i) => (
+              <span key={i} class={`rarity-text rarity-${it.rarity}`}>
+                {i > 0 && ' · '}
+                {it.name}
+              </span>
+            ))}
+          </p>
+        )}
         {report.contract !== null && <p class="report-materials">Contrato cumprido: {fmt(report.contract)} de ouro.</p>}
         <h3>Heróis caídos</h3>
         {report.fallen.length === 0 ? <p class="sub">Nenhum herói caiu nesta expedição.</p> : (

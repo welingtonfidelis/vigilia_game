@@ -3,7 +3,7 @@
 // grupo por cima do corredor (embaixo no celular), as salas e o aviso de volta à vila.
 
 import { useEffect, useRef } from 'preact/hooks';
-import { commands, fleeThreshold, floorLabel, maxLevel, partyRooms, xpToNext } from '../../sim/index.ts';
+import { ACTS, BALANCE, commands, fleeLimit, floorLabel, isBossFloor, maxLevel, partyRooms, xpToNext } from '../../sim/index.ts';
 import type { Hero, Party } from '../../sim/index.ts';
 import { lanes } from '../../render/lane/lanes.ts';
 import { packUrl } from '../../render/pack.ts';
@@ -34,7 +34,7 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
   const before = capped ? 1 : hero.xp / need;
   const after = capped ? 1 : (hero.xp + share) / need;
   const low = hp / Math.max(1, max) < 0.3;
-  const shaken = !dead && !fled && hero.morale <= fleeThreshold(hero, world.town.doctrine) + 10;
+  const shaken = !dead && !fled && hero.morale <= fleeLimit(world, hero) + 10;
   const levelUp = !capped && after >= 1;
   return (
     <li
@@ -106,7 +106,10 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   return (
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
-        <strong>Ato {party.act + 1} · {floorLabel(party.act, party.floor)}</strong>
+        <strong title={`Cada ato tem ${BALANCE.floorsPerAct} andares; o chefe fica no último. Um andar só abre depois que o de cima for conquistado.`}>
+          Ato {party.act + 1} · andar {party.floor + 1} de {BALANCE.floorsPerAct} {ACTS[party.act]!.of}
+          {!isBossFloor(party.floor) && <small class="lane-boss-hint"> · chefe no andar {BALANCE.floorsPerAct}</small>}
+        </strong>
         <span>
           {phaseText(world, party)}
           {room && !returning ? ` · ${ROOM_LABELS[room.kind]}` : ''}
@@ -129,7 +132,11 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
           {rooms.length > 0 && (
             <div class="arena-room-progress lane-rooms">
               {rooms.map((r, i) => (
-                <span key={i} class={`arena-room${i === party.roomIndex ? ' current' : ''}${r.cleared ? ' cleared' : ''}`} title={ROOM_LABELS[r.kind]}>
+                <span
+                  key={i}
+                  class={`arena-room${i === party.roomIndex ? ' current' : ''}${r.cleared ? ' cleared' : ''}`}
+                  title={`Sala ${i + 1} de ${rooms.length} deste andar · ${ROOM_LABELS[r.kind]}`}
+                >
                   <RoomNode state={i === party.roomIndex ? 'current' : r.cleared ? 'cleared' : 'normal'} />
                 </span>
               ))}

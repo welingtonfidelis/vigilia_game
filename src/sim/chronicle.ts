@@ -22,6 +22,13 @@ export function byWhom(by: string): string {
   return `${m[1]!.toLowerCase() === 'o' ? 'pelo' : 'pela'} ${m[2]}`;
 }
 
+/** "do Guardião das Urnas", "da Couraça Submersa", "de Aquilo que Vigia". */
+export function ofWhom(name: string): string {
+  const m = /^(O|A|a|o) (.*)$/.exec(name);
+  if (!m) return `de ${name}`;
+  return `${m[1]!.toLowerCase() === 'o' ? 'do' : 'da'} ${m[2]}`;
+}
+
 export function listNames(heroes: Hero[]): string {
   const names = heroes.map((h) => h.name);
   if (names.length <= 1) return names.join('');
