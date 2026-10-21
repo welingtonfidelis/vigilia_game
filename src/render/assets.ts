@@ -153,6 +153,8 @@ export const MONSTERS: Record<string, MonsterLook> = {
   couraca: { asset: 'char/boss/couraca', frameSize: [56, 48] },
   esporento: { asset: 'char/monster/esporento', frameSize: [24, 24] },
   aranha: { asset: 'char/monster/aranha', frameSize: [32, 24] },
+  // Variante narrativa: reaproveita a arte de aranha do pack CC0.
+  aranhaOssaria: { asset: 'char/monster/aranha', frameSize: [32, 24] },
   brotado: { asset: 'char/monster/brotado', frameSize: [32, 40] },
   maeBolor: { asset: 'char/boss/maeBolor', frameSize: [48, 56] },
   sacerdote: { asset: 'char/monster/sacerdote', frameSize: [24, 32] },
