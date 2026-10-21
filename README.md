@@ -1,5 +1,7 @@
 # Vigília
 
+Jogue a versão publicada: **https://welingtonfidelis.github.io/vigilia_game/**
+
 Documentação completa, arquitetura, GDD, arte e histórico de decisões:
 **[docs/VIGILIA.md](docs/VIGILIA.md)**.
 

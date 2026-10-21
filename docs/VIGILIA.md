@@ -8,6 +8,8 @@ Pack de arte atual: **Vigília Art Pack 1.9.0** (CC0 1.0, Equipe Vigília).
 Este arquivo substitui o README antigo, o GDD e os briefs/históricos soltos em `docs/art/`.
 O README da raiz é apenas uma porta de entrada.
 
+**Jogar publicado:** https://welingtonfidelis.github.io/vigilia_game/
+
 ## Índice
 
 1. [Estado, como jogar e arquitetura](#1-estado-como-jogar-e-arquitetura)
@@ -19,6 +21,8 @@ O README da raiz é apenas uma porta de entrada.
 ---
 
 ## 1. Estado, como jogar e arquitetura
+
+**Publicado:** https://welingtonfidelis.github.io/vigilia_game/
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
