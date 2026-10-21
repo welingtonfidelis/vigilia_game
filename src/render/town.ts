@@ -99,6 +99,8 @@ function packDirtName(mask: boolean[][], paths: boolean[][], x: number, y: numbe
 }
 
 function packTree(scene: Phaser.Scene, solids: Solid[], name: string, px: number, py: number): void {
+  const broad = name.includes('pine') || name.includes('autumn');
+  groundShadow(scene, px, py, broad ? 28 : 20, broad ? 7 : 5, 0.3);
   scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py);
   solids.push({ key: name, x: px, y: py, opts: TRUNK });
 }
@@ -110,6 +112,7 @@ export function buildCottages(scene: Phaser.Scene, solids: Solid[]): Phaser.Game
     const x = (lot.tx + lot.tw / 2) * TILE;
     const y = (lot.ty + lot.th) * TILE;
     const id = `building/house/0${i + 1}`;
+    groundShadow(scene, x, y, lot.tw * TILE * 0.72, 9, 0.38);
     scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: id, x, y });
     const light = scene.add
@@ -160,6 +163,21 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   baked.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   ground.setActive(false).setVisible(false);
   return mask;
+}
+
+/** Sombra de contato estática: separa a silhueta do cenário sem blur nem textura nova. */
+export function groundShadow(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height = 7,
+  alpha = 0.34,
+): Phaser.GameObjects.Ellipse {
+  return scene.add
+    .ellipse(Math.round(x), Math.round(y - 1), width, height, 0x080706, alpha)
+    .setOrigin(0.5, 0.5)
+    .setDepth(y - 2);
 }
 
 /** Árvores soltas e enfeites nos espaços livres. */
