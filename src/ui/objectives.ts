@@ -27,7 +27,7 @@ export function objectives(world: World): Objective[] {
   const roster = activeHeroes(world).length;
 
   if (town.hornUses === 0) {
-    out.push({ horizon: 'agora', text: 'Ande até o berrante, a oeste, e toque para chamar heróis.' });
+    out.push({ horizon: 'agora', text: 'Ande até o berrante, no portão ao norte, e toque para chamar heróis.' });
   } else if (world.metrics.expeditions === 0) {
     out.push({
       horizon: 'agora',
@@ -35,7 +35,7 @@ export function objectives(world: World): Objective[] {
         roster + town.arrivals.length < 3
           ? 'Os heróis formam grupos de 3. Toque o berrante de novo quando ele parar de ecoar.'
           : roster < 3
-            ? 'Os aventureiros estão chegando pela estrada do sul.'
+            ? 'Os aventureiros estão chegando pelo portão, ao norte.'
             : 'Os heróis formam grupo sozinhos no quadro. Veja-os descer ao abismo.',
     });
   } else if (roster < 3 && town.arrivals.length === 0) {

@@ -137,7 +137,7 @@ export const CAVE_PATH: TileRect = { tx: 43, ty: 15, tw: 2, th: 3 };
 
 export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
 
-/** Guarita de madeira com o berrante: agora é a entrada, no centro-esquerdo. */
+/** Guarita de madeira com o berrante: é a entrada da vila, no alto do mapa (norte), ao centro. */
 export const HORN_TOWER: TileRect = { tx: 22, ty: 1, tw: 5, th: 6 };
 
 export const LANDMARKS: Record<Landmark, Point> = {

@@ -381,9 +381,9 @@ export function WelcomePanel() {
   const { ui } = useGame();
   return (
     <PanelShell title="Bem-vindo a Vigília" subtitle="Você é o prefeito. Os heróis não obedecem: escolhem.">
-      <p>A vila foi arrasada pelo que sobe do abismo, ao norte. Só a taverna ficou de pé.</p>
+      <p>A vila foi arrasada pelo que sobe do abismo, na caverna a leste. Só a taverna ficou de pé.</p>
       <p>
-        Toque o <strong>berrante</strong> (a torre a oeste) para chamar aventureiros. Eles formam grupos sozinhos no <strong>quadro</strong>, descem e voltam
+        Toque o <strong>berrante</strong> (na guarita do portão, ao norte) para chamar aventureiros. Eles formam grupos sozinhos no <strong>quadro</strong>, descem e voltam
         com ouro e ossos. Com isso você <strong>reconstrói</strong> a vila.
       </p>
       <p>Você não controla o combate. Pode postar contratos, mudar a doutrina da guilda e, se der errado, tocar o sino de retirada.</p>
