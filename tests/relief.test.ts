@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BUILDING_IDS } from '../src/sim/index.ts';
 import { CELL, NavGrid } from '../src/render/nav.ts';
 import { door, gravePoint, GRAVE_SLOTS, HOMES, LANDMARKS, PLAZA, WORLD_H, WORLD_W, type Point } from '../src/render/layout.ts';
-import { CLIFFS, cliffTop, faceCells, onFace } from '../src/render/relief.ts';
+import { CLIFFS, cliffTop, faceCells, inCliff, onFace } from '../src/render/relief.ts';
 
 function reliefNav(): NavGrid {
   const nav = new NavGrid(WORLD_W, WORLD_H);
@@ -24,12 +24,16 @@ describe('relevo da vila', () => {
     // Da praça ao cemitério e da estrada de cima até a estalagem, atravessando a rocha.
     expect(nav.clear({ x: 300, y: 420 }, { x: 300, y: 250 })).toBe(false);
     expect(nav.clear({ x: 400, y: 580 }, { x: 400, y: 760 })).toBe(false);
+    // Do portão ao cemitério, no alto: a parede lateral do platô fecha a passagem.
+    expect(nav.clear({ x: 700, y: 150 }, { x: 300, y: 150 })).toBe(false);
+    expect(nav.clear({ x: 600, y: 268 }, { x: 300, y: 240 })).toBe(false);
   });
 
   it('todo lugar da vila continua alcançável pelas escadarias', () => {
     const targets: [string, Point][] = [
       ['berrante', { x: LANDMARKS.berrante.x, y: LANDMARKS.berrante.y + 8 }],
       ['portao', LANDMARKS.portao],
+      ['cemiterio', LANDMARKS.cemiterio],
       ['termas', LANDMARKS.termas],
       ['abismo', LANDMARKS.abismo],
       ['fogueira', { x: LANDMARKS.fogueira.x, y: LANDMARKS.fogueira.y + 30 }],
@@ -58,14 +62,36 @@ describe('relevo da vila', () => {
     expect(crossed).toBe(true);
   });
 
-  it('a borda é contínua: a parede tem a mesma altura em toda a largura', () => {
-    for (const c of CLIFFS) {
-      let last = cliffTop(c, 0);
-      for (let x = 4; x < WORLD_W; x += 4) {
+  it('a borda dos paredões compridos é contínua (sem degrau de um ponto para o outro)', () => {
+    for (const c of CLIFFS.filter((cl) => cl.id !== 'cemiterio')) {
+      let last = NaN;
+      for (let x = 0; x < WORLD_W; x += 4) {
+        if (!inCliff(c, x)) continue;
         const y = cliffTop(c, x);
+        if (Number.isNaN(last)) last = y;
         expect(Math.abs(y - last), `${c.id} em x=${x}`).toBeLessThan(8);
         last = y;
       }
     }
+  });
+
+  it('a encosta íngreme da meseta do cemitério não deixa fresta: só se entra pela escadaria', () => {
+    // De vários pontos do alto, ao lado do portão, em linha reta até o meio do cemitério.
+    const inside = { x: 240, y: 120 };
+    for (let y = 8; y <= 290; y += 6) {
+      for (const x of [660, 700, 740]) expect(nav.clear({ x, y }, inside), `de ${x},${y}`).toBe(false);
+    }
+    // E a rota do portão até o cemitério desce, atravessa o templo e sobe pela escadaria.
+    const path = nav.findPath(LANDMARKS.portao, LANDMARKS.cemiterio)!;
+    expect(path[path.length - 1]).toEqual(LANDMARKS.cemiterio);
+    // Onde a rota cruza a altura da parede (y = 330), ela está na escadaria (x 150–208).
+    let prev: Point = LANDMARKS.portao;
+    const crossings: number[] = [];
+    for (const p of path) {
+      if ((prev.y - 330) * (p.y - 330) < 0) crossings.push(prev.x + ((330 - prev.y) / (p.y - prev.y)) * (p.x - prev.x));
+      prev = p;
+    }
+    expect(crossings.length).toBeGreaterThan(0);
+    for (const x of crossings) expect(x >= 150 && x <= 208 || x >= 762 && x <= 838, `cruzou em x=${x}`).toBe(true);
   });
 });

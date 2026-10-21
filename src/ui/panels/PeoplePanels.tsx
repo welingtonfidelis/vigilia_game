@@ -278,6 +278,9 @@ export function MenuPanel() {
       <label class="check">
         <input type="checkbox" checked={prefs.pauseOnDeath} onChange={(e) => ui.setPrefs({ pauseOnDeath: (e.target as HTMLInputElement).checked })} /> Pausar quando um herói morrer
       </label>
+      <label class="check">
+        <input type="checkbox" checked={prefs.runInBackground} onChange={(e) => ui.setPrefs({ runInBackground: (e.target as HTMLInputElement).checked })} /> Continuar o jogo com a aba em segundo plano
+      </label>
 
       <h3>Novo jogo</h3>
       {confirmNew ? (

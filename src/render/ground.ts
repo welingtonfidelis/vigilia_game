@@ -19,7 +19,6 @@ export const FORESTS: TileRect[] = [
   { tx: 44, ty: 29, tw: 4, th: 3 },
 ];
 export const AUTUMN: TileRect[] = [
-  { tx: 2, ty: 7, tw: 3, th: 3 },
   { tx: 36, ty: 7, tw: 3, th: 2 },
   { tx: 15, ty: 29, tw: 3, th: 3 },
 ];

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { autoMayor, byWhom, checksum, commands, createWorld, runDays, runTicks, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { ActivityKind } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
-import { MAX_FRAME_MS, MAX_STEPS_PER_FRAME, Session, type SessionEvent } from '../src/game/session.ts';
+import { MAX_CATCH_UP_MS, MAX_FRAME_MS, MAX_STEPS_PER_FRAME, Session, type SessionEvent } from '../src/game/session.ts';
 import { clearSave, loadPrefs, loadWorld, readSaveMeta, saveWorld, type KeyValueStore } from '../src/game/storage.ts';
 import { heroDestination, LANDMARKS, door, workSpot } from '../src/render/layout.ts';
 import { activityText, midSentence, phaseText } from '../src/ui/format.ts';
@@ -57,6 +57,15 @@ describe('sessão: acumulador de tick fixo', () => {
     session.setSpeed(4);
     const ticks = session.update(60_000);
     expect(ticks).toBeLessThanOrEqual(Math.min(MAX_STEPS_PER_FRAME, (MAX_FRAME_MS / 1000) * TICKS_PER_SECOND * 4));
+  });
+
+  it('aba em segundo plano: recupera o tempo real que passou, com teto e respeitando a pausa', () => {
+    const session = new Session(createWorld(1));
+    session.setSpeed(2);
+    expect(session.catchUp(3000)).toBe(3 * TICKS_PER_SECOND * 2);
+    expect(session.catchUp(MAX_CATCH_UP_MS * 3)).toBe((MAX_CATCH_UP_MS / 1000) * TICKS_PER_SECOND * 2);
+    session.togglePause();
+    expect(session.catchUp(5000)).toBe(0);
   });
 
   it('jogar pela sessão dá o mesmo mundo que rodar o núcleo direto', () => {

@@ -2493,6 +2493,19 @@ export const PACK_ASSETS: PackAsset[] = [
     ]
   },
   {
+    "id": "ui/icon/amulet",
+    "type": "ui-icon",
+    "file": "export/ui/ui-icon-amulet.png",
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "size": [
+      24,
+      24
+    ]
+  },
+  {
     "id": "ui/portrait/hero/guardiao/m",
     "type": "portrait",
     "file": "export/ui/ui-portrait-hero-guardiao-m.png",
@@ -14388,6 +14401,32 @@ export const PACK_ASSETS: PackAsset[] = [
       14,
       18
     ]
+  },
+  {
+    "id": "prop/gate/open",
+    "type": "prop",
+    "file": "export/png/prop-gate-open.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      80,
+      96
+    ]
+  },
+  {
+    "id": "prop/horn-stand",
+    "type": "prop",
+    "file": "export/png/prop-horn-stand.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      72,
+      94
+    ]
   }
 ];
 
@@ -14680,3 +14719,5 @@ export const mayorPortraitUrl = (female = false, small = false): string =>
 export const weaponIconUrl = (classId: string): string => `${PACK_BASE}export/ui/ui-icon-weapon-${classId}.png`;
 
 export const armorIconUrl = (): string => `${PACK_BASE}export/ui/ui-icon-armor.png`;
+
+export const amuletIconUrl = (): string => `${PACK_BASE}export/ui/ui-icon-amulet.png`;

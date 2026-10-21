@@ -13,7 +13,7 @@ import { ART_SCALE } from './assets.ts';
 import { AUTUMN, dirtMask, pathMask } from './ground.ts';
 import { COLS, LANDMARKS, ROWS, THERMAL_TILES, TILE } from './layout.ts';
 import { PACK_TILES } from './pack.ts';
-import { CLIFFS, cliffTop, stairAt } from './relief.ts';
+import { CLIFFS, cliffTop, inCliff, stairAt } from './relief.ts';
 import { DEPTH, seeded } from './town.ts';
 
 /** Lado do tile na arte. */
@@ -294,7 +294,16 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
     }
   }
 
-  // 6. Paredões de rocha e escadarias.
+  // 6. Paredões de rocha e escadarias. O platô do cemitério, o mais alto, pega um pouco
+  // mais de luz.
+  const terrace = CLIFFS.find((cl) => cl.id === 'cemiterio');
+  if (terrace) {
+    for (let x = 0; x < W; x++) {
+      if (!inCliff(terrace, x * ART_SCALE + 1)) continue;
+      const top = Math.round(cliffTop(terrace, x * ART_SCALE + 1) / ART_SCALE);
+      for (let y = 0; y < top; y++) c.shade(x, y, 1.06);
+    }
+  }
   for (const cliff of CLIFFS) paintCliff(c, cliff);
 
   // 7. Tufinhos e flores soltos no gramado (fora da rocha e da terra).
@@ -389,9 +398,10 @@ function rockAt(x: number, r: number, seed: number): { id: number; edge: number;
  */
 function paintCliff(c: Canvas, cliff: (typeof CLIFFS)[number]): void {
   const h = Math.round(cliff.height / ART_SCALE);
-  const seed = cliff.id === 'norte' ? 51 : 53;
+  const seed = cliff.id === 'norte' ? 51 : cliff.id === 'praca' ? 53 : 57;
   for (let x = 0; x < W; x++) {
     const wx = x * ART_SCALE + 1;
+    if (!inCliff(cliff, wx)) continue;
     const top = Math.round(cliffTop(cliff, wx) / ART_SCALE);
     const stair = stairAt(cliff, wx);
     // Sombra no chão ao pé da parede.

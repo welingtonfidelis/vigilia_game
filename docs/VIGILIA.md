@@ -70,7 +70,7 @@ src/render/ Phaser: só lê o World a cada quadro
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
   town.ts, ground.ts  vila no tileset do pack Vigília 1.9 (marcos, casas, árvores, enfeites de transição, copas da frente e neblina); ground.ts diz onde há terra e trilha
   terrain.ts     chão pintado pixel a pixel numa textura única: terra e trilha com borda orgânica, tufos e pedrinhas, marcas de carroça, cinza da fogueira, rebaixo da fonte, paredões de rocha e escadarias
-  relief.ts      relevo em três níveis (alto: cemitério e berrante; meio: templo, taverna, guilda, praça e caverna; baixo: estalagem, casa de cura, campo, ferreiro, fonte): borda e altura dos paredões, escadarias e as células que eles bloqueiam (puro, testado)
+  relief.ts      relevo em degraus (platô do cemitério; alto: portão e berrante; meio: templo, taverna, guilda, praça e caverna; baixo: estalagem, casa de cura, campo, ferreiro, fonte): borda e altura dos paredões (a encosta da meseta é vedada coluna a coluna), escadarias e as células que eles bloqueiam (puro, testado)
   buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
   sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
@@ -1265,8 +1265,9 @@ Upgrade só de render, guiado pela arte de referência (vila noturna em degraus)
 - **Fase 2, luz:** mapa de luz multiplicado (noite fria) com fontes de luz reutilizáveis: janelas achadas sozinhas na arte de cada prédio, fogueira, lampiões, forja no ritmo do martelo, fonte ciano, caverna roxa (cresce com a corrupção), cristais, berrante e a lanterna do prefeito. Vinheta e correção de cor da câmera mais fortes à noite.
 - **Fase 3, terreno e relevo:**
   - Terra e trilha com borda orgânica (sem blocos de tile), tufos de grama, pedrinhas, marcas de carroça na estalagem e cinza na fogueira.
-  - Três níveis ligados por paredões de rocha e escadarias de pedra:
-    - alto: cemitério e berrante;
+  - Níveis ligados por paredões de rocha e escadarias de pedra:
+    - platô do cemitério, o mais alto: uma meseta no canto de cima à esquerda, com faixa de grama em volta da cerca. A borda faz curva e desce na diagonal, então a lateral de rocha aparece do lado do portão; embaixo do cemitério são dois degraus de paredão até o templo, e há pinheiros no pé da encosta. Quem entra pelo portão não dá de cara com as covas, e a escadaria do cemitério desce direto para o templo;
+    - alto: portão e, ao lado dele, a torrinha do berrante (arte nova, com o mesmo chifre do portão antigo);
     - meio: templo, taverna, guilda, praça e a caverna encravada na rocha;
     - baixo: estalagem, casa de cura, campo, ferreiro e fonte.
   - Os paredões bloqueiam a navegação, e a passagem é só pelas escadas. O teste `relief.test.ts` garante que toda porta, cova, a fonte, a caverna e o portão continuam alcançáveis.

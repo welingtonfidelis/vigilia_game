@@ -13,6 +13,7 @@ import {
   COLS,
   EXPANSION_TILES,
   HOME_LOTS,
+  HORN_STAND,
   HORN_TOWER,
   LANDMARKS,
   LOT_TILES,
@@ -124,13 +125,10 @@ export const DECOR: Decor[] = [
   { id: 'prop/logs', x: 1176, y: 478, opts: BASE },
   { id: 'prop/logs', x: 1232, y: 846, opts: BASE },
   { id: 'prop/logs', x: 112, y: 474, opts: BASE },
-  // Cemitério: lápides velhas fora da cerca e cerca torta ao lado.
-  { id: 'prop/grave-broken', x: 94, y: 424, opts: LOW },
-  { id: 'prop/grave-leaning', x: 126, y: 404, opts: LOW },
-  { id: 'prop/grave-leaning', x: 418, y: 146, opts: LOW, flip: true },
-  { id: 'prop/grave-broken', x: 446, y: 214, opts: LOW },
-  { id: 'prop/fence-crooked', x: 432, y: 268, opts: LOW },
-  { id: 'prop/fence-crooked', x: 446, y: 104, opts: LOW, flip: true },
+  // Pé do platô do cemitério, ao lado do templo: lápides velhas e cerca torta.
+  { id: 'prop/grave-broken', x: 96, y: 452, opts: LOW },
+  { id: 'prop/grave-leaning', x: 136, y: 446, opts: LOW },
+  { id: 'prop/fence-crooked', x: 50, y: 458, opts: LOW, flip: true },
   // Caverna: pedras com cristal roxo e espinheiro em volta da boca.
   { id: 'prop/bramble-corrupt', x: 1328, y: 484, opts: LOW },
   { id: 'prop/crystal-corrupt-02', x: 1298, y: 500, opts: BASE },
@@ -158,6 +156,19 @@ export function buildDecor(scene: Phaser.Scene, solids: Solid[]): void {
     solids.push({ key: d.id, x: d.x, y: d.y, opts: d.opts ?? BASE });
   }
 }
+
+/**
+ * Fileira de pinheiros no alto, entre o platô do cemitério e o portão: quem entra na
+ * vila não dá de cara com as covas.
+ */
+const CEMETERY_HEDGE: Point[] = [
+  { x: 616, y: 58 },
+  { x: 604, y: 126 },
+  { x: 650, y: 104 },
+  { x: 588, y: 188 },
+  { x: 560, y: 240 },
+  { x: 522, y: 284 },
+];
 
 /** Copas em primeiro plano: acima da fumaça e da neblina, abaixo do mapa de luz. */
 export const FOREGROUND_DEPTH = 9600;
@@ -213,6 +224,7 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
     EXPANSION_TILES,
     ...HOME_LOTS,
     ...DECOR.map((d) => ({ tx: Math.floor(d.x / TILE) - 1, ty: Math.floor(d.y / TILE) - 1, tw: 3, th: 2 })),
+    { tx: 0, ty: 0, tw: 21, th: 10 }, // platô do cemitério e a fileira de pinheiros
   ];
   const nearDirt = (x: number, y: number): boolean =>
     [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => mask[y + dy]?.[x + dx] === true));
@@ -225,11 +237,13 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
       THERMAL_YARD,
       PLAZA_TILES,
       CEMETERY_TILES,
-      { tx: 21, ty: 0, tw: 7, th: 8 }, // entrada/berrante no topo central
+      { tx: 21, ty: 0, tw: 12, th: 8 }, // portão e torrinha do berrante no topo central
+      { tx: 16, ty: 0, tw: 5, th: 10 }, // fileira de pinheiros do cemitério
       { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
       { tx: 43, ty: 11, tw: 4, th: 5 }, // boca/terreiro da caverna
     ].some((r) => inRect(r, x, y));
 
+  for (const p of CEMETERY_HEDGE) packTree(scene, solids, 'prop/tree/pine', p.x, p.y);
   // Florestas: manchas de pinheiros sobre a grama.
   for (const f of FORESTS) {
     for (let y = f.ty; y < f.ty + f.th; y += 2) {
@@ -413,8 +427,8 @@ export function buildCemetery(scene: Phaser.Scene, solids: Solid[]): void {
     put(1, x0, y);
     put(1, x1, y);
   }
-  // Acima da cerca de cima: embaixo fica a escadinha do paredão.
-  label(scene, (r.tx + r.tw / 2) * TILE, (r.ty + 1) * TILE - 24, 'Cemitério', 14, '#c8c0b0');
+  // Na faixa de grama embaixo da cerca, à direita do portãozinho (como na referência).
+  label(scene, (r.tx + r.tw / 2) * TILE + 24, y1 + TILE + 4, 'Cemitério', 14, '#c8c0b0');
 }
 
 export interface HornView {
@@ -423,23 +437,31 @@ export interface HornView {
 }
 
 export function buildHornTower(scene: Phaser.Scene, solids: Solid[]): HornView {
+  // Portão: paliçada e portas abertas. Só os pilares ocupam chão (a passagem é vazia na arte).
   const base = (HORN_TOWER.ty + HORN_TOWER.th) * TILE;
   const c = (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE;
-  scene.add.image(c, base, 'prop/gate-horn/open').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
-  // Só os pilares e a guarita: a passagem do meio é transparente na arte.
-  solids.push({ key: 'prop/gate-horn/open', x: c, y: base, opts: { fromBottom: 24, minCover: 0.35 } });
-  const hornY = base - 4.5 * TILE;
+  scene.add.image(c, base, 'prop/gate/open').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+  solids.push({ key: 'prop/gate/open', x: c, y: base, opts: { fromBottom: 24, minCover: 0.35 } });
+  // Torrinha do berrante ao lado: o chifre fica no alto, sobre a plataforma.
+  const standBase = (HORN_STAND.ty + HORN_STAND.th) * TILE;
+  const sx = (HORN_STAND.tx + HORN_STAND.tw / 2) * TILE;
+  scene.add.image(sx, standBase, 'prop/horn-stand').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(standBase);
+  solids.push({ key: 'prop/horn-stand', x: sx, y: standBase, opts: { fromBottom: 6, minCover: 0.3 } });
+  // Arte de 72×94 com a base no pé: o meio do chifre fica na linha 12, a boca no x 68.
+  const hornTop = standBase - 94 * ART_SCALE;
+  const hornY = hornTop + 12 * ART_SCALE;
   const ready = scene.add
-    .image(c, hornY, 'glow')
+    .image(sx, hornY, 'glow')
     .setTint(0xffc46b)
     .setScale(1.8)
     .setBlendMode(Phaser.BlendModes.ADD)
     .setDepth(DEPTH.lights);
   scene.tweens.add({ targets: ready, alpha: { from: 0.15, to: 0.6 }, yoyo: true, repeat: -1, duration: 900 });
-  label(scene, c, base + 10, 'Berrante', 13);
+  label(scene, sx, standBase + 10, 'Berrante', 13);
+  const mouth = { x: sx - 36 * ART_SCALE + 68 * ART_SCALE, y: hornTop + 10 * ART_SCALE };
   const blast = () => {
     for (let i = 0; i < 3; i++) {
-      const ring = scene.add.circle(c - 6, hornY, 10).setStrokeStyle(4, 0xffc46b, 0.9).setDepth(DEPTH.floating);
+      const ring = scene.add.circle(mouth.x, mouth.y, 10).setStrokeStyle(4, 0xffc46b, 0.9).setDepth(DEPTH.floating);
       scene.tweens.add({ targets: ring, radius: 220, alpha: 0, duration: 1600, delay: i * 350, onComplete: () => ring.destroy() });
     }
   };

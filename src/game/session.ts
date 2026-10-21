@@ -11,6 +11,8 @@ export type Speed = (typeof SPEEDS)[number];
 export const MAX_FRAME_MS = 250;
 /** Teto de ticks por quadro: 4× a 60 fps dá menos de 1; isto só protege quadros lentos. */
 export const MAX_STEPS_PER_FRAME = 40;
+/** Teto do que a aba em segundo plano recupera de uma vez (5 minutos reais). */
+export const MAX_CATCH_UP_MS = 5 * 60 * 1000;
 
 /** Resumo de uma expedição que acabou (o grupo some do World quando volta). */
 export interface ExpeditionSummary {
@@ -76,6 +78,19 @@ export class Session {
     this.acc -= steps;
     if (this.acc > 1) this.acc = 1;
     if (steps > 0) this.advance(steps);
+    return steps;
+  }
+
+  /**
+   * Roda o tempo real que passou, em pedaços de um quadro (o relógio da aba em segundo
+   * plano acorda de segundo em segundo, ou bem menos quando o navegador economiza).
+   * No máximo MAX_CATCH_UP_MS por chamada, para a volta não congelar a página.
+   */
+  catchUp(deltaMs: number): number {
+    let steps = 0;
+    for (let left = Math.min(Math.max(0, deltaMs), MAX_CATCH_UP_MS); left > 0; left -= MAX_FRAME_MS) {
+      steps += this.update(Math.min(left, MAX_FRAME_MS));
+    }
     return steps;
   }
 

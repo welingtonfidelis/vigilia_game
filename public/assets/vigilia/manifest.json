@@ -3513,6 +3513,24 @@
       "status": "review"
     },
     {
+      "id": "ui/icon/amulet",
+      "type": "ui-icon",
+      "file": "export/ui/ui-icon-amulet.png",
+      "size": [
+        24,
+        24
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "priority": "P1",
+      "current": "SVG/gerado",
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Amuleto: corrente de ouro e pingente com a pedra roxa do abismo (24×24, contorno ol)."
+    },
+    {
       "id": "ui/portrait/hero/guardiao/m",
       "type": "portrait",
       "file": "export/ui/ui-portrait-hero-guardiao-m.png",
@@ -16930,6 +16948,38 @@
       "license": "CC0-1.0",
       "status": "draft",
       "notes": "Taboas da beira da água."
+    },
+    {
+      "id": "prop/gate/open",
+      "type": "prop",
+      "file": "export/png/prop-gate-open.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "notes": "Portão da vila (paliçada, viga e portas abertas), sem o berrante: ele foi para a torrinha ao lado.",
+      "size": [
+        80,
+        96
+      ],
+      "license": "CC0-1.0",
+      "status": "draft"
+    },
+    {
+      "id": "prop/horn-stand",
+      "type": "prop",
+      "file": "export/png/prop-horn-stand.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "notes": "Torrinha do berrante: o mesmo chifre do portão antigo sobre duas pernas com escoras em X, escada e pés de pedra.",
+      "size": [
+        72,
+        94
+      ],
+      "license": "CC0-1.0",
+      "status": "draft"
     }
   ],
   "planned": {

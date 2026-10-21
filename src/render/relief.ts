@@ -1,6 +1,10 @@
 // Relevo da vila (Fase 3 do visual 2.5D), no desenho da arte de referência: três níveis
 // separados por paredões de rocha e ligados por escadarias de pedra.
-//  · alto: cemitério, portão do berrante e a mata do norte;
+//  · platô do cemitério: o degrau mais alto, uma meseta no canto de cima à esquerda.
+//    A borda dela faz curva e desce na diagonal até o alto da mata, então o paredão
+//    aparece também do lado do portão; embaixo dele, o paredão do norte continua (dois
+//    degraus de rocha até o templo);
+//  · alto: portão, berrante e a mata do norte;
 //  · meio: templo, taverna e guilda no pé do primeiro paredão, a estrada de cima, a praça
 //    e a boca da caverna, encravada na rocha;
 //  · baixo: estalagem, casa de cura, campo, ferreiro, fonte termal e as casinhas.
@@ -16,22 +20,50 @@ export interface Stair {
 }
 
 export interface Cliff {
-  id: 'norte' | 'praca';
+  id: 'cemiterio' | 'norte' | 'praca';
   /** Borda de cima (onde o nível de cima acaba), em px do mundo, da esquerda para a direita. */
   edge: Point[];
   /** Altura da parede de rocha, em px do mundo. */
   height: number;
   stairs: Stair[];
+  /** Faixa em x onde o paredão existe (sem isto, o mapa todo). */
+  from?: number;
+  to?: number;
 }
 
 export const CLIFFS: Cliff[] = [
   {
+    // Platô do cemitério: meseta acima do alto. No lado do portão a borda faz curva e
+    // sobe na diagonal até o topo do mapa, com a parede à mostra embaixo dela.
+    id: 'cemiterio',
+    edge: [
+      { x: -40, y: 262 },
+      { x: 200, y: 260 },
+      { x: 300, y: 262 },
+      { x: 380, y: 240 },
+      { x: 440, y: 205 },
+      { x: 500, y: 150 },
+      { x: 545, y: 80 },
+      { x: 570, y: 10 },
+      { x: 590, y: -60 },
+      // Passa do topo do mapa: a parede fecha até a primeira linha da grade.
+      { x: 620, y: -130 },
+    ],
+    height: 84,
+    stairs: [{ x: 150, w: 58 }], // portãozinho do cemitério
+    to: 620,
+  },
+  {
     // Atrás do templo, da taverna e da guilda; à direita desce e a caverna fica no pé dele.
+    // Embaixo do cemitério a borda acompanha o pé do platô: dois degraus de rocha.
     id: 'norte',
     edge: [
-      { x: -40, y: 300 },
-      { x: 180, y: 296 },
-      { x: 420, y: 302 },
+      { x: -40, y: 346 },
+      { x: 300, y: 346 },
+      { x: 360, y: 336 },
+      { x: 420, y: 318 },
+      { x: 480, y: 302 },
+      { x: 560, y: 298 },
       { x: 640, y: 297 },
       { x: 780, y: 300 },
       { x: 840, y: 300 },
@@ -45,7 +77,7 @@ export const CLIFFS: Cliff[] = [
     ],
     height: 80,
     stairs: [
-      { x: 150, w: 58 }, // portãozinho do cemitério
+      { x: 150, w: 58 }, // segue a escadaria do cemitério
       { x: 762, w: 76 }, // estrada do berrante
     ],
   },
@@ -76,9 +108,12 @@ export const CLIFFS: Cliff[] = [
   },
 ];
 
+/** O paredão existe neste x. */
+export const inCliff = (cliff: Cliff, x: number): boolean => x >= (cliff.from ?? -Infinity) && x < (cliff.to ?? Infinity);
+
 /** Trilhas de terra que ligam o pé e o topo das escadarias laterais às estradas. */
 export const STAIR_PATHS: TileRect[] = [
-  { tx: 5, ty: 11, tw: 2, th: 6 }, // cemitério → estrada de cima
+  { tx: 5, ty: 12, tw: 2, th: 5 }, // cemitério → estrada de cima
   { tx: 5, ty: 20, tw: 2, th: 7 }, // escada oeste → estrada de baixo
   { tx: 5, ty: 26, tw: 4, th: 2 },
   { tx: 46, ty: 19, tw: 2, th: 8 }, // escada leste → estrada de baixo
@@ -124,7 +159,7 @@ export function cliffTop(cliff: Cliff, x: number): number {
       break;
     }
   }
-  const seed = cliff.id === 'norte' ? 11 : 23;
+  const seed = cliff.id === 'norte' ? 11 : cliff.id === 'praca' ? 23 : 37;
   let wobble = (noise1(x / 26, seed) - 0.5) * 7 + (noise1(x / 9, seed + 1) - 0.5) * 3;
   // Perto da escada o tremido some aos poucos (14 px de cada lado).
   let near = Infinity;
@@ -136,7 +171,7 @@ export function cliffTop(cliff: Cliff, x: number): number {
 /** Ponto na parede de rocha de algum paredão (fora das escadas). */
 export function onFace(x: number, y: number, pad = 0): boolean {
   return CLIFFS.some((c) => {
-    if (stairAt(c, x)) return false;
+    if (!inCliff(c, x) || stairAt(c, x)) return false;
     const top = cliffTop(c, x);
     return y >= top - pad && y < top + c.height + pad;
   });
@@ -145,20 +180,37 @@ export function onFace(x: number, y: number, pad = 0): boolean {
 /**
  * Células da grade de navegação que a parede ocupa: a célula bloqueia quando o centro
  * dela cai na rocha (com uma folga de 4 px em cima e embaixo, para ninguém ficar de pé
- * na quina). As colunas das escadas ficam livres.
+ * na quina). As colunas das escadas ficam livres. Na encosta íngreme do platô, a faixa
+ * de uma coluna pode ficar toda acima ou abaixo da vizinha; aí a mais baixa sobe até
+ * encostar (na diagonal já basta: a rota não corta quina), senão sobraria fresta.
  */
 export function faceCells(cols: number, rows: number, cell: number): number[] {
   const out: number[] = [];
   for (const c of CLIFFS) {
+    const bands: ([number, number] | null)[] = [];
     for (let cx = 0; cx < cols; cx++) {
       const x = (cx + 0.5) * cell;
-      if (stairAt(c, x, -4)) continue;
-      const top = cliffTop(c, x);
-      for (let cy = 0; cy < rows; cy++) {
-        const y = (cy + 0.5) * cell;
-        if (y >= top + 4 && y <= top + c.height - 4) out.push(cy * cols + cx);
+      if (!inCliff(c, x) || stairAt(c, x, -4)) {
+        bands.push(null);
+        continue;
       }
+      const top = cliffTop(c, x);
+      // Linhas (sem limitar ao mapa ainda) cujo centro cai entre top + 4 e top + altura − 4.
+      const first = Math.ceil((top + 4) / cell - 0.5);
+      const last = Math.floor((top + c.height - 4) / cell - 0.5);
+      bands.push(last >= first ? [first, last] : null);
     }
+    for (let cx = 0; cx + 1 < cols; cx++) {
+      const a = bands[cx];
+      const b = bands[cx + 1];
+      if (!a || !b) continue;
+      if (b[0] > a[1] + 1) b[0] = a[1] + 1;
+      else if (a[0] > b[1] + 1) a[0] = b[1] + 1;
+    }
+    bands.forEach((band, cx) => {
+      if (!band) return;
+      for (let cy = Math.max(0, band[0]); cy <= Math.min(rows - 1, band[1]); cy++) out.push(cy * cols + cx);
+    });
   }
   return out;
 }

@@ -102,7 +102,30 @@ ui.subscribe(() => {
 const saveNow = () => {
   if (ui.prefs.autosave) saveWorld(store, session.world);
 };
-document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && saveNow());
+// Aba em segundo plano: o Phaser para o laço e, com ele, o tempo do jogo (o padrão).
+// Com a preferência ligada, um relógio de 1 s segue rodando o núcleo pelo tempo real
+// que passou; o navegador pode espaçar esse relógio, e a volta recupera o atraso.
+let background: number | null = null;
+let backgroundAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    saveNow();
+    if (ui.prefs.runInBackground && background === null) {
+      backgroundAt = performance.now();
+      background = window.setInterval(() => {
+        const now = performance.now();
+        session.catchUp(now - backgroundAt);
+        backgroundAt = now;
+      }, 1000);
+    }
+    return;
+  }
+  if (background !== null) {
+    window.clearInterval(background);
+    background = null;
+    session.catchUp(performance.now() - backgroundAt);
+  }
+});
 window.addEventListener('pagehide', saveNow);
 
 // ── Atalhos ────────────────────────────────────────────────────────────────

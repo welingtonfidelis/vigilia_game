@@ -27,6 +27,7 @@ import {
   door,
   gravePoint,
   standingGraves,
+  HORN_STAND,
   HORN_TOWER,
   heroDestination,
   isNightOwl,
@@ -687,9 +688,9 @@ export class VillageScene extends Phaser.Scene {
     this.interactables = [
       {
         id: 'berrante',
-        point: { x: berrante.x, y: berrante.y + 8 },
-        // Metade de cima da guarita (o berrante fica acima da viga); a passagem é o portão.
-        hit: { x: HORN_TOWER.tx * TILE, y: HORN_TOWER.ty * TILE, w: HORN_TOWER.tw * TILE, h: 3 * TILE },
+        point: berrante,
+        // A torrinha inteira (arte de 72×94 com o pé no meio), ao lado do portão.
+        hit: { x: berrante.x - 72, y: (HORN_STAND.ty + HORN_STAND.th) * TILE - 188, w: 144, h: 188 },
         label: () => 'Tocar o berrante',
         open: open({ kind: 'horn' }),
       },
@@ -727,7 +728,7 @@ export class VillageScene extends Phaser.Scene {
       },
       {
         id: 'cemiterio',
-        point: { x: cemiterio.x, y: cemiterio.y + 40 },
+        point: cemiterio,
         hit: { x: cem.tx * TILE, y: cem.ty * TILE, w: cem.tw * TILE, h: (cem.th + 1) * TILE },
         label: () => 'Cemitério',
         open: open({ kind: 'memorial' }),

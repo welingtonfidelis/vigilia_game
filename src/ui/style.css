@@ -2565,13 +2565,6 @@ kbd {
   background: rgba(0, 0, 0, 0.18);
 }
 .item-icon .ui-icon { width: 2.8rem; height: 2.8rem; image-rendering: pixelated; }
-.amulet-icon {
-  display: grid;
-  place-items: center;
-  color: var(--gold);
-  font-size: 1.6rem;
-  line-height: 1;
-}
 .item-text {
   display: flex;
   flex: 1;

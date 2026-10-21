@@ -3,17 +3,13 @@
 
 import { AFFIXES, itemName, RARITY_NAMES } from '../sim/index.ts';
 import type { ClassId, Item, ItemSlot, World } from '../sim/index.ts';
-import { ArmorIcon, WeaponIcon } from './PixelSprite.tsx';
+import { AmuletIcon, ArmorIcon, WeaponIcon } from './PixelSprite.tsx';
 
 export function SlotIcon(props: { slot: ItemSlot; classId: ClassId | null; size?: number }) {
   const size = props.size ?? 44;
   if (props.slot === 'weapon' && props.classId) return <WeaponIcon classId={props.classId} scale={size / 24} />;
   if (props.slot === 'armor') return <ArmorIcon size={size} />;
-  return (
-    <span class="amulet-icon" style={{ width: `${size}px`, height: `${size}px` }} aria-hidden="true">
-      ◈
-    </span>
-  );
+  return <AmuletIcon size={size} />;
 }
 
 /** "Rara · tier 8", "Lendária · amuleto". */

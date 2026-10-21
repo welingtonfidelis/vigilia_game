@@ -2,7 +2,7 @@
 
 import type { ClassId, Hero } from '../sim/index.ts';
 import { animFrames, DUNGEON_URL, frameRect, SHEET_0X72_SIZE } from '../render/assets.ts';
-import { armorIconUrl, heroPortraitHd, heroPortraitUrl, packAsset, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
+import { amuletIconUrl, armorIconUrl, heroPortraitHd, heroPortraitUrl, packAsset, PACK_BASE, weaponIconUrl } from '../render/pack.ts';
 import type { PackAsset } from '../render/pack.ts';
 
 /** Qual visual desenha cada monstro: mora em render/assets.ts (o corredor em canvas também usa). */
@@ -18,6 +18,12 @@ export function WeaponIcon(props: { classId: ClassId; scale?: number }) {
 export function ArmorIcon(props: { size?: number }) {
   const size = props.size ?? 52;
   return <img class="ui-icon" src={armorIconUrl()} width={size} height={size} alt="" aria-hidden="true" />;
+}
+
+/** Amuleto, no ícone 24×24 do pack (corrente e pingente com a pedra do abismo). */
+export function AmuletIcon(props: { size?: number }) {
+  const size = props.size ?? 52;
+  return <img class="ui-icon" src={amuletIconUrl()} width={size} height={size} alt="" aria-hidden="true" />;
 }
 
 /** `crop` tira pixels vazios do topo do quadro (os heróis do 0x72 têm folga em cima). */

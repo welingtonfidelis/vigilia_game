@@ -120,8 +120,8 @@ export const ROADS: TileRect[] = [
 ];
 
 /** Cemitério cercado (em tiles) e a grade das covas lá dentro. */
-export const CEMETERY_TILES: TileRect = { tx: 1, ty: 2, tw: 12, th: 6 };
-export const CEMETERY = { x: 3 * TILE, y: 3.5 * TILE, cols: 9, dx: 32, dy: 26, rows: 5 };
+export const CEMETERY_TILES: TileRect = { tx: 1, ty: 0, tw: 12, th: 6 };
+export const CEMETERY = { x: 3 * TILE, y: 1.5 * TILE, cols: 9, dx: 32, dy: 26, rows: 5 };
 
 /** Covas que cabem dentro da cerca; quando lota, a nova toma o lugar da mais antiga. */
 export const GRAVE_SLOTS = CEMETERY.cols * CEMETERY.rows;
@@ -137,15 +137,19 @@ export const CAVE_PATH: TileRect = { tx: 43, ty: 15, tw: 2, th: 3 };
 
 export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
 
-/** Guarita de madeira com o berrante: é a entrada da vila, no alto do mapa (norte), ao centro. */
+/** Portão de paliçada: é a entrada da vila, no alto do mapa (norte), ao centro. */
 export const HORN_TOWER: TileRect = { tx: 22, ty: 1, tw: 5, th: 6 };
+/** Torrinha do berrante, ao lado direito do portão. */
+export const HORN_STAND: TileRect = { tx: 28, ty: 1, tw: 4, th: 6 };
 
 export const LANDMARKS: Record<Landmark, Point> = {
-  berrante: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + 1.5) * TILE },
+  // Ao pé da torrinha (é onde o prefeito para para tocar).
+  berrante: { x: (HORN_STAND.tx + HORN_STAND.tw / 2) * TILE, y: (HORN_STAND.ty + HORN_STAND.th) * TILE + 14 },
   quadro: { x: 28.5 * TILE, y: 16 * TILE },
   cofre: { x: 25 * TILE, y: 18.5 * TILE },
   abismo: { x: 45 * TILE, y: 14.5 * TILE },
-  cemiterio: { x: 7 * TILE, y: 9 * TILE },
+  // Logo depois do portãozinho, já dentro da cerca (o cemitério fica num platô acima da vila).
+  cemiterio: { x: 5.5 * TILE, y: 5.4 * TILE },
   portao: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 10 },
   fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
   termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },
