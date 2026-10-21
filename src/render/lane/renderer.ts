@@ -708,6 +708,7 @@ export class LaneRenderer {
     else this.drawRooms(rooms, roman, party.floor, left, right);
     this.drawFloor(corridor ? `corridor/${roman}/floor` : `arena/${roman}/floor`, left, right, 1, cam);
     this.drawRoomContents(rooms, roman, corridor, left, right);
+    this.drawDepthPass(roman, left, right, corridor);
     for (const d of this.decals) {
       if (d.x < left || d.x > right) continue;
       ctx.fillStyle = d.color;
@@ -999,6 +1000,67 @@ export class LaneRenderer {
       const k = w > 32 ? 0.5 : 1;
       this.ctx.drawImage(img, (frames[i] ?? 0) * w, 0, w, h, Math.round(s.x - (w * k) / 2), Math.round(s.y - (h * k) / 2), w * k, h * k);
     }
+  }
+
+  /**
+   * Passe de profundidade 2.5D: luz ambiente por bioma, poças de luz nas tochas
+   * e poeira em poucos pixels. Tudo é desenhado no canvas existente; sem filtros
+   * por sprite, buffers extras ou dependências, e sem tocar no estado da simulação.
+   */
+  private drawDepthPass(roman: string, left: number, right: number, corridor: boolean): void {
+    const { ctx } = this;
+    const ambience: Record<string, string> = {
+      I: 'rgba(88, 65, 42, 0.10)',
+      II: 'rgba(28, 78, 94, 0.13)',
+      III: 'rgba(70, 42, 102, 0.12)',
+      IV: 'rgba(28, 92, 72, 0.11)',
+      V: 'rgba(126, 54, 24, 0.12)',
+      VI: 'rgba(74, 34, 110, 0.15)',
+    };
+
+    // A parede recebe uma sombra vertical discreta; a faixa do chão ganha peso
+    // perto da câmera, reforçando os planos sem desfocar a pixel art.
+    ctx.fillStyle = ambience[roman] ?? ambience.I!;
+    ctx.fillRect(left, 0, right - left, 112);
+    const wallShade = ctx.createLinearGradient(0, 0, 0, 112);
+    wallShade.addColorStop(0, 'rgba(0, 0, 0, 0.30)');
+    wallShade.addColorStop(0.68, 'rgba(0, 0, 0, 0.04)');
+    wallShade.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = wallShade;
+    ctx.fillRect(left, 0, right - left, 112);
+
+    const floorShade = ctx.createLinearGradient(0, 150, 0, LANE_H);
+    floorShade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    floorShade.addColorStop(1, 'rgba(0, 0, 0, 0.34)');
+    ctx.fillStyle = floorShade;
+    ctx.fillRect(left, 150, right - left, LANE_H - 150);
+
+    // A luz acompanha as tochas já existentes; só processa as salas visíveis.
+    const first = Math.max(-1, Math.floor(left / ROOM_W) - 1);
+    const last = Math.ceil(right / ROOM_W) + 1;
+    for (let i = first; i <= last; i++) {
+      const x0 = roomX(i);
+      if (x0 + ROOM_W < left || x0 > right) continue;
+      for (const tx of [x0 + (corridor ? 34 : 14), x0 + ROOM_W - (corridor ? 34 : 14)]) {
+        const glow = ctx.createRadialGradient(tx, 143, 1, tx, 143, corridor ? 30 : 24);
+        glow.addColorStop(0, roman === 'V' ? 'rgba(255, 148, 58, 0.18)' : 'rgba(255, 190, 104, 0.15)');
+        glow.addColorStop(0.45, 'rgba(255, 155, 72, 0.06)');
+        glow.addColorStop(1, 'rgba(255, 130, 50, 0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(tx - 30, 113, 60, 60);
+      }
+    }
+
+    // Poeira em padrão determinístico: pequenos brilhos pixelados, sem RNG por frame.
+    for (let i = 0; i < 9; i++) {
+      const drift = this.real * (5 + (i % 3) * 2);
+      const x = Math.floor(left + (((i * 73 + drift) % Math.max(1, right - left)) + Math.max(1, right - left)) % Math.max(1, right - left));
+      const y = 34 + ((i * 29 + Math.floor(this.real * (2 + i % 2))) % 102);
+      ctx.globalAlpha = 0.16 + (Math.sin(this.real * 1.8 + i * 2.1) + 1) * 0.10;
+      ctx.fillStyle = roman === 'VI' ? '#c4a0ff' : roman === 'II' ? '#8bdce8' : '#ffdca0';
+      ctx.fillRect(x, y, i % 4 === 0 ? 2 : 1, 1);
+    }
+    ctx.globalAlpha = 1;
   }
 
   private drawEntryShade(cam: number): void {
