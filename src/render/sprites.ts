@@ -8,7 +8,7 @@ import { ART_SCALE, heroSprite } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
 import { softFootShadowTexture } from './fx/shadows.ts';
 import { Route } from './nav.ts';
-import { DEPTH, smooth } from './town.ts';
+import { DEPTH, pill, smooth } from './town.ts';
 import type { Point } from './layout.ts';
 import { RANK_COLORS } from './palette.ts';
 
@@ -17,8 +17,21 @@ const LABEL_STYLE = {
   fontSize: '13px',
   color: '#f4ecd8',
   stroke: '#0b0a08',
-  strokeThickness: 3,
+  strokeThickness: 2,
 };
+
+/**
+ * Respiração de quem está parado: o corpo estica e encolhe uns 3 % na vertical (e um
+ * pouco ao contrário na horizontal), com o pé fixo no chão (origem embaixo).
+ */
+function breathe(body: Phaser.GameObjects.Sprite, scale: number, on: boolean, phase: number): void {
+  if (!on) {
+    if (body.scaleY !== scale) body.setScale(scale);
+    return;
+  }
+  const k = Math.sin(body.scene.time.now / 420 + phase);
+  body.setScale(scale * (1 - 0.012 * k), scale * (1 + 0.032 * k));
+}
 
 /** Altura da cabeça acima dos pés (o quadro do 0x72 tem folga em cima). */
 const HEAD_Y = -44;
@@ -38,6 +51,10 @@ abstract class Walker {
   protected moving = false;
   /** Caminho em volta dos prédios até o destino atual. */
   readonly route = new Route();
+  /** Parado, respira (escala vertical em ciclo); quem já tem respiração na arte não precisa. */
+  protected breathes = false;
+  private readonly scale: number;
+  private readonly breathPhase = Math.random() * Math.PI * 2;
   private playing = '';
   private left = false;
 
@@ -52,6 +69,7 @@ abstract class Walker {
   ) {
     this.base = base;
     this.visual = visual;
+    this.scale = scale;
     const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(scale * 0.5);
     this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(scale) : null;
     this.body = scene.add
@@ -123,7 +141,11 @@ abstract class Walker {
   animate(rate: number): void {
     this.play(this.moving ? 'run' : 'idle');
     this.body.anims.timeScale = Math.min(2, rate > 0 ? rate : 0.6);
-    if (this.weapon) this.weapon.y = this.moving && (this.body.anims.currentFrame?.index ?? 0) % 2 === 0 ? -14 : -12;
+    const step = this.moving && (this.body.anims.currentFrame?.index ?? 0) % 2 === 0;
+    if (this.weapon) this.weapon.y = step ? -14 : -12;
+    // Andando, o corpo sobe 1 px da arte a cada passo (o pulinho da caminhada).
+    this.body.y = step ? 2 - ART_SCALE : 2;
+    breathe(this.body, this.scale, this.breathes && !this.moving, this.breathPhase);
   }
 }
 
@@ -145,6 +167,7 @@ export class HeroSprite extends Walker {
   private readonly ring: Phaser.GameObjects.Image;
   private readonly bandage: Phaser.GameObjects.Image;
   private rank = '';
+  private labelColor = '';
   /** Altura da cabeça deste herói (o estilo novo tem 32 px de quadro, não 28). */
   private readonly headY: number;
   hidden = false;
@@ -166,7 +189,7 @@ export class HeroSprite extends Walker {
     this.icon = scene.add.image(0, this.headY - 10, 'icon-aguardar').setOrigin(0.5, 1).setScale(ART_SCALE).setVisible(false);
     this.bandage = scene.add.image(-5, this.headY + 10, 'bandage').setScale(ART_SCALE).setVisible(false);
     this.root.add([this.bandage, this.icon]);
-    this.label = smooth(scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE)).setOrigin(0.5, 0).setDepth(DEPTH.labels);
+    this.label = pill(smooth(scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE)), 'rgba(14, 12, 10, 0.5)').setOrigin(0.5, 0).setDepth(DEPTH.labels);
     this.badgeDot = scene.add.circle(0, 0, 7, 0xffffff).setStrokeStyle(2, 0x0b0a08);
     this.badgeText = smooth(scene.add.text(0, 0, '', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#0b0a08', fontStyle: 'bold' })).setOrigin(0.5);
     this.badge = scene.add.container(at.x + 13, at.y + this.headY, [this.badgeDot, this.badgeText]).setDepth(DEPTH.labels);
@@ -181,7 +204,12 @@ export class HeroSprite extends Walker {
     }
     const grieving = hero.grief > 30;
     const retired = hero.status === 'retired';
-    this.label.setColor(hero.vengeful ? '#ff9a7a' : grieving ? '#a8c0ff' : retired ? '#c9b48a' : '#f4ecd8');
+    // Só troca quando muda: cada setColor redesenha o texto e manda de novo para a GPU.
+    const color = hero.vengeful ? '#ff9a7a' : grieving ? '#a8c0ff' : retired ? '#c9b48a' : '#f4ecd8';
+    if (color !== this.labelColor) {
+      this.labelColor = color;
+      this.label.setColor(color);
+    }
     this.bandage.setVisible(hero.injury !== null);
     this.weapon?.setVisible(!retired);
   }
@@ -234,7 +262,8 @@ export class ChildSprite extends Walker {
     });
     this.id = child.id;
     this.parents = child.parents;
-    this.label = smooth(scene.add.text(at.x, at.y + 3, child.name, { ...LABEL_STYLE, fontSize: '11px', color: '#d8d0c0' }))
+    this.breathes = true;
+    this.label = pill(smooth(scene.add.text(at.x, at.y + 3, child.name, { ...LABEL_STYLE, fontSize: '11px', color: '#d8d0c0' })), 'rgba(14, 12, 10, 0.5)')
       .setOrigin(0.5, 0)
       .setDepth(DEPTH.labels);
   }
@@ -269,7 +298,7 @@ export class Mayor extends Walker {
       idle: 'char/mayor:idle',
       run: 'char/mayor:run',
     });
-    this.label = smooth(scene.add.text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' }))
+    this.label = pill(smooth(scene.add.text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' })))
       .setOrigin(0.5, 0)
       .setDepth(DEPTH.labels);
   }
@@ -289,6 +318,7 @@ export class CitizenSprite {
   private moving = false;
   private left = false;
   private frameTime = 0;
+  private readonly breathPhase = Math.random() * Math.PI * 2;
   /** Caminho em volta dos prédios até o destino atual. */
   readonly route = new Route();
   hidden = false;
@@ -338,12 +368,17 @@ export class CitizenSprite {
     if (!this.moving || rate <= 0) {
       this.frameTime = 0;
       if (this.body.frame.name !== '0') this.body.setTexture(this.texture, 0);
+      this.body.y = 2;
+      breathe(this.body, ART_SCALE, true, this.breathPhase);
       return;
     }
+    breathe(this.body, ART_SCALE, false, this.breathPhase);
     this.frameTime += dt * rate;
     const walk = packAsset(this.texture)?.animations?.walk ?? { frames: [0, 1], fps: 6 };
     const frame = walk.frames[Math.floor(this.frameTime * walk.fps) % walk.frames.length] ?? 0;
     if (this.body.frame.name !== String(frame)) this.body.setTexture(this.texture, frame);
+    // Quadro 0 no meio da passada (pés juntos): o corpo sobe 1 px da arte.
+    this.body.y = frame === 0 ? 2 - ART_SCALE : 2;
   }
 
   setHidden(hidden: boolean): void {

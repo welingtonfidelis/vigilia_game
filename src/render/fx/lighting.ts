@@ -113,6 +113,9 @@ export interface LightingOptions {
   resolution?: number;
 }
 
+/** Compensação do SCREEN (que rende ~60 % da soma pura sobre o escuro da noite). */
+const SCREEN_GAIN = 1.35;
+
 /** Cor do mapa de dia (névoa fria leve) e de noite fechada (multiplicação). */
 const DAY = { r: 0.9, g: 0.92, b: 0.98 };
 // #1a2421 a 55% sobre branco, um pouco mais fundo: a floresta some, a vila fica de pé.
@@ -137,7 +140,10 @@ export class LightingSystem {
       .setDepth(opts.depth)
       .setBlendMode(Phaser.BlendModes.MULTIPLY);
     this.rt.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-    this.stamp = scene.make.image({ x: 0, y: 0, key: falloffTexture(scene), add: false }).setBlendMode(Phaser.BlendModes.ADD);
+    // SCREEN e não ADD: o ADD do Phaser (ONE, DST_ALPHA) perde o que já foi carimbado
+    // quando várias luzes vão no mesmo lote para a RenderTexture (a janela apagava a
+    // fogueira em volta dela). SCREEN soma sem depender do alfa de destino e satura macio.
+    this.stamp = scene.make.image({ x: 0, y: 0, key: falloffTexture(scene), add: false }).setBlendMode(Phaser.BlendModes.SCREEN);
   }
 
   add(spec: LightSpec): LightSource {
@@ -181,10 +187,11 @@ export class LightingSystem {
       // Fora da tela não pinta (o halo já se esconde sozinho pela câmera).
       if (light.x + light.radius < view.x || light.x - light.radius > view.right || light.y + light.radius < view.y || light.y - light.radius > view.bottom) continue;
       // Quanto clareia depende de quão escuro está: de dia não sobra nada para clarear.
-      // Teto abaixo de 1: a cor da luz soma no mapa sem estourar em branco (o laranja fica laranja).
+      // O SCREEN rende menos que a soma pura (clareia o que falta até o branco), então a
+      // força sobe um pouco; o teto segura o laranja laranja, sem estourar em branco.
       this.stamp
         .setTint(light.spec.color)
-        .setAlpha(Math.min(0.85, light.strength * (0.25 + 0.75 * night)))
+        .setAlpha(Math.min(0.92, light.strength * (0.25 + 0.75 * night) * SCREEN_GAIN))
         .setScale((light.radius * 2) / this.res / texSize);
       this.rt.batchDraw(this.stamp, (light.x - ox) / this.res, (light.y - oy) / this.res);
     }

@@ -68,15 +68,20 @@ src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
 src/render/ Phaser: só lê o World a cada quadro
   VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
   layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
-  town.ts, ground.ts  vila no tileset do pack Vigília 1.9 (autotile de terra/trilha, abismo, marcos e casas); o chão é assado numa textura única para não vazar tile em zoom fracionário
+  town.ts, ground.ts  vila no tileset do pack Vigília 1.9 (marcos, casas, árvores, enfeites de transição, copas da frente e neblina); ground.ts diz onde há terra e trilha
+  terrain.ts     chão pintado pixel a pixel numa textura única: terra e trilha com borda orgânica, tufos e pedrinhas, marcas de carroça, cinza da fogueira, rebaixo da fonte, paredões de rocha e escadarias
+  relief.ts      relevo em três níveis (alto: cemitério e berrante; meio: templo, taverna, guilda, praça e caverna; baixo: estalagem, casa de cura, campo, ferreiro, fonte): borda e altura dos paredões, escadarias e as células que eles bloqueiam (puro, testado)
   buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
   sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
   nav.ts         grade de bloqueios e rotas da vila (A*), lidos da transparência da arte (puro, testado)
   fx/            visual 2.5D, componentes reutilizáveis sem regra de jogo:
     shadows.ts     camada única de sombras projetadas (silhueta achatada e deitada para leste), oclusão na base das paredes e sombra suave de pé
-    lighting.ts    mapa de luz em multiplicação (noite fria #1a2421) e LightSource (cor, raio, intensidade, tremulação, pulsação, halo)
-    particles.ts   emissores leves: fagulhas, fumaça de chaminé e miasma da caverna
+    lighting.ts    mapa de luz em multiplicação (noite fria #1a2421) e LightSource (cor, raio, intensidade, tremulação, pulsação, halo); as luzes se somam em SCREEN, porque o ADD do Phaser perde carimbos no lote
+    particles.ts   emissores leves: fagulhas, fumaça de chaminé, vapor da fonte e miasma da caverna
+    wind.ts        pipeline WebGL do vento: o topo das árvores balança numa onda que corre pela floresta, sem custo de CPU
+    parallax.ts    copas escuras em primeiro plano nas bordas, que correm 1,15× mais rápido que o mundo e só aparecem na beira do mapa
+    fog.ts         bancos de neblina rasteira (cemitério e bordas da floresta) que passam com o vento
     alpha.ts       leitura e cache da transparência das texturas (janelas acesas, pegadas, sombras)
   lane/          corredor da dungeon em Canvas 2D (sem Phaser): model.ts (posições, câmera, névoa, golpes novos; puro, testado), sprites.ts, renderer.ts
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
@@ -1251,6 +1256,28 @@ Não aprove um lote inteiro antes do teste de estilo; o custo de correção é m
 - Cópia de Tiny Town, 0x72 ou da referência do Tristram.
 - 4 direções de personagem se o motor usa perfil + flip (a não ser que o escopo inclua a adaptação).
 - Arquivos com acento, espaço, maiúscula ou versão no nome.
+
+### 3.3 Visual 2.5D da vila (atmosfera)
+
+Upgrade só de render, guiado pela arte de referência (vila noturna em degraus); nenhuma regra de simulação muda. Código em `src/render/fx/`, `terrain.ts` e `relief.ts`.
+
+- **Fase 1, profundidade e sombra:** tudo ordena pelo pé (profundidade = y da base, origem 0,5;1). Sombras projetadas a partir da silhueta da arte, achatadas e deitadas para leste. O `skewX −0,3` do plano jogava a sombra para trás do objeto, onde a vista 3/4 a esconde. Faixa de oclusão na base das paredes e sombra suave de pé para quem anda.
+- **Fase 2, luz:** mapa de luz multiplicado (noite fria) com fontes de luz reutilizáveis: janelas achadas sozinhas na arte de cada prédio, fogueira, lampiões, forja no ritmo do martelo, fonte ciano, caverna roxa (cresce com a corrupção), cristais, berrante e a lanterna do prefeito. Vinheta e correção de cor da câmera mais fortes à noite.
+- **Fase 3, terreno e relevo:**
+  - Terra e trilha com borda orgânica (sem blocos de tile), tufos de grama, pedrinhas, marcas de carroça na estalagem e cinza na fogueira.
+  - Três níveis ligados por paredões de rocha e escadarias de pedra:
+    - alto: cemitério e berrante;
+    - meio: templo, taverna, guilda, praça e a caverna encravada na rocha;
+    - baixo: estalagem, casa de cura, campo, ferreiro e fonte.
+  - Os paredões bloqueiam a navegação, e a passagem é só pelas escadas. O teste `relief.test.ts` garante que toda porta, cova, a fonte, a caverna e o portão continuam alcançáveis.
+  - Enfeites novos (pack, `prop/*`): cristais e espinheiro corrompidos, lápide quebrada e tombada, cerca torta, samambaia, arbusto e taboa.
+- **Fase 4, profundidade e vida:**
+  - Copas escuras em primeiro plano nas bordas, com paralaxe de 1,15×.
+  - Vento nas árvores feito no shader.
+  - Neblina rasteira no cemitério e nas bordas, vapor na fonte.
+  - Moradores e crianças respiram parados, e todos dão um pulinho a cada passo (heróis e prefeito já respiram na própria arte).
+  - Rótulos em plaquinha: o nome do prédio fica sobre o telhado, e o nome do herói aparece perto do prefeito, sob o ponteiro ou quando selecionado. As medalhas de rank ficam sempre visíveis.
+  - A inclinação de câmera do plano (terreno a 0,92 e sprites a 1,08) ficou de fora. A arte já é desenhada em 3/4, e a escala desigual borraria o pixel e desalinharia clique e colisão.
 
 ---
 

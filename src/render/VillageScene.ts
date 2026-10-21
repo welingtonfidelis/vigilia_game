@@ -46,17 +46,25 @@ import { alphaOf, blobs } from './fx/alpha.ts';
 import { LightingSystem, type LightSpec } from './fx/lighting.ts';
 import { ParticleSystem, type EmitterSpec } from './fx/particles.ts';
 import { ShadowLayer, type Caster } from './fx/shadows.ts';
+import { registerWind } from './fx/wind.ts';
+import type { FogSystem } from './fx/fog.ts';
+import type { ParallaxLayer } from './fx/parallax.ts';
+import { faceCells } from './relief.ts';
+import { buildGround } from './terrain.ts';
 import {
   buildAbyss,
   buildBoard,
   buildCampfire,
   buildCemetery,
   buildCoffer,
-  buildGround,
   buildHornTower,
   buildOvergrowth,
   buildProps,
   buildCottages,
+  buildDecor,
+  buildFog,
+  buildForeground,
+  DECOR,
   buildThermal,
   DEPTH,
   insetTownFrames,
@@ -86,6 +94,8 @@ const PET_RADIUS = 60;
 /** Quem está lesionado anda mais devagar (manca). */
 const INJURED_PACE = 0.6;
 const INTERACT_RADIUS = 78;
+/** Nomes de heróis e crianças aparecem perto do prefeito (e sempre sob o ponteiro ou selecionados). */
+const NAME_RADIUS = 200;
 /** Zoom fixo: o mapa é um recorte que acompanha o prefeito, como no Tristram. */
 const CAMERA_ZOOM = 1.5;
 
@@ -159,6 +169,9 @@ export class VillageScene extends Phaser.Scene {
   /** Mapa de luz: noite fria e as fontes de luz da vila (Fase 2). */
   private lighting!: LightingSystem;
   private particles!: ParticleSystem;
+  /** Neblina rasteira e copas em primeiro plano nas bordas (Fase 4). */
+  private fog!: FogSystem;
+  private foreground!: ParallaxLayer;
   private vignette: Phaser.FX.Vignette | null = null;
   private grade: Phaser.FX.ColorMatrix | null = null;
   /** Último nível de noite aplicado na correção de cor (refaz só quando muda). */
@@ -222,6 +235,7 @@ export class VillageScene extends Phaser.Scene {
 
   create(): void {
     this.registerArt();
+    registerWind(this.game);
     this.shadows = new ShadowLayer(this, WORLD_W, WORLD_H, DEPTH.shadow);
     this.lighting = new LightingSystem(this, { x: -400, y: -400, width: WORLD_W + 800, height: WORLD_H + 800, depth: DEPTH.night, haloDepth: DEPTH.lights });
     this.particles = new ParticleSystem(this);
@@ -234,6 +248,7 @@ export class VillageScene extends Phaser.Scene {
     scatterTrees(this, mask, solids);
     buildCemetery(this, solids);
     const props = buildProps(this, solids);
+    buildDecor(this, solids);
     this.propLights = props.lights;
     buildCampfire(this, solids);
     buildThermal(this, solids);
@@ -242,9 +257,13 @@ export class VillageScene extends Phaser.Scene {
     this.board = buildBoard(this, solids);
     this.coffer = buildCoffer(this, solids);
     this.nav.setLayer('cenario', this.cellsOf(solids));
+    // Paredões de rocha entre os níveis: só se passa pelas escadarias.
+    this.nav.setLayer('relevo', faceCells(this.nav.cols, this.nav.rows, CELL));
     // Sombra de tudo que ocupa chão, menos o que é chato (a bacia da fonte) ou é fogo.
     this.shadows.set('cenario', solids.filter((s) => !NO_SHADOW.has(s.key)).map((s) => this.caster(s)));
     this.sceneryLights(props.lamps);
+    this.fog = buildFog(this);
+    this.foreground = buildForeground(this);
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createInteractables();
     this.layoutSigns();
@@ -365,7 +384,7 @@ export class VillageScene extends Phaser.Scene {
     const y = lot.y + lot.h / 2;
     const base = this.add.image(lot.x, y, buildingTexture(id, 1)).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
     const lights = this.add.image(lot.x, y, lightsTexture(buildingTexture(id, 1))).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.lights).setAlpha(0);
-    const sign = label(this, lot.x, y + 2, '', 14);
+    const sign = label(this, lot.x, y + 2, '', 14).setOrigin(0.5, 1);
     const view: BuildingView = { base, lights, sign, level: -1 };
     this.buildings.set(id, view);
     this.syncBuilding(id, false);
@@ -507,6 +526,13 @@ export class VillageScene extends Phaser.Scene {
     }
     const thermal = { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE - 34 };
     this.lighting.add({ ...thermal, color: 0x4deeea, radius: 170, intensity: 0.6, pulse: { period: 4200, depth: 0.15 }, halo: { scaleX: 3, scaleY: 2.2, day: 0.18, night: 0.32 } });
+    // Vapor subindo devagar de toda a água quente.
+    this.particles.add({ preset: 'steam', x: thermal.x, y: thermal.y - 2, spread: 100, spreadY: 34, depth: SMOKE_DEPTH });
+    // Cristais da corrupção em volta da caverna: brilho roxo fraco, que cresce com a corrupção.
+    for (const d of DECOR) {
+      if (!d.id.startsWith('prop/crystal')) continue;
+      this.lighting.add({ x: d.x, y: d.y - 14, color: 0xb46ae0, radius: 56, intensity: 0.4, pulse: { period: 2600, depth: 0.45 }, gain: () => 0.6 + (0.4 * this.corruption()) / 100 });
+    }
     // Caverna: a luz roxa cresce com a corrupção (o brilho de cima, que já existia, também).
     const caveMouth = { x: abismo.x, y: 15 * TILE - 26 };
     this.lighting.add({
@@ -529,37 +555,49 @@ export class VillageScene extends Phaser.Scene {
   }
 
   /**
-   * Placa de cada prédio logo abaixo do lote. Quando dois lotes vizinhos têm nomes
-   * largos (Estalagem e Casa de cura), a segunda placa desce uma linha em vez de
-   * encostar na primeira. Elas são fixas, então isto só roda quando algo muda.
+   * Placa de cada prédio em cima do telhado, como na arte de referência. Se duas placas
+   * vizinhas se encostam (telhados da mesma altura e nomes largos), a segunda sobe uma
+   * linha. Elas são fixas, então isto só roda quando algo muda.
    */
   private layoutSigns(): void {
     const placed: Phaser.Geom.Rectangle[] = [];
-    const signs: { sign: Phaser.GameObjects.Text; lot: (typeof LOTS)[BuildingId] }[] = [];
+    const signs: { view: BuildingView; lot: (typeof LOTS)[BuildingId] }[] = [];
     for (const id of BUILDING_IDS) {
       const view = this.buildings.get(id);
-      if (view) signs.push({ sign: view.sign, lot: LOTS[id] });
+      if (view) signs.push({ view, lot: LOTS[id] });
     }
     signs.sort((a, b) => a.lot.x - b.lot.x);
-    for (const { sign, lot } of signs) {
-      const baseY = lot.y + lot.h / 2 + 2;
-      sign.setY(baseY);
+    for (const { view, lot } of signs) {
+      const sign = view.sign;
+      sign.setY(this.roofTop(view.base.texture.key, lot.y + lot.h / 2) - 4);
       let rect = sign.getBounds();
       for (let tries = 0; tries < 3; tries++) {
         const padded = new Phaser.Geom.Rectangle(rect.x - 6, rect.y - 1, rect.width + 12, rect.height + 2);
         if (!placed.some((other) => Phaser.Geom.Intersects.RectangleToRectangle(other, padded))) break;
-        sign.setY(sign.y + rect.height + 3);
+        sign.setY(sign.y - rect.height - 3);
         rect = sign.getBounds();
       }
       placed.push(rect);
     }
   }
 
+  /** y do alto do telhado (primeira linha opaca da arte) de um prédio com o pé em `bottom`. */
+  private roofTop(key: string, bottom: number): number {
+    const mask = alphaOf(this.textures, key);
+    if (!mask) return bottom - 96 * ART_SCALE;
+    for (let row = 0; row < mask.h; row++) {
+      for (let x = 0; x < mask.w; x++) {
+        if ((mask.alpha[row * mask.w + x] ?? 0) >= 128) return bottom - (mask.h - row) * ART_SCALE;
+      }
+    }
+    return bottom;
+  }
+
   /**
    * Nomes no mapa sem um por cima do outro: o selecionado e o que está sob o
-   * ponteiro sempre aparecem; o resto entra por prioridade (prefeito, prédios,
-   * heróis, crianças, túmulos) enquanto couber. A medalha de rank continua
-   * visível mesmo quando o nome é escondido.
+   * ponteiro sempre aparecem; dos outros, só quem está perto do prefeito (a arte da
+   * vila respira, como na referência). Entram por prioridade (prefeito, prédios,
+   * heróis, crianças) enquanto couber. A medalha de rank continua sempre visível.
    */
   private layoutLabels(): void {
     const entries: { obj: Phaser.GameObjects.Text; force: boolean; priority: number }[] = [];
@@ -572,13 +610,18 @@ export class VillageScene extends Phaser.Scene {
       // Numa multidão (festa, taverna cheia) os nomes viram uma pilha ilegível:
       // só o herói sob o ponteiro ou selecionado mantém o nome. As medalhas ficam.
       const crowd = walkers.filter((other) => other !== sprite && Math.abs(other.x - sprite.x) < 46 && Math.abs(other.y - sprite.y) < 42).length;
-      if (!forced && crowd >= 3) {
+      const near = Math.hypot(sprite.x - this.mayor.x, sprite.y - this.mayor.y) < NAME_RADIUS;
+      if (!forced && (crowd >= 3 || !near)) {
         sprite.label.setVisible(false);
         continue;
       }
       entries.push({ obj: sprite.label, force: forced, priority: 2 });
     }
-    for (const kid of this.kids.values()) if (!kid.hidden) entries.push({ obj: kid.label, force: false, priority: 3 });
+    for (const kid of this.kids.values()) {
+      if (kid.hidden) continue;
+      if (Math.hypot(kid.x - this.mayor.x, kid.y - this.mayor.y) < NAME_RADIUS * 0.7) entries.push({ obj: kid.label, force: false, priority: 3 });
+      else kid.label.setVisible(false);
+    }
     entries.sort((a, b) => Number(b.force) - Number(a.force) || a.priority - b.priority || a.obj.y - b.obj.y);
     const taken: Phaser.Geom.Rectangle[] = [];
     for (const entry of entries) {
@@ -1010,6 +1053,8 @@ export class VillageScene extends Phaser.Scene {
     this.lighting.update(this.time.now, night);
     this.shadows.flush();
     this.particles.update(this.session.paused ? 0 : this.session.speed);
+    this.fog.update(dt, this.session.paused ? 0 : Math.min(2, Math.max(0.5, this.session.speed)), night);
+    this.foreground.update(this.cameras.main);
     if (this.vignette) this.vignette.strength = 0.32 + 0.2 * night;
     this.applyGrade(night);
     const lightAlpha = Phaser.Math.Clamp((night - 0.1) / 0.5, 0, 1);

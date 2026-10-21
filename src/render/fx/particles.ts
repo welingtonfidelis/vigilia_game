@@ -1,10 +1,10 @@
-// Partículas leves da vila: fagulhas de fogueira e forja, fumaça de chaminé e o miasma
-// roxo da caverna. Cada emissor é um preset do Phaser com liga/desliga (forja em ruína,
+// Partículas leves da vila: fagulhas de fogueira e forja, fumaça de chaminé, vapor da
+// fonte termal e o miasma roxo da caverna. Cada emissor é um preset do Phaser com liga/desliga (forja em ruína,
 // chaminé de prédio que ainda não tem chaminé) e grupos para trocar de uma vez.
 
 import Phaser from 'phaser';
 
-export type ParticlePreset = 'sparks' | 'smoke' | 'miasma';
+export type ParticlePreset = 'sparks' | 'smoke' | 'steam' | 'miasma';
 
 export interface EmitterSpec {
   group?: string;
@@ -13,6 +13,8 @@ export interface EmitterSpec {
   y: number;
   /** Largura da boca de onde as partículas saem (px do mundo). */
   spread?: number;
+  /** Altura da boca (padrão 4: uma fresta; a água da fonte é uma área). */
+  spreadY?: number;
   /** Multiplica a quantidade (1 = padrão do preset). */
   rate?: number;
   depth: number;
@@ -49,13 +51,14 @@ function puffTexture(scene: Phaser.Scene): string {
 function config(scene: Phaser.Scene, spec: EmitterSpec): { key: string; cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig } {
   const rate = spec.rate ?? 1;
   const spread = spec.spread ?? 8;
+  const spreadY = spec.spreadY ?? 4;
   // Boca do emissor: um retângulo raso; as partículas nascem em qualquer ponto dele.
   const zone = {
     type: 'random' as const,
     source: {
       getRandomPoint: (p: Phaser.Types.Math.Vector2Like) => {
         p.x = (Math.random() - 0.5) * spread;
-        p.y = (Math.random() - 0.5) * 4;
+        p.y = (Math.random() - 0.5) * spreadY;
         return p;
       },
     },
@@ -91,6 +94,22 @@ function config(scene: Phaser.Scene, spec: EmitterSpec): { key: string; cfg: Pha
           alpha: { start: 0.4, end: 0 },
           tint: [0x8c8a88, 0xa29e98],
           frequency: 520 / rate,
+          quantity: 1,
+          emitZone: zone,
+        },
+      };
+    case 'steam':
+      return {
+        key: puffTexture(scene),
+        cfg: {
+          lifespan: { min: 2600, max: 4200 },
+          speedY: { min: -14, max: -6 },
+          speedX: { min: -4, max: 5 },
+          scale: { start: 0.7, end: 2.4 },
+          // Branco-ciano translúcido: some devagar enquanto sobe da água quente.
+          alpha: { start: 0.26, end: 0 },
+          tint: [0xe8fbff, 0xbff4f2, 0xd8f0ff],
+          frequency: 240 / rate,
           quantity: 1,
           emitZone: zone,
         },

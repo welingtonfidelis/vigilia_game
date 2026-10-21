@@ -1,4 +1,4 @@
-// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores, crianças, monstros e bichos da vila). Não editar à mão.
+// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores, crianças, monstros e bichos da vila + enfeites de transição do visual 2.5D). Não editar à mão.
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -14271,6 +14271,123 @@ export const PACK_ASSETS: PackAsset[] = [
         "fps": 1
       }
     }
+  },
+  {
+    "id": "prop/crystal-corrupt-01",
+    "type": "prop",
+    "file": "export/png/prop-crystal-corrupt-01.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      24
+    ]
+  },
+  {
+    "id": "prop/crystal-corrupt-02",
+    "type": "prop",
+    "file": "export/png/prop-crystal-corrupt-02.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      20
+    ]
+  },
+  {
+    "id": "prop/bramble-corrupt",
+    "type": "prop",
+    "file": "export/png/prop-bramble-corrupt.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      22
+    ]
+  },
+  {
+    "id": "prop/grave-broken",
+    "type": "prop",
+    "file": "export/png/prop-grave-broken.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      14,
+      13
+    ]
+  },
+  {
+    "id": "prop/grave-leaning",
+    "type": "prop",
+    "file": "export/png/prop-grave-leaning.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      12,
+      15
+    ]
+  },
+  {
+    "id": "prop/fence-crooked",
+    "type": "prop",
+    "file": "export/png/prop-fence-crooked.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      34,
+      20
+    ]
+  },
+  {
+    "id": "prop/fern",
+    "type": "prop",
+    "file": "export/png/prop-fern.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      22,
+      16
+    ]
+  },
+  {
+    "id": "prop/bush",
+    "type": "prop",
+    "file": "export/png/prop-bush.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      20,
+      16
+    ]
+  },
+  {
+    "id": "prop/reeds",
+    "type": "prop",
+    "file": "export/png/prop-reeds.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      14,
+      18
+    ]
   }
 ];
 

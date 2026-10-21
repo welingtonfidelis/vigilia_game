@@ -16786,6 +16786,150 @@
       "status": "draft",
       "license": "CC0-1.0",
       "notes": "Bicho da vila de perfil, virado para a direita: 0-1 parado, 2-5 andando, 6 sentado, 7 feliz, 8 dormindo."
+    },
+    {
+      "id": "prop/crystal-corrupt-01",
+      "type": "prop",
+      "file": "export/png/prop-crystal-corrupt-01.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        16,
+        24
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Cristais roxos da corrupção numa pedra (borda da caverna)."
+    },
+    {
+      "id": "prop/crystal-corrupt-02",
+      "type": "prop",
+      "file": "export/png/prop-crystal-corrupt-02.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        24,
+        20
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Pedras com veios e lascas de cristal corrompido."
+    },
+    {
+      "id": "prop/bramble-corrupt",
+      "type": "prop",
+      "file": "export/png/prop-bramble-corrupt.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        32,
+        22
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Espinheiro roxo-escuro com bagas acesas (boca da caverna)."
+    },
+    {
+      "id": "prop/grave-broken",
+      "type": "prop",
+      "file": "export/png/prop-grave-broken.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        14,
+        13
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Lápide quebrada, com o topo caído no chão (fora da cerca do cemitério)."
+    },
+    {
+      "id": "prop/grave-leaning",
+      "type": "prop",
+      "file": "export/png/prop-grave-leaning.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        12,
+        15
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Lápide antiga tombada, com musgo na base."
+    },
+    {
+      "id": "prop/fence-crooked",
+      "type": "prop",
+      "file": "export/png/prop-fence-crooked.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        34,
+        20
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Cerca de madeira torta, travessa caída e tábua no chão."
+    },
+    {
+      "id": "prop/fern",
+      "type": "prop",
+      "file": "export/png/prop-fern.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        22,
+        16
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Samambaia baixa (mato em volta da fonte termal)."
+    },
+    {
+      "id": "prop/bush",
+      "type": "prop",
+      "file": "export/png/prop-bush.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        20,
+        16
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Arbusto de folhas em tufos."
+    },
+    {
+      "id": "prop/reeds",
+      "type": "prop",
+      "file": "export/png/prop-reeds.png",
+      "anchor": [
+        0.5,
+        1
+      ],
+      "size": [
+        14,
+        18
+      ],
+      "license": "CC0-1.0",
+      "status": "draft",
+      "notes": "Taboas da beira da água."
     }
   ],
   "planned": {
