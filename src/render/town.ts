@@ -178,7 +178,6 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
       const y = ty * TILE;
       const edgeN = !hasPath(tx, ty - 1);
       const edgeW = !hasPath(tx - 1, ty);
-      const edgeE = !hasPath(tx + 1, ty);
 
       // Sombra em trechos descontínuos apenas na borda superior/esquerda.
       // Não contornamos todos os lados para preservar a leitura orgânica.
