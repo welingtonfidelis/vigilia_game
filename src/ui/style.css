@@ -2619,3 +2619,9 @@ kbd {
   font-family: var(--sans);
   font-size: 0.62rem;
 }
+.report-moments {
+  margin: 0.2rem 0 0.6rem;
+  padding-left: 1.1rem;
+  color: #d8ccb4;
+  font-size: 0.86rem;
+}

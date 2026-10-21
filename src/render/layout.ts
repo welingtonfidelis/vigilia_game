@@ -249,6 +249,7 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
     case 'rezar':
       return at('templo', 'templo', door('templo'));
     case 'comprar':
+    case 'joias':
       return at('ferreiro', 'ferreiro', door('ferreiro'));
     case 'treinar':
       return at('campo', 'campo', door('campo'));

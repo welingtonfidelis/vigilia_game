@@ -40,7 +40,9 @@ export type ActivityKind =
   /** Tratando uma lesão (na Casa de cura, ou na estalagem se ela não existir). */
   | 'tratar'
   /** Tomando banho na fonte termal: vida, ânimo e luto. */
-  | 'termas';
+  | 'termas'
+  /** Na bancada do joalheiro, pagando para encantar, reforjar ou polir uma peça. */
+  | 'joias';
 
 export type InjuryKind = 'braco' | 'perna' | 'olho' | 'costelas';
 
@@ -122,6 +124,21 @@ export interface Item {
   /** Quem já usou, em ordem. */
   owners: number[];
   createdTick: number;
+  /** Quantas vezes passou pela bancada do joalheiro. */
+  enchants?: number;
+  /** O que aconteceu com a peça depois de feita ("encantada por Mira no ano 9"). */
+  history?: string[];
+}
+
+/** Serviços da bancada do joalheiro. */
+export type BenchService = 'encantar' | 'reforjar' | 'polir';
+
+export interface BenchVisit {
+  tick: number;
+  heroId: number;
+  service: BenchService;
+  itemId: number;
+  price: number;
 }
 
 /** Encomenda na forja: sai pronta no arsenal em `readyTick`. */
@@ -293,6 +310,10 @@ export interface Combat {
   log?: CombatEvent[];
   /** Contador do registro (o `n` do próximo evento). */
   seq?: number;
+  /** O chefe passou de 50% de vida e entrou na segunda fase. */
+  phase2?: boolean;
+  /** Até este tick as curas rendem metade (silêncio do Arcebispo). */
+  silenceUntil?: number;
 }
 
 export interface CombatEvent {
@@ -309,7 +330,19 @@ export interface CombatEvent {
   kill: boolean;
 }
 
-export type RoomKind = 'matilha' | 'elite' | 'bau' | 'santuario' | 'vazia' | 'prisioneiro' | 'restos' | 'chefe';
+export type RoomKind =
+  | 'matilha'
+  | 'elite'
+  | 'bau'
+  | 'santuario'
+  | 'vazia'
+  | 'prisioneiro'
+  | 'restos'
+  | 'chefe'
+  /** Mercador errante: vende uma peça a quem pagar (ouro do herói). */
+  | 'mercador'
+  /** Dardos ou espinhos: ferem o grupo se ninguém perceber antes. */
+  | 'armadilha';
 
 export interface Room {
   kind: RoomKind;
@@ -334,7 +367,14 @@ export interface Party {
   roomIndex: number;
   retreating: boolean;
   combat: Combat | null;
-  loot: { gold: number; materials: Partial<Record<MaterialId, number>>; xp: number; items?: Item[] };
+  loot: {
+    gold: number;
+    materials: Partial<Record<MaterialId, number>>;
+    xp: number;
+    items?: Item[];
+    /** Peças compradas do mercador nesta expedição (já equipadas). */
+    bought?: { heroId: number; itemId: number; price: number }[];
+  };
   contractId: number | null;
   rescued: number;
   dead: number[];
@@ -417,6 +457,8 @@ export interface Town {
   forge: ForgeOrder[];
   /** Especialização escolhida ao chegar no nível 3. */
   specs: Partial<Record<BuildingId, SpecId>>;
+  /** Últimas visitas à bancada do joalheiro (para o painel do ferreiro). */
+  bench?: BenchVisit[];
 }
 
 export type ChronicleKind =

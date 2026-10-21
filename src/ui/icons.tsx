@@ -151,6 +151,13 @@ const ROOM_PATHS: Record<RoomKind, preact.ComponentChildren> = {
       <circle cx="15" cy="11" r="1.6" />
     </>
   ),
+  mercador: (
+    <>
+      <path d="M6 8h12l-1 12H7z" />
+      <path d="M9 8a3 3 0 016 0M10 13h4" />
+    </>
+  ),
+  armadilha: <path d="M3 20h18M5 20l2-7 2 7M10 20l2-9 2 9M15 20l2-7 2 7" />,
 };
 
 export const RoomIcon = (props: { kind: RoomKind | null }) => (

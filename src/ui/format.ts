@@ -43,6 +43,8 @@ export const ROOM_LABELS: Record<RoomKind, string> = {
   prisioneiro: 'Prisioneiro',
   restos: 'Restos de um herói',
   chefe: 'Chefe',
+  mercador: 'Mercador errante',
+  armadilha: 'Armadilha',
 };
 
 export const OUTCOME_LABELS: Record<PartyOutcome, string> = {
@@ -108,6 +110,8 @@ export function activityText(world: World, hero: Hero): string {
       return 'Rezando no templo';
     case 'comprar':
       return 'Comprando no ferreiro';
+    case 'joias':
+      return 'Na bancada do joalheiro';
     case 'termas':
       return 'Na fonte termal';
     case 'treinar':

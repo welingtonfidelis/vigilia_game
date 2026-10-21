@@ -9,7 +9,7 @@ import { epitaph, maybeInjure, widow } from './people.ts';
 import { addBond, fleeLimit, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
 import { affixCount, takeItems } from './items.ts';
 import { chance, int, pick, range, shuffle, weighted } from './rng.ts';
-import type { Combat, CombatEvent, Hero, Party, Room, Unit, World } from './types.ts';
+import type { BossMech, Combat, CombatEvent, Hero, Party, Room, Unit, World } from './types.ts';
 
 export type CombatResult = 'andamento' | 'vitoria' | 'retirada' | 'massacre';
 
@@ -140,7 +140,8 @@ function heroAct(world: World, party: Party, c: Combat, u: Unit): void {
       if (hurt.length > 0) {
         const beloved = hurt.find((a) => a.heroId !== null && a.hp / a.maxHp < 0.6 && getBond(world, hero.id, a.heroId) > 50);
         const target = beloved ?? hurt.reduce((lo, a) => (a.hp / a.maxHp < lo.hp / lo.maxHp ? a : lo));
-        const heal = atk * B.healMult * enrageHealFactor(c);
+        const silenced = c.silenceUntil !== undefined && c.ticks < c.silenceUntil;
+        const heal = atk * B.healMult * enrageHealFactor(c) * (silenced ? 0.5 : 1);
         const before = target.hp;
         target.hp = Math.min(target.maxHp, target.hp + heal);
         target.poisonTicks = 0;
@@ -195,7 +196,11 @@ function enemyAct(world: World, party: Party, c: Combat, u: Unit): void {
   const tank = heroes.find((h) => h.role === 'tank');
   const backline = u.tags.includes('backline') || (u.tags.includes('boss') && c.bossMech === 'retaguarda');
   let target: Unit;
-  if (tank && chance(world.rng, backline ? 0.25 : B.tauntChance)) {
+  const hunter = u.tags.includes('boss') && c.phase2 && c.bossMech === 'retaguarda';
+  if (hunter) {
+    // Fase 2 do Martelo: vai atrás de quem tem menos vida.
+    target = heroes.reduce((lo, h) => (h.hp / h.maxHp < lo.hp / lo.maxHp ? h : lo));
+  } else if (tank && chance(world.rng, backline ? 0.25 : B.tauntChance)) {
     target = tank;
   } else {
     // Quem está quase morto recua para trás da linha e fica menos exposto.
@@ -220,6 +225,11 @@ function enemyAct(world: World, party: Party, c: Combat, u: Unit): void {
   }
   const dealt = strike(world, party, c, u, target, atk, pierce);
   if (u.affixes.includes('vampirico')) u.hp = Math.min(u.maxHp, u.hp + dealt * 0.3);
+  // Fase 2 da Couraça: o golpe pega um segundo herói.
+  if (u.tags.includes('boss') && c.phase2 && c.bossMech === 'couraca') {
+    const other = activeHeroUnits(c).filter((h) => h !== target);
+    if (other.length > 0) strike(world, party, c, u, pick(world.rng, other), atk * B.phase2SecondHit, pierce);
+  }
 }
 
 /** Guarda o golpe para a tela (no máximo os últimos LOG_SIZE). */
@@ -409,10 +419,39 @@ function partingStrikes(world: World, party: Party, c: Combat, leaving: Unit[]):
 
 // ── Mecânicas de chefe ────────────────────────────────────────────────────
 
+/** O que cada chefe faz ao entrar na segunda fase (abaixo de 50% de vida). */
+const PHASE2_TEXT: Record<BossMech, (name: string) => string> = {
+  invocar: (n) => `${n} quebrou as próprias urnas.`,
+  couraca: (n) => `${n} endureceu a couraça.`,
+  veneno: (n) => `${n} fez o jardim brotar.`,
+  maldicao: (n) => `${n} começou a rezar ao contrário.`,
+  retaguarda: (n) => `${n} passou a caçar os feridos.`,
+  ecos: (n) => `${n} abriu o olho.`,
+};
+
+function enterPhase2(world: World, party: Party, c: Combat, boss: Unit): void {
+  c.phase2 = true;
+  const actDef = ACTS[party.act]!;
+  if (c.bossMech === 'couraca') boss.def *= 1.5;
+  if (c.bossMech === 'veneno') {
+    const sprout = actDef.enemies.find((e) => e.id === 'brotado') ?? actDef.enemies[actDef.enemies.length - 1]!;
+    for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party.act, party.floor));
+  }
+  if (c.bossMech) party.moments.push(PHASE2_TEXT[c.bossMech](actDef.boss.name));
+}
+
 function bossMechanics(world: World, party: Party, c: Combat): void {
   const boss = c.units.find((u) => u.tags.includes('boss'));
   if (!boss || !boss.alive) return;
   const actDef = ACTS[party.act]!;
+  if (!c.phase2 && boss.hp < boss.maxHp / 2) enterPhase2(world, party, c, boss);
+  // Fase 2 de Aquilo que Vigia: o olhar drena o ânimo de todos aos poucos.
+  if (c.phase2 && c.bossMech === 'ecos' && c.ticks % TICKS_PER_SECOND === 0) {
+    for (const u of activeHeroUnits(c)) {
+      const hero = heroOf(world, u)!;
+      hero.morale = Math.max(0, hero.morale - (hasTrait(hero, 'devoto') ? 0.5 : 1));
+    }
+  }
   if (c.bossMech === 'ecos' && !c.echoesSpawned && (c.ticks === 1 || boss.hp < boss.maxHp / 2)) {
     if (boss.hp < boss.maxHp / 2) c.echoesSpawned = true;
     spawnEchoes(world, party, c);
@@ -420,14 +459,17 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
   if (--c.mechCd > 0) return;
   switch (c.bossMech) {
     case 'invocar': {
-      c.mechCd = 80;
-      if (aliveEnemies(c).length < 7) {
-        for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor));
+      c.mechCd = c.phase2 ? 60 : 80;
+      const count = c.phase2 ? B.phase2Summons : 2;
+      if (aliveEnemies(c).length < (c.phase2 ? 9 : 7)) {
+        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor));
       }
+      // Fase 2: as urnas estouram a cada invocação.
+      if (c.phase2) for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * B.phase2UrnBlast);
       break;
     }
     case 'veneno': {
-      c.mechCd = 50;
+      c.mechCd = c.phase2 ? 35 : 50;
       for (const h of activeHeroUnits(c)) {
         h.poisonTicks = 8 * TICKS_PER_SECOND;
         h.poisonDps = h.maxHp * 0.02;
@@ -435,7 +477,9 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
       break;
     }
     case 'maldicao': {
-      c.mechCd = 60;
+      c.mechCd = c.phase2 ? 40 : 60;
+      // Fase 2: depois de cada maldição, as curas rendem metade por 6 s.
+      if (c.phase2) c.silenceUntil = c.ticks + 6 * TICKS_PER_SECOND;
       const cleric = activeHeroUnits(c).some((u) => u.role === 'healer');
       for (const u of activeHeroUnits(c)) {
         const hero = heroOf(world, u)!;
@@ -445,7 +489,7 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
       break;
     }
     case 'retaguarda': {
-      c.mechCd = 100;
+      c.mechCd = c.phase2 ? 60 : 100;
       for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * 0.5);
       break;
     }

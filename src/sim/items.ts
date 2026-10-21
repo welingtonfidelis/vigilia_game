@@ -6,6 +6,7 @@ import {
   AFFIX_IDS,
   AFFIXES,
   ARMOR_NOUN,
+  CLASS_AFFIXES,
   GENERIC_NOUN,
   LEGENDARY_TITLES,
   MATERIAL_AFFIX,
@@ -19,7 +20,7 @@ import { BALANCE as B, TICKS_PER_DAY } from './config.ts';
 import { hasSpec, level, maxGearTier } from './economy.ts';
 import { heroStats } from './hero.ts';
 import { chance, pick } from './rng.ts';
-import type { ClassId, Hero, Item, ItemAffix, ItemSlot, MaterialId, Party, Rarity, World } from './types.ts';
+import type { BenchService, ClassId, Hero, Item, ItemAffix, ItemSlot, MaterialId, Party, Rarity, World } from './types.ts';
 
 export const ITEM_SLOTS: readonly ItemSlot[] = ['weapon', 'armor', 'amulet'];
 
@@ -371,3 +372,143 @@ export function processForge(world: World): void {
 }
 
 export const commissionReadyTick = (world: World, days: number): number => world.tick + days * TICKS_PER_DAY;
+
+// ── Bancada do joalheiro (ferreiro nível 3) ─────────────────────────────
+
+/** Tier que conta no preço da bancada (o amuleto conta como 8). */
+const benchTier = (item: Item): number => (item.slot === 'amulet' ? 8 : item.tier);
+
+export const enchantPrice = (item: Item): number => B.benchEnchantBase + B.benchEnchantPerTier * benchTier(item);
+export const reforgePrice = (item: Item): number => Math.round(enchantPrice(item) / 2);
+
+/** O afixo da peça que menos serve para a classe (null = todos servem). */
+function weakestAffix(item: Item, classId: ClassId): ItemAffix | null {
+  const liked = CLASS_AFFIXES[classId];
+  return item.affixes.find((a) => !liked.includes(a)) ?? null;
+}
+
+export interface BenchOffer {
+  service: BenchService;
+  slot: ItemSlot;
+  price: number;
+  /** Quanto o valor da peça sobe (em tiers), para o herói comparar. */
+  gain: number;
+}
+
+/**
+ * O melhor serviço da bancada que o herói pode pagar agora: encantar (+1 afixo), reforjar
+ * (troca um afixo que não serve à classe) ou polir a lendária (+1 tier). null = nada a fazer.
+ */
+export function benchOffer(world: World, hero: Hero): BenchOffer | null {
+  if (level(world, 'ferreiro') < 3) return null;
+  let best: BenchOffer | null = null;
+  const consider = (o: BenchOffer) => {
+    if (o.price > hero.gold) return;
+    if (!best || o.gain / o.price > best.gain / best.price) best = o;
+  };
+  for (const slot of ITEM_SLOTS) {
+    const item = hero.items?.[slot];
+    if (!item) continue;
+    if ((item.rarity === 'rara' || item.rarity === 'epica') && item.affixes.length < 3) {
+      consider({ service: 'encantar', slot, price: enchantPrice(item), gain: B.affixValue });
+    }
+    if (item.rarity !== 'comum' && weakestAffix(item, hero.classId)) {
+      consider({ service: 'reforjar', slot, price: reforgePrice(item), gain: B.affixValue / 2 });
+    }
+    if (item.rarity === 'lendaria' && slot !== 'amulet' && item.tier < maxGearTier(world, slot) + 2) {
+      consider({ service: 'polir', slot, price: B.benchPolishPrice, gain: 1 });
+    }
+  }
+  return best;
+}
+
+/** Faz o serviço: cobra do herói, muda a peça e anota na história dela. */
+export function useBench(world: World, hero: Hero, offer: BenchOffer): void {
+  const item = hero.items?.[offer.slot];
+  if (!item || hero.gold < offer.price) return;
+  hero.gold -= offer.price;
+  // A forja fica com uma parte (o resto é o trabalho do joalheiro).
+  world.town.treasury += offer.price * B.benchTreasuryShare;
+  const year = yearOf(dayOf(world.tick));
+  const before = item.rarity;
+  const statsBefore = heroStats(world, hero).maxHp;
+  switch (offer.service) {
+    case 'encantar': {
+      const options = AFFIX_IDS.filter((a) => !item.affixes.includes(a));
+      const liked = options.filter((a) => CLASS_AFFIXES[hero.classId].includes(a));
+      item.affixes.push(pick(world.rng, liked.length > 0 && chance(world.rng, 0.6) ? liked : options));
+      if (item.rarity === 'rara') item.rarity = 'epica';
+      item.enchants = (item.enchants ?? 0) + 1;
+      (item.history ??= []).push(`encantada por ${hero.name} no ano ${year}`);
+      break;
+    }
+    case 'reforjar': {
+      const weak = weakestAffix(item, hero.classId);
+      if (!weak) break;
+      const options = CLASS_AFFIXES[hero.classId].filter((a) => !item.affixes.includes(a));
+      if (options.length === 0) break;
+      item.affixes[item.affixes.indexOf(weak)] = pick(world.rng, options);
+      (item.history ??= []).push(`reforjada por ${hero.name} no ano ${year}`);
+      break;
+    }
+    case 'polir': {
+      item.tier++;
+      if (item.slot !== 'amulet') hero.gear[item.slot] = item.tier;
+      (item.history ??= []).push(`polida por ${hero.name} no ano ${year}`);
+      break;
+    }
+  }
+  const statsAfter = heroStats(world, hero).maxHp;
+  if (statsAfter > statsBefore) hero.hp += statsAfter - statsBefore;
+  const visits = (world.town.bench ??= []);
+  visits.push({ tick: world.tick, heroId: hero.id, service: offer.service, itemId: item.id, price: offer.price });
+  if (visits.length > B.benchLogSize) visits.splice(0, visits.length - B.benchLogSize);
+  const name = itemName(item, hero.classId);
+  if (offer.service === 'polir') {
+    record(world, 'item', [hero.id], `${hero.name} pagou ${offer.price} de ouro ao joalheiro para polir a lendária ${name}.`);
+  } else if (item.rarity !== before) {
+    record(world, 'item', [hero.id], `${hero.name} levou ${name.charAt(0).toLowerCase() + name.slice(1)} ao joalheiro e saiu com uma peça épica.`);
+  }
+}
+
+// ── Mercador errante ─────────────────────────────────────────────────────
+
+/** Preço do mercador: a tabela da forja com a margem dele. */
+export const merchantPrice = (item: Item): number => Math.round(itemPrice(item) * B.merchantMarkup);
+
+/**
+ * O mercador mostra uma peça do ato; quem mais ganha com ela e tem o ouro compra (ouro do
+ * herói) e já sai usando. Sem comprador, ele segue caminho. Devolve quem comprou.
+ */
+export function merchantVisit(world: World, party: Party, heroes: Hero[]): Hero | null {
+  const act = ACTS[party.act]!;
+  const material = act.material;
+  const slot = pick(world.rng, ITEM_SLOTS);
+  const item = newItem(world, {
+    slot,
+    rarity: chance(world.rng, B.merchantEpicChance) ? 'epica' : 'rara',
+    tier: dropTier(world, party.act, party.floor, slot),
+    material,
+    affixes: [pick(world.rng, MATERIAL_AFFIX[material])],
+    origin: `comprado de um mercador errante no ${floorLabel(party.act, party.floor)} no ano ${yearOf(dayOf(world.tick))}`,
+  });
+  const price = merchantPrice(item);
+  let buyer: Hero | null = null;
+  let best = 0.01;
+  for (const h of heroes) {
+    const gain = upgradeGain(h, item);
+    if (h.gold >= price && gain > best) {
+      best = gain;
+      buyer = h;
+    }
+  }
+  if (!buyer) {
+    party.moments.push(`Um mercador errante ofereceu ${itemName(item, null).toLowerCase()} por ${price} de ouro; ninguém quis.`);
+    return null;
+  }
+  buyer.gold -= price;
+  offer(world, buyer, item);
+  (party.loot.bought ??= []).push({ heroId: buyer.id, itemId: item.id, price });
+  party.moments.push(`${buyer.name} comprou ${itemName(item, buyer.classId).toLowerCase()} de um mercador errante por ${price} de ouro.`);
+  return buyer;
+}

@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { commands, createWorld, deserialize, heroCapacity, heroStats, maxGearTier, SAVE_VERSION, serialize, TICKS_PER_DAY } from '../src/sim/index.ts';
 import type { Hero, Party, World } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
-import { commissionBlocker, equip, itemName, newItem, offer, processForge, rollDrop, shareLoot } from '../src/sim/items.ts';
+import { benchOffer, commissionBlocker, equip, itemName, merchantVisit, newItem, offer, processForge, rollDrop, shareLoot, useBench } from '../src/sim/items.ts';
+import { springTrap } from '../src/sim/expedition.ts';
+import { combatTick, startCombat } from '../src/sim/combat.ts';
 
 function townWith(heroes = 2): { world: World; list: Hero[] } {
   const world = createWorld(77);
@@ -174,5 +176,68 @@ describe('save v8 → v9', () => {
     expect(loaded.town.arsenal).toEqual([]);
     expect(loaded.town.forge).toEqual([]);
     expect(loaded.town.specs).toEqual({});
+  });
+});
+
+describe('bancada do joalheiro, salas novas e chefes em duas fases (9.3)', () => {
+  it('a bancada só abre com o ferreiro no nível 3 e cobra do herói', () => {
+    const { world, list } = townWith(1);
+    const hero = list[0]!;
+    equip(world, hero, newItem(world, { slot: 'weapon', rarity: 'rara', tier: 4, affixes: ['afiado'], origin: 'teste' }));
+    hero.gold = 50000;
+    expect(benchOffer(world, hero)).toBeNull();
+    world.town.buildings.ferreiro = 3;
+    const offer = benchOffer(world, hero)!;
+    expect(offer.service).toBe('encantar');
+    const treasury = world.town.treasury;
+    useBench(world, hero, offer);
+    expect(hero.items.weapon!.affixes).toHaveLength(2);
+    expect(hero.items.weapon!.rarity).toBe('epica');
+    expect(hero.items.weapon!.history?.[0]).toMatch(/encantada por/);
+    expect(hero.gold).toBe(50000 - offer.price);
+    expect(world.town.treasury).toBeGreaterThan(treasury);
+    expect(world.town.bench).toHaveLength(1);
+  });
+
+  it('o mercador vende para quem ganha com a peça e tem o ouro', () => {
+    const { world, list } = townWith(2);
+    const [poor, rich] = list as [Hero, Hero];
+    poor.gold = 0;
+    rich.gold = 999999;
+    const party = fakeParty(world, false, 2);
+    const buyer = merchantVisit(world, party, [poor, rich]);
+    expect(buyer?.id).toBe(rich.id);
+    expect(rich.gold).toBeLessThan(999999);
+    expect(party.loot.bought).toHaveLength(1);
+    rich.gold = 0;
+    expect(merchantVisit(world, fakeParty(world, false, 2), [poor, rich])).toBeNull();
+  });
+
+  it('a armadilha fere, mas não mata', () => {
+    const { world, list } = townWith(3);
+    for (const h of list) {
+      h.classId = 'guardiao';
+      h.hp = 1;
+    }
+    for (let i = 0; i < 20; i++) springTrap(world, fakeParty(world, true, 2), list);
+    expect(list.every((h) => h.hp >= 1)).toBe(true);
+  });
+
+  it('abaixo de 50% o chefe entra na fase 2', () => {
+    const { world, list } = townWith(3);
+    for (const h of list) h.status = 'expedition';
+    const party = fakeParty(world, true, 3);
+    party.act = 1;
+    party.memberIds = list.map((h) => h.id);
+    party.startMemberIds = [...party.memberIds];
+    party.phase = 'combate';
+    party.combat = startCombat(world, party, { kind: 'chefe', cleared: false, remainsOf: null });
+    const boss = party.combat.units.find((u) => u.tags.includes('boss'))!;
+    const def = boss.def;
+    boss.hp = boss.maxHp * 0.4;
+    combatTick(world, party);
+    expect(party.combat.phase2).toBe(true);
+    expect(boss.def).toBeCloseTo(def * 1.5);
+    expect(party.moments.some((m) => m.includes('couraça'))).toBe(true);
   });
 });

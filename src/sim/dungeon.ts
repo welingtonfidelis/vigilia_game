@@ -111,6 +111,8 @@ function rollRoomKind(world: World, floor: number): RoomKind {
     ['santuario', 8],
     ['vazia', 7],
     ['prisioneiro', 3],
+    ['mercador', floor >= 1 ? 3 : 0],
+    ['armadilha', floor >= 1 ? 6 : 0],
   ]);
 }
 

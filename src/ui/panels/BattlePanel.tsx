@@ -26,6 +26,7 @@ interface PartySnapshot {
   dead: number[];
   loot: { gold: number; materials: Partial<Record<MaterialId, number>>; xp: number };
   items: { name: string; rarity: Rarity }[];
+  moments: string[];
   rooms: { kind: string; cleared: boolean }[];
   roomIndex: number;
   outcome: Party['outcome'];
@@ -42,6 +43,9 @@ interface Track {
   last: PartySnapshot;
 }
 
+/** Quantos momentos o relatório guarda (os últimos). */
+const B_MOMENTS = 8;
+
 export interface DungeonReport {
   key: string;
   id: number;
@@ -55,6 +59,8 @@ export interface DungeonReport {
   materials: [MaterialId, number][];
   /** Peças trazidas (relatórios antigos não têm). */
   items?: { name: string; rarity: Rarity }[];
+  /** Momentos marcantes: compras do mercador, armadilhas, fases de chefe… */
+  moments?: string[];
   roomsCleared: number;
   roomsTotal: number;
   duration: number;
@@ -74,6 +80,7 @@ function snapshot(party: Party, endTick: number): PartySnapshot {
     dead: [...party.dead],
     loot: { gold: party.loot.gold, materials: { ...party.loot.materials }, xp: party.loot.xp },
     items: (party.loot.items ?? []).map((i) => ({ name: itemName(i, null), rarity: i.rarity })),
+    moments: [...party.moments],
     rooms: party.rooms.map((r) => ({ kind: r.kind, cleared: r.cleared })),
     roomIndex: party.roomIndex,
     outcome: party.outcome,
@@ -118,6 +125,7 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
     gold: last.loot.gold,
     materials: Object.entries(last.loot.materials) as [MaterialId, number][],
     items: last.items,
+    moments: last.moments.slice(-B_MOMENTS),
     roomsCleared: last.rooms.filter((r) => r.cleared).length,
     roomsTotal: last.rooms.length,
     duration: Math.max(0, last.endTick - last.startedTick),
@@ -167,6 +175,16 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
           </p>
         )}
         {report.contract !== null && <p class="report-materials">Contrato cumprido: {fmt(report.contract)} de ouro.</p>}
+        {report.moments && report.moments.length > 0 && (
+          <>
+            <h3>Momentos</h3>
+            <ul class="report-moments">
+              {report.moments.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          </>
+        )}
         <h3>Heróis caídos</h3>
         {report.fallen.length === 0 ? <p class="sub">Nenhum herói caiu nesta expedição.</p> : (
           <ul class="report-heroes">

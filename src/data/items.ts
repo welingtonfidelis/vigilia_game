@@ -83,6 +83,16 @@ export const RARITY_NAMES: Record<Rarity, { m: string; f: string }> = {
 /** Quantos afixos cada raridade traz. */
 export const RARITY_AFFIXES: Record<Rarity, number> = { comum: 0, rara: 1, epica: 2, lendaria: 3 };
 
+/** Os afixos que cada classe aproveita melhor (o joalheiro reforja para eles). */
+export const CLASS_AFFIXES: Record<ClassId, ItemAffix[]> = {
+  guardiao: ['guardiao', 'robusto', 'sereno'],
+  selvagem: ['afiado', 'sanguessuga', 'agil'],
+  lanceiro: ['perfurante', 'afiado', 'guardiao'],
+  arqueiro: ['afiado', 'agil', 'perfurante'],
+  clerigo: ['robusto', 'sereno', 'guardiao'],
+  piromante: ['agil', 'afiado', 'sereno'],
+};
+
 /** Nomes próprios das lendárias; cada um aparece uma vez por campanha enquanto houver. */
 export const LEGENDARY_TITLES: string[] = [
   'Vigia Partida',

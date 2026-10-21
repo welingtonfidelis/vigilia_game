@@ -7,7 +7,7 @@ import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
 import { enterFloor, isBossFloor, partyRooms, reduceCorruption, travelTicks } from './dungeon.ts';
 import { hasSpec, heroCapacity } from './economy.ts';
-import { affixCount, rollDrop, shareLoot } from './items.ts';
+import { affixCount, merchantVisit, rollDrop, shareLoot } from './items.ts';
 import {
   addBond,
   addTrait,
@@ -22,7 +22,7 @@ import {
 } from './hero.ts';
 import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
-import { chance, int } from './rng.ts';
+import { chance, int, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, World } from './types.ts';
 
 const members = (world: World, party: Party): Hero[] =>
@@ -157,10 +157,36 @@ function enterRoom(world: World, party: Party, room: Room): void {
       }
       break;
     }
+    case 'mercador':
+      merchantVisit(world, party, heroes);
+      break;
+    case 'armadilha':
+      springTrap(world, party, heroes);
+      break;
     case 'vazia':
       break;
   }
   afterRoom(world, party, true);
+}
+
+/**
+ * Armadilha: arqueiros e lanceiros podem perceber antes (cada um tem uma chance); o
+ * Curioso chama a atenção para o lugar errado. Fere, mas não mata.
+ */
+export function springTrap(world: World, party: Party, heroes: Hero[]): void {
+  const scouts = heroes.filter((h) => h.classId === 'arqueiro' || h.classId === 'lanceiro');
+  let spot = 1 - Math.pow(1 - B.trapSpotChance, scouts.length);
+  if (heroes.some((h) => hasTrait(h, 'curioso'))) spot *= 0.7;
+  if (scouts.length > 0 && chance(world.rng, spot)) {
+    party.moments.push(`${scouts[0]!.name} percebeu uma armadilha a tempo e o grupo passou ao largo.`);
+    return;
+  }
+  for (const h of heroes) {
+    const max = heroStats(world, h).maxHp;
+    const hurt = max * range(world.rng, B.trapDamageMin, B.trapDamageMax);
+    h.hp = Math.max(1, h.hp - hurt);
+  }
+  party.moments.push(chance(world.rng, 0.5) ? 'Dardos saíram das paredes e feriram o grupo.' : 'Espinhos subiram do chão e feriram o grupo.');
 }
 
 function addMaterial(party: Party, mat: MaterialId, qty: number): void {

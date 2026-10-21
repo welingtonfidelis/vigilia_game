@@ -108,22 +108,22 @@ A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pin
 
 ### Retrato do balanceamento (10 sementes × 30 anos, prefeito automático)
 
-Medido depois dos itens, das encomendas e das especializações (M4). O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia.
+Medido depois dos itens, das encomendas, das especializações, da bancada do joalheiro, das salas novas e dos chefes em duas fases (M4). O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia.
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 1,0 | 0,5 h | 0,5–1,5 | 100% |
-| Minas Inundadas | 3,3 | 1,7 h | 1,9–5,0 | 100% |
-| Jardim de Fungos | 4,7 | 2,5 h | 3,0–6,0 | 100% |
-| Cidade Afogada | 9,5 | 5,1 h | 6,2–13,7 | 100% |
-| Forja Abissal | 14,1 | 7,5 h | 10,6–19,6 | 100% |
-| Coração do Abismo | 17,4 | 9,3 h | 13,4–22,2 | 90% |
+| Catacumbas | 1,0 | 0,6 h | 0,8–1,4 | 100% |
+| Minas Inundadas | 2,9 | 1,5 h | 1,8–4,5 | 100% |
+| Jardim de Fungos | 4,8 | 2,5 h | 3,5–5,7 | 100% |
+| Cidade Afogada | 7,2 | 3,8 h | 5,7–8,2 | 100% |
+| Forja Abissal | 14,0 | 7,5 h | 9,9–22,6 | 100% |
+| Coração do Abismo | 17,8 | 9,5 h | 13,3–29,3 | 80% |
 
-- **Mortalidade:** 5,1 mortes/ano com elenco de ~22 (o Dormitório e a guilda Mercenária aumentam o elenco e os grupos). Ninguém é dispensado: são cerca de 19 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~84 lesões, ~5 cicatrizes, ~21 casamentos, ~21 filhos e ~7 deles chegando à maioridade como heróis.
-- **Vila (M3), por campanha:** ~30 incursões, ~6 moradores mortos e ~0,5 que deixa a vila; a população termina no teto (~136, abstrata), o humor médio fica em ~62 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
-- **Expedições:** ~99 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro fica entre ~1 e 4,6 mil; o ouro dos heróis termina entre ~69 e 113 mil, bem acima de antes do M4 (~15–37 mil), porque o elenco e o saque cresceram e a forja deixa de ser sumidouro quando a peça nomeada já vale mais que o tier comum. Faltam sumidouros de fim para os heróis (joalheiro, relíquias, propriedades).
+- **Mortalidade:** 4,8 mortes/ano com elenco de ~22 (o Dormitório e a guilda Mercenária aumentam o elenco e os grupos). Ninguém é dispensado: são cerca de 19 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~81 lesões, ~3 cicatrizes, ~20 casamentos, ~21 filhos e ~8 deles chegando à maioridade como heróis.
+- **Vila (M3), por campanha:** ~31 incursões, ~9 moradores mortos e quase ninguém deixando a vila; a população termina no teto (~136, abstrata), o humor médio fica em ~58 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
+- **Expedições:** ~101 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro fica entre ~1,3 e 4,7 mil; o ouro dos heróis termina entre ~38 e 55 mil. A bancada do joalheiro e o mercador cortaram pela metade o excesso da segunda fatia (~69–113 mil), mas ainda ficam acima de antes do M4 (~15–37 mil): a bancada satura quando as peças chegam a três afixos. Falta um sumidouro de fim que não sature.
 - **Desempenho:** ~1,3 s para simular uma campanha de 30 anos.
 
 ### O que o M0 entrega
@@ -240,12 +240,14 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Fabricação no ferreiro:** encomenda de arma, armadura ou amuleto com ouro e material do abismo; rara a partir do nível 2, épica com a especialização do encaixe; fila com prazo e entrega no cofre.
 - [x] **Especializações de nível 3:** ao subir um prédio para o nível 3, um diálogo oferece os dois caminhos (Cervejaria × Casa de apostas, Quartos de luxo × Dormitório, Lâminas × Couraças, Luz × Penitência, Mercenária × Ordem, Disciplina × Arena, Cirurgia × Ervas); prédios que já estavam no nível 3 escolhem pelo painel (`src/data/specs.ts`). Save v8 → v9 migra sozinho.
 - [x] **Andares mais claros:** o cabeçalho do corredor diz "andar 2 de 4" e onde fica o chefe; cada sala mostra "sala 3 de 5" ao passar o mouse.
-- [ ] Mais variações de chefe e sala.
-- [ ] Sumidouros de ouro para os heróis no fim do jogo.
+- [x] **Bancada do joalheiro** (ferreiro nível 3): heróis ricos vão sozinhos encantar (+1 afixo; rara vira épica), reforjar (troca um afixo que não serve à classe) ou polir a lendária (+1 tier), com o próprio ouro; a história da peça guarda cada serviço e o painel do ferreiro mostra quem passou.
+- [x] **Salas novas:** mercador errante (vende uma peça a quem pagar, ouro do herói) e armadilha (dardos ou espinhos; arqueiros e lanceiros percebem antes; fere sem matar). O corredor desenha o mercador com a arca e os espinhos.
+- [x] **Chefes em duas fases:** abaixo de 50% cada chefe ganha um segundo comportamento (urnas que estouram, couraça dura e golpe duplo, jardim que brota, silêncio nas curas, caçada aos feridos, olhar que drena o ânimo); o corredor treme e o relatório conta. O relatório da expedição ganhou a lista de momentos.
+- [ ] Sumidouro de ouro dos heróis ainda incompleto: a bancada satura quando as peças chegam a três afixos.
 
 ### Próximo: M4
 
-Mais variações de chefe e de sala, sumidouros de ouro para os heróis (o joalheiro é o candidato) e playtest amplo. Mudança de local dos prédios ficou de fora. Ver a seção 9 do GDD (neste documento).
+Playtest amplo do M4 e um sumidouro de fim para o ouro dos heróis que não sature (propriedades, relíquias, mecenato na vila). Mudança de local dos prédios ficou de fora. Ver a seção 9 do GDD (neste documento).
 
 ---
 
@@ -789,6 +791,52 @@ A forja faz uma encomenda por vez (duas com a especialização "Lâminas" ou "Co
 - **Encomenda** custa 150 + 60 por tier de ouro (épica ×2,5) e 40 de material (épica, 100). O valor de uma peça é o da encomenda; a venda paga 25% e o cofre cheio derrete a pior peça, sem dar ouro.
 - **Sanguessuga** soma no máximo 12%. Na fúria, a cura (e o sanguessuga) cai pela metade e continua caindo, e os inimigos passam a ignorar a defesa aos poucos: um grupo de curandeiros bem equipado não empata mais com o chefe.
 - **Poder dos atos IV, V e VI** subiu de 4,8 / 6,4 / 8,2 para 5,3 / 7,9 / 10,6, para o ritmo voltar perto do de antes com o poder novo dos heróis.
+
+#### 9.3 Especificação do M4 (terceira fatia): bancada do joalheiro, salas novas e chefes em duas fases
+
+Três problemas que o playtest e o balanceador mostram: os heróis terminam a campanha com ~3× mais ouro do que conseguem gastar; os andares se parecem (seis tipos de sala); e cada chefe faz a mesma coisa do começo ao fim da luta. Esta fatia ataca os três sem mexer no que já funciona. Continua valendo a influência indireta: quem gasta o ouro é o herói, por conta própria.
+
+**Bancada do joalheiro (sumidouro de ouro dos heróis).** Com o ferreiro no nível 3, a forja ganha uma bancada. Heróis ricos vão sozinhos até ela (atividade nova, "joias"), pagando com o próprio ouro:
+
+| Serviço | O que faz | Preço (do herói) |
+|---|---|---|
+| Encantar | +1 afixo sorteado numa peça rara ou épica (rara vira épica; épica chega a 3 afixos e vira "épica encantada") | 1.500 + 400 por tier (amuleto conta como tier 8) |
+| Reforjar | Troca o afixo mais fraco para a classe por outro sorteado | metade do encantar |
+| Polir a lendária | +1 tier na lendária, até 2 acima do máximo da forja | 10.000 |
+
+O herói escolhe o serviço que mais aumenta o valor da peça que ele usa e só vai quando sobra ouro depois de comprar o tier comum. Cada serviço entra na história da peça ("encantada por Mira no ano 9") e na crônica quando muda a raridade. O prefeito não paga nem manda: só vê na ficha e no painel do ferreiro quem passou pela bancada.
+
+**Duas salas novas.**
+
+| Sala | Onde | O que acontece |
+|---|---|---|
+| Mercador errante | Andar 2 em diante, rara | Vende uma peça rara ou épica do ato. Quem mais ganha com ela e tem o ouro compra (ouro do herói); se ninguém compra, ele segue caminho. Aparece também em andar já conquistado (é outro sumidouro, não uma fonte grátis de peças). |
+| Armadilha | Andar 2 em diante | Dardos ou espinhos: dano de 10% a 20% da vida em todos. Um arqueiro ou lanceiro no grupo tem chance de perceber antes (mais chance com dois); o Curioso aumenta a chance de cair nela. |
+
+No corredor: o mercador é um morador do pack com uma arca; a armadilha são espinhos desenhados em código no chão, que sobem quando o grupo passa.
+
+**Chefes em duas fases.** Abaixo de 50% de vida, cada chefe ganha um segundo comportamento, além do que já tem (a arte de fase 2 já troca nesse momento):
+
+| Ato | Chefe | Fase 2 |
+|---|---|---|
+| I | O Guardião das Urnas | Invoca o dobro de esqueletos, e cada invocação estoura as urnas: dano pequeno em todos |
+| II | A Couraça Submersa | Endurece (+50% de defesa) e os golpes passam a atingir dois heróis |
+| III | A Mãe-Bolor | O veneno vem mais rápido e ela faz brotar dois Brotados |
+| IV | O Arcebispo Sem Fôlego | A maldição vem mais rápido e, depois de cada uma, as curas rendem metade por 6 s |
+| V | O Martelo Que Não Dorme | Passa a mirar quem tem menos vida e dá um golpe em área a cada 6 s |
+| VI | Aquilo que Vigia | O olhar drena o ânimo de todos aos poucos (além dos ecos que já ergue) |
+
+O corredor marca a troca: a faixa "FASE 2", um tremor curto da câmera e um momento no relatório ("O Guardião das Urnas quebrou as próprias urnas").
+
+**Telas.** Ficha do herói com os serviços da bancada na história da peça; painel do ferreiro com a bancada (preços e quem passou por ela nos últimos dias); relatório da expedição com as compras do mercador e as armadilhas; legendas das salas novas no mapa de salas do corredor e do Abismo.
+
+**Save.** Sem migração: as salas novas e os campos novos da peça (encantamentos) são opcionais e nascem vazios.
+
+**Balanceamento.** Meta: o ouro dos heróis no fim volta para perto do de antes do M4 (~15–40 mil), sem mudar o ritmo (último chefe por volta do ano 17) nem a mortalidade (~5/ano), com 0 impasses e ócio ≤ 4 dias. A armadilha não pode virar fonte de mortes: ela não mata (deixa com pelo menos 1 de vida).
+
+**Fica para depois.** Alquimista e poções, eventos de história nas salas, mais afixos de elite.
+
+**Ajustes feitos na implementação.** Encantar custa 2.000 + 500 por tier (a forja fica com 10%); na fase 2 o Guardião chama 3 esqueletos por vez e as urnas batem com 25% do ataque dele (com 4 e 35% o primeiro chefe atrasava meio ano). Resultado no balanceador: ouro dos heróis no fim entre ~38 e 55 mil (meta de 15–40 mil alcançada só em parte, porque a bancada satura), último chefe no ano ~18, 4,8 mortes/ano e 0 impasses.
 
 ### 10. Decisões em aberto
 

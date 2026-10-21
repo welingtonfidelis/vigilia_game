@@ -13,6 +13,7 @@ import {
   commissionBlocker,
   commissionCost,
   ITEM_SLOTS,
+  itemName,
   itemValue,
   MATERIAL_AFFIX,
   AFFIXES,
@@ -99,7 +100,8 @@ export function BuildingPanel(props: { id: BuildingId }) {
   const cost = nextLevelCost(world, id);
   const activity = BUILDING_ACTIVITY[id];
   const workers = world.heroes.filter((h) => h.status === 'retired' && h.retiredRole && ROLE_PLACE[h.retiredRole] === id).map((h) => h.id);
-  const inside = [...(activity ? townHeroes(world).filter((h) => h.activity?.kind === activity).map((h) => h.id) : []), ...workers];
+  const here = (h: ReturnType<typeof townHeroes>[number]) => h.activity?.kind === activity || (id === 'ferreiro' && h.activity?.kind === 'joias');
+  const inside = [...(activity ? townHeroes(world).filter(here).map((h) => h.id) : []), ...workers];
   const affordable = cost ? canAfford(world, cost) : false;
   const spec = specOf(world, id);
   const [specDialog, setSpecDialog] = useState<'build' | 'choose' | null>(null);
@@ -157,6 +159,7 @@ export function BuildingPanel(props: { id: BuildingId }) {
         </>
       )}
       {id === 'ferreiro' && lvl >= 2 && <ForgeOrders world={world} />}
+      {id === 'ferreiro' && lvl >= MAX_BUILDING_LEVEL && <JewelerBench world={world} />}
       {id === 'guilda' && lvl >= 1 && <DoctrinePicker world={world} />}
       {id === 'guilda' && (
         <button class="btn" onClick={() => ui.open({ kind: 'board' })}>
@@ -633,5 +636,40 @@ function ArsenalItem(props: { world: World; item: Item; heroes: ReturnType<typeo
         </button>
       </span>
     </ItemCard>
+  );
+}
+
+const BENCH_VERB: Record<'encantar' | 'reforjar' | 'polir', string> = { encantar: 'encantou', reforjar: 'reforjou', polir: 'poliu' };
+
+/** A bancada do joalheiro: o que custa e quem passou por ela (o ouro é dos heróis). */
+function JewelerBench(props: { world: World }) {
+  const { world } = props;
+  const visits = [...(world.town.bench ?? [])].reverse();
+  return (
+    <>
+      <h3>Bancada do joalheiro</h3>
+      <p class="sub">
+        Heróis com ouro sobrando vêm por conta própria e pagam do próprio bolso: <strong>encantar</strong> põe mais um afixo numa peça rara ou épica (
+        {fmt(BALANCE.benchEnchantBase)} + {fmt(BALANCE.benchEnchantPerTier)} por tier), <strong>reforjar</strong> troca um afixo que não serve à classe (metade) e{' '}
+        <strong>polir</strong> sobe o tier de uma lendária ({fmt(BALANCE.benchPolishPrice)}). A forja fica com {pct(BALANCE.benchTreasuryShare)} do valor.
+      </p>
+      {visits.length === 0 ? (
+        <p class="sub">Ninguém passou pela bancada ainda.</p>
+      ) : (
+        <ul class="effects">
+          {visits.map((v, i) => {
+            const hero = world.heroes.find((h) => h.id === v.heroId);
+            const item = hero ? Object.values(hero.items ?? {}).find((it) => it?.id === v.itemId) : undefined;
+            const days = Math.floor((world.tick - v.tick) / TICKS_PER_DAY);
+            return (
+              <li key={i}>
+                <HeroLink id={v.heroId} /> {BENCH_VERB[v.service]} {item && hero ? itemName(item, hero.classId).toLowerCase() : 'uma peça'} por {fmt(v.price)} de ouro ·{' '}
+                {days === 0 ? 'hoje' : days === 1 ? 'ontem' : `há ${days} dias`}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
   );
 }

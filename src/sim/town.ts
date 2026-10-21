@@ -27,7 +27,7 @@ import {
   maxLevel,
 } from './hero.ts';
 import { forgePrice, retireHero, roleCount } from './people.ts';
-import { nextTierWorth, upgradeTier } from './items.ts';
+import { benchOffer, nextTierWorth, upgradeTier, useBench } from './items.ts';
 import { chance, pick, range } from './rng.ts';
 import type { ActivityKind, Hero, World } from './types.ts';
 
@@ -44,6 +44,7 @@ const DURATION_HOURS: Record<ActivityKind, number> = {
   aguardar: 2,
   tratar: 6,
   termas: 3,
+  joias: 2,
 };
 
 export const townHeroes = (world: World): Hero[] => world.heroes.filter((h) => h.status === 'town');
@@ -175,7 +176,10 @@ export function scoreActivities(world: World, hero: Hero): [ActivityKind, number
     const mult = hasTrait(hero, 'devoto') ? 1.6 : 1;
     scores.push(['rezar', (1 - hero.needs.faith / 100) * 0.8 * mult + hero.grief / 200]);
   }
-  if (affordableUpgrade(world, hero)) scores.push(['comprar', 1.1]);
+  const upgrade = affordableUpgrade(world, hero);
+  if (upgrade) scores.push(['comprar', 1.1]);
+  // Com o tier comum em dia e ouro sobrando, o herói leva a peça ao joalheiro.
+  else if (benchOffer(world, hero)) scores.push(['joias', 0.9]);
   if (!hero.injury && level(world, 'campo') >= 1 && hero.gold >= trainPrice(world) && hero.level < maxLevel(hero)) {
     scores.push(['treinar', 0.35]);
   }
@@ -267,6 +271,11 @@ function finishActivity(world: World, hero: Hero): void {
       hero.gold -= price;
       upgradeTier(world, hero, slot, 'comprado na forja da vila');
       town.treasury += price * B.gearMargin;
+      break;
+    }
+    case 'joias': {
+      const offer = benchOffer(world, hero);
+      if (offer) useBench(world, hero, offer);
       break;
     }
     case 'treinar': {

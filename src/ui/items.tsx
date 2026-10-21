@@ -51,6 +51,7 @@ export function ItemCard(props: { world: World; item: Item; classId: ClassId | n
         )}
         <small class="item-origin">
           {item.origin.charAt(0).toUpperCase() + item.origin.slice(1)}.{ownersText(world, item)}
+          {item.history && item.history.length > 0 && ` Depois, ${item.history.join('; ')}.`}
         </small>
         {props.children}
       </span>

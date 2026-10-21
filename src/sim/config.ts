@@ -114,6 +114,23 @@ export const BALANCE = {
   commissionEpicMaterial: 100,
   commissionRareDays: 2,
   commissionEpicDays: 4,
+  // Bancada do joalheiro (M4, terceira fatia): sumidouro do ouro dos heróis.
+  benchEnchantBase: 2000,
+  benchEnchantPerTier: 500,
+  benchPolishPrice: 10000,
+  benchTreasuryShare: 0.1,
+  benchLogSize: 12,
+  merchantMarkup: 3,
+  merchantEpicChance: 0.3,
+  // Armadilha: dano em fração da vida máxima; cada batedor (arqueiro ou lanceiro) tem esta chance de perceber.
+  trapDamageMin: 0.1,
+  trapDamageMax: 0.2,
+  trapSpotChance: 0.5,
+  // Chefes em duas fases (abaixo de 50% de vida).
+  phase2SecondHit: 0.6,
+  phase2UrnBlast: 0.25,
+  /** Quantos esqueletos o Guardião chama por vez na fase 2 (na 1, dois). */
+  phase2Summons: 3,
   affixCrit: 0.05,
   affixPierce: 0.15,
   affixDef: 4,

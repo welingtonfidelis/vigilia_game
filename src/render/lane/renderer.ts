@@ -212,6 +212,9 @@ export class LaneRenderer {
   private queue: { at: number; ev: CombatEvent }[] = [];
   private cursor: EventCursor = { combat: null, last: 0 };
   private lastCombat: unknown = null;
+  /** O chefe desta luta já passou para a fase 2 (a câmera treme uma vez). */
+  private phase2Seen = false;
+  private shakeUntil = 0;
   /** Inimigos desta luta que já viraram corpo (não renascem). */
   private fallen = new Set<number>();
   /** Quando o grupo começou a voltar para a vila (relógio de efeitos). */
@@ -297,7 +300,13 @@ export class LaneRenderer {
     const length = laneLength(rooms.length);
     const target = cameraTarget(this.leaderX, this.facing, this.viewW, length);
     this.camX = Number.isNaN(this.camX) ? target : this.camX + (target - this.camX) * Math.min(1, dt * 3);
-    if (this.canvas) this.draw(party, rooms);
+    if (this.canvas) {
+      // Tremor curto da câmera (fase 2 do chefe).
+      const shake = this.real < this.shakeUntil ? (Math.random() * 2 - 1) * 2.5 : 0;
+      this.camX += shake;
+      this.draw(party, rooms);
+      this.camX -= shake;
+    }
   }
 
   /** Som de um golpe, só quando alguém está olhando. */
@@ -411,6 +420,7 @@ export class LaneRenderer {
       this.enemies.clear();
       this.fallen.clear();
       this.lastCombat = combat;
+      this.phase2Seen = false;
       this.combatRoom = party.roomIndex;
     }
     if (!combat) return;
@@ -435,8 +445,15 @@ export class LaneRenderer {
         actor.projectile = 'dark';
         this.enemies.set(unit.uid, actor);
       }
-      // A fase 2 do chefe troca o desenho.
-      if (boss) actor.sprite = enemySource(world, party, unit) ?? actor.sprite;
+      // A fase 2 do chefe troca o desenho e sacode a câmera.
+      if (boss) {
+        actor.sprite = enemySource(world, party, unit) ?? actor.sprite;
+        if (!this.phase2Seen && unit.alive && unit.hp <= unit.maxHp * 0.5) {
+          this.phase2Seen = true;
+          this.shakeUntil = this.real + 0.5;
+          this.sound('blast');
+        }
+      }
       actor.homeX = slot.x;
       actor.hp = Math.max(0, unit.hp);
       actor.maxHp = unit.maxHp;
@@ -800,6 +817,18 @@ export class LaneRenderer {
         case 'restos':
           this.drawProp('prop/arena/bones', tx, ROW_Y[1], t);
           break;
+        case 'mercador':
+          // O mercador espera com a arca até o grupo passar; depois segue caminho.
+          if (!room.cleared) {
+            this.drawVillager('char/villager/artesa/m', tx + 6, ROW_Y[0]);
+            const sheet = image(DUNGEON_URL);
+            const f = x72Frame('chest_full_open_anim_f2');
+            if (sheet && f) ctx.drawImage(sheet, f[0], f[1], f[2], f[3], tx - 14, ROW_Y[0] - 14, 16, 16);
+          }
+          break;
+        case 'armadilha':
+          this.drawSpikes(tx, room.cleared);
+          break;
         case 'chefe': {
           this.drawProp(`prop/arena/${roman}/boss-gate`, tx + 40, ROW_Y[0] - 2, t);
           const ritual = packAsset('decal/arena/ritual-circle');
@@ -811,6 +840,37 @@ export class LaneRenderer {
           break;
       }
     });
+  }
+
+  /** Morador do pack (quadro parado), virado para quem chega pela esquerda. */
+  private drawVillager(id: string, x: number, y: number): void {
+    const asset = packAsset(id);
+    const img = asset ? image(packUrl(asset.file)) : null;
+    if (!asset || !img) return;
+    const [w, h] = asset.frameSize ?? asset.size ?? [16, 21];
+    const { ctx } = this;
+    ctx.save();
+    ctx.translate(Math.round(x), y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(img, 0, 0, w, h, -Math.floor(w / 2), -h, w, h);
+    ctx.restore();
+  }
+
+  /** Espinhos no chão da sala: baixos até o grupo passar; depois de pegar alguém, ficam erguidos. */
+  private drawSpikes(cx: number, sprung: boolean): void {
+    const { ctx } = this;
+    const h = sprung ? 5 : 2;
+    for (let row = 0; row < 2; row++) {
+      const y = ROW_Y[row]! + 2;
+      for (let x = cx - 24 + row * 3; x <= cx + 24; x += 6) {
+        ctx.fillStyle = '#2a2a2e';
+        ctx.fillRect(x - 1, y, 3, 1);
+        ctx.fillStyle = '#8a8f99';
+        for (let k = 0; k < h; k++) ctx.fillRect(x, y - k - 1, 1, 1);
+        ctx.fillStyle = '#c9ced6';
+        ctx.fillRect(x, y - h, 1, 1);
+      }
+    }
   }
 
   private drawProp(id: string, x: number, y: number, t: number): void {
