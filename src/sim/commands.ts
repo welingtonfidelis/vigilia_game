@@ -31,6 +31,9 @@ import type { BuildingId, DecreeId, Doctrine, GiftKind, Hero, ItemSlot, Material
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
 const fail = (reason: string): CommandResult => ({ ok: false, reason });
+
+/** Carinho do prefeito num cão ou gato da vila (uma vez por dia por bicho). */
+export { petAnimal } from './pets.ts';
 const OK: CommandResult = { ok: true };
 
 export function blowHorn(world: World): CommandResult {

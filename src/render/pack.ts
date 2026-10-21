@@ -1,4 +1,4 @@
-// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores e crianças). Não editar à mão.
+// Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores, crianças, monstros e bichos da vila). Não editar à mão.
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -13781,6 +13781,494 @@ export const PACK_ASSETS: PackAsset[] = [
           3
         ],
         "fps": 4
+      }
+    }
+  },
+  {
+    "id": "char/pet/cao/caramelo",
+    "type": "character",
+    "file": "export/png/char-pet-cao-caramelo.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/cao/preto",
+    "type": "character",
+    "file": "export/png/char-pet-cao-preto.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/cao/malhado",
+    "type": "character",
+    "file": "export/png/char-pet-cao-malhado.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/cao/cinza",
+    "type": "character",
+    "file": "export/png/char-pet-cao-cinza.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/gato/laranja",
+    "type": "character",
+    "file": "export/png/char-pet-gato-laranja.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/gato/preto",
+    "type": "character",
+    "file": "export/png/char-pet-gato-preto.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/gato/cinza",
+    "type": "character",
+    "file": "export/png/char-pet-gato-cinza.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
+      }
+    }
+  },
+  {
+    "id": "char/pet/gato/branco",
+    "type": "character",
+    "file": "export/png/char-pet-gato-branco.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      144,
+      16
+    ],
+    "columns": 9,
+    "rows": 1,
+    "frames": 9,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 3
+      },
+      "walk": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 10
+      },
+      "sit": {
+        "frames": [
+          6
+        ],
+        "fps": 1
+      },
+      "happy": {
+        "frames": [
+          6,
+          7
+        ],
+        "fps": 4
+      },
+      "sleep": {
+        "frames": [
+          8
+        ],
+        "fps": 1
       }
     }
   }

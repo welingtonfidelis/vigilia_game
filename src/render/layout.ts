@@ -2,7 +2,7 @@
 
 import { buildingLevel } from '../sim/index.ts';
 import { JOB_BUILDING } from '../sim/citizens.ts';
-import type { BuildingId, Citizen, Hero, RetiredRole, World } from '../sim/index.ts';
+import type { BuildingId, Citizen, Hero, Pet, PetSpecies, RetiredRole, World } from '../sim/index.ts';
 
 /** Lado do tile no mundo: 16 px de arte × 2. */
 export const TILE = 32;
@@ -302,6 +302,30 @@ export function citizenSpot(world: World, citizen: Citizen, hour: number, day: n
   }
   // Sem o prédio do ofício, o morador fica na praça.
   return { x: PLAZA.x + ox, y: PLAZA.y + oy };
+}
+
+/** Lugares de cão (praça, portas movimentadas, fogueira) e de gato (poço, sacos, portas quietas). */
+const PET_SPOTS: Record<PetSpecies, () => Point[]> = {
+  cao: () => [PLAZA, door('taverna'), door('campo'), LANDMARKS.fogueira, { x: LANDMARKS.quadro.x, y: LANDMARKS.quadro.y + 56 }],
+  gato: () => [{ x: 21 * TILE + 16, y: 16.6 * TILE }, door('estalagem'), door('templo'), { x: 14 * TILE, y: 15.4 * TILE }, { x: PLAZA.x + 60, y: PLAZA.y - 40 }],
+};
+
+/**
+ * Onde um cão ou gato está agora (visual): troca de lugar a cada 3 horas; à noite o cão
+ * dorme perto da fogueira e o gato na porta de uma casa.
+ */
+export function petSpot(pet: Pet, hour: number, day: number): Point {
+  const h = hash(pet.id * 7919 + (pet.species === 'gato' ? 13 : 0), day * 8 + Math.floor(hour / 3));
+  const ox = ((h & 0xff) / 255 - 0.5) * 70;
+  const oy = (((h >>> 8) & 0xff) / 255 - 0.5) * 28;
+  if (hour >= 21 || hour < 6) {
+    if (pet.species === 'cao') return { x: LANDMARKS.fogueira.x + 34 + (pet.id % 3) * 14, y: LANDMARKS.fogueira.y + 16 };
+    const home = HOMES[pet.id % HOMES.length]!.door;
+    return { x: home.x + 22, y: home.y - 4 };
+  }
+  const spots = PET_SPOTS[pet.species]();
+  const spot = spots[(h >>> 16) % spots.length]!;
+  return { x: spot.x + ox, y: spot.y + 12 + oy };
 }
 
 /** Vaga numa fila diante de um lugar: até 5 lado a lado, depois outra fileira atrás. */

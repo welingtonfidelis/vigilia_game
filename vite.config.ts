@@ -1,8 +1,22 @@
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 
-// A versão do jogo vem do package.json e aparece no menu.
-const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
+/**
+ * Versão do jogo no menu: 0.<número de commits>.0 (39 commits → 0.39.0). Sem o
+ * histórico do git (cópia rasa, pasta solta), cai na versão do package.json.
+ */
+function gameVersion(): string {
+  try {
+    const commits = Number(execSync('git rev-list --count HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim());
+    if (Number.isInteger(commits) && commits > 0) return `0.${commits}.0`;
+  } catch {
+    // sem git: segue para o package.json
+  }
+  return (JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }).version;
+}
+
+const version = gameVersion();
 
 export default defineConfig(({ command }) => ({
   // No GitHub Pages o site fica em /vigilia_game/; no dev local continua na raiz.

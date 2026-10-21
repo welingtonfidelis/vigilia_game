@@ -2,7 +2,7 @@
 // Só posição visual: quem decide para onde vão é o núcleo.
 
 import Phaser from 'phaser';
-import type { ActivityKind, Child, Citizen, Hero } from '../sim/index.ts';
+import type { ActivityKind, Child, Citizen, Hero, Pet } from '../sim/index.ts';
 import { citizenLook, ICON_KINDS } from './art.ts';
 import { ART_SCALE, heroSprite } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
@@ -350,6 +350,93 @@ export class CitizenSprite {
 
   hits(x: number, y: number): boolean {
     return !this.hidden && Math.abs(x - this.root.x) < 16 && y > this.root.y - 58 && y < this.root.y + 16;
+  }
+
+  destroy(): void {
+    this.root.destroy();
+  }
+}
+
+export type PetPose = 'idle' | 'walk' | 'sit' | 'happy' | 'sleep';
+
+/** Cão ou gato da vila: passeia, senta, dorme à noite e abana o rabo no carinho. */
+export class PetSprite {
+  readonly id: number;
+  readonly name: string;
+  readonly species: Pet['species'];
+  readonly root: Phaser.GameObjects.Container;
+  /** Caminho em volta dos prédios até o destino atual. */
+  readonly route = new Route();
+  private readonly body: Phaser.GameObjects.Sprite;
+  private readonly texture: string;
+  private moving = false;
+  private left = false;
+  private playing = '';
+  /** Até quando (ms do relógio da cena) fica feliz depois do carinho. */
+  happyUntil = 0;
+
+  constructor(scene: Phaser.Scene, pet: Pet, at: Point) {
+    this.id = pet.id;
+    this.name = pet.name;
+    this.species = pet.species;
+    this.texture = `char/pet/${pet.species}/${pet.look}`;
+    const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE * 0.6, ART_SCALE * 0.5);
+    this.body = scene.add.sprite(0, 1, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
+    this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
+  }
+
+  get x(): number {
+    return this.root.x;
+  }
+  get y(): number {
+    return this.root.y;
+  }
+
+  walkTo(target: Point, step: number): boolean {
+    const dx = target.x - this.root.x;
+    const dy = target.y - this.root.y;
+    const dist = Math.hypot(dx, dy);
+    const arrived = dist <= Math.max(step, 0.5);
+    if (arrived) {
+      this.root.setPosition(target.x, target.y);
+      this.moving = false;
+    } else {
+      this.root.setPosition(this.root.x + (dx / dist) * step, this.root.y + (dy / dist) * step);
+      this.moving = step > 0;
+      if (this.moving && Math.abs(dx) > 2) this.face(dx < 0);
+    }
+    this.root.setDepth(this.root.y);
+    return arrived;
+  }
+
+  /** Vira para o prefeito na hora do carinho. */
+  faceTowards(x: number): void {
+    this.face(x < this.root.x);
+  }
+
+  private face(left: boolean): void {
+    if (left === this.left) return;
+    this.left = left;
+    this.body.setFlipX(left);
+  }
+
+  /** Pose quando parado; andando, a caminhada da folha. `rate` segue a velocidade do jogo. */
+  animate(pose: PetPose, rate: number): void {
+    const kind = this.moving ? 'walk' : pose;
+    const key = `${this.texture}:${kind}`;
+    if (this.playing !== key) {
+      this.playing = key;
+      this.body.play(key, true);
+    }
+    this.body.anims.timeScale = Math.min(2, rate > 0 ? rate : 0.6);
+  }
+
+  setAlpha(alpha: number): void {
+    this.root.setAlpha(alpha);
+  }
+
+  hits(x: number, y: number): boolean {
+    return Math.abs(x - this.root.x) < 18 && y > this.root.y - 30 && y < this.root.y + 10;
   }
 
   destroy(): void {

@@ -61,6 +61,8 @@ export { busyParties } from './party.ts';
 export { floorPower, isBossFloor, partyRooms, travelTicks } from './dungeon.ts';
 export { byWhom, floorLabel, heroLabel } from './chronicle.ts';
 // Pessoas (M2): funções dos aposentados, recuperação, filhos e penalidades de lesão.
+export { petCap, petCoat } from './pets.ts';
+export { PET_LOOKS, PET_NAMES, PET_SPECIES_NAME, type PetLookDef } from '../data/pets.ts';
 export { childAge, defaultRole, forgePrice, honorFuneral, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';
 export { WOUNDS, woundEffects } from './hero.ts';
 

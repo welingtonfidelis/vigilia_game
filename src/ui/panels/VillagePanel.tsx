@@ -11,6 +11,8 @@ import {
   heroCapacity,
   JOB_NAMES,
   JOB_ORDER,
+  PET_SPECIES_NAME,
+  petCoat,
   populationCap,
   threatOf,
   TICKS_PER_DAY,
@@ -109,6 +111,24 @@ export function VillagePanel() {
           })}
         </div>
       )}
+
+      <h3>Bichos da vila</h3>
+      {(world.town.pets ?? []).length === 0 ? (
+        <p class="sub">Nenhum cão ou gato por aqui agora. Logo aparece algum pelo portão.</p>
+      ) : (
+        <ul class="citizens">
+          {(world.town.pets ?? []).map((pet) => (
+            <li key={pet.id}>
+              <strong>{pet.name}</strong>, {PET_SPECIES_NAME[pet.species]} {petCoat(pet)}
+              <small class="sub">
+                {' '}
+                · chegou em {formatDate(pet.arrivedDay * TICKS_PER_DAY)} · {pet.pets === 0 ? 'ainda sem carinho' : `${pet.pets} carinho${pet.pets === 1 ? '' : 's'}`}
+              </small>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p class="sub">Clique num bicho na vila para o prefeito fazer carinho (um por dia).</p>
 
       <h3>Moradores conhecidos</h3>
       <p class="sub">

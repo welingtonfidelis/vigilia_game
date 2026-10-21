@@ -7,6 +7,7 @@ import { maybeSeasonalEvent } from './events.ts';
 import { formParties } from './party.ts';
 import { processForge } from './items.ts';
 import { dailyPatronage } from './patronage.ts';
+import { dailyPets } from './pets.ts';
 import { dailyPeople } from './people.ts';
 import { dailyCitizens } from './citizens.ts';
 import { maybeRaid } from './raids.ts';
@@ -48,6 +49,7 @@ function daily(world: World): void {
   dailyCorruption(world);
   dailyTown(world);
   dailyPatronage(world);
+  dailyPets(world);
   dailyPeople(world);
   dailyCitizens(world);
   strayArrivals(world);

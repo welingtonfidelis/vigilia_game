@@ -351,8 +351,15 @@ export function MenuPanel() {
         <li>WASD ou setas: andar com o prefeito. Clique ou toque no chão para andar até lá.</li>
         <li>Clique num prédio, no berrante, no quadro ou no cofre: o prefeito vai até lá e interage. Perto de algo, E interage.</li>
         <li>Clique num herói para ver a ficha.</li>
-        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · M: abismo · H: heróis · C: crônica · N: som · Esc: fechar.</li>
-        <li>Roda do mouse ou pinça com dois dedos: aproximar ou afastar o mapa.</li>
+        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · G: acompanhar as masmorras · M: abismo · H: heróis · C: crônica · N: som · Esc: fechar.</li>
+      </ul>
+
+      <h3>As velas do prefeito</h3>
+      <ul class="effects">
+        <li>As velas no alto da tela são a energia do prefeito: {BALANCE.mayorEnergy} por dia, e voltam à meia-noite.</li>
+        <li>Na ficha de um herói (clique nele): conversar (1 vela, uma vez por dia com cada um), consolar quem está de luto (1) e dar presentes (1 vela e o ouro do tesouro).</li>
+        <li>No cofre: dar uma peça do arsenal a um herói (1 vela).</li>
+        <li>Na fogueira da praça: discursar (2 velas, uma vez por dia). Anima e fideliza todos os heróis que estão na vila.</li>
       </ul>
 
       <h3>Créditos</h3>

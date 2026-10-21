@@ -109,23 +109,23 @@ A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pin
 
 ### Retrato do balanceamento (playtest automático: 30 sementes × 30 anos, prefeito automático)
 
-Medido com o M4 inteiro: itens, forja, especializações, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato. O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia. A cada 5 anos o mundo é salvo e carregado: os 180 saves voltaram idênticos.
+Medido com o M4 inteiro (itens, forja, especializações, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e com os ajustes do playtest guiado: famílias mais cedo (laço 65 para casar, 20% de chance de filho por estação) e os bichos da vila. O prefeito automático escolhe Cervejaria, Dormitório, Lâminas, Penitência, Mercenária, Disciplina e Cirurgia, encomenda peças quando o tesouro sobra e entrega uma peça do cofre por dia. A cada 5 anos o mundo é salvo e carregado: os 180 saves voltaram idênticos.
 
 | Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
 |---|---|---|---|---|
-| Catacumbas | 1,2 | 0,7 h | 0,7–2,1 | 100% |
-| Minas Inundadas | 3,3 | 1,7 h | 1,6–6,5 | 100% |
-| Jardim de Fungos | 5,3 | 2,8 h | 3,0–10,5 | 100% |
-| Cidade Afogada | 8,8 | 4,7 h | 4,7–12,8 | 100% |
-| Forja Abissal | 15,5 | 8,3 h | 9,6–28,1 | 97% |
-| Coração do Abismo | 18,9 | 10,1 h | 12,2–28,7 | 97% |
+| Catacumbas | 1,2 | 0,6 h | 0,7–1,8 | 100% |
+| Minas Inundadas | 3,1 | 1,7 h | 1,4–5,3 | 100% |
+| Jardim de Fungos | 5,3 | 2,8 h | 3,0–9,1 | 100% |
+| Cidade Afogada | 8,7 | 4,6 h | 5,7–13,5 | 100% |
+| Forja Abissal | 15,2 | 8,1 h | 10,1–21,3 | 100% |
+| Coração do Abismo | 17,8 | 9,5 h | 11,3–25,1 | 97% |
 
-- **Mortalidade:** 4,8 mortes/ano com elenco de ~22. Ninguém é dispensado: são cerca de 20 aposentadorias por campanha, cada uma com uma função na vila.
-- **Pessoas, por campanha:** ~76 lesões, ~4 cicatrizes, ~22 casamentos, ~21 filhos e ~8 deles chegando à maioridade como heróis.
+- **Mortalidade:** 5,0 mortes/ano com elenco de ~22. Ninguém é dispensado: são cerca de 20 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~74 lesões, ~3 cicatrizes, ~27 casamentos, ~35 filhos e ~17 deles chegando à maioridade como heróis. O primeiro filho costuma nascer entre o ano 2 e o 3,5 e já aparece na praça.
 - **Vila (M3), por campanha:** ~28 incursões, ~12 moradores mortos e quase ninguém deixando a vila; a população termina no teto (~136, abstrata), o humor médio fica em ~54 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
 - **Expedições:** ~102 por ano, 0 impasses de combate, no máximo 1 dia seguido sem expedição e **4% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,46 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
-- **Ouro:** o tesouro termina abaixo de ~2 mil; o ouro dos heróis termina em média com 21,8 mil (14–32 mil), dentro da meta. As provisões fazem o grosso do gasto; a bancada e o mecenato pegam os mais ricos (algumas obras por campanha).
-- **Desempenho:** ~1,7 s para simular uma campanha de 30 anos com os saves.
+- **Ouro:** o tesouro termina abaixo de ~2 mil; o ouro dos heróis termina em média com 22,7 mil (12–32 mil), dentro da meta. As provisões fazem o grosso do gasto; a bancada e o mecenato pegam os mais ricos (algumas obras por campanha).
+- **Desempenho:** ~2,2 s para simular uma campanha de 30 anos com os saves.
 
 ### O que o M0 entrega
 
@@ -251,7 +251,16 @@ Especificação na seção 9.1 do GDD (neste documento).
 
 ### Próximo: playtest guiado e M5
 
-O M4 está fechado. Falta jogar o roteiro do playtest guiado (seção 9.4) e transformar o que aparecer em ajustes; depois vem o M5 (Lenda): gerações, Eras e Pactos, profundezas infinitas, polimento e PT/EN. Ver a seção 9 do GDD (neste documento).
+O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. Depois vem o M5 (Lenda): gerações, Eras e Pactos, profundezas infinitas, polimento e PT/EN. Ver a seção 9 do GDD (neste documento).
+
+**Ajustes do playtest guiado (ano 2):**
+
+- Crianças aparecem na praça desde que nascem, e as famílias se formam mais cedo (laço 65 para casar, 20% de chance de filho por estação).
+- Cães e gatos (`src/sim/pets.ts`): dois no primeiro ano, três depois. Chegam pelo portão, ficam de 3 a 5 anos e vão embora, e outro, de outra pelagem, chega no lugar. O prefeito faz carinho clicando ou com E, um por dia por bicho. O sorteio é um hash da semente e do dia, sem mexer no RNG do núcleo.
+- Fornalha do ferreiro acesa (fogo e halo) e lampiões com halo à noite, como a lanterna do prefeito.
+- A floresta do distrito sul cobre os lotes até o prefeito mandar limpar.
+- Menu: sem a dica de zoom (que saiu do jogo), com uma seção sobre as velas do prefeito. A versão é `0.<commits>.0`.
+- A área de clique do portão estava na praça, ao lado do quadro; voltou para a passagem do portão.
 
 ---
 

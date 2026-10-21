@@ -6,7 +6,6 @@ import {
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
-  childAge,
   commands,
   dayOf,
   hourOf,
@@ -36,12 +35,13 @@ import {
   slotOffset,
   THERMAL_TILES,
   TILE,
+  petSpot,
   wanderPoint,
   WORLD_H,
   WORLD_W,
   type Point,
 } from './layout.ts';
-import { CitizenSprite, ChildSprite, HeroSprite, Mayor } from './sprites.ts';
+import { CitizenSprite, ChildSprite, HeroSprite, Mayor, PetSprite, type PetPose } from './sprites.ts';
 import {
   buildAbyss,
   buildBoard,
@@ -50,6 +50,7 @@ import {
   buildCoffer,
   buildGround,
   buildHornTower,
+  buildOvergrowth,
   buildProps,
   buildCottages,
   buildThermal,
@@ -74,6 +75,10 @@ const MAX_COMMIT_S = 8;
 const MAYOR_SPEED = 250;
 const CHILD_SPEED = 80;
 const CITIZEN_SPEED = 90;
+const DOG_SPEED = 120;
+const CAT_SPEED = 80;
+/** Perto assim, o prefeito já faz carinho sem andar. */
+const PET_RADIUS = 60;
 /** Quem está lesionado anda mais devagar (manca). */
 const INJURED_PACE = 0.6;
 const INTERACT_RADIUS = 78;
@@ -87,6 +92,9 @@ interface Interactable {
   label: (world: World) => string;
   open: () => void;
 }
+
+/** Meio da grelha da fornalha (x da arte 112×96, linha 85) em cada nível do ferreiro. */
+const FORGE_COALS_X: Record<number, number> = { 1: 84, 2: 91, 3: 97 };
 
 interface BuildingView {
   base: Phaser.GameObjects.Image;
@@ -115,10 +123,20 @@ export class VillageScene extends Phaser.Scene {
   private heroes = new Map<number, HeroSprite>();
   private kids = new Map<number, ChildSprite>();
   private citizens = new Map<number, CitizenSprite>();
+  private pets = new Map<number, PetSprite>();
+  /** Depois do primeiro quadro, bicho novo entra pelo portão (ao carregar, já está no lugar). */
+  private petsReady = false;
+  /** Bicho que o prefeito está indo afagar. */
+  private pendingPet: number | null = null;
   private buildings = new Map<BuildingId, BuildingView>();
   private houseLights: Phaser.GameObjects.Image[] = [];
   private propLights: Phaser.GameObjects.Image[] = [];
+  private lampHalos: Phaser.GameObjects.Image[] = [];
+  /** Fogo da fornalha do ferreiro (arte nova não traz a brasa acesa). */
+  private forge: { fire: Phaser.GameObjects.Sprite; glow: Phaser.GameObjects.Image } | null = null;
   private expansionHouses: (Phaser.GameObjects.Image | undefined)[] = [];
+  /** Mato do distrito sul enquanto a área não foi limpa (null = ainda não decidido). */
+  private overgrowth: Phaser.GameObjects.Image[] | null = null;
   private expansionLights: (Phaser.GameObjects.Image | undefined)[] = [];
   private graves = new Map<number, GraveView>();
   private interactables: Interactable[] = [];
@@ -183,7 +201,9 @@ export class VillageScene extends Phaser.Scene {
     const solids: Solid[] = [];
     scatterTrees(this, mask, solids);
     buildCemetery(this, solids);
-    this.propLights = buildProps(this, solids);
+    const props = buildProps(this, solids);
+    this.propLights = props.lights;
+    this.lampHalos = props.halos;
     buildCampfire(this, solids);
     buildThermal(this, solids);
     this.houseLights = buildCottages(this, solids);
@@ -328,11 +348,36 @@ export class VillageScene extends Phaser.Scene {
       view.lights.setVisible(false);
     }
     this.nav.setLayer(`predio:${id}`, this.cellsOf([{ key: texture, x: lot.x, y: lot.y + lot.h / 2 }]));
+    if (id === 'ferreiro') this.syncForge(level);
     view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}`);
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
     if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y + lot.h / 4);
     view.level = level;
     this.layoutSigns();
+  }
+
+  /**
+   * Brasa da fornalha do ferreiro: a arte só traz uns pixels apagados no anexo da direita.
+   * Acende fogo e halo sobre a grelha (que anda para a direita a cada nível).
+   */
+  private syncForge(level: number): void {
+    if (!this.forge) {
+      const fire = this.add.sprite(0, 0, 'fx/fire').setOrigin(0.5, 1).setScale(1).play('fx/fire');
+      const glow = this.add.image(0, 0, 'glow').setTint(0xff7a2a).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(1.6, 1.2);
+      this.forge = { fire, glow };
+    }
+    const coalX = FORGE_COALS_X[level];
+    const lit = level >= 1 && coalX !== undefined;
+    this.forge.fire.setVisible(lit);
+    this.forge.glow.setVisible(lit);
+    if (!lit) return;
+    const lot = LOTS.ferreiro;
+    const bottom = lot.y + lot.h / 2;
+    // Arte de 112×96 com origem no pé do meio: pixel (ax, ay) vai para lot.x − 112 + 2ax, bottom − 192 + 2ay.
+    const x = lot.x - 112 + coalX * ART_SCALE;
+    const y = bottom - 96 * ART_SCALE + 86 * ART_SCALE;
+    this.forge.fire.setPosition(x, y).setDepth(bottom - 1);
+    this.forge.glow.setPosition(x, y - 6);
   }
 
   /**
@@ -403,6 +448,18 @@ export class VillageScene extends Phaser.Scene {
   /** Casas do distrito sul aparecem conforme o prefeito constrói cada lote. */
   private syncExpansion(): void {
     const expansion = this.world.town.expansion;
+    if (!expansion.cleared && this.overgrowth === null) {
+      const growth = buildOvergrowth(this);
+      this.overgrowth = growth.images;
+      this.nav.setLayer('mato', this.cellsOf(growth.solids));
+    } else if (expansion.cleared && this.overgrowth !== null) {
+      // Limpou: o mato some aos poucos e o caminho para os lotes abre.
+      for (const img of this.overgrowth) {
+        this.tweens.add({ targets: img, alpha: 0, duration: 700, delay: Math.random() * 500, onComplete: () => img.destroy() });
+      }
+      this.overgrowth = null;
+      this.nav.setLayer('mato', []);
+    }
     EXPANSION_LOTS.forEach((lot, i) => {
       const built = expansion.houses[i] === true;
       if (built && !this.expansionHouses[i]) {
@@ -435,7 +492,8 @@ export class VillageScene extends Phaser.Scene {
       {
         id: 'berrante',
         point: { x: berrante.x, y: berrante.y + 8 },
-        hit: { x: HORN_TOWER.tx * TILE, y: HORN_TOWER.ty * TILE, w: HORN_TOWER.tw * TILE, h: HORN_TOWER.th * TILE },
+        // Metade de cima da guarita (o berrante fica acima da viga); a passagem é o portão.
+        hit: { x: HORN_TOWER.tx * TILE, y: HORN_TOWER.ty * TILE, w: HORN_TOWER.tw * TILE, h: 3 * TILE },
         label: () => 'Tocar o berrante',
         open: open({ kind: 'horn' }),
       },
@@ -481,7 +539,7 @@ export class VillageScene extends Phaser.Scene {
       {
         id: 'portao',
         point: { x: LANDMARKS.portao.x, y: LANDMARKS.portao.y - 20 },
-        hit: { x: HORN_TOWER.tx * TILE, y: 14 * TILE, w: HORN_TOWER.tw * TILE, h: 3 * TILE },
+        hit: { x: (HORN_TOWER.tx + 1) * TILE, y: (HORN_TOWER.ty + 3) * TILE, w: (HORN_TOWER.tw - 2) * TILE, h: (HORN_TOWER.th - 3) * TILE + 16 },
         label: () => 'Portão da vila',
         open: open({ kind: 'village' }),
       },
@@ -508,7 +566,107 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private interact(id: string): void {
+    if (id.startsWith('pet:')) {
+      this.petPet(Number(id.slice(4)));
+      return;
+    }
     this.interactables.find((i) => i.id === id)?.open();
+  }
+
+  // ── Cães e gatos ────────────────────────────────────────────────────────
+
+  private petAt(x: number, y: number): PetSprite | null {
+    for (const s of this.pets.values()) if (s.hits(x, y)) return s;
+    return null;
+  }
+
+  private nearestPet(): PetSprite | null {
+    let best: PetSprite | null = null;
+    let bestDist = PET_RADIUS;
+    for (const s of this.pets.values()) {
+      const d = Math.hypot(s.x - this.mayor.x, s.y - this.mayor.y);
+      if (d < bestDist) {
+        bestDist = d;
+        best = s;
+      }
+    }
+    return best;
+  }
+
+  /** Clicou num bicho: perto, faz carinho; longe, o prefeito vai até ele. */
+  private approachPet(sprite: PetSprite): void {
+    this.pendingInteract = null;
+    if (Math.hypot(sprite.x - this.mayor.x, sprite.y - this.mayor.y) < PET_RADIUS) {
+      this.petPet(sprite.id);
+      return;
+    }
+    this.pendingPet = sprite.id;
+  }
+
+  /** Enquanto vai afagar, segue o bicho (ele pode estar andando) e faz carinho ao chegar. */
+  private followPet(): void {
+    if (this.pendingPet === null) return;
+    const sprite = this.pets.get(this.pendingPet);
+    if (!sprite) {
+      this.pendingPet = null;
+      return;
+    }
+    if (Math.hypot(sprite.x - this.mayor.x, sprite.y - this.mayor.y) < PET_RADIUS - 16) {
+      this.moveTarget = null;
+      this.pendingPet = null;
+      this.petPet(sprite.id);
+      return;
+    }
+    this.moveTarget = { x: sprite.x + (this.mayor.x < sprite.x ? -26 : 26), y: sprite.y + 4 };
+  }
+
+  private petPet(id: number): void {
+    const sprite = this.pets.get(id);
+    if (!sprite) return;
+    const result = this.session.run(commands.petAnimal, id);
+    if (!result.ok) {
+      this.ui.toast(result.reason, 'warn');
+      return;
+    }
+    sprite.faceTowards(this.mayor.x);
+    sprite.happyUntil = this.time.now + 1800;
+    this.floatText(sprite.x - 6, sprite.y - 30, '♥', '#ff8aa0');
+    this.time.delayedCall(350, () => this.floatText(sprite.x + 8, sprite.y - 38, '♥', '#ff8aa0'));
+    this.ui.toast(sprite.species === 'cao' ? `${sprite.name} abanou o rabo.` : `${sprite.name} ronronou.`, 'good');
+  }
+
+  /** Cães e gatos: passeiam pelos lugares deles, dormem à noite e chegam pelo portão. */
+  private syncPets(dt: number): void {
+    const world = this.world;
+    const hour = hourOf(world.tick);
+    const day = dayOf(world.tick);
+    const night = hour >= 21 || hour < 6;
+    const rate = this.session.paused ? 0 : this.session.speed;
+    const seen = new Set<number>();
+    for (const pet of world.town.pets ?? []) {
+      seen.add(pet.id);
+      const target = petSpot(pet, hour, day);
+      let sprite = this.pets.get(pet.id);
+      if (!sprite) {
+        sprite = new PetSprite(this, pet, this.petsReady ? LANDMARKS.portao : target);
+        this.pets.set(pet.id, sprite);
+      }
+      if (this.time.now < sprite.happyUntil) {
+        sprite.animate('happy', 1);
+        continue;
+      }
+      const step = (pet.species === 'cao' ? DOG_SPEED : CAT_SPEED) * rate * dt;
+      const arrived = this.travel(sprite, target, step);
+      const rest: PetPose = night ? 'sleep' : pet.species === 'gato' || (pet.id + day) % 3 === 0 ? 'sit' : 'idle';
+      sprite.animate(arrived ? rest : 'walk', rate);
+    }
+    // Foi embora: some aos poucos.
+    for (const [id, sprite] of this.pets) {
+      if (seen.has(id)) continue;
+      this.pets.delete(id);
+      this.tweens.add({ targets: sprite.root, alpha: 0, duration: 900, onComplete: () => sprite.destroy() });
+    }
+    this.petsReady = true;
   }
 
   private speech(): void {
@@ -528,6 +686,7 @@ export class VillageScene extends Phaser.Scene {
     if (axis.x !== 0 || axis.y !== 0) {
       this.moveTarget = null;
       this.pendingInteract = null;
+      this.pendingPet = null;
       const len = Math.hypot(axis.x, axis.y);
       const step = MAYOR_SPEED * dt;
       const next = this.clampWalk({ x: this.mayor.x + (axis.x / len) * step, y: this.mayor.y + (axis.y / len) * step });
@@ -548,7 +707,9 @@ export class VillageScene extends Phaser.Scene {
       this.moveTarget = null;
       near.open();
     }
-    this.ui.setPrompt(near ? { id: near.id, label: near.label(this.world) } : null);
+    this.followPet();
+    const pet = near ? null : this.nearestPet();
+    this.ui.setPrompt(near ? { id: near.id, label: near.label(this.world) } : pet ? { id: `pet:${pet.id}`, label: `Fazer carinho em ${pet.name}` } : null);
   }
 
   // ── Chão ocupado ────────────────────────────────────────────────────────
@@ -649,6 +810,11 @@ export class VillageScene extends Phaser.Scene {
       this.ui.open({ kind: 'hero', heroId: hero.id });
       return;
     }
+    const pet = this.petAt(p.worldX, p.worldY);
+    if (pet) {
+      this.approachPet(pet);
+      return;
+    }
     const citizen = this.citizenAt(p.worldX, p.worldY);
     if (citizen) {
       this.ui.open({ kind: 'village' });
@@ -692,7 +858,7 @@ export class VillageScene extends Phaser.Scene {
   private onHover(p: Phaser.Input.Pointer): void {
     const hero = this.heroAt(p.worldX, p.worldY);
     this.hoverHeroId = hero?.id ?? null;
-    const over = hero || this.graveAt(p.worldX, p.worldY) !== null || this.interactableAt(p.worldX, p.worldY);
+    const over = hero || this.petAt(p.worldX, p.worldY) || this.graveAt(p.worldX, p.worldY) !== null || this.interactableAt(p.worldX, p.worldY);
     const cursor = over ? 'pointer' : 'default';
     if (cursor !== this.hoverCursor) {
       this.hoverCursor = cursor;
@@ -709,6 +875,7 @@ export class VillageScene extends Phaser.Scene {
     this.syncHeroes(initial, dt);
     this.syncChildren(dt);
     this.syncCitizens(dt);
+    this.syncPets(dt);
     this.syncExpansion();
 
     const night = nightFactor(world.tick);
@@ -718,6 +885,10 @@ export class VillageScene extends Phaser.Scene {
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
     for (const light of this.houseLights) light.setAlpha(lightAlpha);
     for (const light of this.propLights) light.setAlpha(lightAlpha);
+    // Halo dos lampiões: como a lanterna do prefeito, tremulando um pouco.
+    const flicker = 0.9 + 0.1 * Math.sin(this.time.now / 170);
+    for (const halo of this.lampHalos) halo.setAlpha((0.15 + 0.75 * night) * Math.min(1, lightAlpha * 1.5) * flicker);
+    if (this.forge?.glow.visible) this.forge.glow.setAlpha((0.35 + 0.45 * night) * (0.85 + 0.15 * Math.sin(this.time.now / 90)));
     for (const light of this.expansionLights) light?.setAlpha(lightAlpha);
     this.mayor.placeLabels(this.labelScale, night);
 
@@ -828,8 +999,8 @@ export class VillageScene extends Phaser.Scene {
     const day = hour >= 7 && hour < 19;
     const step = this.session.paused ? 0 : CHILD_SPEED * this.session.speed * dt;
     const seen = new Set<number>();
+    // Aparecem desde que nascem: o nascimento sai na crônica e já se vê na praça.
     for (const child of world.children) {
-      if (childAge(world, child) < 2) continue;
       seen.add(child.id);
       const target = wanderPoint(child.id + 50_000, Math.floor(world.tick / (2 * TICKS_PER_HOUR)));
       let sprite = this.kids.get(child.id);
@@ -942,6 +1113,10 @@ export class VillageScene extends Phaser.Scene {
       this.kids.clear();
       for (const c of this.citizens.values()) c.destroy();
       this.citizens.clear();
+      for (const p of this.pets.values()) p.destroy();
+      this.pets.clear();
+      this.petsReady = false;
+      this.pendingPet = null;
       for (const g of this.graves.values()) {
         g.stone.destroy();
         g.name.destroy();

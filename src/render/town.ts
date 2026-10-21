@@ -224,6 +224,31 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
   }
 }
 
+/**
+ * Floresta que cobre o distrito sul até o prefeito mandar limpar ("a floresta ao sul
+ * esconde três lotes"): árvores cerradas, secas e pedras por cima dos lotes e da trilha.
+ * Devolve as imagens (somem ao limpar) e o que ocupa chão.
+ */
+export function buildOvergrowth(scene: Phaser.Scene): { images: Phaser.GameObjects.Image[]; solids: Solid[] } {
+  const rnd = seeded(71);
+  const images: Phaser.GameObjects.Image[] = [];
+  const solids: Solid[] = [];
+  const r = EXPANSION_TILES;
+  for (let y = r.ty; y < r.ty + r.th; y++) {
+    for (let x = r.tx; x < r.tx + r.tw; x++) {
+      if (rnd() < 0.42) continue;
+      const v = rnd();
+      const name =
+        v < 0.42 ? 'prop/tree/pine' : v < 0.66 ? 'prop/tree/autumn-small' : v < 0.78 ? 'prop/tree/dead' : v < 0.9 ? 'prop/tree/01' : v < 0.95 ? 'prop/boulder/01' : 'prop/boulder/02';
+      const px = Math.round((x + 0.5) * TILE + (rnd() - 0.5) * 12);
+      const py = Math.round((y + 1) * TILE - rnd() * 6);
+      images.push(scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py));
+      solids.push({ key: name, x: px, y: py, opts: name.startsWith('prop/boulder') ? BASE : TRUNK });
+    }
+  }
+  return { images, solids };
+}
+
 export interface AbyssView {
   glow: Phaser.GameObjects.Image;
   badge: Phaser.GameObjects.Text;
@@ -449,8 +474,11 @@ export function buildThermal(scene: Phaser.Scene, solids: Solid[]): void {
   scene.tweens.add({ targets: glow, alpha: { from: 0.18, to: 0.32 }, yoyo: true, repeat: -1, duration: 1800 });
   label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
-/** Props de praça do pack 1.7; retorna as luzes das lamparinas para o ciclo dia/noite. */
-export function buildProps(scene: Phaser.Scene, solids: Solid[]): Phaser.GameObjects.Image[] {
+/**
+ * Props de praça do pack 1.7. Devolve, para o ciclo dia/noite, o desenho aceso de cada
+ * lampião e o halo em volta (o mesmo brilho da lanterna do prefeito).
+ */
+export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phaser.GameObjects.Image[]; halos: Phaser.GameObjects.Image[] } {
   const prop = (id: string, x: number, y: number): void => {
     scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: id, x, y, opts: BASE });
@@ -466,6 +494,7 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): Phaser.GameObj
   prop('prop/cart', 17 * TILE, 22 * TILE);
 
   const lights: Phaser.GameObjects.Image[] = [];
+  const halos: Phaser.GameObjects.Image[] = [];
   const lamp = (x: number, y: number): void => {
     scene.add.image(x, y, 'prop/lamp').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: 'prop/lamp', x, y, opts: { fromBottom: 4, minCover: 0.15 } });
@@ -476,10 +505,12 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): Phaser.GameObj
       .setDepth(DEPTH.lights)
       .setAlpha(0);
     lights.push(light);
+    // A chama fica no alto do poste, um pouco à direita do meio (x 11, y 14 da arte 16×32).
+    halos.push(scene.add.image(x + 6, y - 36, 'glow').setTint(0xffc46b).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(2.2).setAlpha(0));
   };
   lamp(18 * TILE, 17 * TILE);
   lamp(32 * TILE, 17 * TILE);
   lamp(23 * TILE, 13 * TILE);
   lamp(43 * TILE, 18 * TILE);
-  return lights;
+  return { lights, halos };
 }

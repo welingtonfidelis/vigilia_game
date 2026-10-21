@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Baixar o repositório
         uses: actions/checkout@v4
+        with:
+          # Histórico inteiro: a versão do jogo é 0.<número de commits>.0.
+          fetch-depth: 0
 
       - name: Configurar Node
         uses: actions/setup-node@v4

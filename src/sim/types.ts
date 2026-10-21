@@ -435,6 +435,24 @@ export interface ExpansionState {
   houses: [boolean, boolean, boolean];
 }
 
+export type PetSpecies = 'cao' | 'gato';
+
+/** Cão ou gato da vila (enfeite e carinho do prefeito). */
+export interface Pet {
+  id: number;
+  species: PetSpecies;
+  /** Pelagem: char/pet/<espécie>/<look>. */
+  look: string;
+  name: string;
+  arrivedDay: number;
+  /** Dia em que vai embora (alguns anos depois de chegar). */
+  leavesDay: number;
+  /** Último dia em que ganhou carinho (−1 = nunca). */
+  lastPetDay: number;
+  /** Carinhos recebidos. */
+  pets: number;
+}
+
 export interface Town {
   treasury: number;
   buildings: Record<BuildingId, number>;
@@ -476,6 +494,10 @@ export interface Town {
   bench?: BenchVisit[];
   /** Obras pagas pelos heróis (mecenato). */
   works?: Partial<Record<WorkId, TownWork>>;
+  /** Cães e gatos que vivem na vila agora (2 no primeiro ano, 3 depois). */
+  pets?: Pet[];
+  /** Último id de bicho dado (contador próprio, fora do nextId do mundo). */
+  petSeq?: number;
 }
 
 export type ChronicleKind =
@@ -517,6 +539,7 @@ export type ChronicleKind =
   | 'cidadao'
   | 'incursao'
   | 'item'
+  | 'bicho'
   | 'fim';
 
 export interface ChronicleEntry {
