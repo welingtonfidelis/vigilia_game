@@ -168,8 +168,8 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   const accents = scene.add.graphics().setDepth(DEPTH.ground + 0.5);
   const detailRnd = seeded(41);
 
-  // Bordas de trilha em segmentos curtos: uma borda de terra mais funda e
-  // reflexos quentes pontuais dão relevo sem desenhar contornos quadriculados.
+  // Relevo quebrado e assimétrico: evitar linhas contínuas que pareçam
+  // contornos de grade. Sombras e reflexos aparecem em pequenos trechos.
   const hasPath = (x: number, y: number): boolean => paths[y]?.[x] === true;
   for (let ty = 0; ty < ROWS; ty++) {
     for (let tx = 0; tx < COLS; tx++) {
@@ -177,28 +177,37 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
       const x = tx * TILE;
       const y = ty * TILE;
       const edgeN = !hasPath(tx, ty - 1);
-      const edgeS = !hasPath(tx, ty + 1);
       const edgeW = !hasPath(tx - 1, ty);
       const edgeE = !hasPath(tx + 1, ty);
-      accents.fillStyle(0x211b18, 0.24);
-      if (edgeN) accents.fillRect(x + 2, y, TILE - 4, 2);
-      if (edgeS) accents.fillRect(x + 2, y + TILE - 2, TILE - 4, 2);
-      if (edgeW) accents.fillRect(x, y + 2, 2, TILE - 4);
-      if (edgeE) accents.fillRect(x + TILE - 2, y + 2, 2, TILE - 4);
 
-      // Luz ambiente em pequenos trechos, não em toda a borda.
-      accents.fillStyle(0xc3a078, 0.32);
-      if (edgeN && detailRnd() < 0.72) accents.fillRect(x + 5 + Math.floor(detailRnd() * 15), y + 2, 5 + Math.floor(detailRnd() * 6), 1);
-      if (edgeW && detailRnd() < 0.55) accents.fillRect(x + 2, y + 5 + Math.floor(detailRnd() * 15), 1, 4 + Math.floor(detailRnd() * 5));
+      // Sombra em trechos descontínuos apenas na borda superior/esquerda.
+      // Não contornamos todos os lados para preservar a leitura orgânica.
+      accents.fillStyle(0x171411, 0.13);
+      if (edgeN && detailRnd() < 0.58) {
+        const sx = x + 2 + Math.floor(detailRnd() * 8);
+        accents.fillRect(sx, y + 1, 5 + Math.floor(detailRnd() * 7), 1);
+      }
+      if (edgeW && detailRnd() < 0.44) {
+        const sy = y + 3 + Math.floor(detailRnd() * 8);
+        accents.fillRect(x + 1, sy, 1, 4 + Math.floor(detailRnd() * 5));
+      }
 
-      // Pedras miúdas na terra, mantendo o centro das trilhas livre.
-      if (detailRnd() < 0.32) {
-        const sx = x + 6 + Math.floor(detailRnd() * (TILE - 12));
-        const sy = y + 6 + Math.floor(detailRnd() * (TILE - 12));
-        accents.fillStyle(0x55463b, 0.72);
-        accents.fillRect(sx, sy, 3, 2);
-        accents.fillStyle(0x9b8166, 0.5);
+      // Reflexos ocres raros, como pequenas irregularidades do solo.
+      accents.fillStyle(0xc3a078, 0.22);
+      if ((edgeN || edgeW) && detailRnd() < 0.22) {
+        const sx = x + 4 + Math.floor(detailRnd() * (TILE - 9));
+        const sy = y + 3 + Math.floor(detailRnd() * (TILE - 7));
+        accents.fillRect(sx, sy, 3 + Math.floor(detailRnd() * 3), 1);
+      }
+
+      // Menos pedras e menores, concentradas fora do centro de passagem.
+      if (detailRnd() < 0.14) {
+        const sx = x + 3 + Math.floor(detailRnd() * (TILE - 7));
+        const sy = y + 3 + Math.floor(detailRnd() * (TILE - 7));
+        accents.fillStyle(0x55463b, 0.48);
         accents.fillRect(sx, sy, 2, 1);
+        accents.fillStyle(0x9b8166, 0.32);
+        accents.fillRect(sx, sy, 1, 1);
       }
     }
   }
