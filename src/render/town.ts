@@ -162,6 +162,34 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   baked.draw(ground, 0, 0);
   baked.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   ground.setActive(false).setVisible(false);
+
+  // Microdetalhes estáticos no gramado: pequenos tufos e flores em pixels.
+  // São desenhados uma única vez, sem tweens, texturas extras ou custo por frame.
+  const accents = scene.add.graphics().setDepth(DEPTH.ground + 0.5);
+  const detailRnd = seeded(41);
+  for (let i = 0; i < 150; i++) {
+    const tx = Math.floor(detailRnd() * COLS);
+    const ty = Math.floor(detailRnd() * ROWS);
+    if (mask[ty]?.[tx]) continue;
+    const x = tx * TILE + 4 + Math.floor(detailRnd() * (TILE - 8));
+    const y = ty * TILE + 4 + Math.floor(detailRnd() * (TILE - 8));
+    const kind = detailRnd();
+    if (kind < 0.62) {
+      accents.fillStyle(kind < 0.3 ? 0x314b32 : 0x54734a, 0.62);
+      accents.fillRect(x, y, 2, 2);
+      if (kind > 0.42) {
+        accents.fillStyle(0x80945a, 0.65);
+        accents.fillRect(x + 2, y - 2, 2, 2);
+      }
+    } else {
+      accents.fillStyle(0xd6b978, 0.8);
+      accents.fillRect(x, y, 2, 2);
+      accents.fillStyle(0x8b9d5c, 0.8);
+      accents.fillRect(x - 2, y + 2, 2, 2);
+    }
+  }
+  accents.setScrollFactor(1);
+
   return mask;
 }
 
