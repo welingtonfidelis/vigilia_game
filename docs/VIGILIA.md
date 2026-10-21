@@ -1,0 +1,1487 @@
+# Vigília — documentação única
+
+Versão do documento: 2026-10-20
+Jogo: **Vigília** — simulação de vila + expedições automáticas ao abismo.
+Stack: TypeScript, Vite, Preact e Phaser 3.
+Pack de arte atual: **Vigília Art Pack 1.9.0** (CC0 1.0, Equipe Vigília).
+
+Este arquivo substitui o README antigo, o GDD e os briefs/históricos soltos em `docs/art/`.
+O README da raiz é apenas uma porta de entrada.
+
+## Índice
+
+1. [Estado, como jogar e arquitetura](#1-estado-como-jogar-e-arquitetura)
+2. [Game Design Document](#2-game-design-document)
+3. [Direção de arte e pipeline](#3-direção-de-arte-e-pipeline)
+4. [Kit de arena da dungeon — pedido entregue no pack 1.9](#4-kit-de-arena-da-dungeon--pedido-entregue-no-pack-19)
+5. [Histórico de decisões e pedidos antigos](#5-histórico-de-decisões-e-pedidos-antigos)
+
+---
+
+## 1. Estado, como jogar e arquitetura
+
+Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
+
+**Estado atual: M3 concluído; M4 em andamento (visualizador de dungeon, arenas, relatórios, histórico e mobile) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+
+### Jogar
+
+```bash
+npm install
+npm run dev                                     # abre em http://localhost:5173
+npm run dev -- --host                           # idem, acessível pelo celular na mesma rede
+```
+
+- **Prefeito:** WASD/setas ou clique (toque) no chão para andar. Clique num prédio, no berrante, no quadro, no cofre, no abismo ou no cemitério: o prefeito vai até lá e interage. Perto de algo, **E** interage.
+- **Heróis:** clique num herói para ver a ficha (vida, ânimo com a marca de fuga, traços revelados e ocultos, vínculos, feitos). Eles não obedecem: escolhem o que fazer e com quem descer.
+- **Tempo:** Espaço pausa · 1, 2, 3 = 1×, 2×, 4× · **M** abismo · **H** heróis · **C** crônica · **Esc** fecha.
+- **Som:** liga no primeiro clique (regra dos navegadores). **N** ou o alto-falante no topo silencia; Menu → Som ajusta geral, música, ambiente e efeitos.
+- **Save:** salva sozinho no `localStorage` a cada dia do jogo e ao sair da página. Menu → Salvar/Carregar/Novo jogo.
+- **Celular:** toque para andar e interagir; os painéis viram folhas acima da barra de navegação; Menu → A−/A+ ajusta o tamanho da interface.
+
+### Rodar as ferramentas
+
+```bash
+npm test                                        # 95 testes (núcleo, pessoas, economia, sessão, save, planta e tiles da vila, sprites, textos, som)
+npm run build                                   # typecheck + bundle de produção em dist/
+npm run chronicle -- --seed 4 --years 3         # Crônica da Vila de uma campanha jogada pelo prefeito automático
+npm run balance -- --seeds 10 --years 30        # Ritmo, mortalidade, economia e saúde em várias sementes
+npm run deaths -- --seeds 6 --years 5           # Diagnóstico de quem morre, onde e para quem
+npm run typecheck
+```
+
+Node 22+ roda os `.ts` direto (type stripping). Não há passo de build para as ferramentas.
+
+### Arquitetura
+
+```
+index.html, src/main.tsx   monta a sessão, o HUD/painéis (Preact) e o Phaser; atalhos, autosave e avisos
+src/game/   ponte entre tela e núcleo, sem Phaser nem DOM (testável no Node)
+  session.ts     acumulador de tick fixo (10 ticks/s em 1×, 2×, 4×, pausa), comandos, eventos e resumo das expedições
+  storage.ts     salvar/carregar no localStorage com try/catch e preferências da tela
+src/render/ Phaser: só lê o World a cada quadro
+  VillageScene.ts  cena da vila: prédios por nível, heróis indo aos lugares da atividade, prefeito, dia/noite, túmulos
+  layout.ts      planta da vila e destino de cada herói por atividade (puro, testado)
+  town.ts, ground.ts  vila no tileset do pack Vigília 1.9 (autotile de terra/trilha, abismo, marcos e casas); o chão é assado numa textura única para não vazar tile em zoom fracionário
+  buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
+  sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
+  art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
+src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
+src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
+  director.ts    eventos → efeitos (prioridade e intervalo mínimo) e clima do mundo → música (puro, testado)
+  sfx.ts         26 efeitos: berrante, moedas, martelo, sino fúnebre, fanfarra do chefe, eco dos mortos…
+  music.ts       trilha generativa em Ré menor: dia, noite, luto, tensão (chefe) e alvorada (fim)
+  ambience.ts    vento, grilos, pássaros, fogueira, metal distante do combate e o zumbido do abismo (cresce com a corrupção)
+  engine.ts      mesa com canais de música, ambiente e efeitos, reverb e compressor
+src/data/   classes, traços, atos/inimigos/chefes, prédios, nomes (dados puros)
+src/sim/    regras: tudo determinístico, estado 100% JSON
+  world.ts       cria o mundo
+  loop.ts        step(): 1 tick = 0,1 s em 1× · hora = 20 ticks · dia = 480 ticks · ano = 40 dias (~32 min)
+  town.ts        necessidades e IA de utilidade (descansar, beber, rezar, comprar, treinar, túmulo, socializar, quadro)
+  party.ts       formação autônoma de grupos e escolha do andar (confiança × doutrina × traços × corrupção)
+  expedition.ts  descida, salas, saque, conquista, retorno, luto, contratos
+  people.ts      lesões e cicatrizes, casamentos e filhos, aposentados com função, velhice e epitáfios
+  combat.ts      combate em tempo real: papéis, ânimo, fuga, retirada, vingança, mecânicas de chefe
+  dungeon.ts     andares (mapa persistente até conquistar), inimigos, afixos, corrupção, estimativa de força
+  economy.ts     tesouro, preços, efeitos dos prédios, população e impostos
+  commands.ts    alavancas do prefeito (berrante, construir, contrato, sino, doutrina, imposto, patrocínio, dispensar)
+  chronicle.ts   Crônica da Vila (eventos com texto em pt-BR)
+  save.ts        serialize/deserialize/checksum
+  bot.ts         prefeito automático (o "jogador médio" do balanceador)
+tools/      balanceador, crônica, diagnóstico de mortes
+tests/      vitest
+```
+
+O RNG (mulberry32) vive dentro do `World`. Por isso salvar no meio de um combate e carregar continua **exatamente** a mesma partida, e há um teste que garante isso.
+
+A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da sessão, `commands.*` para as alavancas do prefeito e consultas somente-leitura (custos, vagas, limiar de fuga, salas do andar). Um teste confirma que jogar pela sessão, quadro a quadro, dá o mesmo mundo que rodar o núcleo direto.
+
+A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pinça.
+
+**Atalhos de depuração** (só em `npm run dev`, no console do navegador): `vigilia.days(n)` avança n dias, `vigilia.advance(ticks)`, `vigilia.autoplay(n)` deixa o prefeito automático jogar n dias e `vigilia.frames(n)` roda quadros do Phaser na mão (útil com a aba em segundo plano, quando o navegador para o `requestAnimationFrame`).
+
+### Retrato do balanceamento (10 sementes × 30 anos, prefeito automático)
+
+| Chefe | Ano médio | Horas em 1× | Faixa | Sementes que chegaram |
+|---|---|---|---|---|
+| Catacumbas | 1,1 | 0,6 h | 0,3–1,8 | 100% |
+| Minas Inundadas | 3,2 | 1,7 h | 1,1–5,0 | 100% |
+| Jardim de Fungos | 4,3 | 2,3 h | 2,6–6,3 | 100% |
+| Cidade Afogada | 7,4 | 4,0 h | 4,0–11,0 | 100% |
+| Forja Abissal | 16,4 | 8,7 h | 10,8–24,3 | 100% |
+| Coração do Abismo | 20,4 | 10,9 h | 14,8–25,1 | 70% |
+
+- **Mortalidade:** 4,2 mortes/ano com elenco de ~18. Ninguém é mais dispensado: são cerca de 16 aposentadorias por campanha, cada uma com uma função na vila.
+- **Pessoas, por campanha:** ~71 lesões, ~6 cicatrizes, ~17 casamentos, ~16 filhos e ~6 deles chegando à maioridade como heróis.
+- **Vila (M3), por campanha:** ~33 incursões, ~34 moradores mortos e ~0,3 que deixa a vila; a população termina no teto (~136, abstrata) com **8 aldeões visíveis**, o humor médio fica em ~59 e os prédios em ruína no fim são raros porque o prefeito automático reconstrói.
+- **Expedições:** ~89 por ano, 0 impasses de combate, no máximo 2 dias seguidos sem expedição e **5% de retiradas**. A confiança ao descer separa o risco: ≥0,5 → 0,37 morte por expedição; ≥1,0 → 0,07; ≥1,5 → 0,01.
+- **Ouro:** o tesouro fica entre ~0,8 e 4,6 mil e o ouro dos heróis entre ~13 e 52 mil. **Festa**, **pensão**, **salários dos guardas**, **decretos**, **ofertas no templo** e **incursões** puxam ouro para fora; ainda faltam sumidouros de fim (relíquias e propriedades).
+- **Desempenho:** ~0,7 s para simular uma campanha de 30 anos.
+
+### O que o M0 entrega
+
+- [x] Heróis com classe, rank E–S, nível, 12 traços (1 oculto), ânimo, lealdade, necessidades, luto, vínculos, idade, aposentadoria e feitos que promovem o rank
+- [x] IA de utilidade na vila e formação autônoma de grupos (com veteranos que "adotam" novatos)
+- [x] 6 atos × 4 andares, 18 inimigos, 5 afixos de elite, 6 chefes com mecânicas (invocar, couraça, veneno, maldição, retaguarda, ecos dos seus mortos)
+- [x] Combate em tempo real com regra anti-impasse (o soft-lock da curandeira do jam não existe aqui)
+- [x] Fuga individual por ânimo, retirada por doutrina, sino de retirada, heróis vingativos que se recusam a recuar
+- [x] Mapa persistente até conquistar, restos de heróis caídos recuperáveis, resgates, santuários, baús
+- [x] Corrupção por ato que sobe com o tempo e re-infesta salas; os heróis priorizam conter o pior ato
+- [x] Economia de duas carteiras (heróis × tesouro), 7 prédios com 3 níveis e materiais por bioma
+- [x] Crônica da Vila em português, save/load versionado e balanceador headless
+
+### Inspiração e créditos
+
+Vigília é um projeto original inspirado na **proposta** de [**Tristram**](https://bippinbits.itch.io/tristram), jogo criado em 72 horas na Ludum Dare 55 (2024) por René Habermann (Bippinbits), Raffaele Picca, Luca Martinelli, Anne Hecker, Cameron Paxton e equipe. A ideia central vem de lá: ser o prefeito de uma vila que convoca heróis autônomos para uma masmorra e reconstrói a cidade com o que eles trazem. O crédito pelo conceito é deles.
+
+- **Nada do Tristram foi reutilizado:** nenhum código, arte, música, texto, nome ou dado. Regras, números, classes, inimigos, chefes, nomes e textos deste repositório foram escritos do zero.
+- O estudo do jogo original (mecânicas observadas, pontos fortes, limitações e pedidos dos jogadores) está na seção 1 do GDD (neste documento).
+- A Bippinbits está desenvolvendo a versão completa oficial do Tristram. Este projeto não tem relação com ela nem com a Bippinbits.
+- "Tristram" e "Diablo" são marcas da Blizzard Entertainment. Vigília não usa elementos desse universo e não é afiliado à Blizzard.
+
+#### Arte de terceiros (CC0)
+
+As duas licenças são CC0 (domínio público), com uso livre inclusive comercial. Creditamos por gentileza:
+
+- **Vigília Art Pack 1.9** (Equipe Vigília, CC0 1.0): terreno, 7 prédios × 3 níveis + ruína, casas, portão/berrante, termas, props, FX, moradores, prefeito, crianças, heróis com ataque/morte, retratos, 18 inimigos + 6 chefes, variantes de profundidade, 6 arenas de dungeon em camadas, 24 fundos por andar, UI de dungeon, outono, lamparinas, bancos e carroças. Fica em `public/assets/vigilia/`, com `licenses/LICENSE.md` e o gerador no pacote original.
+- **[Tiny Town](https://kenney.nl/assets/tiny-town)**, de Kenney (kenney.nl): legado da vila/prédios antigos; permanece em `public/assets/kenney-tiny-town/` com o `License.txt` original.
+- **[16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)**, de Robert (0x72): fallback dos ecos de herói no painel da masmorra; fica em `public/assets/0x72-dungeontileset-ii/`, com o `LICENSE.txt` e a origem do arquivo.
+
+### O que o M1 entrega
+
+- [x] Vila em Phaser: 7 lotes (ruína × níveis 1–3), berrante, quadro de contratos, cofre com a pilha de ouro, fogueira, **fonte termal**, cemitério com uma cova por herói caído, abismo com a abadia em ruínas e brilho que cresce com a corrupção, dia e noite
+- [x] Heróis andando até o lugar da atividade escolhida pelo núcleo (estalagem, taverna, templo, ferreiro, campo, quadro, túmulo do amigo, conversa com outro herói), entrando no abismo e voltando por ele
+- [x] Prefeito com WASD, clique/toque para andar e interação por proximidade (E ou o botão na tela)
+- [x] Painel do abismo: atos e andares, corrupção, grupos com a sala atual (névoa sala a sala), vida e ânimo com a marca do limiar de fuga, inimigos do combate, momentos e o sino de retirada; resumo das expedições recentes
+- [x] HUD (tesouro, data e hora, população, heróis/vagas, materiais, velocidade), objetivos abertos, avisos da crônica e fim de ato
+- [x] Ficha do herói (atributos, traços revelados e "?", vínculos, luto, feitos, patrocinar, dispensar), elenco, cemitério, cofre (imposto, gráfico do tesouro), crônica navegável por ano e filtro
+- [x] Save no `localStorage` (automático por dia e manual), preferências da tela e layout de celular
+- [x] Pixel art CC0: pack Vigília 1.9 no cenário/prédios/moradores, heróis e retratos, câmera fixa que acompanha o prefeito e cena dessaturada para a fantasia sombria
+- [x] Som sintetizado: efeitos ligados à crônica e aos comandos, trilha que muda com o clima, ambiente vivo, volume por canal e mudo
+
+### O que o M2 entrega
+
+Especificação na seção 9.1 do GDD (neste documento).
+
+- [x] **Prefeito com energia diária (4):** conversar, presentear (bebida, relíquia ou arma), consolar quem está de luto, discursar na praça, renomear e aposentar com honras
+- [x] **Lesões** (braço, perna, olho, costelas) para quem sai de um combate por um fio. O grupo volta carregando o ferido, que se trata por dias. Algumas viram **cicatrizes** permanentes; com 2 delas o herói fica *Marcado*. A **Casa de cura** (7º prédio) acelera a recuperação e evita cicatrizes
+- [x] **Casamentos** entre heróis muito ligados, **filhos** que crescem na vila e viram heróis aos 16 anos com traço, classe e arma herdados; a morte de um cônjuge pesa no outro
+- [x] **Aposentados com função** (mentor, ferreiro, contador de histórias, curandeiro) que ficam na vila e melhoram o prédio onde trabalham, e que podem morrer de velhice
+- [x] **Epitáfios** gerados a partir da vida de cada herói (feito, como caiu, traço, quem fica)
+- [x] Save v1 → v2 migra sozinho (heróis mortos antes do M2 ganham epitáfio)
+- [x] Sons novos: lesão, casamento, nascimento, discurso e ações do prefeito
+- [x] **Interface:**
+  - velas de energia do prefeito no HUD;
+  - na ficha do herói, conversar, presentear, consolar, renomear e aposentar com função (a sugerida vem marcada);
+  - lesão com barra de recuperação e bandagem no mapa;
+  - família e crianças brincando na praça; aposentados no posto de trabalho;
+  - epitáfio ao clicar na lápide;
+  - discurso na fogueira da praça.
+
+### O que a Fase A entrega (polimento pós-M2)
+
+- [x] **Rótulos do mapa com prioridade:** nomes de heróis não se empilham; em multidão só o nome sob o ponteiro/selecionado aparece (a medalha de rank fica); as placas de prédios vizinhos descem uma linha em vez de encostar uma na outra.
+- [x] **Celular:** HUD compacto, objetivos recolhidos por padrão, avisos acima do botão de interação e prompt acima da barra de navegação.
+- [x] **Tensão calibrada:** o grupo se acha mais capaz do que é (`confidenceBias`), o que leva as mortes de 2,8 para 4,2 por ano, aumenta retiradas e lesões e faz a confiança ao descer prever o risco de verdade. Massacres continuam raros por desenho (fuga individual + retirada), o que é proposital.
+- [x] **Fim de campanha:** painel com anos de vila, chefes, expedições, ouro saqueado, população e os epitáfios de quem não voltou; dá para continuar jogando. O menu reabre o resumo.
+- [x] **Sumidouros de ouro:** festa na praça (no Cofre), pensão diária dos aposentados e ofertas que os heróis ricos deixam no templo.
+- [x] **Save v2 → v3** migra sozinho (data da última festa).
+
+### Ajustes antes do M3
+
+- [x] **Arma de classe fora do mapa.** O desenho ao lado do herói era um enfeite fixo da classe, não o equipamento comprado — e ficava enorme. O herói anda sem arma na mão; a ficha mostra a arma de classe, o tier comprado e o bônus exato de ataque, vida e defesa (o tier sempre entrou no combate).
+- [x] **Fonte termal.** Bacia de pedra no lugar do antigo portão sul, com vapor e água quente que sobe do abismo. Não tem nível nem preço: heróis machucados, sem ânimo ou de luto vão sozinhos, e a água recupera 20% da vida, 12 de energia, 12 de ânimo, alivia o luto e adianta meio dia de lesão. O painel mostra quem está na água.
+
+### O que a Fase B entrega (primeira fatia: vila viva)
+
+- [x] **Cidadãos nomeados.** A vila começa com 6 moradores e chega a 8 nomes (um a cada 4 de população, até 8), com ofícios que saem dos prédios reconstruídos: guarda, copeiro, ferreiro, acólito, pedreiro e lavrador. Eles andam pela vila (trabalho de dia, praça no meio do dia, estalagem ou fogueira à noite), aparecem no mapa sem rótulo e abrem o painel da Vila quando clicados. **Lavradores**, que não têm prédio próprio, circulam entre a praça, as estradas e a fonte; o campo de treino fica para os heróis.
+- [x] **Humor e imposto.** O humor médio (0–100) puxa o imposto dos moradores e decide quem fica: abaixo de 30, o morador pode deixar a vila. Festa na praça e pouca corrupção levantam o humor; incursões derrubam.
+- [x] **Incursões noturnas.** Às 22h, o ato mais corrompido (≥55) pode subir à vila. A defesa soma heróis em casa, aposentados e guardas; o resultado é **repelida**, **segurada com custo** ou **saqueada**. No pior caso, prédios voltam a ruínas, moradores morrem, heróis se ferem e o tesouro sangra — a campanha nunca acaba. Aviso na crônica, no toast, no mapa (vultos saindo do abismo) e na navegação.
+- [x] **Painel da Vila** com população, humor, guardas, ameaça, ofícios, a lista de moradores com a barra de humor e as últimas incursões.
+- [x] **Sprites de morador:** quatro ofícios — lavrador, artesã, acólito e guarda — em dois gêneros, agora com a arte do pack 1.4 de frente; heróis e moradores não dividem o mesmo corpo.
+- [x] **Casinhas e noite:** cinco casas na borda sul, com caminhos de terra. À noite a maioria entra em casa e some; os guardas ficam no portão e copeiros/alguns noctívagos, na taverna.
+- [x] **Entrada e câmera:** portão de madeira com o berrante grande montado sobre a viga, no centro-esquerdo. A câmera fixa em 1,5× acompanha o prefeito; o zoom por roda/pinça saiu.
+- [x] **Save v3 → v4** migra sozinho (moradores, crescimento, incursões).
+
+### M3: vila viva (concluído)
+
+- [x] **Salários dos guardas.** A milícia recebe por dia e o Cofre mostra o custo separado; a defesa noturna continua somando guardas, heróis em casa e aposentados.
+- [x] **Três decretos com trade-off:** taxa de guerra (+25% de imposto, −humor), toque de recolher (+20% de defesa, −humor) e funeral com honras (custa ouro, alivia luto e melhora o humor). No máximo dois ficam ativos.
+- [x] **Cofre atualizado** com impostos, manutenção, pensões, salários, decretos e saldo diário.
+- [x] **Save v4 → v5** migra sozinho (lista de decretos).
+- [x] **Eventos sazonais:** primavera traz a caravana; verão alterna peste e eclipse; outono tem o festival da colheita; inverno alterna cobrador do rei e visita lendária. Cada um pausa o jogo e oferece escolhas com custo.
+- [x] **Save v5 → v6** migra sozinho (evento pendente e chave do último evento).
+- [x] **Expansão sul:** limpar a floresta abre três lotes de moradia; o jogador escolhe em qual lote construir. Cada casa aumenta a capacidade populacional em 6 e as vagas de herói em 1.
+- [x] **Save v6 → v7** migra sozinho (distrito sul e casas).
+
+### M4 — Profundidade (primeira fatia)
+
+- [x] **Visualizador de dungeon:** o painel do Abismo ganhou o botão **Acompanhar**. A tela usa as **arenas em camadas do pack 1.9** (fundo por ato e por andar, piso, primeiro plano, props e moldura), heróis e monstros com animações de idle/ataque/dano/morte, variantes de profundidade dos monstros, vida, dano flutuante, ouro saqueado, sala/andar, momentos e abas para trocar de grupo. O combate continua automático: o jogador só assiste. Até três expedições aparecem empilhadas, cada card tem seu próprio sino (chama só aquele grupo, ao custo de 1 de reputação) e, ao terminar, cada uma gera um relatório com XP, ouro, salas, andar vencido, heróis caídos e heróis que subiram de nível.
+- [x] **Efeitos e retratos:** impacto/corte do ato no alvo e retratos 32×36 dos monstros no painel do Abismo.
+- [x] **Avanço pela dungeon:** fora do combate o chão e o primeiro plano correm, o fundo faz parallax e os heróis usam a animação de corrida; ao voltar, o sentido inverte.
+- [x] **Chefes e fases:** fundo do quarto do chefe, portão, círculo ritual, faixa de chefe, posicionamento dos lacaios e troca para a variante de fase 2 abaixo de 50% de vida. Teste cobre os seis atos e as 24 variantes.
+- [x] **Mobile:** até três dungeons empilhadas com escala proporcional ao espaço, sem overflow horizontal.
+- [x] **Histórico:** os últimos 10 relatórios ficam no armazenamento local e podem ser reabertos pelo Abismo ou pelo botão Relatórios.
+- [x] **HUD:** moldura de vida e nós de sala do pack 1.9.
+- [ ] Itens nomeados e afixos.
+- [ ] Fabricação no ferreiro.
+- [ ] Especializações de nível 3 dos prédios.
+- [ ] Mais variações de chefe e sala.
+
+### Próximo: M4
+
+Itens nomeados, fabricação e especializações. Mudança de local dos prédios ficou de fora. Ver a seção 9 do GDD (neste documento).
+
+---
+
+
+---
+
+## 2. Game Design Document
+
+> Codinome provisório. Versão expandida e **original** inspirada na proposta de *Tristram* (Bippinbits, Ludum Dare 55).
+> Status: decidido **fantasia sombria original + web/TypeScript**. M0–M3 concluídos; o M4 começou pelo visualizador de dungeon, relatórios, arenas e polimento de mobile. Falta a camada de itens/fabricação/especializações e playtest amplo.
+
+---
+
+### 0. Resumo em uma tela
+
+**Fantasia:** você não é o herói, você é a cidade. O prefeito de uma vila arrasada, à beira de um abismo, convoca aventureiros que **agem sozinhos**: escolhem com quem descer, quanto arriscar, o que comprar e de quem sentir falta. Você só pode influenciar.
+
+**O que o jam acertou:** a perspectiva invertida, heróis com nome que geram histórias (luto, vingança, visita ao túmulo), o crescimento visível da vila e a tensão da morte permanente.
+
+**Por que acaba em 30–60 min:** pouco conteúdo (3 andares, 1 chefe), poucas alavancas (berrante, expulsar/trocar, construir), economia linear (depois de comprar tudo o ouro não serve para nada), heróis rasos (rank e classe, sem traços com efeito real) e nenhuma pressão sobre a vila nem progressão entre partidas.
+
+**A proposta:** manter o núcleo intacto e ampliar quatro eixos:
+1. **Pessoas:** traços, vínculos, envelhecimento, aposentadoria, filhos, legado.
+2. **Influência:** contratos, doutrinas, sino de retirada, decretos, impostos, conversas e presentes.
+3. **Cidade viva:** lotes, cidadãos, impostos passivos e incursões noturnas quando o abismo não é contido.
+4. **Abismo com forma:** 6 atos com biomas e chefes, andares procedurais, eventos e profundezas infinitas.
+
+**Meta de duração:** campanha de 20–30 h, mais o modo infinito e as Eras (NG+) para jogar centenas de horas.
+
+---
+
+### 1. Estudo do original
+
+#### 1.1 Ficha
+
+| Item | Valor |
+|---|---|
+| Evento | Ludum Dare 55 (abr/2024), 72 h |
+| Engine | Godot 4 (web + Windows) |
+| Equipe | René Habermann (Bippinbits), Raffaele Picca, Luca Martinelli, Anne Hecker, Cameron Paxton e outros |
+| Recepção | 4,7/5 com ~580 avaliações e ~285 comentários |
+| Duração | 10 min a 1 h; relatos de fim no "ano 7", "ano 11" e "ano 12" |
+| Save | Não tem ("it's only a jam game") |
+| Futuro | A Bippinbits está fazendo a versão completa, com € 335 mil de fomento do governo alemão (out/2025 a mai/2027). O dev respondeu "maybe 2027" |
+
+#### 1.2 O que observei e o que os jogadores relatam
+
+**Vila (hub):** taverna com mesas, portão de madeira com o berrante no centro-esquerdo, baú/poço no centro (a pilha de ouro cresce ali), ruínas para reconstruir, quadro de avisos à direita, ponte ao sul (caminho para a catedral) e lago. Prefeito com WASD/E. Velocidade 1×/2×/4×; a câmera fixa acompanha o prefeito, sem zoom.
+
+**Heróis:**
+- O berrante traz uma leva (~7 por toque).
+- Cada herói tem nome e um estado visível no hover ("Waiting around").
+- Classes: guerreiro/cavaleiro, tanque, curandeira, mago/piromante, valquíria e *wildling* (selvagem).
+- Ranks de E a S.
+- Barra de **confiança** (roxa/azul) que deveria decidir a fuga.
+- Conversam entre si, visitam o túmulo de amigos e entram em "fúria vingativa" quando um aliado morre.
+
+**Expedição:**
+- Os grupos (até 4 a 5) se formam sozinhos, com 3 frentes.
+- O combate é automático, e cada leva derrotada revela mais do mapa (indicador de progresso elogiado).
+- O grupo volta com ouro e XP e gasta nas lojas.
+- Há resumo da expedição.
+
+**Alavancas:** *Hire* (dá 8 de ouro ao herói), *Sponsor* (ouro inicial extra), impostos que devolvem parte do ouro, expulsar/trocar membros (limite de 3 movimentos), upgrades de prédios e "o ancião".
+
+**Fim:** chefe do 3º andar (demônio). O tempo passa em anos e os heróis não envelhecem.
+
+#### 1.3 Loop original
+
+```mermaid
+flowchart LR
+  A[Tocar berrante] --> B[Heróis chegam<br/>classe e rank aleatórios]
+  B --> C[Taverna: formam grupos<br/>sozinhos]
+  C --> D[Catacumbas:<br/>combate automático]
+  D -->|ouro + XP| E[Voltam e gastam<br/>nas lojas]
+  D -->|morte| G[Túmulo e luto]
+  E --> F[Prefeito usa o ouro para<br/>reconstruir e melhorar prédios]
+  F -->|equipamento melhor| C
+  D -->|andar 3| H[Chefe final → fim]
+```
+
+#### 1.4 Por que funciona (preservar a todo custo)
+
+1. **Perspectiva invertida:** "como se sentia o prefeito de Tristram?" é um gancho fortíssimo.
+2. **Apego emergente:** os jogadores contam histórias como "o selvagem rank B, o mais fraco, matou o demônio sozinho depois que o grupo caiu".
+3. **Morte que importa:** um comentário pede *para não* adicionar retirada porque "a tensão de perder quem você ama faz o jogo ficar muito melhor".
+4. **Crescimento visível:** a pilha de ouro, a vila reconstruída e o "estouro" de ouro na volta.
+5. **Atmosfera:** pixel art, música e o contraste entre a vila acolhedora e o abismo.
+6. **Ritmo idle:** dá para deixar rodando e observar.
+
+#### 1.5 Por que acaba cedo (causas, não sintomas)
+
+| Sintoma relatado | Causa de design |
+|---|---|
+| "Termina rápido", "pouca coisa pra fazer" | Conteúdo finito e linear: 3 andares e 1 chefe, sem nada depois do fim |
+| Ouro acumulado (10k, 19k) sem uso | Economia sem sumidouros permanentes; os upgrades são um checklist que acaba |
+| Pouco ouro no começo | Nenhuma renda passiva; tudo depende de expedição |
+| Frustração por não poder recuar ou escolher | Poucas alavancas e todas grosseiras (trocar é "hit/miss") |
+| Curandeira em loop infinito (soft-lock) | Combate sem regra anti-impasse; a confiança não força a fuga |
+| Heróis parecem iguais depois de um tempo | Personalidade só no texto, sem traços com efeito mecânico |
+| Nada a perder entre expedições | A vila nunca é ameaçada e o tempo não pressiona |
+| Sem motivo para rejogar | Sem save, sem variação de mapa, sem meta-progressão |
+| Barra de confiança confusa, ouro sem HUD | Informação ilegível na hora de decidir |
+
+#### 1.6 O que os jogadores pediram (por frequência)
+
+1. **Versão completa / Steam / save**, de longe o mais pedido.
+2. **Retirada ou recall** (com o contraponto de manter a tensão).
+3. **Vínculos entre heróis** (amizade com bônus, rivalidade, favoritos juntos), renomear e dar presentes.
+4. **Mais prédios e lojas**: campo de treino, estalagem, cervejaria, arena, lojas de equipamento.
+5. **Mais biomas, monstros e andares**, desafios de fim de jogo e ranking.
+6. **Decisões indiretas**: impostos, decretos, IA configurável (defensivo × egoísta).
+7. **Estresse e lesões**, ressuscitar (raro), envelhecimento e sistema geracional (no estilo *Rogue Legacy*).
+8. **Eventos na vila**, missões com prazo e pedidos de mercadores.
+9. **Celular** (toque, clicar para mover) e acessibilidade.
+10. **Escolher classe** ao convocar (pagando mais).
+
+---
+
+### 2. Ponto de partida legal e de mercado
+
+- **Ideia e mecânicas são livres; expressão não é.** "Prefeito que gerencia heróis autônomos" pode ser usado à vontade. **Não** podemos usar nomes, arte, música, código ou textos do jam, nem nada de *Diablo* (Tristram, Catedral, Deckard Cain e afins são marcas da Blizzard).
+- **A Bippinbits vai lançar a versão oficial (~2027).** Se a ideia for publicar, precisamos de identidade própria forte para não parecer clone. Esse é o motivo da proposta de ambientação na seção 10.
+- **Diferenciais que o jam nem tocou:** gerações e legado, defesa da vila e cidade com cidadãos. São o nosso espaço.
+
+---
+
+### 3. Visão da versão completa
+
+#### 3.1 Pilares
+
+| # | Pilar | Teste de design: toda feature nova precisa… |
+|---|---|---|
+| 1 | **Você é a cidade, não o herói** | …ser influência, nunca controle direto em combate |
+| 2 | **Toda história é de alguém** | …gerar ou alimentar uma memória de um herói específico |
+| 3 | **A vila cresce e sangra** | …ter custo, manutenção ou risco, e não ser só um "+10%" |
+| 4 | **O abismo tem forma** | …criar uma escolha de composição, rota ou timing |
+| 5 | **Lenda longa** | …continuar valendo após 20 h (sem upgrades "mortos") |
+
+#### 3.2 Loops em três escalas
+
+```mermaid
+flowchart TB
+  subgraph Micro["Minuto a minuto (vila)"]
+    m1[Observar heróis] --> m2[Conversar, presentear,<br/>discursar, consolar]
+    m2 --> m3[Postar contrato,<br/>ajustar doutrina]
+    m3 --> m4[Reagir: volta, ferido,<br/>luto, evento]
+    m4 --> m1
+  end
+  subgraph Meso["Hora a hora (expedições)"]
+    e1[Contratos e grupos] --> e2[Expedição e combate auto]
+    e2 --> e3[Ouro, materiais, feitos]
+    e3 --> e4[Construir, especializar,<br/>equipar]
+    e4 --> e5[Conter a corrupção<br/>em várias frentes]
+    e5 --> e1
+  end
+  subgraph Macro["Campanha (anos)"]
+    c1[Atos e chefes] --> c2[Restaurar a vila]
+    c2 --> c3[Heróis envelhecem,<br/>se aposentam, têm filhos]
+    c3 --> c4[Nova geração]
+    c4 --> c1
+  end
+  Micro --> Meso --> Macro
+```
+
+**Regra de ouro do ritmo:** o jogador deve ter sempre **pelo menos 3 objetivos abertos de horizontes diferentes**, por exemplo o próximo prédio (minutos), o próximo chefe (hora) e a filha do herói favorito chegando à idade de lutar (campanha).
+
+---
+
+### 4. Sistemas
+
+#### 4.1 Heróis
+
+**Classes:** 6 na fatia vertical e 12 na v1.
+
+| Classe | Papel | Identidade |
+|---|---|---|
+| Guardião | Tanque | Provoca e protege o mais ferido |
+| Clériga | Cura | Prioriza quem tem vínculo com ela (fica emocional quando ele morre) |
+| Selvagem | Corpo a corpo | Fica mais forte com pouca vida; o "azarão" do jam |
+| Lanceira | Bruiser | Alcance de 2 e investida |
+| Piromante | Dano em área | Forte contra hordas, frágil |
+| Arqueiro | Alvo único | Prioriza elites |
+| Ladina *(v1)* | Utilidade | Desarma armadilhas, abre baús, mais saque |
+| Bardo *(v1)* | Suporte | Ânimo do grupo; conta as histórias na taverna |
+| Necromante *(v1)* | Invocador | Levanta inimigos caídos; os cidadãos desconfiam (−felicidade) |
+| Monge *(v1)* | Controle | Atordoa e esquiva |
+| Caçadora *(v1)* | Pet | Companheiro animal que também pode morrer |
+| Alquimista *(v1)* | Debuff | Bombas e poções; reduz o custo do templo |
+
+**Rank (E → S) = potencial**, ou seja, o teto de nível e o ganho por nível. **Novidade:** o rank pode **subir por feitos** e não só por XP. Matar um chefe, sobreviver sozinho ou salvar o grupo gera um *Feito* que promove o herói. Isso responde à pergunta de um jogador: "o feito faz o herói ou o herói faz o feito?".
+
+**Traços:** cada herói tem 2 visíveis e 1 oculto, revelado num momento-chave. Também podem ser **adquiridos**.
+
+| Traço | Efeito mecânico |
+|---|---|
+| Covarde | Foge com 50% de ânimo; −lealdade se o prefeito o forçar |
+| Vingativo | +dano após a morte de um aliado; ignora o sino de retirada |
+| Ganancioso | Aceita contratos mais fundos e pega uma parte maior do saque |
+| Leal | Aceita a formação sugerida pelo prefeito |
+| Curioso | Explora salas laterais: mais saque e mais risco |
+| Beberrão | Recupera ânimo na taverna, mas gasta tudo |
+| Devoto | Recupera ânimo na capela; resiste a maldições |
+| Supersticioso | Recusa andares onde um amigo morreu |
+| Veterano *(adquirido)* | Recebido após 20 expedições; +ânimo para o grupo |
+| Traumatizado *(adquirido)* | Recebido após um massacre; −ânimo em andares de mesmo bioma |
+| Fobia de X *(adquirido)* | Recebido ao quase morrer para um tipo de monstro |
+| Tocado pela morte *(adquirido)* | Recebido ao ressuscitar; mais forte, mas mórbido |
+
+**Ânimo** (substitui a "confiança" do jam): uma barra com **marcas visíveis** dos limiares de fuga de cada herói. Sobe com vitórias, bardo, discurso e amigos no grupo. Desce com feridas, mortes e escuridão. Decide a fuga de verdade.
+
+**Necessidades na vila:** descanso (fadiga), diversão, fé e equipamento. A **fadiga** impede o mesmo grupo de descer sem parar. Isso obriga a ter **rotação de elenco**, e mais heróis significam mais gestão e mais histórias.
+
+**Vínculos:** cada par de heróis tem uma afinidade de −100 a +100. Ela se constrói em expedições juntos, em salvamentos e em conversas na taverna.
+- **Amigos** dão bônus de ânimo e uma *habilidade combinada* por par de classes.
+- **Rivais** dão mais dano, mas brigam por saque e podem abandonar o grupo.
+- **Mentor/aprendiz** dão XP extra (aposentados podem ser mentores).
+- **Casal:** com casa, gera filhos que viram recrutas anos depois e **herdam traço, afinidade de classe e um item**.
+
+**Tempo de vida:**
+- Idade e pico entre 25 e 40 anos, com declínio depois dos 45.
+- **Aposentadoria** voluntária (por traço ou idade) ou incentivada.
+- **Aposentados viram moradores com função:** mentor no campo de treino, ferreiro, guarda da muralha, contador de histórias. Ninguém some de vez.
+- **Lesões graves** deixam cicatrizes permanentes (−atributo, +traço). A casa de cura atenua.
+- **Ressurreição** existe só no fim de jogo: é um ritual caro e raro, com preço (traço *Tocado pela morte*). Assim a morte continua pesando.
+
+**Legado:**
+- Cemitério e memorial com **epitáfio gerado** a partir da vida do herói.
+- Itens nomeados herdáveis ("Lâmina de Bram").
+- Salão das Lendas com bônus permanentes.
+- Renomear heróis.
+
+#### 4.2 Influência indireta (as alavancas do prefeito)
+
+Cada alavanca tem custo (ouro, reputação ou energia do prefeito) para que importe:
+
+| Alavanca | O que faz | Custo / limite |
+|---|---|---|
+| Berrante | Convoca uma leva; o **chamado direcionado** pede uma classe | Ouro; o direcionado custa mais e tem recarga |
+| Quadro de contratos | O prefeito posta um objetivo e uma recompensa; os heróis se candidatam conforme traços | A recompensa sai do tesouro |
+| Contratar / Patrocinar | Do jam, expandido: patrocinar um herói específico aumenta a **lealdade** | Ouro |
+| Formação sugerida | O prefeito monta o grupo ideal e cada herói aceita conforme a lealdade | Recusar custa ânimo |
+| Doutrina da guilda | Postura (cautelosa / equilibrada / agressiva), limiar de retirada e prioridade de alvo | Desbloqueio no prédio da guilda |
+| Sino de retirada | Chama um grupo de volta no meio da masmorra | Recarga longa e −reputação; os vingativos ignoram |
+| Conversar / presentear / discursar | O prefeito anda até o herói (mantém o charme do avatar) | **Energia diária limitada** |
+| Decretos | Políticas com dilema: imposto sobre saque, toque de recolher, funeral com honras, proibir necromancia, recrutamento forçado | Afetam felicidade e lealdade |
+| Preços e impostos | Ajuste por loja | Imposto alto aumenta o tesouro, mas os heróis vão embora |
+| Defesa | Posicionar guardas e torres antes das noites de incursão | Salários |
+
+#### 4.3 Expedições e combate
+
+- Combate **automático em tempo real**, como no jam, sobre uma simulação de *tick* fixo e determinística por semente (permite repetir e balancear).
+- Cada classe tem 3–4 habilidades, mais uma passiva de traço e as combinadas de vínculo.
+- **Regra anti-impasse:** depois de N segundos, os inimigos entram em fúria e o ânimo drena até alguém ceder. Isso mata o soft-lock da curandeira.
+- **Várias frentes:** começa com 1 grupo e chega a 3–4 grupos simultâneos em atos diferentes.
+- **Resumo da expedição:** saque, XP, abates e **momentos marcantes** ("Mira salvou Aldric de um golpe fatal"). Rolável e sem cortar botões.
+- **Itens:** raridade de comum a lendário, com afixos. Os heróis compram nas lojas **com o próprio ouro**, e o prefeito pode presentear. Artefatos únicos têm história (o "Um Anel" do jam vira uma família de relíquias).
+
+#### 4.4 O abismo
+
+**Estrutura:** 6 atos × 4 andares, mais um chefe por ato e as **Profundezas infinitas** no pós-jogo.
+
+| Ato | Bioma | Material | Chefe (mecânica que pede composição) |
+|---|---|---|---|
+| I | Catacumbas | Ossos | Invoca hordas: pede dano em área |
+| II | Minas inundadas | Ferro-negro | Couraçado: pede perfuração (arqueiro/lança) |
+| III | Jardim de fungos | Esporos | Envenena: pede cura e alquimia |
+| IV | Cidade afogada | Pérolas negras | Amaldiçoa: pede clériga/devoto |
+| V | Forja abissal | Brasas | Fases com troca de alvo: pede tanque forte |
+| VI | Coração do abismo | Fragmentos de alma | Final: usa os **mortos da sua campanha** contra você |
+
+**Andares procedurais** (por semente) com névoa revelada sala a sala, como no jam. Tipos de sala:
+- Matilha, ou elite com afixos (veloz, vampírico, explosivo…).
+- Armadilha (a ladina resolve).
+- Santuário com bênção ou maldição; a escolha depende do traço de quem toca.
+- Baú.
+- **Prisioneiro** (vira um recruta).
+- **Restos de um herói perdido seu** (recupera o item e fecha o luto).
+- Mercador errante e eventos de história.
+
+**Corrupção:**
+- Cada ato tem um medidor que **sobe com o tempo** e cai quando os andares são limpos.
+- Acima do limiar, os monstros ficam mais fortes e há **incursões noturnas na vila**.
+- Isso cria a pressão de "pratos girando" que sustenta horas de jogo, e dá motivo para manter grupos em atos antigos.
+
+#### 4.5 A vila
+
+- **Começa em ruínas** (mantém a fantasia de reconstruir). O mapa **expande** quando o prefeito limpa a floresta, constrói a ponte ou abre a colina.
+- **Lotes:** o jogador escolhe onde construir, com adjacências simples (por exemplo, taverna perto da estalagem dá +ânimo).
+- **Cidadãos:** a população cresce com moradia, comida e segurança. Eles pagam **impostos passivos** (resolve o começo sem ouro), trabalham nos prédios e têm humor. A morte de um herói querido entristece a vila.
+- **Noites de incursão:** um mini-loop de defesa com torres, guardas, aposentados e heróis que estão na vila. Pode fazer o jogador perder prédios, mas nunca a campanha.
+
+| Prédio | Função | Especialização (nível 3) |
+|---|---|---|
+| Taverna | Recrutas, ânimo, conversas | Cervejaria (ânimo) × Casa de apostas (ouro) |
+| Estalagem | Capacidade de heróis, descanso | Quartos de luxo × Dormitório |
+| Ferreiro | Armas e armaduras | Lâminas × Couraças |
+| Alquimista | Poções, antídotos | Cura × Bombas |
+| Templo | Cura, bênçãos, ressurreição (tardia) | Luz × Penitência |
+| Casa de cura | Trata lesões e trauma | Cirurgia × Ervas |
+| Guilda | Contratos, doutrinas | Mercenária × Ordem |
+| Campo de treino | XP passiva, mentores | Disciplina × Arena (luta entre heróis) |
+| Cartógrafo | Mapas persistentes e rotas | Atalhos × Previsão de elites |
+| Biblioteca arcana | Magias, identificação | Fogo × Proteção |
+| Cemitério/Memorial | Luto mais curto, legado | Mausoléu × Ossuário (necro) |
+| Mercado | Comércio, caravanas | Rota de luxo × Mercado negro |
+| Tesouraria | Juros, empréstimos | Banco × Cofre |
+| Fazenda/Moinho | Comida → população | — |
+| Muralha e torres | Defesa noturna | Balistas × Sinos |
+| Escola | Filhos de heróis viram recrutas | — |
+| Prefeitura | Decretos e energia do prefeito | — |
+| Joalheiro | Encantar, engastar | — |
+
+**Fonte termal.** Um marco fora dos lotes, no lugar do antigo portão sul, sem nível nem preço: uma bacia de pedra com água quente que sobe do abismo. Heróis machucados, sem ânimo ou de luto vão sozinhos; a água recupera vida e energia, levanta o ânimo, alivia o luto e adianta a recuperação de lesões. É o lugar de respiro entre expedições — e um motivo para o prefeito reparar em quem voltou mal.
+
+**Cidadãos e incursões.** Moradores nomeados (de 6 a 8) trabalham nos prédios, andam pela vila, pagam imposto conforme o humor médio e podem deixar a vila quando o humor afunda. Cinco casinhas na borda sul servem de moradia: à noite a maioria entra e some, enquanto guardas e alguns noctívagos ficam no portão e na taverna. Quando um ato passa de 55 de corrupção, uma incursão pode subir às 22h: a defesa soma heróis em casa, aposentados e a milícia de guardas. O resultado é repelida, segurada com custo ou saqueada; prédios podem voltar a ruínas, moradores morrem, heróis se ferem e o tesouro sangra, mas a campanha nunca acaba. É a tensão fora da masmorra que o M3 pedia.
+
+#### 4.6 Economia
+
+- **Duas carteiras:** o **ouro dos heróis** (gasto em lojas, taverna e templo) e o **tesouro da vila** (impostos sobre vendas e saque, cidadãos e contratos). O imposto é a ponte entre as duas, e o prefeito a regula.
+- **Materiais por bioma** são necessários para os níveis de prédio e para a fabricação, o que dá motivo para revisitar atos.
+- **Sumidouros permanentes:** manutenção de prédios, salários de guardas, festivais, contratos, ritual de ressurreição, decretos e decoração. **O ouro nunca vira número morto.**
+- **HUD:** tesouro, renda por dia e um gráfico simples (pedido explícito dos jogadores).
+
+#### 4.7 Tempo e calendário
+
+- Dia → estação → ano, com pausa e velocidades 1×/2×/4×.
+- **Envelhecimento anual.** Uma campanha cobre de 40 a 60 anos de jogo, o que permite 2–3 gerações.
+- **Eventos sazonais:**
+  - Festival da colheita (ânimo).
+  - Caravana (itens raros).
+  - Peste (doença).
+  - Eclipse (surto de corrupção).
+  - Visita de um herói lendário.
+  - Cobrador do rei (imposto externo).
+  - Vila rival tentando recrutar os seus heróis.
+
+#### 4.8 Motor de histórias
+
+- **Tudo vira evento estruturado** (quem, o quê, onde, quando), que alimenta:
+  - A **Crônica da Vila**, um livro navegável com a história da campanha.
+  - **Falas contextuais** dos heróis que lembram fatos reais ("Desde que o Bram caiu no andar 3 eu não desço sem tocha extra").
+  - **Epitáfios** e feitos para a promoção de rank.
+- **Arcos emergentes por templates:** rivalidade que vira amizade, último sobrevivente, traição (ganancioso foge com o saque), redenção (covarde que fica para salvar o amigo).
+
+#### 4.9 Continuidade de longo prazo
+
+| Camada | Duração | Gancho |
+|---|---|---|
+| Campanha (6 atos) | 20–30 h | Restaurar a vila e descobrir o que dorme no abismo |
+| Gerações | Dentro da campanha | Filhos, herança, dinastias, rivalidades de família |
+| Profundezas infinitas | Ilimitado | Andares escalonados, recordes por herói |
+| Eras (NG+) | Ilimitado | Séculos depois a vila é ruína de novo, mas o **Salão das Lendas** e as relíquias permanecem. *Pactos* opcionais aumentam a dificuldade em troca de recompensas (estilo *Hades*) |
+| Desafio semanal | Opcional | Semente fixa com modificadores e ranking |
+| Modo Ferro | Opcional | Um save só, sem recarregar |
+
+---
+
+### 5. Correções de base (lições do jam)
+
+- **Save automático e slots**, com export/import de JSON.
+- **Sem soft-lock:** regra anti-impasse e a fuga forçada pelo ânimo.
+- **Informação legível:** ouro no HUD, limiares de ânimo, tooltips de equipamento e atributos, resumo rolável e notificações ("Mira morreu no andar 3").
+- **Desempenho com mais de 100 aldeões:** simulação separada da renderização, com animação simplificada fora da tela.
+- **Celular:** toque, clicar para mover e UI escalável.
+- **Acessibilidade:** fonte maior, alto contraste, menus navegáveis por teclado e leitor de tela nos menus.
+
+---
+
+### 6. Escopo de conteúdo
+
+| Item | Jam | Fatia vertical (M1) | v1.0 |
+|---|---|---|---|
+| Classes | ~6 | 6 | 12 |
+| Traços | — (só texto) | 12 | 40+ |
+| Andares / chefes | 3 / 1 | 4 / 1 | 24 / 6 + infinito |
+| Inimigos | poucos | 12 | 60+ com afixos |
+| Prédios | ~6 | 6 | 18+ com especializações |
+| Eventos de vila | 0 | 3 | 30+ |
+| Duração | 30–60 min | 2–3 h | 20–30 h + infinito |
+| Save | não | sim | sim + Eras |
+
+---
+
+### 7. Tecnologia (recomendação)
+
+**TypeScript + Vite + Phaser 3 (ou PixiJS)**, mesma família do *Rolê do Popinho*:
+- Roda no navegador (itch.io) e depois vai para desktop (Tauri/Electron → Steam) e celular (Capacitor).
+- Eu consigo testar tudo pelo navegador e por **simulação headless**.
+
+**Arquitetura-chave:** um **núcleo de simulação puro e determinístico**, separado da renderização.
+
+```
+vigilia/
+  src/sim/      # regras puras: heróis (IA de utilidade), combate, masmorra, economia, calendário, crônica
+  src/data/     # classes, traços, inimigos, itens, prédios, eventos (dados, não código)
+  src/render/   # cenas Phaser: Vila, Masmorra
+  src/ui/       # HUD, painéis, crônica
+  tools/        # balanceador headless: simula 50 anos em segundos, Monte Carlo de mortalidade e ouro
+```
+
+- **IA de utilidade** para a vida na vila: cada herói pontua ações (descansar, beber, comprar, aceitar contrato, visitar túmulo, treinar) por necessidade × traço. É o motor da "personalidade autônoma".
+- **Save** é o estado da simulação serializado em JSON, versionado.
+- **O balanceamento por script** é o que torna viável um jogo de 20 h feito por uma equipe pequena.
+
+**Alternativa:** Godot 4, a mesma engine do original. É o melhor ferramental 2D e facilita console, mas o ciclo de teste daqui fica mais lento.
+
+---
+
+### 8. Arte e áudio
+
+- Pixel art top-down em 3/4, com sprites de 16–32 px e paleta escura com luzes quentes (vila acolhedora × abismo).
+- **Protótipo com asset packs licenciados** (uso comercial) para validar o loop; artista dedicado para a identidade final.
+- Música e efeitos licenciados no começo e encomendados depois. O tema da vila muda conforme o estado (paz, luto, incursão).
+
+---
+
+### 9. Roadmap por marcos
+
+| Marco | Entrega | Critério de pronto |
+|---|---|---|
+| **M0: Núcleo** ✅ | Simulação headless com heróis, necessidades, traços, expedição, combate, economia, save e balanceador | Simula 10 anos sem soft-lock; relatório de mortalidade e ouro coerente |
+| **M1: Fatia vertical** ✅ | Vila jogável com 7 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
+| **M2: Pessoas** ✅ | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
+| **M3: Vila viva** 🟡 | Cidadãos e incursões noturnas entregues; faltam lotes e expansão, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
+| **M4: Profundidade** | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
+| **M5: Lenda** | Atos V–VI, gerações, Eras e Pactos, profundezas infinitas, celular, polimento, PT/EN | Campanha completa e motivo para recomeçar |
+
+#### 9.1 Especificação do M2: Pessoas
+
+Vínculos, luto, vingança, envelhecimento e crônica já existem desde o M0. O M2 acrescenta cinco sistemas.
+
+**Energia do prefeito.** O prefeito tem 4 pontos por dia, que recarregam à meia-noite. As ações custam energia e só valem com o herói na vila:
+
+| Ação | Energia | Efeito |
+|---|---|---|
+| Conversar | 1 | +lealdade e +ânimo; 1 vez por dia por herói; às vezes revela o traço oculto |
+| Presentear | 1 + ouro | Bebida (Beberrão adora), relíquia (Devoto adora) ou arma (sobe 1 tier dentro do limite do ferreiro) |
+| Consolar | 1 | −luto e +ânimo de quem chora alguém |
+| Discursar | 2 | +ânimo e +lealdade de todos na vila; 1 vez por dia |
+| Renomear | 0 | Troca o nome do herói |
+| Aposentar | 0 | Aposentadoria honrosa: o herói fica na vila com uma função; não custa lealdade aos amigos, ao contrário de dispensar |
+
+**Lesões, cicatrizes e Casa de cura.**
+- **Quem pega lesão:** quem termina um combate (ou foge) com menos de 15% de vida pode se ferir. A lesão vai no braço, na perna, no olho ou nas costelas e traz uma penalidade no atributo correspondente.
+- **Recuperação:** a lesão leva de 8 a 25 dias. Nesse período o herói não desce e passa o tempo se tratando.
+- **Cicatrizes:** ao sarar, a lesão pode virar cicatriz permanente com penalidade menor. Com 2 cicatrizes, o herói ganha o traço adquirido *Marcado* (+ânimo, porque já viu o pior).
+- **Casa de cura (7º prédio, níveis 1–3):** acelera a recuperação e reduz a chance de cicatriz.
+
+**Casais e filhos.**
+- **Casamento:** a cada estação, dois heróis com vínculo ≥ 80 podem se casar (qualquer combinação de gênero).
+- **Filhos:** casais que estão na vila têm chance anual de ter (ou adotar) um filho.
+- **Maioridade:** aos 16 anos o filho vira recruta. Herda um traço e, com frequência, a classe de um dos pais, além de equipamento herdado.
+- **Órfãos:** a criança cresce mesmo se os pais morrerem. A morte de um cônjuge gera luto máximo.
+
+**Aposentados com função.**
+- **Quem se aposenta:** quem se aposenta (por idade, por cicatrizes ou por ordem do prefeito) continua na vila.
+- **Funções:**
+
+| Função | Efeito |
+|---|---|
+| Mentor | Campo de treino: mais XP |
+| Ferreiro | Equipamento mais barato |
+| Contador de histórias | Taverna: mais ânimo |
+| Curandeiro | Casa de cura: recuperação mais rápida |
+
+- **Velhice:** aposentados com 70 anos ou mais podem morrer de velhice e vão para o memorial.
+
+**Memorial.** Todo herói morto ganha um epitáfio gerado a partir da vida dele: feito mais notável, como caiu, um traço marcante e quem chora por ele.
+
+**Critério de pronto:** saves antigos carregam (migração v1 → v2), o balanceador mantém 0 impasses e ócio ≤ 4 dias, e a crônica de 3 anos tem casamentos, lesões e epitáfios que contam histórias.
+
+---
+
+### 10. Decisões em aberto
+
+1. **Stack:** web/TypeScript (recomendado) ou Godot 4?
+2. **Ambientação** (é o diferencial frente à versão oficial):
+   - **A. Fantasia sombria original:** vila "Vigília" na borda de um abismo sob uma abadia antiga.
+   - **B. Folclore brasileiro:** vila mineradora colonial cuja mina rompeu num mundo inferior. Inimigos como Corpo-seco, Mula-sem-cabeça, Boitatá e Mapinguari, com o **ouro** como recurso temático. É o diferencial mais forte, mas exige pesquisa cultural cuidadosa.
+3. **Objetivo:** projeto pessoal ou publicar (itch/Steam)? Isso muda o investimento em arte e o cuidado legal.
+4. **Arte:** asset packs licenciados ou artista dedicado?
+5. **Tom:** mais aconchegante (*cozy*) ou mais sombrio (*dark*)?
+
+---
+
+#### Fontes
+
+- Página do jogo: https://bippinbits.itch.io/tristram (descrição, créditos, patch notes e ~285 comentários)
+- Fomento da versão completa: https://www.gamesmarket.global/federal-funding-bippinbits-receives-euro335098-in-funding-from-the-bmwe-afec7e2828a41bb0e8d209a6cbbca558/
+- Sessão própria no build web: intro, tutorial, berrante, chegada dos heróis e hub da vila. O resto da campanha não foi jogado, porque o painel do navegador ficou oculto e o jogo congela em segundo plano.
+
+## 3. Direção de arte e pipeline
+
+### 3.1 Estado do pack 1.9
+
+O pack entregue tem 354 assets e cobre:
+
+- cenário da vila, 7 prédios em 3 níveis + ruína, casas, portão, termas e props;
+- 12 heróis (6 classes × 2 gêneros) em 18 quadros: idle, run, hit, ataque e morte;
+- retratos de herói 48×84, prefeito/prefeita, crianças e moradores;
+- 18 monstros normais + 6 chefes, com idle/run/ataque/dano/morte e retratos 32×36;
+- variantes `deep`, `core` e `phase2` por profundidade;
+- 6 arenas de dungeon em camadas (back, mid, floor, fore), 24 fundos por andar, profundidades compartilhadas, 34 props, 7 FX e moldura/barra/banner/nó de sala;
+- outono, lamparinas, bancos, carroças e ícones web/favicon.
+
+O pacote de origem fica em `~/Downloads/vigilia-art-v01/`; no repositório, os arquivos usados pelo jogo ficam em `public/assets/vigilia/`. O 0x72 permanece apenas como fallback de ecos de herói.
+
+### 3.2 Diretrizes
+
+**Status:** pack 1.9 entregue e integrado. As diretrizes abaixo continuam valendo para novos lotes.
+**Fonte da verdade dos assets:** [`public/assets/vigilia/manifest.json`](../../public/assets/vigilia/manifest.json)
+
+Este documento é o contrato visual para uma pessoa ou IA criar/substituir a arte do jogo. Ele descreve o estado atual, as regras técnicas, como cada peça deve ser pedida e como o pacote deve ser entregue para entrar no projeto sem retrabalho.
+
+### 3.2.1 Retrato do jogo hoje
+
+| Item | Estado atual |
+|---|---|
+| Motor | Phaser 3.90 + Preact |
+| Mundo | 50×40 tiles; 1600×1280 unidades |
+| Tile | 16×16 px de arte; `ART_SCALE = 2` (32 unidades por tile) |
+| Câmera | fixa em **1,5×**, acompanhando o prefeito; **sem zoom** por roda/pinça |
+| Estilo | fantasia sombria, top-down 3/4, fachadas frontais |
+| Pós-processamento | dessaturação −55%, brilho 0,8, contraste +0,08, vinheta |
+| Chão | assado numa `RenderTexture`; UVs recuadas 0,5 texel contra vazamento do atlas |
+| Prédios | 7 lotes, 3 níveis + ruína; hoje compostos com tiles do Tiny Town |
+| Casinhas | 5 na borda sul, 4×3 tiles; hoje compostas com tiles |
+| Portão + berrante | imagem única 80×96 px (5×6 tiles), hoje **gerada em código** |
+| Fonte termal | bacia 80×64 px (5×4 tiles) + terreiro 7×6, hoje **gerada em código** |
+| Heróis | 16×28 px; 18 quadros (idle, run, hit, ataque, morte); pack 1.9 |
+| Moradores | 16×21 px; 2 quadros (idle/caminhada); pack 1.9 |
+| Prefeito | 16×23 px; pack 1.9 |
+| Monstros/chefes | 18 normais + 6 chefes, idle/ataque/dano/morte, variantes por andar; pack 1.9 |
+| Ícones de UI | 24×24; SVG e PNG do pack 1.9 |
+| Texto | sempre renderizado pelo jogo; **não assar texto na imagem** |
+
+### 3.2.2 Estilo
+
+- **Perspectiva:** top-down 3/4, câmera alta; prédios com a fachada voltada para o sul (para a câmera). Nada de isométrico.
+- **Escala:** 16 px por tile; personagens em escala chibi (cabeça grande, corpo curto). Heróis 16×28; moradores 16×21.
+- **Contorno:** 1 px escuro em personagens, estruturas e props; evitar contorno duplo.
+- **Sombreamento:** 2–3 tons por material; luz consistente vinda de cima/esquerda; dithering só se necessário.
+- **Paleta:** 32–48 cores, escura e terrosa, com dourado/teal como acentos. Comece pela [`palette/vigilia.gpl`](../../public/assets/vigilia/palette/vigilia.gpl).
+- **Clima:** vila à beira de um abismo; madeira velha, pedra, ferrugem, tecido desbotado. O abismo usa roxo/verde doentio.
+- **Referência:** a imagem do Tristram enviada pelo autor serve como **clima e composição** (portão de madeira + berrante grande em cima). Não copiar silhueta, textura ou layout da referência.
+- **Pós-processamento:** o jogo escurece e dessatura a cena. Entregue a arte um pouco **mais clara e saturada** que o resultado final; valide com uma captura no jogo, não só no editor.
+
+### 3.2.3 Especificações técnicas obrigatórias
+
+| Campo | Regra |
+|---|---|
+| Arquivo | PNG-32, sRGB, transparente, sem interlace, sem compressão com perda |
+| Escala | entregar em **1×** (16 px = 16 px); o motor amplia 2× |
+| Pivô | personagens, prédios e props: **embaixo-centro**; tiles: **canto superior esquerdo** |
+| Footprint | prédios: 7×6 tiles (112×96 px), exceto campo 9×6 (144×96); casas: 4×3 (64×48); portão: 5×6 (80×96); termas: 5×4 (80×64) |
+| Anti-alias | desligado; nada de bordas suaves, gradientes fotográficos ou subpixel |
+| Sombra | **não assar** sombra projetada; o jogo já tem camada de sombra/vinheta |
+| Glow | **não assar** brilho difuso; fogo, vapor e faíscas são FX separados |
+| Texto | **nenhum** texto, número, runa legível ou placa escrita; os rótulos são do jogo |
+| Animação | personagens em perfil, flip horizontal; heróis 4 idle + 4 run + 1 hit; moradores 2 quadros |
+| Fonte | Aseprite ou PSD com layers nomeadas; exportar PNGs e JSON de frames |
+| Licença | preferir CC0; se CC-BY, incluir crédito; IA: combinar direitos de uso e não copiar a referência |
+
+#### Escala na tela
+
+Com `ART_SCALE = 2` e câmera `1,5×`, **1 pixel de arte = 3 pixels de tela**. Detalhes de 1 px são visíveis, mas não dependa deles para leitura. Teste em:
+
+- desktop: 1370×1289;
+- celular: 390×844 (a câmera fica mais fechada).
+
+### 3.2.4 Como pedir cada peça (ficha)
+
+Use uma ficha por asset — tabela, YAML ou o bloco abaixo. Não peça “a cidade inteira” de uma vez.
+
+```text
+ID:
+Onde entra:
+Tipo: tile | prédio | personagem | prop | UI | efeito | decalque
+Tamanho: [largura, altura] px
+Footprint: [colunas, linhas] tiles
+Pivô: [0.5, 1] | [0, 0]
+Vista: top-down 3/4 | perfil | frontal
+Estados/animação:
+Paleta/luz/contorno:
+Referências (clima, não copiar):
+Restrições:
+Arquivos:
+Critérios de aceite:
+```
+
+#### Exemplo preenchido — portão + berrante
+
+```text
+ID: prop/gate-horn/open
+Onde entra: entrada da cidade, centro-esquerdo, sobre a estrada de cima
+Tipo: prop/estrutura
+Tamanho: 80×96 px
+Footprint: 5×6 tiles
+Pivô: [0.5, 1]
+Vista: frontal, top-down 3/4
+Estados: open (o jogo usa aberto); opcional closed/ruin
+Paleta: madeira escura, ferro velho, chifre cinza, braçadeira de latão
+Referências: portão de madeira com berrante grande na viga (clima do Tristram)
+Restrições: passagem central transparente; sem texto; sem sombra/glow assados;
+  o berrante fica acima da viga, não atrás do portão
+Arquivos: export/png/prop-gate-horn-open.png
+Aceite: cabe no footprint, lê a 1,5×, passagem alinhada ao ponto do portão,
+  berrante legível a 3 px/art px, transparente
+```
+
+#### Exemplo — taverna
+
+```text
+ID: building/taverna/level-2
+Tamanho: 112×96 px
+Footprint: 7×6 tiles
+Pivô: [0.5, 1]
+Estados do conjunto: level-1, level-2, level-3, ruin
+Vista: fachada frontal; porta no centro; telhado vermelho; placa sem texto
+Restrições: sem pessoas, sem fumaça, sem rótulo; porta alinhada ao centro do lote
+Arquivos: building-taverna-level-2.png
+```
+
+#### Exemplo — terreno
+
+```text
+ID: tile/town/terrain
+Tamanho: 16×16 px por tile
+Formato: tileset PNG + JSON de autotile
+Cobertura mínima: grama, terra, estrada, pedra, água, penhasco, abismo
+Estados: 9 partes de terra (cantos, bordas, centro), 4 direções de estrada
+Restrições: tiles sem costura em 1,5×; sem props/personagens embutidos
+Arquivos: export/tiles/town-terrain.png + town-terrain.json
+```
+
+#### Exemplo — morador
+
+```text
+ID: char/villager/lavrador/f
+Tamanho: 16×21 px por quadro
+Vista: perfil, flip horizontal
+Animações: idle [0,1] a 3 fps; walk [0,1] a 8 fps
+Pivô: [0.5, 1] nos pés
+Paleta: túnica verde, calça escura, chapéu de palha
+Restrições: sem arma, sem rótulo, sem sombra; silhueta distinta dos heróis
+Arquivos: char-villager-lavrador-f.png + JSON
+```
+
+### 3.2.5 Prompt para IA
+
+```text
+Você está criando pixel art para Vigília, um jogo de gestão de vila em
+fantasia sombria. Siga as regras abaixo sem exceção.
+
+REGRAS GLOBAIS
+- Grade de 16×16 px; entregar em 1×, PNG-32 transparente, sRGB.
+- Top-down 3/4; personagens em perfil com flip horizontal; prédios frontais.
+- Contorno de 1 px, 2–3 tons por material, sem anti-alias, sem subpixel.
+- Sem texto, sem sombra projetada, sem glow; efeitos são arquivos separados.
+- Paleta escura e terrosa; entregue um pouco mais claro/saturado que o
+  resultado final (o motor dessatura −55% e escurece para 0,8).
+- Pivô embaixo-centro para personagens/prédios/props; canto superior
+  esquerdo para tiles.
+- Não copie a imagem de referência; use só o clima/composição.
+
+ASSET
+ID: ...
+Onde entra: ...
+Tamanho/footprint: ...
+Pivô: ...
+Estados/animação: ...
+Paleta/luz: ...
+Restrições: ...
+Arquivos: ...
+
+ENTREGA
+PNG(s) + JSON de frames + source Aseprite/PSD + contact sheet + licença.
+Mostre primeiro um teste de estilo (1 tile + 1 prédio + 1 personagem)
+antes de produzir o lote.
+```
+
+### 3.2.6 Nomes, pastas e manifesto
+
+#### Nomes de arquivo
+
+- **kebab-case**, ASCII, minúsculo, sem espaços ou acentos.
+- Prefixo por categoria: `tile-`, `building-`, `char-`, `prop-`, `fx-`, `ui-`, `decal-`.
+- Quadros com zero à esquerda: `idle-00`, `walk-01`.
+- Estados: `level-1`, `level-2`, `level-3`, `ruin`, `open`, `closed`.
+- Versão do pacote no `manifest.json`, **nunca no nome do arquivo**.
+
+```text
+building-taverna-level-1.png
+building-taverna-ruin.png
+building-house-03.png
+prop-gate-horn-open.png
+char-villager-lavrador-f.png
+char-hero-guardiao-m.png
+tile-town-terrain.png
+ui-icon-activity-termas.svg
+fx-steam.png
+```
+
+#### IDs (no manifesto/atlas)
+
+Use **os IDs do jogo em português**, com barras:
+
+```text
+building/taverna/level-1
+building/taverna/ruin
+building/house/03
+prop/gate-horn/open
+char/villager/lavrador/f
+char/hero/guardiao/m
+tile/town/terrain
+ui/icon/activity/termas
+fx/steam
+```
+
+IDs existentes que **não devem ser traduzidos**: `templo`, `taverna`, `guilda`, `estalagem`, `casa`, `campo`, `ferreiro`; `guardiao`, `selvagem`, `lanceiro`, `arqueiro`, `clerigo`, `piromante`; `portao`, `berrante`, `termas`, `cofre`, `quadro`, `fogueira`, `cemiterio`.
+
+#### Estrutura de entrega
+
+```text
+vigilia-art-v01/
+  README.md
+  manifest.json
+  CHANGELOG.md
+  palette/vigilia.gpl
+  source/                    # .aseprite/.psd (não vai para o build)
+  export/png/
+  export/tiles/
+  export/fx/
+  export/ui/
+  preview/contact-sheet.png
+  licenses/
+```
+
+No projeto, o pacote entra em:
+
+```text
+public/assets/vigilia/
+  manifest.json
+  palette/vigilia.gpl
+  export/...
+```
+
+Os pacotes atuais (`public/assets/kenney-tiny-town` e `0x72-dungeontileset-ii`) **não devem ser sobrescritos**: eles têm licença/atribuição próprias. O pack `vigilia` é adicional, com fallback para os antigos.
+
+#### Formato do manifesto
+
+O manifesto é a fonte da verdade. Campos mínimos por asset:
+
+```json
+{
+  "id": "prop/gate-horn/open",
+  "type": "prop",
+  "file": "export/png/prop-gate-horn-open.png",
+  "size": [80, 96],
+  "footprint": [5, 6],
+  "anchor": [0.5, 1],
+  "states": ["open"],
+  "priority": "P0",
+  "status": "todo",
+  "current": "procedural",
+  "license": "TBD"
+}
+```
+
+Status aceitos: `third-party`, `procedural`, `todo`, `wip`, `review`, `done`.
+
+### 3.2.7 Critérios de aceite
+
+- [ ] Cabe exatamente no footprint e no pivô combinados.
+- [ ] PNG transparente; nenhum fundo ou halo indesejado.
+- [ ] Sem texto, sem sombra projetada, sem glow assado.
+- [ ] Paleta coerente com `vigilia.gpl` (ou desvio justificado).
+- [ ] Lê bem a 1,5× e a 3 px por pixel de arte.
+- [ ] Frames completos, na ordem e com os nomes do manifesto.
+- [ ] Sem costura visível em tiles e emendas de prédio.
+- [ ] Contact sheet + screenshot no jogo (desktop e celular).
+- [ ] `manifest.json` válido, IDs e nomes de arquivo conferindo.
+- [ ] Licença e autoria documentadas em `licenses/`.
+
+### 3.2.8 Ordem de aprovação
+
+1. **Teste de estilo:** 1 tile de terreno + a taverna nível 1 + o portão/berrante.
+2. **Bloco jogável:** os 7 prédios (4 estados) + 5 casas + terreno.
+3. **Pessoas:** heróis e moradores.
+4. **Polimento:** UI, FX, decalques, monstros.
+
+Não aprove um lote inteiro antes do teste de estilo; o custo de correção é muito maior.
+
+### 3.2.9 Integração atual (para quem for programar)
+
+- O jogo lê `town` (Tiny Town) e `dungeon` (0x72) no carregamento; texturas pequenas são geradas em `src/render/art.ts` e `src/render/town.ts`.
+- O portão/berrante atual é uma textura `gate-horn` gerada em `src/render/town.ts`; a fonte termal e as casinhas também são geradas/compostas em código.
+- O novo pack deve ser carregado por um loader próprio e mapeado pelos IDs do manifesto; **não** trocar os IDs de jogo.
+- Prédios podem virar **uma imagem por nível/ruína** (recomendado para arte externa) ou um kit de tiles; a primeira opção exige adaptar `buildings.ts`.
+- Os rótulos (`Berrante`, `Portão da vila`, `Fonte termal`, nomes de heróis) continuam no motor, em pt-BR.
+- A câmera fixa de 1,5× não deve ser contrariada por arte com perspectiva, escala ou luz diferente.
+
+### 3.2.10 O que não pedir
+
+- “Uma cidade inteira em uma imagem” — o jogo é em tiles e a câmera rola.
+- Texto/rótulos assados na arte.
+- Sombra/glow pintados na imagem.
+- Anti-alias, 2×/4× no arquivo, JPG ou fundo branco.
+- Cópia de Tiny Town, 0x72 ou da referência do Tristram.
+- 4 direções de personagem se o motor usa perfil + flip (a não ser que o escopo inclua a adaptação).
+- Arquivos com acento, espaço, maiúscula ou versão no nome.
+
+---
+
+## 4. Kit de arena da dungeon — pedido entregue no pack 1.9
+
+O restante desta seção é o brief que originou as arenas 1.9. Ele fica preservado como referência para novos biomas/andares.
+
+Jogo: Vigília
+Pack atual: Vigília Art Pack 1.9.0
+Data: 2026-10-20
+
+Este é o pedido para dar corpo visual ao visualizador de dungeon do M4.
+Hoje a tela é funcional, mas usa um gradiente, o arco da caverna e poucos props.
+O objetivo é uma arena lateral, ornada e em camadas, que mude de ATO para ATO
+e de ANDAR para ANDAR, acompanhando a mudança dos monstros.
+
+REFERÊNCIA DE ALVO
+A imagem de referência mostra heróis à esquerda, monstros à direita, um cenário
+largo de caverna, barras de vida, números de dano e ouro. Queremos essa leitura
+de "palco de dungeon", mas no estilo pixel art sombrio do Vigília.
+
+================================================================================
+1. REGRA CENTRAL: CADA ANDAR É UMA FASE VISUAL
+================================================================================
+
+O jogo tem 6 atos e 4 andares por ato:
+
+  andar 1 = ENTRADA
+  andar 2 = DESCIDA
+  andar 3 = NÚCLEO
+  andar 4 = CÂMARA DO CHEFE
+
+Os monstros já mudam por ato. A partir deste lote, eles também precisam mudar
+visualmente por profundidade, e a arena precisa mudar junto:
+
+  ATO       -> muda bioma, paleta, props e elenco de monstros.
+  ANDAR 1   -> entrada iluminada, névoa baixa, pouca corrupção.
+  ANDAR 2   -> mais profundo, mais escuro, raízes/correntes/veios.
+  ANDAR 3   -> núcleo corrompido, luz agressiva, primeiro plano pesado.
+  ANDAR 4   -> câmara do chefe, portão/altar, braseiros, composição dramática.
+
+Isso vale para a ARENA e para os MONSTROS. Não queremos o mesmo sprite de
+esqueleto no andar 1 e no andar 4 sem nenhuma diferença visual.
+
+A solução pedida é modular, para não exigir 24 cenários pintados do zero:
+
+  - 1 base de arena por ato;
+  - 4 camadas de profundidade reutilizáveis (entrada/descida/núcleo/chefe);
+  - props por ato;
+  - variações de monstro por profundidade;
+  - luz, névoa e cor final aplicadas no jogo.
+
+Se o orçamento permitir, a versão "completa" pode trazer 4 fundos pintados por
+ato (24 no total). A versão modular é o pedido principal.
+
+================================================================================
+2. O QUE O JOGO JÁ TEM
+================================================================================
+
+- Visualizador de dungeon em tela cheia, combate automático.
+- Heróis: 16x28, 9 quadros, idle 4. Exibidos em 4x (64x112).
+- Monstros normais: 16x16 ou 16x23, idle 4. Exibidos em 4x.
+- Chefes: 32x36, idle 4. Exibidos em 3x (96x108).
+- O jogo NÃO tem monstros no mapa; eles só existem no combate.
+- Barras de vida, dano flutuante, ouro e progresso de sala são desenhados em
+  código; não precisam vir na arte.
+- A cena hoje é montada em camadas no Preact/CSS. O pack novo entra como
+  background, piso, cenário, props, foreground e efeitos.
+- O cenário atual usa poucos assets: arco da caverna, pedras e um gradiente.
+  É exatamente essa carência que este lote resolve.
+
+O visualizador mostra a arena em 16:9, mas a tela do jogo é mais alta. O fundo
+precisa funcionar com "cover", mantendo a ação no centro. Evite detalhes
+importantes no centro exato e nas bordas superior/inferior cobertas pela HUD.
+
+================================================================================
+3. COMPOSIÇÃO DA ARENA (CAMADAS)
+================================================================================
+
+Para cada ato, pedimos três imagens de ambiente:
+
+  A) BACK — 640x360, opaco.
+     Parede de fundo, teto, profundidade, arcos, silhuetas. Sem personagens.
+     A área central (x 120..520, y 90..270) deve ficar relativamente limpa,
+     porque é onde ficam os lutadores.
+
+  B) FLOOR — 640x120, PNG transparente, tileável na horizontal.
+     Piso com linha de base clara. Os personagens ficam com os pés nele.
+     A linha de piso principal deve ficar perto de y=70..85 do arquivo.
+
+  C) FORE — 640x120, PNG transparente.
+     Primeiro plano: pedras, correntes, raízes, ossos, escombros.
+     Não cobrir o centro da ação; prefira as laterais e a base.
+     Sem sombra projetada dos personagens: a sombra é feita no jogo.
+
+Opcional, mas muito bem-vindo: MID — 640x360 transparente, entre back e floor,
+com arcos, colunas ou silhuetas para parallax leve.
+
+Camadas de profundidade compartilhadas (4 arquivos, 640x360 transparentes):
+
+  depth/entrance.png
+  depth/descent.png
+  depth/core.png
+  depth/boss.png
+
+Ideia: desenhos de silhueta escura/azulada, sem cor de bioma fixa, para poderem
+ser tingidos por ato. Exemplos:
+  entrance: escada, arco de entrada, névoa baixa, tochas apagadas;
+  descent: correntes, raízes, vigas, escombros, poças;
+  core: veios pulsantes, rachaduras, olhos, esporos, brasas;
+  boss: portão/altar, braseiros, estátuas, círculo ritual.
+
+Se essas 4 camadas não funcionarem em todos os atos, entregue uma versão
+"neutra" e uma nota de uso; o jogo aplica cor, opacidade e máscara.
+
+ORDEM DE DESENHO NO JOGO:
+  back do ato
+  + depth do andar
+  + floor
+  + props
+  + personagens
+  + fore
+  + efeitos
+  + HUD
+
+================================================================================
+4. OS 6 ATOS — BIOMAS, PALETAS E PROPS
+================================================================================
+
+Use os nomes e IDs de ato do jogo. Cada ato precisa ser reconhecível só pela
+silhueta e pela cor, mesmo sem ler o nome.
+
+ATO I — CATACUMBAS (material: ossos)
+  Paleta: osso, poeira, cinza-esverdeado, âmbar de velas.
+  Luz: fria, difusa, velas quentes pequenas.
+  Motivos: urnas, nichos, colunas quebradas, correntes, caveiras, teias.
+  Props: urna, coluna quebrada, pilha de ossos, castiçal, corrente.
+  Chefe: O Guardião das Urnas — câmara com urnas e selo ritual.
+
+ATO II — MINAS INUNDADAS (material: ferro-negro)
+  Paleta: azul-petróleo, ferrugem, ferro escuro, reflexo de água.
+  Luz: fria, úmida, lanternas pontuais.
+  Motivos: vigas, trilhos, canos, água parada, ferramentas afogadas.
+  Props: viga, bomba d'água, trilho, lanterna, capacete de mineiro.
+  Chefe: A Couraça Submersa — câmara alagada com correnteza e ferrugem.
+
+ATO III — JARDIM DE FUNGOS (material: esporos)
+  Paleta: verde doentio, violeta, azul bioluminescente, creme.
+  Luz: brilho de esporos, névoa violeta.
+  Motivos: cogumelos gigantes, raízes, cápsulas, esporos no ar.
+  Props: cogumelo grande, cápsula de esporos, raiz, poça bioluminescente.
+  Chefe: A Mãe-Bolor — câmara de micélio e cápsulas.
+
+ATO IV — CIDADE AFOGADA (material: pérolas)
+  Paleta: azul-esverdeado, ciano, pérola, pedra clara, coral.
+  Luz: difusa submersa, feixes de cima.
+  Motivos: colunas, estátuas, arcos, corais, pérolas, vitrais.
+  Props: coluna, estátua, coral, pérola gigante, vitral quebrado.
+  Chefe: O Arcebispo Sem Fôlego — catedral submersa.
+
+ATO V — FORJA ABISSAL (material: brasas)
+  Paleta: preto, ferro, laranja, vermelho-brasa, fumaça.
+  Luz: braseiros, lava, faíscas.
+  Motivos: bigornas, correntes, trilhos, caldeirões, escória.
+  Props: bigorna, braseiro, corrente pesada, tubo de lava, martelo.
+  Chefe: O Martelo Que Não Dorme — forja colossal.
+
+ATO VI — CORAÇÃO DO ABISMO (material: almas)
+  Paleta: carmesim, violeta, preto-azulado, magenta, osso.
+  Luz: pulsante, de baixo para cima, olhos no escuro.
+  Motivos: veias, carne petrificada, olhos, fragmentos flutuantes, silhuetas.
+  Props: veia, olho, fragmento, pedestal de osso, rachadura luminosa.
+  Chefe: Aquilo que Vigia — câmara orgânica, coração e vazio.
+
+Nenhum ato pode usar a mesma paleta de outro. Contraste entre eles é essencial.
+O primeiro plano pode ser mais escuro que o fundo para dar profundidade.
+
+================================================================================
+5. MONSTROS POR FASE — O QUE MUDAR VISUALMENTE
+================================================================================
+
+Além de mudar o elenco por ato, os monstros precisam de uma progressão visual
+por andar. O jogo não vai precisar de novos IDs de dados: ele escolhe a variante
+pela profundidade.
+
+PEDIDO PRINCIPAL (Lote B):
+
+1) Para cada um dos 18 monstros normais, uma variante PROFUNDA:
+   - mesmo canvas, mesmos 4 quadros de idle, mesma silhueta;
+   - paleta mais escura/dessaturada;
+   - olhos ou veios com brilho (cor de ênfase do ato);
+   - pequenas marcas de corrupção (rachaduras, musgo, ferrugem, veias).
+   - usada nos andares 2 e 3.
+
+2) Para cada um dos 6 chefes, uma variante FASE 2:
+   - mesmo canvas, mesmos 4 quadros;
+   - armadura/casca rachada, núcleo exposto, olhos mais intensos;
+   - sem mudar a silhueta a ponto de parecer outro chefe.
+
+3) OPCIONAL, se couber: uma variante NÚCLEO para os normais, usada só no
+   andar 3, com corrupção mais forte. Sem ela, o andar 3 usa a variante profunda
+   + camada core + aura/elite desenhada no jogo.
+
+TABELA DE IDs (usar exatamente estes nomes de dados):
+
+ATO I — CATACUMBAS
+  char/monster/esqueleto      Esqueleto Rangente
+  char/monster/rato           Rato-de-ossuário
+  char/monster/acolito        Acólito Caído
+  char/boss/guardiaoUrnas     O Guardião das Urnas
+
+ATO II — MINAS INUNDADAS
+  char/monster/mineiro        Mineiro Afogado
+  char/monster/enguia         Enguia de Breu
+  char/monster/golem          Golem de Ferro-negro
+  char/boss/couraca           A Couraça Submersa
+
+ATO III — JARDIM DE FUNGOS
+  char/monster/esporento      Esporento
+  char/monster/aranha         Aranha-de-micélio
+  char/monster/brotado        Brotado
+  char/boss/maeBolor          A Mãe-Bolor
+
+ATO IV — CIDADE AFOGADA
+  char/monster/sacerdote      Sacerdote Afogado
+  char/monster/sereia         Sereia de Lodo
+  char/monster/cavaleiroSalobro  Cavaleiro Salobro
+  char/boss/arcebispo         O Arcebispo Sem Fôlego
+
+ATO V — FORJA ABISSAL
+  char/monster/ferreiroCinzento  Ferreiro Cinzento
+  char/monster/caoBrasa          Cão de Brasa
+  char/monster/escravoForja      Escravo da Forja
+  char/boss/martelo              O Martelo Que Não Dorme
+
+ATO VI — CORAÇÃO DO ABISMO
+  char/monster/sombra         Sombra Faminta
+  char/monster/lamento        Lamento
+  char/monster/arauto         Arauto do Fundo
+  char/boss/aquiloQueVigia    Aquilo que Vigia
+
+NOMES DE ARQUIVO SUGERIDOS:
+  char-monster-esqueleto-deep.png
+  char-boss-guardiao-urnas-phase2.png
+
+IDs de manifesto:
+  char/monster/esqueleto-deep
+  char/boss/guardiaoUrnas-phase2
+
+Se preferir outra convenção, mande a tabela final; o jogo se adapta.
+
+REGRAS DAS VARIANTES:
+- mesmos frameSize, quantidade de quadros, alinhamento e pés na base;
+- PNG-32 transparente, 1x, sem sombra/glow/antialias;
+- não mudar a pose base; a leitura de silhueta deve continuar a mesma;
+- a variante precisa funcionar ao lado da base, no mesmo tamanho de tela;
+- não usar texto, marca d'água ou moldura.
+
+Se o gerador não fizer variantes confiáveis, entregue pelo menos a base nova e
+as instruções de paleta; nós aplicamos tint/elite no jogo. Mas a intenção do
+lote é ter arte de fase de verdade, não só um filtro.
+
+================================================================================
+6. PROPS E CENÁRIO
+================================================================================
+
+Props compartilhados (transparentes, 1x):
+  prop/arena/torch            16x32, 4 quadros de chama
+  prop/arena/brazier          32x32, 4 quadros de chama
+  prop/arena/chain            32x32
+  prop/arena/bones            32x16
+  prop/arena/rubble           32x16
+  prop/arena/stalagmite       16x32
+  prop/arena/column-broken    32x64
+  prop/arena/roots            48x32
+  prop/arena/mushroom         32x32
+  prop/arena/altar            64x32
+
+Props por ato (4 por ato, transparentes):
+  I: urn, candle, skull-pile, web
+  II: beam, rail, drowned-lantern, pipe
+  III: spore-pod, giant-mushroom, glowing-pool, root
+  IV: coral, pearl, statue, broken-window
+  V: anvil, lava-crack, heavy-chain, slag
+  VI: vein, eye, floating-shard, bone-pedestal
+
+Tamanhos: 16x16, 32x32, 32x64 ou 64x32. Informe o tamanho de cada um.
+Props não precisam de colisão nem de sombra; o jogo posiciona e escurece.
+
+================================================================================
+7. EFEITOS E UI
+================================================================================
+
+EFEITOS (PNG transparente, 64x64, 5 quadros horizontais, 1x):
+  fx/slash         corte físico
+  fx/impact        impacto pesado
+  fx/poison        veneno/esporo
+  fx/heal          cura
+  fx/ember         brasa/fogo
+  fx/void          energia do abismo
+  fx/water         respingo/água
+
+Opcional por ato: uma cor de ênfase em cada FX; a base pode ser neutra.
+Não incluir número de dano na arte; o texto é do jogo.
+
+UI (pixel art, 1x, PNG transparente):
+  ui/dungeon-frame.png     moldura 9-slice 64x64 (cantos 16 px)
+  ui/hp-frame.png          moldura 9-slice 64x16 (cantos 4 px)
+  ui/boss-banner.png       faixa 320x48
+  ui/room-node.png         16x16, três estados: normal, atual, limpo
+  ui/attack-button.png     opcional; o combate é automático
+
+A UI atual é desenhada em CSS. O pack novo pode substituir só a moldura e a
+barra; não é obrigatório refazer ícones.
+
+================================================================================
+8. ESPECIFICAÇÕES TÉCNICAS
+================================================================================
+
+- Pixel art 1x, PNG-32 RGBA.
+- Sem antialias, sem blur, sem glow cozido, sem texto.
+- Sem sombra projetada; o jogo desenha sombra/poeira.
+- Paleta limitada (aprox. 24 cores por bioma).
+- Fundo opaco; piso, cenário, props, FX e UI com transparência.
+- Piso tileável na horizontal; bordas sem emenda visível.
+- Ação no centro; evitar detalhes fortes atrás dos personagens.
+- A linha de piso do fundo deve casar com a linha do floor.
+- Entregar folha de contato com cada arena e cada variante de monstro no
+  tamanho em que aparecem no jogo.
+
+TAMANHOS DE REFERÊNCIA:
+  Back: 640x360
+  Floor: 640x120
+  Fore: 640x120
+  Mid (opcional): 640x360
+  Depth overlay: 640x360
+  Props: 16 a 64 px
+  FX: 64x64, 5 quadros
+  Monstros: 16x16, 16x23 ou 32x36 (4 frames)
+  Heróis: 16x28 (não pedir novos quadros neste lote)
+
+SE O GERADOR ENTREGAR EM OUTRO TAMANHO:
+  mantenha múltiplos de 16 e proporção 16:9 no back; o jogo escala com
+  nearest-neighbor. Não entregue JPEG para transparência.
+
+================================================================================
+9. PRIORIDADE DE ENTREGA
+================================================================================
+
+LOTE A — ESSENCIAL (arena base + fases)
+  [ ] 6 backs de ato (640x360)
+  [ ] 6 floors (640x120)
+  [ ] 6 fores (640x120)
+  [ ] 4 depth overlays compartilhados
+  [ ] 10 props compartilhados
+  [ ] 24 props por ato (4 por ato)
+  [ ] 4 FX básicos: slash, impact, poison, heal
+  [ ] 2 UI: frame + hp-frame
+  [ ] tocha e braseiro animados
+
+LOTE B — FASES DOS MONSTROS
+  [ ] 18 variantes deep dos monstros normais
+  [ ] 6 variantes phase2 dos chefes
+  [ ] (opcional) 18 variantes core dos normais
+
+LOTE C — POLIMENTO (se houver orçamento)
+  [ ] 4 fundos pintados por ato (24 no total), em vez de base + overlays
+  [ ] mid layer por ato
+  [ ] boss gate/altar específico por ato
+  [ ] FX por ato
+  [ ] retratos de monstro
+  [ ] quadros de ataque/hit/morte para heróis e monstros
+
+O Lote A já muda completamente o visual. O Lote B é o que faz a profundidade
+"aparecer" nos monstros. O Lote C é extra.
+
+================================================================================
+10. O QUE NÃO PEDIR / O QUE EVITAR
+================================================================================
+
+- Não entregar uma imagem única com personagens, texto e HUD já desenhados.
+- Não entregar um fundo com a arena "pronta" em perspectiva 3/4; o jogo é
+  lateral, com os personagens de frente.
+- Não desenhar sombra dos personagens no fundo.
+- Não usar filtros de blur/glow no PNG.
+- Não repetir a mesma arena com apenas um hue shift e chamar de novo ato;
+  a silhueta e os props precisam mudar.
+- Não mudar o canvas dos monstros entre base e variante.
+- Não entregar frames fora de ordem ou com fundo branco.
+- Não é necessário entregar ataque/morte agora; o jogo usa idle + lunge +
+  efeitos de impacto. Isso fica para o Lote C.
+
+================================================================================
+11. CHECKLIST FINAL
+================================================================================
+
+[ ] 6 atos com identidade visual distinta.
+[ ] 6 backs + 6 floors + 6 fores, no canvas combinado.
+[ ] 4 depth overlays (entrada/descida/núcleo/chefe).
+[ ] Props suficientes para variar a composição por andar.
+[ ] 18 variantes deep dos monstros normais.
+[ ] 6 variantes phase2 dos chefes.
+[ ] Mesmos frames/canvas das bases; pés na base.
+[ ] PNG-32, 1x, transparente onde necessário, sem antialias/texto/sombra.
+[ ] Tochas/braseiros animados em 4 quadros.
+[ ] FX e UI com transparência.
+[ ] Folha de contato com tamanho real de jogo.
+[ ] Nomes de arquivo e IDs de manifesto informados.
+[ ] Nenhum detalhe importante no centro coberto pelos lutadores.
+
+================================================================================
+12. DÚVIDAS DE INTEGRAÇÃO
+================================================================================
+
+Se algo não couber no canvas, mande a observação junto com o arquivo:
+- tamanho real entregue;
+- quantidade de quadros;
+- se o piso é tileável;
+- se a camada é back/floor/fore/depth;
+- se a variante é deep/core/phase2;
+- se o personagem tem 4 frames de idle.
+
+O jogo se adapta a nomes diferentes, desde que a tabela final venha junto.
+O importante é não voltar a uma arena vazia: cada andar precisa parecer que
+desceu mais fundo no abismo.
+
+---
+
+## 5. Histórico de decisões e pedidos antigos
+
+Pedidos já concluídos ou descartados; não são mais documentos separados:
+
+- **Pack 1.0–1.3:** terreno, prédios, props, heróis/moradores, retratos, ícones e cercas. Heróis passaram de perfil/3-4 para **de frente** na 1.3; a decisão vale até hoje.
+- **Pack 1.4:** heróis redesenhados na direção sombria, retratos 48×84 e armas de classe.
+- **Pack 1.5–1.6:** prefeito/moradores/crianças na mesma proporção; 18 monstros + 6 chefes do P2, outono, lamparina, banco e carroça.
+- **Pack 1.7:** run dos monstros (8 quadros) e props de outono.
+- **Pack 1.8:** arenas laterais, lote B de monstros por profundidade, favicon e UI de dungeon.
+- **Pack 1.9:** arenas recalibradas em 320×192 na escala dos personagens, 24 fundos por andar, FX por ato, retratos de monstro e quadros de ataque/dano/morte dos heróis.
+- **Mudança de local dos prédios:** implementada como teste no M3 e **removida**. O custo e a perda de adjacência não criavam escolha interessante; os prédios voltaram a ser fixos.
+- **Expansão sul:** mantida. Limpar a floresta abre 3 lotes de moradia; cada casa dá +6 de população e +1 vaga de herói. A estalagem continua sendo o eixo principal de vagas.
+- **Briefs antigos de perfil, mudanças no pack e monstros P2:** atendidos ou superados pelo pack 1.9; o conteúdo foi absorvido pelas decisões acima.
+
