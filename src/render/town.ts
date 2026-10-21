@@ -20,6 +20,7 @@ import {
   TILE,
   WORLD_H,
   WORLD_W,
+  type Point,
   type TileRect,
 } from './layout.ts';
 
@@ -27,6 +28,8 @@ export const DEPTH = {
   ground: 0,
   decor: 1,
   abyss: 2,
+  /** Camada de sombras projetadas: acima do chão e da água, abaixo de tudo que fica de pé. */
+  shadow: 2.5,
   night: 10000,
   lights: 10001,
   labels: 10002,
@@ -99,8 +102,7 @@ function packDirtName(mask: boolean[][], paths: boolean[][], x: number, y: numbe
 }
 
 function packTree(scene: Phaser.Scene, solids: Solid[], name: string, px: number, py: number): void {
-  const broad = name.includes('pine') || name.includes('autumn');
-  groundShadow(scene, px, py, broad ? 28 : 20, broad ? 7 : 5, 0.3);
+  // A sombra vem da camada de sombras (silhueta projetada a partir do que está em `solids`).
   scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py);
   solids.push({ key: name, x: px, y: py, opts: TRUNK });
 }
@@ -112,7 +114,6 @@ export function buildCottages(scene: Phaser.Scene, solids: Solid[]): Phaser.Game
     const x = (lot.tx + lot.tw / 2) * TILE;
     const y = (lot.ty + lot.th) * TILE;
     const id = `building/house/0${i + 1}`;
-    groundShadow(scene, x, y, lot.tw * TILE * 0.72, 9, 0.38);
     scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: id, x, y });
     const light = scene.add
@@ -239,20 +240,6 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   return mask;
 }
 
-/** Sombra de contato estática: separa a silhueta do cenário sem blur nem textura nova. */
-export function groundShadow(
-  scene: Phaser.Scene,
-  x: number,
-  y: number,
-  width: number,
-  height = 7,
-  alpha = 0.34,
-): Phaser.GameObjects.Ellipse {
-  return scene.add
-    .ellipse(Math.round(x), Math.round(y - 1), width, height, 0x080706, alpha)
-    .setOrigin(0.5, 0.5)
-    .setDepth(y - 2);
-}
 
 /** Árvores soltas e enfeites nos espaços livres. */
 export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Solid[]): void {
@@ -347,7 +334,6 @@ export interface AbyssView {
 }
 
 export function buildAbyss(scene: Phaser.Scene): AbyssView {
-  const rnd = seeded(13);
   const { x } = LANDMARKS.abismo;
   const base = 15 * TILE;
   scene.add.image(x, base, 'prop/abyss/cave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
@@ -360,26 +346,6 @@ export function buildAbyss(scene: Phaser.Scene): AbyssView {
     .setDepth(DEPTH.lights)
     .setAlpha(0.4);
   scene.tweens.add({ targets: glow, alpha: { from: 0.3, to: 0.6 }, yoyo: true, repeat: -1, duration: 1400, ease: 'Sine.easeInOut' });
-
-  // Brasas violetas saindo da boca da caverna.
-  for (let i = 0; i < 18; i++) {
-    const spark = scene.add
-      .image(x + (rnd() - 0.5) * 52, base - 20, 'spark')
-      .setTint(0xb46ae0)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(DEPTH.lights)
-      .setScale(ART_SCALE)
-      .setAlpha(0);
-    scene.tweens.add({
-      targets: spark,
-      y: { from: base - 20, to: base - 90 - rnd() * 30 },
-      x: { from: spark.x, to: spark.x + (rnd() - 0.5) * 20 },
-      alpha: { from: 0.8, to: 0 },
-      duration: 2400 + rnd() * 2400,
-      delay: rnd() * 3000,
-      repeat: -1,
-    });
-  }
 
   const badge = smooth(
     scene.add.text(x, 9.5 * TILE, '', {
@@ -532,8 +498,6 @@ export function buildCampfire(scene: Phaser.Scene, solids: Solid[]): void {
   scene.add.image(x, y, 'prop/campfire/on').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
   solids.push({ key: 'prop/campfire/on', x, y, opts: { fromBottom: 10, minCover: 0.3 } });
   scene.add.sprite(x, y - 4, 'fx/fire').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).play('fx/fire');
-  const halo = scene.add.image(x, y - 12, 'glow').setTint(0xffa040).setScale(2.6, 1.8).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setAlpha(0.3);
-  scene.tweens.add({ targets: halo, alpha: { from: 0.2, to: 0.35 }, yoyo: true, repeat: -1, duration: 600 });
 }
 
 /** Fonte termal: bacia natural do pack, água separada, vapor e banco. */
@@ -556,21 +520,13 @@ export function buildThermal(scene: Phaser.Scene, solids: Solid[]): void {
     .setDepth(DEPTH.floating)
     .setAlpha(0.8);
   steam.play('fx/steam');
-  const glow = scene.add
-    .image(cx, base - 34, 'glow')
-    .setTint(0x8ad8d0)
-    .setScale(3, 2.2)
-    .setAlpha(0.25)
-    .setBlendMode(Phaser.BlendModes.ADD)
-    .setDepth(DEPTH.lights);
-  scene.tweens.add({ targets: glow, alpha: { from: 0.18, to: 0.32 }, yoyo: true, repeat: -1, duration: 1800 });
   label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
 /**
  * Props de praça do pack 1.7. Devolve, para o ciclo dia/noite, o desenho aceso de cada
  * lampião e o halo em volta (o mesmo brilho da lanterna do prefeito).
  */
-export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phaser.GameObjects.Image[]; halos: Phaser.GameObjects.Image[] } {
+export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phaser.GameObjects.Image[]; lamps: Point[] } {
   const prop = (id: string, x: number, y: number): void => {
     scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: id, x, y, opts: BASE });
@@ -586,7 +542,7 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phas
   prop('prop/cart', 17 * TILE, 22 * TILE);
 
   const lights: Phaser.GameObjects.Image[] = [];
-  const halos: Phaser.GameObjects.Image[] = [];
+  const lamps: Point[] = [];
   const lamp = (x: number, y: number): void => {
     scene.add.image(x, y, 'prop/lamp').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
     solids.push({ key: 'prop/lamp', x, y, opts: { fromBottom: 4, minCover: 0.15 } });
@@ -598,11 +554,11 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phas
       .setAlpha(0);
     lights.push(light);
     // A chama fica no alto do poste, um pouco à direita do meio (x 11, y 14 da arte 16×32).
-    halos.push(scene.add.image(x + 6, y - 36, 'glow').setTint(0xffc46b).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(2.2).setAlpha(0));
+    lamps.push({ x: x + 6, y: y - 36 });
   };
   lamp(18 * TILE, 17 * TILE);
   lamp(32 * TILE, 17 * TILE);
   lamp(23 * TILE, 13 * TILE);
   lamp(43 * TILE, 18 * TILE);
-  return { lights, halos };
+  return { lights, lamps };
 }

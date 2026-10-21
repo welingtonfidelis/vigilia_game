@@ -6,6 +6,7 @@ import type { ActivityKind, Child, Citizen, Hero, Pet } from '../sim/index.ts';
 import { citizenLook, ICON_KINDS } from './art.ts';
 import { ART_SCALE, heroSprite } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
+import { softFootShadowTexture } from './fx/shadows.ts';
 import { Route } from './nav.ts';
 import { DEPTH, smooth } from './town.ts';
 import type { Point } from './layout.ts';
@@ -51,7 +52,7 @@ abstract class Walker {
   ) {
     this.base = base;
     this.visual = visual;
-    const shadow = scene.add.image(0, 0, 'shadow').setScale(scale);
+    const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(scale * 0.5);
     this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(scale) : null;
     this.body = scene.add
       .sprite(0, 2, visual?.texture ?? 'dungeon', visual ? 0 : `${base}_idle_anim_f0`)
@@ -68,6 +69,10 @@ abstract class Walker {
   }
   get y(): number {
     return this.root.y;
+  }
+  /** Virado para a esquerda (a lanterna do prefeito troca de mão). */
+  get facingLeft(): boolean {
+    return this.left;
   }
 
   /** Anda em direção ao ponto. Devolve true quando chegou. */
@@ -254,8 +259,8 @@ export class ChildSprite extends Walker {
   }
 }
 
+/** O prefeito; a lanterna dele é uma luz do sistema de iluminação (segue o lado da mão). */
 export class Mayor extends Walker {
-  readonly lantern: Phaser.GameObjects.Image;
   readonly label: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -264,15 +269,13 @@ export class Mayor extends Walker {
       idle: 'char/mayor:idle',
       run: 'char/mayor:run',
     });
-    this.lantern = scene.add.image(x + 11, y - 14, 'glow').setTint(0xffc46b).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(2.2);
     this.label = smooth(scene.add.text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' }))
       .setOrigin(0.5, 0)
       .setDepth(DEPTH.labels);
   }
 
-  placeLabels(labelScale: number, night: number): void {
+  placeLabels(labelScale: number): void {
     this.label.setPosition(this.root.x, this.root.y + 5).setScale(labelScale);
-    this.lantern.setPosition(this.root.x + (this.body.flipX ? -10 : 10), this.root.y - 16).setAlpha(0.15 + 0.75 * night);
   }
 }
 
@@ -294,7 +297,7 @@ export class CitizenSprite {
     this.id = citizen.id;
     const look = citizenLook(citizen);
     this.texture = `char/villager/${look}/${citizen.gender}`;
-    const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE);
+    const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(ART_SCALE * 0.45);
     this.body = scene.add.sprite(0, 2, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
     this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
   }
@@ -380,7 +383,7 @@ export class PetSprite {
     this.name = pet.name;
     this.species = pet.species;
     this.texture = `char/pet/${pet.species}/${pet.look}`;
-    const shadow = scene.add.image(0, 0, 'shadow').setScale(ART_SCALE * 0.6, ART_SCALE * 0.5);
+    const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(ART_SCALE * 0.3, ART_SCALE * 0.25);
     this.body = scene.add.sprite(0, 1, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
     this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
   }

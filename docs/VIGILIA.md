@@ -72,6 +72,12 @@ src/render/ Phaser: só lê o World a cada quadro
   buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
   sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
   art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
+  nav.ts         grade de bloqueios e rotas da vila (A*), lidos da transparência da arte (puro, testado)
+  fx/            visual 2.5D, componentes reutilizáveis sem regra de jogo:
+    shadows.ts     camada única de sombras projetadas (silhueta achatada e deitada para leste), oclusão na base das paredes e sombra suave de pé
+    lighting.ts    mapa de luz em multiplicação (noite fria #1a2421) e LightSource (cor, raio, intensidade, tremulação, pulsação, halo)
+    particles.ts   emissores leves: fagulhas, fumaça de chaminé e miasma da caverna
+    alpha.ts       leitura e cache da transparência das texturas (janelas acesas, pegadas, sombras)
   lane/          corredor da dungeon em Canvas 2D (sem Phaser): model.ts (posições, câmera, névoa, golpes novos; puro, testado), sprites.ts, renderer.ts
 src/ui/     Preact: HUD, objetivos, avisos e painéis (herói, abismo, crônica, prédios, berrante, quadro, cofre, elenco, cemitério, menu)
 src/audio/  som 100% sintetizado (Web Audio, sem arquivos)

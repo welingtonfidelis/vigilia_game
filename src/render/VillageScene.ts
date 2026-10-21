@@ -42,6 +42,10 @@ import {
   type Point,
 } from './layout.ts';
 import { CitizenSprite, ChildSprite, HeroSprite, Mayor, PetSprite, type PetPose } from './sprites.ts';
+import { alphaOf, blobs } from './fx/alpha.ts';
+import { LightingSystem, type LightSpec } from './fx/lighting.ts';
+import { ParticleSystem, type EmitterSpec } from './fx/particles.ts';
+import { ShadowLayer, type Caster } from './fx/shadows.ts';
 import {
   buildAbyss,
   buildBoard,
@@ -49,7 +53,6 @@ import {
   buildCemetery,
   buildCoffer,
   buildGround,
-  groundShadow,
   buildHornTower,
   buildOvergrowth,
   buildProps,
@@ -94,6 +97,23 @@ interface Interactable {
   open: () => void;
 }
 
+/** Não projetam sombra: a bacia da fonte é chata no chão e a fogueira é a própria luz. */
+const NO_SHADOW = new Set(['prop/thermal/basin', 'prop/campfire/on']);
+
+/**
+ * Bocas de chaminé por prédio e nível (pixel da arte 112×96, medidos no pack). Taverna,
+ * estalagem e casa de cura só ganham chaminé do nível 2 em diante; o ferreiro em todos.
+ */
+const CHIMNEYS: Partial<Record<BuildingId, Record<number, [number, number][]>>> = {
+  taverna: { 2: [[24.5, 27]], 3: [[16, 10], [93, 14.5]] },
+  estalagem: { 2: [[87, 19.5]], 3: [[11.5, 12.5], [98, 12.5]] },
+  casa: { 2: [[27.5, 35]], 3: [[91, 20]] },
+  ferreiro: { 1: [[28, 28.5]], 2: [[21, 22.5]], 3: [[15, 16.5]] },
+};
+
+/** Fumaça fica acima de todo mundo que anda, mas abaixo do mapa de luz (escurece à noite). */
+const SMOKE_DEPTH = 9000;
+
 /** Meio da grelha da fornalha (x da arte 112×96, linha 85) em cada nível do ferreiro. */
 const FORGE_COALS_X: Record<number, number> = { 1: 84, 2: 91, 3: 97 };
 
@@ -132,9 +152,17 @@ export class VillageScene extends Phaser.Scene {
   private buildings = new Map<BuildingId, BuildingView>();
   private houseLights: Phaser.GameObjects.Image[] = [];
   private propLights: Phaser.GameObjects.Image[] = [];
-  private lampHalos: Phaser.GameObjects.Image[] = [];
   /** Fogo da fornalha do ferreiro (arte nova não traz a brasa acesa). */
-  private forge: { fire: Phaser.GameObjects.Sprite; glow: Phaser.GameObjects.Image } | null = null;
+  private forgeFire: Phaser.GameObjects.Sprite | null = null;
+  /** Sombras projetadas e oclusão de tudo que fica parado (Fase 1 do visual 2.5D). */
+  private shadows!: ShadowLayer;
+  /** Mapa de luz: noite fria e as fontes de luz da vila (Fase 2). */
+  private lighting!: LightingSystem;
+  private particles!: ParticleSystem;
+  private vignette: Phaser.FX.Vignette | null = null;
+  private grade: Phaser.FX.ColorMatrix | null = null;
+  /** Último nível de noite aplicado na correção de cor (refaz só quando muda). */
+  private gradedNight = -1;
   private expansionHouses: (Phaser.GameObjects.Image | undefined)[] = [];
   /** Mato do distrito sul enquanto a área não foi limpa (null = ainda não decidido). */
   private overgrowth: Phaser.GameObjects.Image[] | null = null;
@@ -144,7 +172,6 @@ export class VillageScene extends Phaser.Scene {
   private graveCount = -1;
   private interactables: Interactable[] = [];
   private mayor!: Mayor;
-  private night!: Phaser.GameObjects.Rectangle;
   private abyss!: AbyssView;
   private horn!: HornView;
   private board!: BoardView;
@@ -160,7 +187,6 @@ export class VillageScene extends Phaser.Scene {
   private walkClock = 0;
   /** O que ocupa chão na vila: rotas contornam, o prefeito escorrega. */
   readonly nav = new NavGrid(WORLD_W, WORLD_H);
-  private readonly alphas = new Map<string, AlphaMask>();
   private navDebug: Phaser.GameObjects.Graphics | null = null;
   private unsubscribe: (() => void) | null = null;
 
@@ -196,6 +222,9 @@ export class VillageScene extends Phaser.Scene {
 
   create(): void {
     this.registerArt();
+    this.shadows = new ShadowLayer(this, WORLD_W, WORLD_H, DEPTH.shadow);
+    this.lighting = new LightingSystem(this, { x: -400, y: -400, width: WORLD_W + 800, height: WORLD_H + 800, depth: DEPTH.night, haloDepth: DEPTH.lights });
+    this.particles = new ParticleSystem(this);
     const mask = buildGround(this);
     // O chão já foi assado; daqui para baixo, todo tile-imagem (prédios, cercas,
     // portão, quadro, árvores) usa UVs um pouco para dentro contra o vazamento do atlas.
@@ -206,7 +235,6 @@ export class VillageScene extends Phaser.Scene {
     buildCemetery(this, solids);
     const props = buildProps(this, solids);
     this.propLights = props.lights;
-    this.lampHalos = props.halos;
     buildCampfire(this, solids);
     buildThermal(this, solids);
     this.houseLights = buildCottages(this, solids);
@@ -214,27 +242,34 @@ export class VillageScene extends Phaser.Scene {
     this.board = buildBoard(this, solids);
     this.coffer = buildCoffer(this, solids);
     this.nav.setLayer('cenario', this.cellsOf(solids));
+    // Sombra de tudo que ocupa chão, menos o que é chato (a bacia da fonte) ou é fogo.
+    this.shadows.set('cenario', solids.filter((s) => !NO_SHADOW.has(s.key)).map((s) => this.caster(s)));
+    this.sceneryLights(props.lamps);
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createInteractables();
     this.layoutSigns();
 
-    this.night = this.add
-      .rectangle(-400, -400, WORLD_W + 800, WORLD_H + 800, 0x0b0f24, 0)
-      .setOrigin(0)
-      .setDepth(DEPTH.night);
-
     this.mayor = new Mayor(this, LANDMARKS.cofre.x - 40, LANDMARKS.cofre.y + 70);
+    // Lanterna do prefeito: anda com ele, do lado da mão.
+    this.lighting.add({
+      x: this.mayor.x,
+      y: this.mayor.y,
+      follow: () => ({ x: this.mayor.x + (this.mayor.facingLeft ? -10 : 10), y: this.mayor.y - 16 }),
+      color: 0xffb04a,
+      radius: 130,
+      intensity: 0.6,
+      flicker: 0.12,
+      halo: { scaleX: 1.8, scaleY: 1.8, day: 0.12, night: 0.55 },
+    });
     const cam = this.cameras.main;
     cam.setBackgroundColor('#07060a');
     cam.setRoundPixels(true);
     cam.startFollow(this.mayor.root, true, 0.12, 0.12);
     // Fantasia sombria: o Tiny Town é colorido; tira saturação e brilho da cena inteira.
     if (this.game.renderer.type === Phaser.WEBGL) {
-      const grade = cam.postFX.addColorMatrix();
-      grade.saturate(-0.55);
-      grade.brightness(0.8, true);
-      grade.contrast(0.08, true);
-      cam.postFX.addVignette(0.5, 0.5, 0.95, 0.32);
+      this.grade = cam.postFX.addColorMatrix();
+      this.applyGrade(0);
+      this.vignette = cam.postFX.addVignette(0.5, 0.5, 0.95, 0.32);
     }
     this.fitCamera();
     this.scale.on('resize', () => this.fitCamera());
@@ -328,8 +363,6 @@ export class VillageScene extends Phaser.Scene {
   private createBuilding(id: BuildingId): void {
     const lot = LOTS[id];
     const y = lot.y + lot.h / 2;
-    // A sombra fica sob a fachada e acompanha a posição estática do prédio.
-    groundShadow(this, lot.x, y, lot.w * 0.76, 10, 0.4);
     const base = this.add.image(lot.x, y, buildingTexture(id, 1)).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
     const lights = this.add.image(lot.x, y, lightsTexture(buildingTexture(id, 1))).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.lights).setAlpha(0);
     const sign = label(this, lot.x, y + 2, '', 14);
@@ -351,7 +384,12 @@ export class VillageScene extends Phaser.Scene {
     } else {
       view.lights.setVisible(false);
     }
-    this.nav.setLayer(`predio:${id}`, this.cellsOf([{ key: texture, x: lot.x, y: lot.y + lot.h / 2 }]));
+    const bottom = lot.y + lot.h / 2;
+    this.nav.setLayer(`predio:${id}`, this.cellsOf([{ key: texture, x: lot.x, y: bottom }]));
+    // Sombra, janelas acesas e fumaça mudam com a arte de cada nível.
+    this.shadows.set(`predio:${id}`, [this.caster({ key: texture, x: lot.x, y: bottom }, true)]);
+    this.lighting.setGroup(`janelas:${id}`, this.windowLights(lightsTexture(texture), lot.x, bottom));
+    this.particles.setGroup(`fumaca:${id}`, this.chimneySmoke(id, level, lot.x, bottom));
     if (id === 'ferreiro') this.syncForge(level);
     view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}`);
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
@@ -365,23 +403,129 @@ export class VillageScene extends Phaser.Scene {
    * Acende fogo e halo sobre a grelha (que anda para a direita a cada nível).
    */
   private syncForge(level: number): void {
-    if (!this.forge) {
-      const fire = this.add.sprite(0, 0, 'fx/fire').setOrigin(0.5, 1).setScale(1).play('fx/fire');
-      const glow = this.add.image(0, 0, 'glow').setTint(0xff7a2a).setBlendMode(Phaser.BlendModes.ADD).setDepth(DEPTH.lights).setScale(1.6, 1.2);
-      this.forge = { fire, glow };
-    }
+    if (!this.forgeFire) this.forgeFire = this.add.sprite(0, 0, 'fx/fire').setOrigin(0.5, 1).setScale(1).play('fx/fire');
     const coalX = FORGE_COALS_X[level];
     const lit = level >= 1 && coalX !== undefined;
-    this.forge.fire.setVisible(lit);
-    this.forge.glow.setVisible(lit);
-    if (!lit) return;
+    this.forgeFire.setVisible(lit);
+    if (!lit) {
+      this.lighting.setGroup('forja', []);
+      this.particles.setGroup('forja', []);
+      return;
+    }
     const lot = LOTS.ferreiro;
     const bottom = lot.y + lot.h / 2;
     // Arte de 112×96 com origem no pé do meio: pixel (ax, ay) vai para lot.x − 112 + 2ax, bottom − 192 + 2ay.
     const x = lot.x - 112 + coalX * ART_SCALE;
     const y = bottom - 96 * ART_SCALE + 86 * ART_SCALE;
-    this.forge.fire.setPosition(x, y).setDepth(bottom - 1);
-    this.forge.glow.setPosition(x, y - 6);
+    this.forgeFire.setPosition(x, y).setDepth(bottom - 1);
+    // Luz vermelha da forja, pulsando no ritmo do martelo, e fagulhas saindo da grelha.
+    this.lighting.setGroup('forja', [
+      { x, y: y - 6, color: 0xff4500, radius: 150, intensity: 0.85, flicker: 0.1, pulse: { period: 1100, depth: 0.35 }, halo: { scaleX: 1.6, scaleY: 1.2, day: 0.35, night: 0.7 } },
+    ]);
+    this.particles.setGroup('forja', [{ preset: 'sparks', x, y: y - 8, spread: 10, rate: 0.6, depth: DEPTH.lights }]);
+  }
+
+  // ── Luz, sombra e partículas ────────────────────────────────────────────
+
+  /**
+   * Correção de cor da câmera. De dia tira saturação (fantasia sombria); à noite tira
+   * menos, para o laranja da fogueira e o ciano da fonte aparecerem contra o escuro.
+   */
+  private applyGrade(night: number): void {
+    if (!this.grade) return;
+    const step = Math.round(night * 20) / 20;
+    if (step === this.gradedNight) return;
+    this.gradedNight = step;
+    this.grade.reset();
+    this.grade.saturate(-0.55 + 0.2 * step);
+    this.grade.brightness(0.8, true);
+    this.grade.contrast(0.08 + 0.04 * step, true);
+  }
+
+  /** Quem projeta sombra: o pé (meio da base) da imagem no mundo, a partir do setOrigin dela. */
+  private caster(s: Solid, ao = s.key.startsWith('building/')): Caster {
+    const mask = alphaOf(this.textures, s.key, s.frame);
+    const [ox, oy] = s.origin ?? [0.5, 1];
+    const w = (mask?.w ?? 0) * ART_SCALE;
+    const h = (mask?.h ?? 0) * ART_SCALE;
+    return {
+      key: s.key,
+      frame: s.frame,
+      x: s.x + w * (0.5 - ox),
+      y: s.y + h * (1 - oy),
+      scale: ART_SCALE,
+      ao: ao ? ShadowLayer.baseWidth(this, s.key, ART_SCALE, s.frame) * 0.95 : 0,
+    };
+  }
+
+  /**
+   * Janelas acesas: cada mancha opaca do overlay "-lights" da arte vira uma luz amarela
+   * pequena, que só acende com a noite. Funciona para qualquer prédio e nível.
+   */
+  private windowLights(key: string, x: number, bottom: number): LightSpec[] {
+    const mask = alphaOf(this.textures, key);
+    if (!mask) return [];
+    const left = x - (mask.w * ART_SCALE) / 2;
+    const top = bottom - mask.h * ART_SCALE;
+    return blobs(mask, 2).map((b) => ({
+      x: left + b.x * ART_SCALE,
+      y: top + b.y * ART_SCALE + 6,
+      color: 0xffbe55,
+      radius: 36 + Math.min(34, b.n),
+      intensity: 0.5,
+      flicker: 0.03,
+      nightOnly: true,
+    }));
+  }
+
+  /** Fumaça das chaminés de cada prédio (posições medidas na arte de cada nível). */
+  private chimneySmoke(id: BuildingId, level: number, x: number, bottom: number): EmitterSpec[] {
+    return (CHIMNEYS[id]?.[level] ?? []).map(([ax, ay]) => ({
+      preset: 'smoke' as const,
+      x: x - 112 + ax * ART_SCALE,
+      y: bottom - 96 * ART_SCALE + ay * ART_SCALE,
+      spread: 4,
+      depth: SMOKE_DEPTH,
+    }));
+  }
+
+  /** Luzes fixas do cenário: fogueira, lampiões, fonte termal, caverna e portão do berrante. */
+  private sceneryLights(lamps: Point[]): void {
+    const { fogueira, abismo } = LANDMARKS;
+    this.lighting.add({
+      x: fogueira.x,
+      y: fogueira.y - 10,
+      color: 0xff8c3b,
+      radius: 240,
+      intensity: 0.8,
+      flicker: 0.25,
+      halo: { scaleX: 2.6, scaleY: 1.8, day: 0.22, night: 0.42, dy: -2 },
+    });
+    this.particles.add({ preset: 'sparks', x: fogueira.x, y: fogueira.y - 14, spread: 12, depth: DEPTH.lights });
+    for (const lamp of lamps) {
+      this.lighting.add({ ...lamp, color: 0xffb04a, radius: 110, intensity: 0.55, flicker: 0.08, nightOnly: true, halo: { scaleX: 1.6, scaleY: 1.6, day: 0, night: 0.45 } });
+    }
+    const thermal = { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE - 34 };
+    this.lighting.add({ ...thermal, color: 0x4deeea, radius: 170, intensity: 0.6, pulse: { period: 4200, depth: 0.15 }, halo: { scaleX: 3, scaleY: 2.2, day: 0.18, night: 0.32 } });
+    // Caverna: a luz roxa cresce com a corrupção (o brilho de cima, que já existia, também).
+    const caveMouth = { x: abismo.x, y: 15 * TILE - 26 };
+    this.lighting.add({
+      ...caveMouth,
+      color: 0x9d4edd,
+      radius: 230,
+      intensity: 0.8,
+      pulse: { period: 3200, depth: 0.35 },
+      gain: () => 0.6 + (0.4 * this.corruption()) / 100,
+    });
+    this.particles.add({ preset: 'miasma', x: caveMouth.x, y: caveMouth.y + 6, spread: 48, depth: DEPTH.lights });
+    this.particles.add({ preset: 'sparks', tint: [0xb46ae0, 0x9d4edd, 0xe0b8ff], x: caveMouth.x, y: caveMouth.y + 6, spread: 52, rate: 0.7, depth: DEPTH.lights });
+    // Portão do berrante: uma luz pálida de foco no norte.
+    this.lighting.add({ x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 40, color: 0xcfd8ff, radius: 150, intensity: 0.45 });
+  }
+
+  /** Corrupção mais alta entre os atos abertos (0 a 100). */
+  private corruption(): number {
+    return Math.max(0, ...this.world.acts.filter((a) => a.unlocked).map((a) => a.corruption));
   }
 
   /**
@@ -455,6 +599,7 @@ export class VillageScene extends Phaser.Scene {
       const growth = buildOvergrowth(this);
       this.overgrowth = growth.images;
       this.nav.setLayer('mato', this.cellsOf(growth.solids));
+      this.shadows.set('mato', growth.solids.map((solid) => this.caster(solid)));
     } else if (expansion.cleared && this.overgrowth !== null) {
       // Limpou: o mato some aos poucos e o caminho para os lotes abre.
       for (const img of this.overgrowth) {
@@ -462,6 +607,7 @@ export class VillageScene extends Phaser.Scene {
       }
       this.overgrowth = null;
       this.nav.setLayer('mato', []);
+      this.shadows.set('mato', []);
     }
     EXPANSION_LOTS.forEach((lot, i) => {
       const built = expansion.houses[i] === true;
@@ -471,6 +617,8 @@ export class VillageScene extends Phaser.Scene {
         const id = `building/house/0${i + 1}`;
         this.expansionHouses[i] = this.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
         this.nav.setLayer(`casa-nova:${i}`, this.cellsOf([{ key: id, x, y }]));
+        this.shadows.set(`casa-nova:${i}`, [this.caster({ key: id, x, y })]);
+        this.lighting.setGroup(`janelas:casa-nova:${i}`, this.windowLights(`${id}-lights`, x, y));
         this.expansionLights[i] = this.add
           .image(x, y, `${id}-lights`)
           .setOrigin(0.5, 1)
@@ -483,6 +631,8 @@ export class VillageScene extends Phaser.Scene {
         this.expansionHouses[i] = undefined;
         this.expansionLights[i] = undefined;
         this.nav.setLayer(`casa-nova:${i}`, []);
+        this.shadows.set(`casa-nova:${i}`, []);
+        this.lighting.setGroup(`janelas:casa-nova:${i}`, []);
       }
     });
   }
@@ -718,23 +868,9 @@ export class VillageScene extends Phaser.Scene {
   // ── Chão ocupado ────────────────────────────────────────────────────────
 
   /** Transparência de uma textura do pack (lida uma vez por quadro de imagem). */
+  /** Transparência de uma textura do pack (cache compartilhado em fx/alpha). */
   private alphaOf(key: string, frame?: number): AlphaMask | null {
-    const id = `${key}#${frame ?? ''}`;
-    const cached = this.alphas.get(id);
-    if (cached) return cached;
-    if (!this.textures.exists(key)) return null;
-    const f = this.textures.getFrame(key, frame);
-    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-    if (!f || !ctx) return null;
-    ctx.canvas.width = f.cutWidth;
-    ctx.canvas.height = f.cutHeight;
-    ctx.drawImage(f.source.image as CanvasImageSource, f.cutX, f.cutY, f.cutWidth, f.cutHeight, 0, 0, f.cutWidth, f.cutHeight);
-    const rgba = ctx.getImageData(0, 0, f.cutWidth, f.cutHeight).data;
-    const alpha = new Uint8Array(f.cutWidth * f.cutHeight);
-    for (let i = 0; i < alpha.length; i++) alpha[i] = rgba[i * 4 + 3]!;
-    const mask = { w: f.cutWidth, h: f.cutHeight, alpha };
-    this.alphas.set(id, mask);
-    return mask;
+    return alphaOf(this.textures, key, frame);
   }
 
   private cellsOf(solids: Solid[]): number[] {
@@ -870,18 +1006,18 @@ export class VillageScene extends Phaser.Scene {
     this.syncExpansion();
 
     const night = nightFactor(world.tick);
-    // De dia fica uma névoa fria; à noite escurece de vez.
-    this.night.setFillStyle(0x0b0f24, 0.1 + night * 0.45);
+    // De dia, uma névoa fria; à noite a floresta afunda e só a vila acesa aparece.
+    this.lighting.update(this.time.now, night);
+    this.shadows.flush();
+    this.particles.update(this.session.paused ? 0 : this.session.speed);
+    if (this.vignette) this.vignette.strength = 0.32 + 0.2 * night;
+    this.applyGrade(night);
     const lightAlpha = Phaser.Math.Clamp((night - 0.1) / 0.5, 0, 1);
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
     for (const light of this.houseLights) light.setAlpha(lightAlpha);
     for (const light of this.propLights) light.setAlpha(lightAlpha);
-    // Halo dos lampiões: como a lanterna do prefeito, tremulando um pouco.
-    const flicker = 0.9 + 0.1 * Math.sin(this.time.now / 170);
-    for (const halo of this.lampHalos) halo.setAlpha((0.15 + 0.75 * night) * Math.min(1, lightAlpha * 1.5) * flicker);
-    if (this.forge?.glow.visible) this.forge.glow.setAlpha((0.35 + 0.45 * night) * (0.85 + 0.15 * Math.sin(this.time.now / 90)));
     for (const light of this.expansionLights) light?.setAlpha(lightAlpha);
-    this.mayor.placeLabels(this.labelScale, night);
+    this.mayor.placeLabels(this.labelScale);
 
     const town = world.town;
     const hornReady = dayOf(world.tick) >= town.hornReadyDay;
@@ -889,9 +1025,8 @@ export class VillageScene extends Phaser.Scene {
     this.board.update(town.contracts.length, buildingLevel(world, 'guilda') >= 1);
     this.coffer.update(town.treasury);
 
-    const corruption = Math.max(...world.acts.filter((a) => a.unlocked).map((a) => a.corruption));
     const pulse = 0.08 * Math.sin(this.time.now / 600);
-    this.abyss.glow.setAlpha(0.3 + (0.6 * corruption) / 100 + pulse);
+    this.abyss.glow.setAlpha(0.3 + (0.6 * this.corruption()) / 100 + pulse);
     const parties = world.parties.filter((p) => p.outcome !== 'fuga' || p.memberIds.length > 0);
     const fighting = parties.some((p) => p.phase === 'combate');
     const badge = parties.length === 0 ? '' : `${parties.length} ${parties.length === 1 ? 'grupo' : 'grupos'} no abismo${fighting ? ' · em combate' : ''}`;
