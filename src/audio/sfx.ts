@@ -32,7 +32,16 @@ export type SfxName =
   | 'wound'
   | 'wedding'
   | 'birth'
-  | 'speech';
+  | 'speech'
+  | 'slash'
+  | 'crit'
+  | 'shot'
+  | 'fireShot'
+  | 'holy'
+  | 'darkShot'
+  | 'kill'
+  | 'heal'
+  | 'blast';
 
 type Recipe = (ctx: Ctx, out: AudioNode, t: number) => void;
 
@@ -245,6 +254,52 @@ export const SFX: Record<SfxName, Recipe> = {
     noise(ctx, out, t, { dur: 1.3, gain: 0.05, filter: 'bandpass', freq: 500, to: 900, q: 1.2, attack: 0.4 });
     arpeggio(ctx, out, t + 0.5, [57, 62, 66, 69, 74], 0.1, 0.08, 1.6);
   },
+
+  // ── Golpes do corredor da dungeon: curtos e baixos, porque vêm em rajadas.
+  // Golpe que acerta: estalo de lâmina e um baque.
+  slash: (ctx, out, t) => {
+    noise(ctx, out, t, { dur: 0.07, gain: 0.07, filter: 'bandpass', freq: rand(1500, 2400), q: 1.2 });
+    tone(ctx, out, t, { type: 'triangle', freq: rand(130, 160), glide: { to: 70, time: 0.08 }, dur: 0.1, gain: 0.07 });
+  },
+  // Crítico: o mesmo, mais forte, com metal.
+  crit: (ctx, out, t) => {
+    noise(ctx, out, t, { dur: 0.1, gain: 0.1, filter: 'bandpass', freq: 2600, q: 1.5 });
+    tone(ctx, out, t, { type: 'triangle', freq: 170, glide: { to: 60, time: 0.12 }, dur: 0.16, gain: 0.1 });
+    tone(ctx, out, t, { freq: rand(1700, 2100), dur: 0.25, gain: 0.025 });
+  },
+  // Flecha: corda e um zunido curto.
+  shot: (ctx, out, t) => {
+    pluck(ctx, out, t, rand(180, 220), 0.03, 0.12, 4);
+    noise(ctx, out, t + 0.02, { dur: 0.12, gain: 0.03, filter: 'highpass', freq: 2500, to: 5000, attack: 0.03 });
+  },
+  // Bola de fogo: sopro que cresce.
+  fireShot: (ctx, out, t) => {
+    noise(ctx, out, t, { dur: 0.32, gain: 0.07, filter: 'lowpass', freq: 500, to: 1600, attack: 0.08 });
+  },
+  // Luz do clérigo: sininho agudo.
+  holy: (ctx, out, t) => {
+    bell(ctx, out, t, n(rand(84, 88)), 0.025, 0.6, SMALL_BELL);
+  },
+  // Magia dos monstros: rosnado grave.
+  darkShot: (ctx, out, t) => {
+    tone(ctx, out, t, { type: 'sawtooth', freq: 95, glide: { to: 60, time: 0.3 }, dur: 0.32, gain: 0.04, filter: { type: 'lowpass', freq: 380 } });
+  },
+  // Inimigo abatido: baque e algo que quebra.
+  kill: (ctx, out, t) => {
+    drum(ctx, out, t + 0.04, 66, 0.18, 0.35);
+    noise(ctx, out, t + 0.04, { dur: 0.16, gain: 0.05, filter: 'lowpass', freq: 700 });
+  },
+  // Cura: duas notas suaves subindo.
+  heal: (ctx, out, t) => {
+    tone(ctx, out, t, { freq: n(81), dur: 0.25, gain: 0.02, attack: 0.03 });
+    tone(ctx, out, t + 0.09, { freq: n(86), dur: 0.35, gain: 0.02, attack: 0.03 });
+  },
+  // Explosão do piromante: estrondo abafado.
+  blast: (ctx, out, t) => {
+    drum(ctx, out, t, 48, 0.28, 0.6);
+    noise(ctx, out, t, { dur: 0.45, gain: 0.1, filter: 'lowpass', freq: 1400, to: 300, attack: 0.01 });
+  },
 };
 
 export const SFX_NAMES = Object.keys(SFX) as SfxName[];
+

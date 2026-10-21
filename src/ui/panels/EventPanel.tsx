@@ -1,6 +1,6 @@
 import { commands, SEASONAL_EVENTS, SEASONS } from '../../sim/index.ts';
 import { fmt } from '../format.ts';
-import { PanelShell, useCommand, useGame } from '../components.tsx';
+import { useCommand, useGame } from '../components.tsx';
 
 /** Evento sazonal: uma escolha obrigatória, com o jogo pausado até resolver. */
 export function EventPanel() {
@@ -14,22 +14,29 @@ export function EventPanel() {
     ui.close();
     session.setPaused(false);
   };
+  // Decisão: diálogo no meio da tela, sobre tudo, que só sai com uma escolha.
   return (
-    <PanelShell title={def.title} subtitle={`${SEASONS[pending.season]} do ano ${pending.year}`} closeable={false}>
-      <p class="event-intro">{def.intro}</p>
-      <div class="event-choices">
-        {def.choices.map((c) => {
-          const blocked = c.cost > world.town.treasury;
-          return (
-            <button key={c.id} class="event-choice" disabled={blocked} onClick={() => choose(c.id)}>
-              <strong>{c.label}</strong>
-              <span>{c.detail}</span>
-              <em>{c.cost > 0 ? `Custa ${fmt(c.cost)} de ouro` : 'Sem custo'}</em>
-            </button>
-          );
-        })}
-      </div>
-      <p class="sub">Tesouro atual: {fmt(world.town.treasury)} de ouro. O jogo fica pausado até a escolha.</p>
-    </PanelShell>
+    <div class="dialog-backdrop">
+      <section class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="event-title">
+        <header class="dialog-head">
+          <p class="dialog-kicker">{`${SEASONS[pending.season]} do ano ${pending.year}`}</p>
+          <h2 id="event-title">{def.title}</h2>
+        </header>
+        <p class="event-intro">{def.intro}</p>
+        <div class="event-choices">
+          {def.choices.map((c) => {
+            const blocked = c.cost > world.town.treasury;
+            return (
+              <button key={c.id} class="event-choice" disabled={blocked} onClick={() => choose(c.id)}>
+                <strong>{c.label}</strong>
+                <span>{c.detail}</span>
+                <em>{c.cost > 0 ? `Custa ${fmt(c.cost)} de ouro` : 'Sem custo'}</em>
+              </button>
+            );
+          })}
+        </div>
+        <p class="sub">Tesouro atual: {fmt(world.town.treasury)} de ouro. O jogo fica pausado até a escolha.</p>
+      </section>
+    </div>
   );
 }

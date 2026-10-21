@@ -1,11 +1,13 @@
 // Liga o som ao jogo: destrava no primeiro gesto (regra dos navegadores), toca os
 // efeitos que o diretor escolhe, mantém música e ambiente no clima do mundo e
-// silencia com a aba oculta.
+// silencia com a aba oculta. Acompanhando uma dungeon, a vila some e entra o abismo:
+// música da masmorra, ambiente de caverna e os golpes do corredor.
 
 import type { Session } from '../game/session.ts';
+import type { LaneSound } from '../render/lane/renderer.ts';
 import type { UiStore } from '../ui/store.ts';
 import { AmbiencePlayer } from './ambience.ts';
-import { CuePlanner, cuesFor, moodOf } from './director.ts';
+import { CuePlanner, cuesFor, cuesInScene, dungeonMood, moodOf } from './director.ts';
 import { AudioEngine, type Levels } from './engine.ts';
 import { MusicPlayer } from './music.ts';
 import { SFX, type SfxName } from './sfx.ts';
@@ -13,9 +15,27 @@ import { SFX, type SfxName } from './sfx.ts';
 export interface AudioHandle {
   engine: AudioEngine;
   play: (sfx: SfxName, delay?: number) => void;
+  /** Golpe no corredor que está na tela. */
+  combat: (sound: LaneSound) => void;
   /** Para depuração: o tocador de música (null até destravar). */
   music: () => MusicPlayer | null;
 }
+
+const LANE_SFX: Record<LaneSound, SfxName> = {
+  slash: 'slash',
+  crit: 'crit',
+  shot: 'shot',
+  fire: 'fireShot',
+  holy: 'holy',
+  dark: 'darkShot',
+  kill: 'kill',
+  heal: 'heal',
+  blast: 'blast',
+};
+
+/** Intervalo mínimo entre dois golpes iguais (ms) e teto de golpes por segundo. */
+const LANE_GAP_MS = 70;
+const LANE_PER_SECOND = 10;
 
 const SCHEDULE_MS = 50;
 const MOOD_MS = 500;
@@ -56,9 +76,24 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
     SFX[sfx](ctx, out, ctx.currentTime + 0.02 + delay);
   };
 
+  const watching = (): boolean => ui.panel?.kind === 'battle';
   session.subscribe((event) => {
-    for (const p of planner.plan(cuesFor(event), performance.now())) play(p.sfx, p.delay);
+    const cues = cuesInScene(cuesFor(event), watching() ? 'masmorra' : 'vila');
+    for (const p of planner.plan(cues, performance.now())) play(p.sfx, p.delay);
   });
+
+  const laneLast = new Map<SfxName, number>();
+  let laneWindow: number[] = [];
+  const combat = (sound: LaneSound): void => {
+    if (!watching()) return;
+    const sfx = LANE_SFX[sound];
+    const now = performance.now();
+    laneWindow = laneWindow.filter((t) => now - t < 1000);
+    if (laneWindow.length >= LANE_PER_SECOND || now - (laneLast.get(sfx) ?? -1e9) < LANE_GAP_MS) return;
+    laneLast.set(sfx, now);
+    laneWindow.push(now);
+    play(sfx);
+  };
 
   // Botões da interface fazem um tique; abrir um painel, um sopro.
   document.addEventListener(
@@ -84,7 +119,8 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
     const now = performance.now();
     if (now - lastMood >= MOOD_MS) {
       lastMood = now;
-      const mood = moodOf(session.world);
+      const panel = ui.panel;
+      const mood = panel?.kind === 'battle' ? dungeonMood(session.world, session.world.parties.slice(0, 3).map((p) => p.id)) : moodOf(session.world);
       music.setMode(mood.mode);
       ambience.setMood(mood);
     }
@@ -107,7 +143,7 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
     }, 800);
   });
 
-  return { engine, play, music: () => music };
+  return { engine, play, combat, music: () => music };
 }
 
 /**

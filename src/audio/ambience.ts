@@ -1,10 +1,11 @@
 // Ambiente da vila: vento e zumbido do abismo contínuos, mais grilos (noite), pássaros
 // (dia), estalos da fogueira, metal distante quando há combate e o "respiro" do abismo.
+// Na masmorra (acompanhando um grupo) a vila some: gotas, correntes e um ronco de pedra.
 
 import type { Mood } from './director.ts';
 import { clank, noise, noiseBuffer, rand, tone } from './instruments.ts';
 
-type Timer = 'cricket' | 'bird' | 'fire' | 'clank' | 'breath';
+type Timer = 'cricket' | 'bird' | 'fire' | 'clank' | 'breath' | 'drip' | 'chain' | 'rumble';
 
 export class AmbiencePlayer {
   private readonly ctx: BaseAudioContext;
@@ -12,7 +13,7 @@ export class AmbiencePlayer {
   private readonly windGain: GainNode;
   private readonly droneGain: GainNode;
   private mood: Mood = { mode: 'dia', night: false, hour: 8, corruption: 0, fighting: 0 };
-  private next: Record<Timer, number> = { cricket: 0, bird: 0, fire: 0, clank: 0, breath: 0 };
+  private next: Record<Timer, number> = { cricket: 0, bird: 0, fire: 0, clank: 0, breath: 0, drip: 0, chain: 0, rumble: 0 };
 
   constructor(ctx: BaseAudioContext, out: AudioNode) {
     this.ctx = ctx;
@@ -25,6 +26,12 @@ export class AmbiencePlayer {
   setMood(mood: Mood): void {
     this.mood = mood;
     const now = this.ctx.currentTime;
+    if (mood.scene === 'masmorra') {
+      // Corrente de ar fraca e o zumbido de pedra mais presente.
+      this.windGain.gain.setTargetAtTime(0.018, now, 1);
+      this.droneGain.gain.setTargetAtTime(0.05 + mood.corruption * 0.05, now, 1);
+      return;
+    }
     this.windGain.gain.setTargetAtTime((mood.night ? 0.05 : 0.035) + mood.corruption * 0.025, now, 1.5);
     this.droneGain.gain.setTargetAtTime((0.01 + mood.corruption * 0.07) * (mood.night ? 1.2 : 1), now, 2);
   }
@@ -37,6 +44,12 @@ export class AmbiencePlayer {
       this.next[timer] = now + rand(min, max);
       return true;
     };
+    if (mood.scene === 'masmorra') {
+      if (due('drip', 0.7, 3.5)) this.drip(now + 0.05);
+      if (due('chain', 9, 22)) clank(this.ctx, this.panned(rand(-0.8, 0.8)), now + 0.05, rand(0.008, 0.016));
+      if (due('rumble', 14, 30)) noise(this.ctx, this.out, now + 0.1, { dur: 3, gain: 0.05, filter: 'lowpass', freq: 110, attack: 1.2 });
+      return;
+    }
     if (mood.night && due('cricket', 0.5, 2.2)) this.cricket(now + 0.05);
     const daylight = mood.hour >= 5 && mood.hour < 19;
     if (daylight && due('bird', 3, 9)) this.bird(now + 0.05);
@@ -78,6 +91,14 @@ export class AmbiencePlayer {
     const freq = rand(4200, 5000);
     const pulses = 2 + Math.floor(rand(0, 3));
     for (let i = 0; i < pulses; i++) tone(this.ctx, out, t + i * 0.07, { freq, dur: 0.03, gain: 0.012, attack: 0.004 });
+  }
+
+  /** Gota caindo numa poça: nota aguda que cai rápido, às vezes com um eco. */
+  private drip(t: number): void {
+    const out = this.panned(rand(-0.8, 0.8));
+    const freq = rand(1500, 2600);
+    tone(this.ctx, out, t, { freq, glide: { to: freq * 0.55, time: 0.06 }, dur: 0.09, gain: rand(0.012, 0.024), attack: 0.002 });
+    if (Math.random() < 0.4) tone(this.ctx, out, t + 0.18, { freq: freq * 0.9, glide: { to: freq * 0.5, time: 0.06 }, dur: 0.08, gain: 0.006 });
   }
 
   private bird(t: number): void {

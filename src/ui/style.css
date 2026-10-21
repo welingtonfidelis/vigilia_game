@@ -303,6 +303,7 @@ kbd {
 
 .nav {
   position: absolute;
+  z-index: 12;
   right: 0.6rem;
   bottom: 0.6rem;
   display: flex;
@@ -359,8 +360,16 @@ kbd {
 
 /* ── Painéis ─────────────────────────────────────────────────────────── */
 
+/* Fundo invisível atrás dos painéis de consulta: clicar fora fecha. A navegação fica por cima. */
+.panel-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
+
 .panel {
   position: absolute;
+  z-index: 11;
   top: 0.6rem;
   right: 0.6rem;
   bottom: 4.2rem;
@@ -2237,7 +2246,9 @@ kbd {
 /* ── Corredor da dungeon (canvas em src/render/lane, DOM por cima) ──── */
 
 .lane-stage {
+  position: relative;
   display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   background: #050507;
@@ -2245,7 +2256,7 @@ kbd {
 .lane-view {
   position: relative;
   flex: 1;
-  min-width: 0;
+  min-height: 0;
   overflow: hidden;
 }
 .lane-canvas {
@@ -2254,63 +2265,105 @@ kbd {
   display: block;
   image-rendering: pixelated;
 }
-/* Lista do grupo numa coluna à esquerda do corredor, como no jogo de referência. */
-.lane-roster {
-  flex: none;
+/* Quadro do grupo por cima do corredor, no alto à esquerda (o teto é só cenário). */
+.lane-party {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 3;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: calc(100% - 150px);
   margin: 0;
-  padding: 6px 8px;
+  padding: 0;
   list-style: none;
-  border-right: 1px solid rgba(230, 211, 166, 0.08);
-  background: #08080b;
+  pointer-events: none;
 }
-.lane-hero {
+.party-frame {
   display: flex;
   align-items: center;
   gap: 5px;
-  min-width: 0;
+  width: 136px;
+  padding: 3px 7px 4px 3px;
+  border: 1px solid rgba(230, 211, 166, 0.14);
+  border-radius: 3px;
+  background: rgba(8, 8, 11, 0.8);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
 }
-.lane-hero .portrait-img {
-  width: 18px;
-  height: 31px;
+.party-frame .portrait-img {
   flex: none;
+  width: 16px;
+  height: 28px;
   image-rendering: pixelated;
 }
-.lane-hero-info {
+.pf-info {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
-  min-width: 70px;
+  min-width: 0;
 }
-.lane-hero-info b {
+.pf-name {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  line-height: 1;
+}
+.pf-name b {
+  overflow: hidden;
   color: #e6d3a6;
   font-family: var(--serif);
   font-weight: normal;
   font-size: 0.72rem;
-  line-height: 1;
   white-space: nowrap;
-  text-shadow: 0 1px 0 #000;
+  text-overflow: ellipsis;
 }
-.lane-bar {
+.pf-name small {
+  flex: none;
+  color: #a89a7c;
+  font-size: 0.6rem;
+}
+.pf-name small.up { color: #e8c25a; }
+.pf-bar {
+  position: relative;
   display: block;
-  width: 70px;
-  height: 3px;
-  background: rgba(0, 0, 0, 0.7);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: rgba(0, 0, 0, 0.75);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
-.lane-bar i { display: block; height: 100%; }
-.lane-bar.hp i { background: linear-gradient(90deg, #2f6d3a, #6fbf6a); }
-.lane-bar.morale i { background: linear-gradient(90deg, #4a2f80, #9a7ad8); }
-.lane-status { font-size: 0.62rem; line-height: 1; }
-.lane-status.bad { color: #d07060; }
-.lane-status.warn { color: #9a9ad0; }
-.lane-hero.dead .portrait-img,
-.lane-hero.fled .portrait-img { opacity: 0.45; filter: grayscale(0.8); }
-.lane-hero.dead b,
-.lane-hero.fled b { color: #8a7f6a; }
+.pf-bar i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: block;
+}
+.pf-bar.hp { height: 9px; }
+.pf-bar.hp i { background: linear-gradient(180deg, #6fbf6a, #2f6d3a); }
+.pf-bar.hp.low i { background: linear-gradient(180deg, #d0644e, #7a2a20); }
+.pf-bar.hp em {
+  position: absolute;
+  right: 3px;
+  top: 0;
+  color: #f4ead2;
+  font: 700 8px/9px system-ui, sans-serif;
+  font-style: normal;
+  text-shadow: 0 1px 0 #000;
+}
+.pf-bar.xp i { background: #c8a050; }
+.pf-bar.xp i.gain { background: rgba(232, 194, 90, 0.42); }
+.pf-status { font-size: 0.6rem; line-height: 1; }
+.pf-status.bad { color: #d07060; }
+.pf-status.warn { color: #a7a0dc; }
+.party-frame.dead,
+.party-frame.fled { opacity: 0.6; }
+.party-frame.dead .portrait-img,
+.party-frame.fled .portrait-img { filter: grayscale(0.8); }
 /* Salas do andar no alto à direita (embaixo ficam os pés e as barras de vida). */
 .lane-rooms {
   top: 6px;
@@ -2331,23 +2384,143 @@ kbd {
 }
 .lane-rooms .arena-room-node.current { background-position: -12px 0; }
 .lane-rooms .arena-room-node.cleared { background-position: -24px 0; }
+/* Grupo voltando para a vila: o corredor fica vazio e este aviso no meio. */
+.lane-exit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(230, 211, 166, 0.25);
+  border-radius: 4px;
+  background: rgba(8, 8, 11, 0.85);
+  color: #bfb398;
+  font-size: 0.75rem;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  animation: lane-exit-in 0.6s ease-out 0.8s both;
+  pointer-events: none;
+}
+.lane-exit strong {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-weight: normal;
+  font-size: 1rem;
+}
+@keyframes lane-exit-in {
+  from {
+    opacity: 0;
+  }
+}
 /* No celular o corredor ocupa a largura toda e o grupo vira uma faixa embaixo. */
 @media (max-width: 620px) {
   .lane-card { flex: 0 1 auto; }
-  .lane-stage { flex-direction: column; }
   .lane-view { flex: 0 1 300px; min-height: 140px; }
-  .lane-roster {
-    order: 2;
-    flex-direction: row;
-    flex-wrap: wrap;
+  .lane-party {
+    position: static;
     justify-content: center;
-    gap: 4px 10px;
+    max-width: none;
     padding: 6px;
-    border-right: 0;
     border-top: 1px solid rgba(230, 211, 166, 0.08);
+    background: #08080b;
   }
-  .lane-hero-info { min-width: 54px; }
-  .lane-hero-info b { font-size: 0.62rem; }
-  .lane-bar { width: 54px; }
-  .lane-hero .portrait-img { width: 14px; height: 24px; }
+  .party-frame { width: calc(50% - 3px); box-shadow: none; }
+}
+
+/* ── Decisões: diálogo no meio da tela, que só sai com uma escolha ────── */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(6, 5, 4, 0.66);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+.dialog {
+  width: min(30rem, 100%);
+  max-height: calc(100% - 2rem);
+  overflow-y: auto;
+  padding: 1rem 1.15rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--panel);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.7);
+  line-height: 1.45;
+  animation: dialog-in 0.2s ease-out;
+}
+.dialog-head { margin-bottom: 0.7rem; }
+.dialog-kicker {
+  margin: 0 0 0.15rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.dialog-head h2 {
+  margin: 0;
+  color: var(--gold);
+  font-family: var(--serif);
+  font-weight: normal;
+  font-size: 1.4rem;
+}
+@keyframes dialog-in {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+
+/* ── Atalho para acompanhar as dungeons (tecla G) ─────────────────────── */
+
+.watch-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.55rem 0.4rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  background: rgba(20, 17, 14, 0.9);
+  color: var(--text);
+  font-size: 0.86rem;
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+}
+.watch-btn:hover { border-color: var(--gold); }
+.watch-btn small { color: var(--muted); font-size: 0.78rem; }
+.watch-btn kbd {
+  padding: 0 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.watch-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--gold);
+}
+.watch-btn.hot .watch-dot {
+  background: var(--bad);
+  animation: watch-pulse 1s ease-in-out infinite;
+}
+@keyframes watch-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (max-width: 620px) {
+  .watch-btn kbd { display: none; }
 }

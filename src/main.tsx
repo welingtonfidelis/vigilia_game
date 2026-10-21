@@ -4,6 +4,7 @@ import type { ChronicleEntry } from './sim/index.ts';
 import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
 import { startAudio } from './audio/index.ts';
+import { lanes } from './render/lane/lanes.ts';
 import { startRenderer } from './render/game.ts';
 import { isTyping } from './render/keys.ts';
 import { HudRoot, OverlayRoot } from './ui/App.tsx';
@@ -110,7 +111,11 @@ window.addEventListener(
   'keydown',
   (e) => {
     if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
-    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village') => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind }));
+    // Decisão pendente: o diálogo exige uma escolha; nada de trocar de painel por atalho.
+    const deciding = ui.panel?.kind === 'event';
+    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village') => {
+      if (!deciding) ui.panel?.kind === kind ? ui.close() : ui.open({ kind });
+    };
     switch (e.code) {
       case 'Space':
         e.preventDefault();
@@ -133,7 +138,10 @@ window.addEventListener(
         }
         break;
       case 'Escape':
-        if (ui.panel) ui.close();
+        if (ui.panel && !deciding) ui.close();
+        break;
+      case 'KeyG':
+        if (!deciding) ui.watch(session.world);
         break;
       case 'KeyM':
         toggle('dungeon');
@@ -161,6 +169,7 @@ render(<HudRoot session={session} ui={ui} />, document.getElementById('hud')!);
 render(<OverlayRoot session={session} ui={ui} />, document.getElementById('overlay')!);
 const renderer = startRenderer(document.getElementById('game')!, session, ui);
 const audio = startAudio(session, ui);
+lanes.start({ world: () => session.world, speed: () => session.speed, paused: () => session.paused, sound: (name) => audio.combat(name) });
 
 // Atalhos de depuração para testar sem esperar (só em desenvolvimento).
 if (import.meta.env.DEV) {
@@ -170,6 +179,7 @@ if (import.meta.env.DEV) {
       ui,
       renderer,
       audio,
+      lanes,
       ACTS,
       advance: (ticks: number) => session.advance(ticks),
       /** Roda N quadros do Phaser na mão (com a aba oculta o requestAnimationFrame para). */

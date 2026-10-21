@@ -143,7 +143,10 @@ export class CuePlanner {
 
 // ── Clima ───────────────────────────────────────────────────────────────────
 
-export type MusicMode = 'dia' | 'noite' | 'luto' | 'tensao' | 'alvorada';
+export type MusicMode = 'dia' | 'noite' | 'luto' | 'tensao' | 'alvorada' | 'masmorra';
+
+/** Onde o ouvido está: na vila ou dentro do abismo (acompanhando um grupo). */
+export type Scene = 'vila' | 'masmorra';
 
 export interface Mood {
   mode: MusicMode;
@@ -153,6 +156,7 @@ export interface Mood {
   corruption: number;
   /** Grupos lutando agora no abismo. */
   fighting: number;
+  scene?: Scene;
 }
 
 /** Quanto tempo a música fica de luto depois de uma morte. */
@@ -169,3 +173,19 @@ export function moodOf(world: World): Mood {
     world.endedTick !== null ? 'alvorada' : bossFight ? 'tensao' : mourning ? 'luto' : night ? 'noite' : 'dia';
   return { mode, night, hour: hourOf(world.tick), corruption, fighting };
 }
+
+/**
+ * O clima de quem está acompanhando a dungeon: a vila some e entra o abismo, com a
+ * música da masmorra (ou a de tensão numa luta de chefe à vista).
+ */
+export function dungeonMood(world: World, partyIds: number[]): Mood {
+  const base = moodOf(world);
+  const watched = world.parties.filter((p) => partyIds.includes(p.id));
+  const boss = watched.some((p) => p.combat?.isBoss);
+  return { ...base, mode: boss ? 'tensao' : 'masmorra', scene: 'masmorra', fighting: 0 };
+}
+
+/** Na dungeon, só passam os avisos que importam lá embaixo; os da vila esperam. */
+const DUNGEON_SFX = new Set<SfxName>(['death', 'flee', 'vengeance', 'boss', 'conquest', 'finale', 'echo', 'level', 'promotion', 'wound', 'rescue', 'return', 'coins', 'bell', 'deny', 'click', 'grief']);
+
+export const cuesInScene = (cues: Cue[], scene: Scene): Cue[] => (scene === 'vila' ? cues : cues.filter((c) => DUNGEON_SFX.has(c.sfx)));

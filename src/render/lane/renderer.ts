@@ -2,7 +2,10 @@
 // acompanha o grupo, que anda de verdade de sala em sala; os monstros esperam na
 // névoa; cada golpe tem investida ou projétil; sangue e corpos ficam no chão.
 //
-// Lê o World a cada quadro (não muda nada nele). Dois relógios:
+// Lê o World a cada quadro (não muda nada nele). Cada grupo tem o seu corredor
+// rodando o tempo todo (lanes.ts), com ou sem tela: quem abre no meio da expedição
+// vê o grupo onde ele está, com os corpos e o sangue das salas anteriores.
+// Dois relógios:
 //   - a caminhada segue a velocidade do jogo (1×, 2×, 4×), para não descolar da simulação;
 //   - golpes, partículas e números seguem um relógio mais calmo (raiz da velocidade),
 //     para continuarem legíveis em 4×. Na pausa, os dois param.
@@ -23,6 +26,7 @@ import {
   ROOM_W,
   roomX,
   ROW_Y,
+  stopX,
   takeEvents,
   threatX,
   WALK_SPEED,
@@ -32,6 +36,10 @@ import {
 import { DUNGEON_URL, enemySource, heroSource, image, x72Frame, type Anim, type SpriteSource } from './sprites.ts';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'] as const;
+
+/** Onde o grupo estava ao começar a volta (para a câmera, quando a tela abre já na volta). */
+const stopXOrEntry = (party: Party, rooms: Room[]): number =>
+  rooms.length > 0 ? stopX(Math.min(party.roomIndex, rooms.length - 1)) : ENTRY_W - 24;
 
 /** Props de cada ato num painel de sala (x dentro do painel de 320 px, y dos pés). */
 const ROOM_PROPS: Record<string, { id: string; x: number; y: number }[]> = {
@@ -158,14 +166,24 @@ const NARROW_CSS_W = 620;
 /** Quanto o primeiro plano desce em relação à arte da arena frontal (px de arte). */
 const FORE_DROP = 18;
 
+/** Sons da luta, para o áudio tocar quando o corredor está na tela. */
+export type LaneSound = 'slash' | 'crit' | 'shot' | 'fire' | 'holy' | 'dark' | 'kill' | 'heal' | 'blast';
+
 export interface LaneHost {
   world(): World;
   speed(): number;
   paused(): boolean;
+  sound?(name: LaneSound): void;
 }
 
+const SHOT_SOUND: Record<'arrow' | 'fire' | 'bolt' | 'dark', LaneSound> = { arrow: 'shot', fire: 'fire', bolt: 'holy', dark: 'dark' };
+
+/** Quanto o grupo leva para sumir de vista ao voltar para a vila (s do relógio de efeitos). */
+const EXIT_TIME = 1.6;
+
 export class LaneRenderer {
-  private readonly ctx: CanvasRenderingContext2D;
+  private ctx!: CanvasRenderingContext2D;
+  private canvas: HTMLCanvasElement | null = null;
   private scale = 2;
   private viewW = ROOM_W;
   private top = 0;
@@ -194,16 +212,38 @@ export class LaneRenderer {
   private queue: { at: number; ev: CombatEvent }[] = [];
   private cursor: EventCursor = { combat: null, last: 0 };
   private lastCombat: unknown = null;
+  /** Inimigos desta luta que já viraram corpo (não renascem). */
+  private fallen = new Set<number>();
+  /** Quando o grupo começou a voltar para a vila (relógio de efeitos). */
+  private exitAt: number | null = null;
 
-  private readonly canvas: HTMLCanvasElement;
   private readonly host: LaneHost;
-  private readonly partyId: number;
+  readonly partyId: number;
 
-  constructor(canvas: HTMLCanvasElement, host: LaneHost, partyId: number) {
-    this.canvas = canvas;
+  constructor(host: LaneHost, partyId: number) {
     this.host = host;
     this.partyId = partyId;
+  }
+
+  /** Passa a desenhar neste canvas. A câmera pula direto para o grupo. */
+  attach(canvas: HTMLCanvasElement): void {
+    this.canvas = canvas;
     this.ctx = canvas.getContext('2d')!;
+    this.camX = Number.NaN;
+  }
+
+  detach(canvas: HTMLCanvasElement): void {
+    if (this.canvas === canvas) this.canvas = null;
+  }
+
+  /** Quantos bonecos e corpos há no corredor (testes e depuração). */
+  get counts(): { heroes: number; enemies: number; corpses: number } {
+    return { heroes: this.heroes.size, enemies: this.enemies.size, corpses: this.corpses.length };
+  }
+
+  /** O grupo já saiu de vista a caminho da vila. */
+  get gone(): boolean {
+    return this.exitAt !== null && this.fx - this.exitAt > EXIT_TIME;
   }
 
   /**
@@ -212,17 +252,19 @@ export class LaneRenderer {
    * encolher a cena: o que importa fica entre a altura das cabeças e os pés.
    */
   resize(cssW: number, cssH: number): void {
+    const canvas = this.canvas;
+    if (!canvas) return;
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    this.canvas.width = Math.max(1, Math.round(cssW * dpr));
-    this.canvas.height = Math.max(1, Math.round(cssH * dpr));
-    this.canvas.style.width = `${cssW}px`;
-    this.canvas.style.height = `${cssH}px`;
-    const h = this.canvas.height;
+    canvas.width = Math.max(1, Math.round(cssW * dpr));
+    canvas.height = Math.max(1, Math.round(cssH * dpr));
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+    const h = canvas.height;
     // Teto pela largura também, para a luta inteira caber; no celular aceita uma
     // vista mais estreita em troca de bonecos maiores.
     const minW = cssW <= NARROW_CSS_W ? MIN_VISIBLE_W_NARROW : MIN_VISIBLE_W;
-    this.scale = Math.max(1, Math.min(Math.floor(h / MIN_VISIBLE_H), Math.floor(this.canvas.width / minW)));
-    this.viewW = this.canvas.width / this.scale;
+    this.scale = Math.max(1, Math.min(Math.floor(h / MIN_VISIBLE_H), Math.floor(canvas.width / minW)));
+    this.viewW = canvas.width / this.scale;
     const crop = LANE_H * this.scale - h;
     if (crop <= 0) {
       this.top = Math.round(-crop / 2);
@@ -230,6 +272,8 @@ export class LaneRenderer {
       const bottom = Math.min(crop * 0.25, 14 * this.scale);
       this.top = -Math.round(crop - bottom);
     }
+    // Mudar o tamanho limpa o canvas: desenha já, sem esperar o próximo quadro.
+    this.frame(this.last || performance.now());
   }
 
   frame(now: number): void {
@@ -253,11 +297,12 @@ export class LaneRenderer {
     const length = laneLength(rooms.length);
     const target = cameraTarget(this.leaderX, this.facing, this.viewW, length);
     this.camX = Number.isNaN(this.camX) ? target : this.camX + (target - this.camX) * Math.min(1, dt * 3);
-    this.draw(party, rooms);
+    if (this.canvas) this.draw(party, rooms);
   }
 
-  destroy(): void {
-    this.queue = [];
+  /** Som de um golpe, só quando alguém está olhando. */
+  private sound(name: LaneSound): void {
+    if (this.canvas) this.host.sound?.(name);
   }
 
   // ── Estado ────────────────────────────────────────────────────────────
@@ -271,20 +316,31 @@ export class LaneRenderer {
     this.corpses = [];
     this.decals = [];
     this.enemies.clear();
+    this.fallen.clear();
+    this.exitAt = null;
     this.reveal = 0;
     this.leaderX = Number.NaN;
     this.camX = Number.NaN;
   }
 
   private walk(party: Party, rooms: Room[], tick: number, gameDt: number): void {
+    if (party.phase === 'voltando') {
+      // Não refaz o caminho inteiro: dá meia-volta, sai de vista e a tela avisa.
+      if (this.exitAt === null) this.exitAt = this.fx;
+      if (Number.isNaN(this.leaderX)) this.leaderX = stopXOrEntry(party, rooms);
+      this.moving = false;
+      this.facing = -1;
+      return;
+    }
+    this.exitAt = null;
     const goal = laneGoal(party, rooms);
     if (Number.isNaN(this.leaderX)) this.leaderX = party.phase === 'descendo' ? -ENTRY_W + 8 : goal.x;
     const d = goal.x - this.leaderX;
     // Se a tela ficou muito para trás (4× ou aba voltando), apressa o passo.
     const catchUp = Math.abs(d) > ROOM_W * 1.2 ? WALK_SPEED * 3 : 0;
-    // Entre salas e na volta, chega junto com a simulação (phaseEndsAt é a chegada).
+    // Entre salas, chega junto com a simulação (phaseEndsAt é a chegada na próxima sala).
     const left = (party.phaseEndsAt - tick) / TICKS_PER_SECOND;
-    const paced = (party.phase === 'explorando' || party.phase === 'voltando') && left > 0.2 ? Math.abs(d) / left : 0;
+    const paced = party.phase === 'explorando' && left > 0.2 ? Math.abs(d) / left : 0;
     const v = Math.min(WALK_SPEED * 6, Math.max(WALK_SPEED, paced, catchUp));
     const step = Math.min(Math.abs(d), v * gameDt);
     this.leaderX += Math.sign(d) * step;
@@ -304,9 +360,18 @@ export class LaneRenderer {
       units.set(u.heroId, u);
       this.uidToHero.set(u.uid, u.heroId);
     }
+    const leaving = party.phase === 'voltando';
     for (const slot of slots) {
       const hero = members.find((h) => h.id === slot.id)!;
       let actor = this.heroes.get(hero.id);
+      if (leaving) {
+        // Voltando: quem está à vista corre para trás e some; ninguém novo aparece.
+        if (actor && actor.leaving === null) {
+          actor.leaving = this.fx;
+          actor.facing = -1;
+        }
+        continue;
+      }
       const homeX = this.leaderX + slot.dx * this.facing;
       if (!actor) {
         const role = CLASSES[hero.classId].role;
@@ -338,8 +403,13 @@ export class LaneRenderer {
   private syncEnemies(world: World, party: Party): void {
     const combat = party.combat;
     if (combat !== this.lastCombat) {
-      // Luta nova: os mortos da anterior já viraram corpos; os vivos (retirada) somem.
-      for (const [uid, actor] of this.enemies) if (actor.dying === null) this.enemies.delete(uid);
+      // Luta nova: quem estava morrendo vira corpo agora, os vivos (retirada) somem,
+      // e os números de unidade recomeçam (não podem pegar o boneco da luta anterior).
+      for (const actor of this.enemies.values()) {
+        if (actor.dying !== null) this.corpses.push({ sprite: actor.sprite, x: actor.x, y: actor.y, flip: true });
+      }
+      this.enemies.clear();
+      this.fallen.clear();
       this.lastCombat = combat;
       this.combatRoom = party.roomIndex;
     }
@@ -350,6 +420,13 @@ export class LaneRenderer {
       const slot = enemySlot(this.combatRoom, i, boss);
       let actor = this.enemies.get(unit.uid);
       if (!actor) {
+        if (this.fallen.has(unit.uid)) return;
+        if (!unit.alive) {
+          // Já estava morto quando a tela chegou: só o corpo, no lugar dele.
+          this.fallen.add(unit.uid);
+          this.corpses.push({ sprite: enemySource(world, party, unit), x: slot.x, y: ROW_Y[slot.row], flip: true });
+          return;
+        }
         // Surge da névoa um pouco atrás e anda até o lugar.
         actor = this.newActor(`e${unit.uid}`, 'enemy', enemySource(world, party, unit), slot.x + 46, ROW_Y[slot.row]);
         actor.facing = -1;
@@ -418,11 +495,13 @@ export class LaneRenderer {
     if (!to) return;
     if (ev.kind === 'heal') {
       if (from) this.attack(from, 0.35);
+      this.sound('heal');
       this.sparks.push({ id: 'fx/heal', x: to.x, y: to.y - 10, start: this.fx });
       this.floatText(to, `+${Math.round(ev.amount)}`, '#7fd37a', false);
       return;
     }
     if (ev.kind === 'blast') {
+      this.sound('blast');
       this.burst(to.x, to.y - 10, ['#f0a040', '#d86a2a', '#fff0a0'], 10, to.y);
       this.impact(to, ev, targetUnit, from?.x ?? to.x + 10);
       return;
@@ -433,6 +512,7 @@ export class LaneRenderer {
     }
     if (from.ranged) {
       this.attack(from, 0.3);
+      this.sound(SHOT_SOUND[from.projectile]);
       const dir = Math.sign(to.x - from.x) || 1;
       const x0 = from.x + dir * 6;
       const y0 = from.y - (from.sprite?.height ?? 20) * 0.55;
@@ -470,6 +550,8 @@ export class LaneRenderer {
   }
 
   private impact(to: Actor, ev: CombatEvent, unit: Unit | undefined, fromX: number): void {
+    this.sound(ev.crit ? 'crit' : 'slash');
+    if (ev.kill && to.side === 'enemy') this.sound('kill');
     to.flash = 0.09;
     to.knock = Math.sign(to.x - fromX || 1) * (ev.crit ? 5 : 3);
     to.hitUntil = this.fx + 0.22;
@@ -528,7 +610,7 @@ export class LaneRenderer {
     }
     for (const actor of [...this.heroes.values(), ...this.enemies.values()]) this.moveActor(actor, fxDt);
     for (const [id, actor] of this.heroes) {
-      if (actor.leaving !== null && this.fx - actor.leaving > 1.6) this.heroes.delete(id);
+      if (actor.leaving !== null && this.fx - actor.leaving > EXIT_TIME) this.heroes.delete(id);
       if (actor.dying !== null && this.fx - actor.dying > this.deathTime(actor)) {
         this.corpses.push({ sprite: actor.sprite, x: actor.x, y: actor.y, flip: actor.facing === -1 });
         this.heroes.delete(id);
@@ -538,6 +620,7 @@ export class LaneRenderer {
       if (actor.dying !== null && this.fx - actor.dying > this.deathTime(actor)) {
         this.corpses.push({ sprite: actor.sprite, x: actor.x, y: actor.y, flip: true });
         this.enemies.delete(uid);
+        this.fallen.add(uid);
       }
     }
     const g = 260;
@@ -562,7 +645,8 @@ export class LaneRenderer {
   }
 
   private moveActor(actor: Actor, fxDt: number): void {
-    actor.x += (actor.homeX - actor.x) * Math.min(1, fxDt * 9);
+    // Quem caiu fica onde caiu.
+    if (actor.dying === null) actor.x += (actor.homeX - actor.x) * Math.min(1, fxDt * 9);
     actor.knock *= Math.max(0, 1 - fxDt * 12);
     actor.flash = Math.max(0, actor.flash - fxDt);
     if (actor.leaving !== null) actor.homeX -= 120 * fxDt;
@@ -594,7 +678,7 @@ export class LaneRenderer {
     const { ctx, scale: s } = this;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#050507';
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.fillRect(0, 0, this.canvas!.width, this.canvas!.height);
     ctx.imageSmoothingEnabled = false;
     const cam = Math.round(this.camX * s) / s;
     ctx.setTransform(s, 0, 0, s, -Math.round(this.camX * s), this.top);
@@ -766,7 +850,7 @@ export class LaneRenderer {
     ctx.translate(x, y);
     if (a.facing === -1) ctx.scale(-1, 1);
     let alpha = sprite.ghost ? 0.6 : 1;
-    if (a.leaving !== null) alpha *= Math.max(0, 1 - (this.fx - a.leaving) / 1.6);
+    if (a.leaving !== null) alpha *= Math.max(0, 1 - (this.fx - a.leaving) / EXIT_TIME);
     ctx.globalAlpha = alpha;
     ctx.drawImage(img, sx, sy, sw, sh, -Math.floor(sw / 2), -sh, sw, sh);
     if (a.flash > 0) {

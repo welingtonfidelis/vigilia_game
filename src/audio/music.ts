@@ -1,5 +1,5 @@
 // Trilha generativa em Ré menor: acorde de fundo, baixo, alaúde dedilhado e uma flauta
-// esparsa. O clima (dia, noite, luto, tensão, alvorada) troca no começo do compasso.
+// esparsa. O clima (dia, noite, luto, tensão, alvorada, masmorra) troca no começo do compasso.
 
 import type { MusicMode } from './director.ts';
 import { drum, midiToFreq as n, pad, pickOne, pluck, rand, tone } from './instruments.ts';
@@ -39,6 +39,8 @@ export const STYLES: Record<MusicMode, Style> = {
   luto: { bpm: 50, chords: [Dm, Gm, Bb, A], barsPerChord: 2, pluck: 0.14, melody: 0.35, cutoff: 800, padGain: 0.035, bass: false, pulse: false, drums: false, scale: MINOR },
   tensao: { bpm: 78, chords: [Dm, Bb, Dm, A], barsPerChord: 1, pluck: 0.28, melody: 0, cutoff: 900, padGain: 0.028, bass: true, pulse: true, drums: true, scale: MINOR },
   alvorada: { bpm: 66, chords: [D, G, D, A], barsPerChord: 1, pluck: 0.4, melody: 0.2, cutoff: 1500, padGain: 0.03, bass: true, pulse: false, drums: false, scale: MAJOR },
+  // Dentro do abismo: lenta, escura, quase só o acorde e o baixo, com um tambor distante.
+  masmorra: { bpm: 48, chords: [Dm, Bb, Gm, A], barsPerChord: 2, pluck: 0.07, melody: 0.05, cutoff: 480, padGain: 0.034, bass: true, pulse: false, drums: true, scale: MINOR },
 };
 
 const STEPS_PER_BAR = 8;
@@ -129,7 +131,12 @@ export class MusicPlayer {
         filter: { type: 'lowpass', freq: 320, q: 3 },
       });
     }
-    if (style.drums && (inBar === 0 || inBar === 3 || inBar === 6)) drum(ctx, out, t, 62, inBar === 0 ? 0.22 : 0.13, 0.45);
+    if (style.drums && this.mode === 'masmorra') {
+      // Na masmorra, um tambor grave e distante só no começo do compasso.
+      if (inBar === 0) drum(ctx, out, t, 46, 0.14, 1.1);
+    } else if (style.drums && (inBar === 0 || inBar === 3 || inBar === 6)) {
+      drum(ctx, out, t, 62, inBar === 0 ? 0.22 : 0.13, 0.45);
+    }
     const chance = style.pluck * (inBar % 2 === 0 ? 1 : 0.55);
     if (Math.random() < chance) {
       const note = pickOne(this.chord) + pickOne([12, 12, 24]);

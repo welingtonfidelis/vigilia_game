@@ -17,7 +17,7 @@ import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
 import { ActEndPanel, CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
-import type { Panel, UiStore } from './store.ts';
+import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
 /** Redesenha quando o mundo (no máximo ~8×/s) ou o estado da tela muda. */
 function useLive(session: Session, ui: UiStore): void {
@@ -54,6 +54,7 @@ export function OverlayRoot(props: { session: Session; ui: UiStore }) {
       <Objectives />
       <Toasts />
       <Prompt />
+      <WatchButton />
       <Nav />
       <PanelHost />
     </GameContext.Provider>
@@ -173,6 +174,23 @@ function Prompt() {
   );
 }
 
+/** Atalho para acompanhar as dungeons sem passar pelo Abismo (tecla G). */
+function WatchButton() {
+  const { world, ui } = useGame();
+  const parties = world.parties.length;
+  if (parties === 0 || ui.panel?.kind === 'battle' || ui.panel?.kind === 'event') return null;
+  const fighting = world.parties.some((p) => p.phase === 'combate');
+  return (
+    <button class={`watch-btn${fighting ? ' hot' : ''}`} onClick={() => ui.watch(world)} title="Acompanhar as dungeons (G)">
+      <i class="watch-dot" aria-hidden="true" />
+      <span>
+        Acompanhar <small>{parties === 1 ? '1 grupo' : `${parties} grupos`}</small>
+      </span>
+      <kbd>G</kbd>
+    </button>
+  );
+}
+
 function Nav() {
   const { world, ui } = useGame();
   const parties = world.parties.length;
@@ -203,10 +221,21 @@ function Nav() {
   );
 }
 
+/** O painel aberto; os de consulta ganham um fundo invisível que fecha ao clicar fora. */
 function PanelHost() {
   const { ui } = useGame();
   const p = ui.panel;
   if (!p) return null;
+  return (
+    <>
+      {DISMISSIBLE.has(p.kind) && <div class="panel-scrim" onPointerDown={() => ui.close()} aria-hidden="true" />}
+      <PanelContent panel={p} />
+    </>
+  );
+}
+
+function PanelContent(props: { panel: Panel }) {
+  const p = props.panel;
   switch (p.kind) {
     case 'hero':
       return <HeroPanel key={p.heroId} heroId={p.heroId} />;

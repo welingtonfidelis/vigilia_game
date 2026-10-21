@@ -1,7 +1,7 @@
 // Estado da tela (não vai no save): painel aberto, avisos, interação próxima e preferências.
 // A cena Phaser escreve aqui; a UI em Preact lê e redesenha.
 
-import type { BuildingId } from '../sim/index.ts';
+import type { BuildingId, World } from '../sim/index.ts';
 import { DEFAULT_PREFS, type Prefs } from '../game/storage.ts';
 
 export type Panel =
@@ -24,6 +24,22 @@ export type Panel =
   | { kind: 'actEnd'; act: number };
 
 export type PanelKind = Panel['kind'];
+
+/** Painéis que fecham com um clique fora: os de consulta. Decisões e marcos esperam o botão. */
+export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
+  'hero',
+  'building',
+  'horn',
+  'board',
+  'coffer',
+  'thermal',
+  'village',
+  'dungeon',
+  'chronicle',
+  'roster',
+  'memorial',
+  'menu',
+]);
 
 export type Tone = 'info' | 'good' | 'gold' | 'bad' | 'grief' | 'warn';
 
@@ -99,6 +115,18 @@ export class UiStore {
   setPrefs(patch: Partial<Prefs>): void {
     this.prefs = { ...this.prefs, ...patch };
     this.changed();
+  }
+
+  /**
+   * Abre (ou fecha) o acompanhamento das dungeons, com o grupo em luta na frente.
+   * Sem ninguém lá embaixo, só avisa.
+   */
+  watch(world: World): void {
+    if (this.panel?.kind === 'battle') return this.close();
+    const party =
+      world.parties.find((p) => p.phase === 'combate') ?? world.parties.find((p) => p.phase !== 'voltando') ?? world.parties[0];
+    if (!party) return this.toast('Nenhum grupo no abismo agora.', 'info');
+    this.open({ kind: 'battle', partyId: party.id });
   }
 
   get selectedHeroId(): number | null {

@@ -14,8 +14,9 @@ import {
   wallVariant,
   type EventCursor,
 } from '../src/render/lane/model.ts';
-import { CLASSES } from '../src/sim/index.ts';
-import type { Combat, CombatEvent, Party, Room } from '../src/sim/index.ts';
+import { autoMayor, CLASSES, createWorld, runTicks } from '../src/sim/index.ts';
+import type { Combat, CombatEvent, Party, Room, World } from '../src/sim/index.ts';
+import { LaneRenderer, type LaneHost } from '../src/render/lane/renderer.ts';
 import { packAsset } from '../src/render/pack.ts';
 
 const rooms = (n: number, cleared = 0): Room[] =>
@@ -135,5 +136,43 @@ describe('corredor: golpes novos', () => {
     const cursor: EventCursor = { combat: null, last: 0 };
     expect(takeEvents(cursor, { ticks: 1 } as Combat)).toEqual([]);
     expect(takeEvents(cursor, null)).toEqual([]);
+  });
+});
+
+describe('corredor em segundo plano', () => {
+  // Joga até ter um grupo lutando com pelo menos um inimigo já caído.
+  function worldInFight(): { world: World; party: Party } {
+    const world = createWorld(11);
+    for (let i = 0; i < 4000; i++) {
+      runTicks(world, 5, { onHour: autoMayor });
+      const party = world.parties.find((p) => p.combat?.units.some((u) => u.side === 'enemy' && !u.alive));
+      if (party) return { world, party };
+    }
+    throw new Error('nenhuma luta com baixa');
+  }
+
+  const host = (world: World): LaneHost => ({ world: () => world, speed: () => 1, paused: () => false });
+
+  it('inimigo que já caiu vira um corpo só e não renasce andando', () => {
+    const { world, party } = worldInFight();
+    const dead = party.combat!.units.filter((u) => u.side === 'enemy' && !u.alive).length;
+    const lane = new LaneRenderer(host(world), party.id);
+    let t = 0;
+    for (let i = 0; i < 400; i++) lane.frame((t += 16));
+    expect(lane.counts.corpses).toBe(dead);
+    const alive = party.combat!.units.filter((u) => u.side === 'enemy' && u.alive).length;
+    expect(lane.counts.enemies).toBe(alive);
+  });
+
+  it('na volta para a vila o grupo sai de vista em vez de refazer o caminho', () => {
+    const { world, party } = worldInFight();
+    const lane = new LaneRenderer(host(world), party.id);
+    let t = 0;
+    for (let i = 0; i < 30; i++) lane.frame((t += 16));
+    expect(lane.counts.heroes).toBeGreaterThan(0);
+    party.phase = 'voltando';
+    for (let i = 0; i < 200; i++) lane.frame((t += 16));
+    expect(lane.gone).toBe(true);
+    expect(lane.counts.heroes).toBe(0);
   });
 });

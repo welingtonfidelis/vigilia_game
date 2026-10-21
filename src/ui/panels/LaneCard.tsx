@@ -1,40 +1,67 @@
-// Uma expedição como corredor lateral: o canvas desenha o andar (src/render/lane);
-// em DOM, o cabeçalho com o sino, a lista do grupo ao lado e as salas por cima.
+// Uma expedição como corredor lateral: o canvas desenha o andar (src/render/lane, que
+// roda em segundo plano para cada grupo); em DOM, o cabeçalho com o sino, o quadro do
+// grupo por cima do corredor (embaixo no celular), as salas e o aviso de volta à vila.
 
 import { useEffect, useRef } from 'preact/hooks';
-import { commands, floorLabel, partyRooms } from '../../sim/index.ts';
+import { commands, fleeThreshold, floorLabel, maxLevel, partyRooms, xpToNext } from '../../sim/index.ts';
 import type { Hero, Party } from '../../sim/index.ts';
-import { LaneRenderer } from '../../render/lane/renderer.ts';
+import { lanes } from '../../render/lane/lanes.ts';
 import { packUrl } from '../../render/pack.ts';
 import { useCommand, useGame } from '../components.tsx';
-import { fmt, heroById, liveHp, phaseText, ROOM_LABELS } from '../format.ts';
+import { fmt, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
 
 function RoomNode(props: { state: 'normal' | 'current' | 'cleared' }) {
   return <span class={`arena-room-node ${props.state}`} style={{ backgroundImage: `url(${packUrl('export/ui/ui-room-node.png')})` }} aria-hidden="true" />;
 }
 
-/** Linha da lista do grupo: retrato, nome, vida e ânimo, ou "caiu"/"fugiu". */
-function RosterRow(props: { hero: Hero; party: Party }) {
+const pct = (v: number): string => `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`;
+
+/**
+ * Quadro de um herói: retrato, nome e nível, vida com números e experiência. A barra de
+ * experiência mostra o que ele já tinha e, mais clara, a parte do saque desta expedição
+ * (que só entra ao voltar para a vila).
+ */
+function PartyFrame(props: { hero: Hero; party: Party }) {
   const { world } = useGame();
   const { hero, party } = props;
   const dead = party.dead.includes(hero.id) || hero.status === 'dead';
   const fled = !dead && !party.memberIds.includes(hero.id);
   const { hp, max } = liveHp(world, hero);
-  const hpPct = max > 0 ? Math.max(0, Math.min(100, (hp / max) * 100)) : 0;
+  const capped = hero.level >= maxLevel(hero);
+  const need = xpToNext(hero.level);
+  const share = party.loot.xp / Math.max(1, party.memberIds.length);
+  const before = capped ? 1 : hero.xp / need;
+  const after = capped ? 1 : (hero.xp + share) / need;
+  const low = hp / Math.max(1, max) < 0.3;
+  const shaken = !dead && !fled && hero.morale <= fleeThreshold(hero, world.town.doctrine) + 10;
+  const levelUp = !capped && after >= 1;
   return (
-    <li class={`lane-hero${dead ? ' dead' : fled ? ' fled' : ''}`} title={`${hero.name} · ${Math.ceil(hp)}/${max} de vida · ânimo ${Math.round(hero.morale)}`}>
+    <li
+      class={`party-frame${dead ? ' dead' : fled ? ' fled' : ''}`}
+      title={`${hero.name} · nível ${hero.level} · ${Math.ceil(hp)}/${max} de vida · ${capped ? 'nível máximo' : `${Math.floor(hero.xp)}+${Math.floor(share)} de ${need} XP`} · ânimo ${Math.round(hero.morale)}`}
+    >
       <HeroPortrait hero={hero} />
-      <span class="lane-hero-info">
-        <b>{hero.name}</b>
+      <span class="pf-info">
+        <span class="pf-name">
+          <b>{hero.name}</b>
+          <small class={levelUp ? 'up' : ''}>Nv {hero.level}{levelUp ? ' ↑' : ''}</small>
+        </span>
         {dead ? (
-          <small class="lane-status bad">Caiu</small>
+          <small class="pf-status bad">Caiu</small>
         ) : fled ? (
-          <small class="lane-status warn">Fugiu</small>
+          <small class="pf-status warn">Fugiu</small>
         ) : (
           <>
-            <i class="lane-bar hp"><i style={{ width: `${hpPct}%` }} /></i>
-            <i class="lane-bar morale"><i style={{ width: `${Math.max(0, Math.min(100, hero.morale))}%` }} /></i>
+            <span class={`pf-bar hp${low ? ' low' : ''}`} aria-label={`Vida ${Math.ceil(hp)} de ${max}`}>
+              <i style={{ width: pct(hp / Math.max(1, max)) }} />
+              <em>{Math.ceil(hp)}/{max}</em>
+            </span>
+            <span class="pf-bar xp" aria-label="Experiência">
+              <i class="gain" style={{ width: pct(after) }} />
+              <i style={{ width: pct(before) }} />
+            </span>
+            {shaken && <small class="pf-status warn">Abalado</small>}
           </>
         )}
       </span>
@@ -43,7 +70,7 @@ function RosterRow(props: { hero: Hero; party: Party }) {
 }
 
 export function LaneCard(props: { party: Party; selected: boolean }) {
-  const { world, session } = useGame();
+  const { world } = useGame();
   const command = useCommand();
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -52,25 +79,19 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   useEffect(() => {
     const el = stage.current;
     const cv = canvas.current;
-    if (!el || !cv) return;
-    const renderer = new LaneRenderer(cv, { world: () => session.world, speed: () => session.speed, paused: () => session.paused }, party.id);
+    const lane = lanes.lane(party.id);
+    if (!el || !cv || !lane) return;
+    lane.attach(cv);
     const fit = (): void => {
       const rect = el.getBoundingClientRect();
-      renderer.resize(rect.width, rect.height);
+      lane.resize(rect.width, rect.height);
     };
     fit();
     const observer = new ResizeObserver(fit);
     observer.observe(el);
-    let raf = 0;
-    const loop = (now: number): void => {
-      renderer.frame(now);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
     return () => {
-      cancelAnimationFrame(raf);
       observer.disconnect();
-      renderer.destroy();
+      lane.detach(cv);
     };
   }, [party.id]);
 
@@ -80,6 +101,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   const bossPhase2 = combat?.units.some((u) => u.side === 'enemy' && u.tags.includes('boss') && u.hp <= u.maxHp * 0.5) ?? false;
   const heroes = party.startMemberIds.map((id) => heroById(world, id)).filter((h): h is Hero => !!h);
   const canRecall = party.phase !== 'voltando' && !party.recallRequested;
+  const returning = party.phase === 'voltando';
 
   return (
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
@@ -87,7 +109,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
         <strong>Ato {party.act + 1} · {floorLabel(party.act, party.floor)}</strong>
         <span>
           {phaseText(world, party)}
-          {room ? ` · ${ROOM_LABELS[room.kind]}` : ''}
+          {room && !returning ? ` · ${ROOM_LABELS[room.kind]}` : ''}
           {combat?.isBoss ? ' · CHEFE' : ''}
           {bossPhase2 ? ' · FASE 2' : ''}
         </span>
@@ -102,9 +124,6 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
         </button>
       </header>
       <div class="lane-stage">
-        <ul class="lane-roster">
-          {heroes.map((h) => <RosterRow key={h.id} hero={h} party={party} />)}
-        </ul>
         <div class="lane-view" ref={stage}>
           <canvas ref={canvas} class="lane-canvas" aria-label={`Corredor do ${floorLabel(party.act, party.floor)}`} />
           {rooms.length > 0 && (
@@ -116,7 +135,21 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
               ))}
             </div>
           )}
+          {returning && (
+            <div class="lane-exit" role="status">
+              <strong>{party.outcome ? OUTCOME_LABELS[party.outcome] : 'Volta'}</strong>
+              <span>{phaseText(world, party)}</span>
+              <span>
+                {fmt(party.loot.gold)} ouro · {fmt(party.loot.xp)} XP
+              </span>
+            </div>
+          )}
         </div>
+        <ul class="lane-party">
+          {heroes.map((h) => (
+            <PartyFrame key={h.id} hero={h} party={party} />
+          ))}
+        </ul>
       </div>
     </section>
   );
