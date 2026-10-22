@@ -11,7 +11,8 @@
     "balance": "node tools/balance.ts",
     "playtest": "node tools/balance.ts --seeds 30 --years 30 --saves",
     "chronicle": "node tools/chronicle.ts",
-    "deaths": "node tools/deaths.ts"
+    "deaths": "node tools/deaths.ts",
+    "pack32": "node tools/pack32.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

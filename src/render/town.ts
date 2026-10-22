@@ -1,4 +1,5 @@
-// A vila montada com tiles do Tiny Town (Kenney) e peças do DungeonTileset II (0x72).
+// A vila montada com as peças do pack do Vigília: árvores, cemitério, adereços, portão,
+// cofre, fogueira e o resto do que fica no chão entre os prédios.
 
 import Phaser from 'phaser';
 import { ART_SCALE } from './assets.ts';
@@ -6,9 +7,11 @@ import { AUTUMN, FORESTS, inRect } from './ground.ts';
 import type { FootprintOptions } from './nav.ts';
 import { onFace } from './relief.ts';
 import { sway } from './fx/wind.ts';
+import { playArt, showArt } from './art32.ts';
 import { FogSystem } from './fx/fog.ts';
 import { ParallaxLayer, type Edge } from './fx/parallax.ts';
 import {
+  CEMETERY_FENCE,
   CEMETERY_TILES,
   COLS,
   EXPANSION_TILES,
@@ -73,7 +76,7 @@ function packTree(scene: Phaser.Scene, solids: Solid[], name: string, px: number
   // Pé na parede de rocha de um paredão: árvore ali pareceria pendurada no barranco.
   if (onFace(px, py, 6)) return;
   // A sombra vem da camada de sombras (silhueta projetada a partir do que está em `solids`).
-  sway(scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py));
+  sway(showArt(scene.add.image(px, py, name), name).setOrigin(0.5, 1).setDepth(py));
   solids.push({ key: name, x: px, y: py, opts: TRUNK });
 }
 
@@ -84,12 +87,10 @@ export function buildCottages(scene: Phaser.Scene, solids: Solid[]): Phaser.Game
     const x = (lot.tx + lot.tw / 2) * TILE;
     const y = (lot.ty + lot.th) * TILE;
     const id = `building/house/0${i + 1}`;
-    scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    showArt(scene.add.image(x, y, id), id).setOrigin(0.5, 1).setDepth(y);
     solids.push({ key: id, x, y });
-    const light = scene.add
-      .image(x, y, `${id}-lights`)
+    const light = showArt(scene.add.image(x, y, `${id}-lights`), `${id}-lights`)
       .setOrigin(0.5, 1)
-      .setScale(ART_SCALE)
       .setDepth(DEPTH.lights)
       .setAlpha(0);
     lights.push(light);
@@ -152,7 +153,7 @@ export const DECOR: Decor[] = [
 
 export function buildDecor(scene: Phaser.Scene, solids: Solid[]): void {
   for (const d of DECOR) {
-    scene.add.image(d.x, d.y, d.id).setOrigin(0.5, 1).setScale(ART_SCALE).setFlipX(d.flip === true).setDepth(d.y);
+    showArt(scene.add.image(d.x, d.y, d.id), d.id).setOrigin(0.5, 1).setFlipX(d.flip === true).setDepth(d.y);
     solids.push({ key: d.id, x: d.x, y: d.y, opts: d.opts ?? BASE });
   }
 }
@@ -184,7 +185,7 @@ export function buildForeground(scene: Phaser.Scene): ParallaxLayer {
   const put = (x: number, y: number, edge: Edge): void => {
     const name = names[Math.floor(rnd() * names.length)]!;
     const size = ART_SCALE * (1.5 + rnd() * 0.4);
-    const img = scene.add.image(x, y, name).setOrigin(0.5, 1).setScale(size).setFlipX(rnd() < 0.5).setTint(0x16201b).setAlpha(0.94).setDepth(FOREGROUND_DEPTH);
+    const img = showArt(scene.add.image(x, y, name), name, size).setOrigin(0.5, 1).setFlipX(rnd() < 0.5).setTint(0x16201b).setAlpha(0.94).setDepth(FOREGROUND_DEPTH);
     layer.add(sway(img), edge);
   };
   for (let x = -30; x < WORLD_W + 60; x += 70 + rnd() * 50) put(x, WORLD_H + 84 + rnd() * 20, 'bottom');
@@ -293,7 +294,7 @@ export function buildOvergrowth(scene: Phaser.Scene): { images: Phaser.GameObjec
         v < 0.42 ? 'prop/tree/pine' : v < 0.66 ? 'prop/tree/autumn-small' : v < 0.78 ? 'prop/tree/dead' : v < 0.9 ? 'prop/tree/01' : v < 0.95 ? 'prop/boulder/01' : 'prop/boulder/02';
       const px = Math.round((x + 0.5) * TILE + (rnd() - 0.5) * 12);
       const py = Math.round((y + 1) * TILE - rnd() * 6);
-      const img = scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py);
+      const img = showArt(scene.add.image(px, py, name), name).setOrigin(0.5, 1).setDepth(py);
       images.push(name.startsWith('prop/tree') ? sway(img) : img);
       solids.push({ key: name, x: px, y: py, opts: name.startsWith('prop/boulder') ? BASE : TRUNK });
     }
@@ -309,7 +310,7 @@ export interface AbyssView {
 export function buildAbyss(scene: Phaser.Scene): AbyssView {
   const { x } = LANDMARKS.abismo;
   const base = 15 * TILE;
-  scene.add.image(x, base, 'prop/abyss/cave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+  showArt(scene.add.image(x, base, 'prop/abyss/cave'), 'prop/abyss/cave').setOrigin(0.5, 1).setDepth(base);
 
   const glow = scene.add
     .image(x, base - 26, 'glow')
@@ -342,31 +343,6 @@ export function smooth<T extends Phaser.GameObjects.Text>(text: T): T {
   text.setResolution(2);
   text.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
   return text;
-}
-
-/**
- * Puxa as UVs de cada moldura meio texel para dentro. Em zoom fracionário (1,5×/2,5×)
- * a borda de um tile cai em meio pixel e a GPU amostra o pixel da moldura vizinha do
- * atlas: é a linha vertical que aparece ao lado de portão, quadro e prédios. Meio texel
- * basta para a amostra continuar dentro do próprio tile, sem mudar o desenho em 1×.
- * O chão já foi assado antes disto, então a textura estática não é afetada.
- */
-export function insetTownFrames(scene: Phaser.Scene, texels = 0.5): void {
-  const texture = scene.textures.get('town');
-  const source = texture.getSourceImage() as { width: number; height: number };
-  const tw = source.width;
-  const th = source.height;
-  for (const frame of Object.values(texture.frames)) {
-    if (!frame || frame.name === '__BASE') continue;
-    frame.setUVs(
-      frame.width,
-      frame.height,
-      frame.cutX / tw + texels / tw,
-      frame.cutY / th + texels / th,
-      (frame.cutX + frame.width) / tw - texels / tw,
-      (frame.cutY + frame.height) / th - texels / th,
-    );
-  }
 }
 
 /**
@@ -409,11 +385,11 @@ export function buildCemetery(scene: Phaser.Scene, solids: Solid[]): void {
   const r = CEMETERY_TILES;
   const x0 = r.tx * TILE;
   const x1 = (r.tx + r.tw - 1) * TILE;
-  const y0 = (r.ty + 1) * TILE;
-  const y1 = (r.ty + r.th) * TILE;
+  const y0 = CEMETERY_FENCE.top;
+  const y1 = CEMETERY_FENCE.bottom;
   const key = 'tile/town/cemetery-fence';
   const put = (frame: number, x: number, y: number): void => {
-    scene.add.image(x, y, key, frame).setOrigin(0, 0).setScale(ART_SCALE).setDepth(y + 2);
+    showArt(scene.add.image(x, y, key, frame), key, ART_SCALE, frame).setOrigin(0, 0).setDepth(y + 2);
     // A cerca fecha o cemitério; o portãozinho de baixo (quadro 6) fica aberto.
     if (frame !== 6) solids.push({ key, frame, x, y, origin: [0, 0], opts: { minCover: 0.2 } });
   };
@@ -423,9 +399,10 @@ export function buildCemetery(scene: Phaser.Scene, solids: Solid[]): void {
   put(4, x0, y1);
   for (let x = x0 + TILE; x < x1; x += TILE) put(x === x0 + 4 * TILE ? 6 : 0, x, y1);
   put(5, x1, y1);
+  // Os postes dos lados: o último encosta no canto de baixo (que fica por cima dele).
   for (let y = y0 + TILE; y < y1; y += TILE) {
-    put(1, x0, y);
-    put(1, x1, y);
+    put(1, x0, Math.min(y, y1 - TILE));
+    put(1, x1, Math.min(y, y1 - TILE));
   }
   // Na faixa de grama embaixo da cerca, à direita do portãozinho (como na referência).
   label(scene, (r.tx + r.tw / 2) * TILE + 24, y1 + TILE + 4, 'Cemitério', 14, '#c8c0b0');
@@ -440,12 +417,12 @@ export function buildHornTower(scene: Phaser.Scene, solids: Solid[]): HornView {
   // Portão: paliçada e portas abertas. Só os pilares ocupam chão (a passagem é vazia na arte).
   const base = (HORN_TOWER.ty + HORN_TOWER.th) * TILE;
   const c = (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE;
-  scene.add.image(c, base, 'prop/gate/open').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+  showArt(scene.add.image(c, base, 'prop/gate/open'), 'prop/gate/open').setOrigin(0.5, 1).setDepth(base);
   solids.push({ key: 'prop/gate/open', x: c, y: base, opts: { fromBottom: 24, minCover: 0.35 } });
   // Torrinha do berrante ao lado: o chifre fica no alto, sobre a plataforma.
   const standBase = (HORN_STAND.ty + HORN_STAND.th) * TILE;
   const sx = (HORN_STAND.tx + HORN_STAND.tw / 2) * TILE;
-  scene.add.image(sx, standBase, 'prop/horn-stand').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(standBase);
+  showArt(scene.add.image(sx, standBase, 'prop/horn-stand'), 'prop/horn-stand').setOrigin(0.5, 1).setDepth(standBase);
   solids.push({ key: 'prop/horn-stand', x: sx, y: standBase, opts: { fromBottom: 6, minCover: 0.3 } });
   // Arte de 72×94 com a base no pé: o meio do chifre fica na linha 12, a boca no x 68.
   const hornTop = standBase - 94 * ART_SCALE;
@@ -475,7 +452,7 @@ export interface BoardView {
 export function buildBoard(scene: Phaser.Scene, solids: Solid[]): BoardView {
   const x = 28 * TILE;
   const base = 17 * TILE;
-  const board = scene.add.image(x, base, 'prop/board').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+  const board = showArt(scene.add.image(x, base, 'prop/board'), 'prop/board').setOrigin(0.5, 1).setDepth(base);
   solids.push({ key: 'prop/board', x, y: base, opts: BASE });
   label(scene, x, base - 2 * TILE - 4, 'Quadro', 13).setOrigin(0.5, 1);
   let last = '';
@@ -494,14 +471,16 @@ export interface CofferView {
 
 export function buildCoffer(scene: Phaser.Scene, solids: Solid[]): CofferView {
   const { x, y } = LANDMARKS.cofre;
-  const chest = scene.add.image(x, y + 8, 'prop/coffer').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y + 8);
+  const chest = showArt(scene.add.image(x, y + 8, 'prop/coffer'), 'prop/coffer').setOrigin(0.5, 1).setDepth(y + 8);
+  // Arte de 32-bit vem com o dobro de pixels: a escala de base cai pela metade.
+  const unit = chest.scaleX / ART_SCALE;
   solids.push({ key: 'prop/coffer', x, y: y + 8, opts: { fromBottom: 12, minCover: 0.3 } });
   let shown = -1;
   const update = (treasury: number) => {
     const step = Math.floor(Math.log2(treasury / 15 + 1));
     if (step === shown) return;
     shown = step;
-    chest.setScale(ART_SCALE + Math.min(0.35, step * 0.015));
+    chest.setScale((ART_SCALE + Math.min(0.35, step * 0.015)) * unit);
   };
   label(scene, x, y + 10, 'Cofre', 13);
   return { update };
@@ -509,9 +488,9 @@ export function buildCoffer(scene: Phaser.Scene, solids: Solid[]): CofferView {
 
 export function buildCampfire(scene: Phaser.Scene, solids: Solid[]): void {
   const { x, y } = LANDMARKS.fogueira;
-  scene.add.image(x, y, 'prop/campfire/on').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
+  showArt(scene.add.image(x, y, 'prop/campfire/on'), 'prop/campfire/on').setOrigin(0.5, 1).setDepth(y - 2);
   solids.push({ key: 'prop/campfire/on', x, y, opts: { fromBottom: 10, minCover: 0.3 } });
-  scene.add.sprite(x, y - 4, 'fx/fire').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).play('fx/fire');
+  playArt(showArt(scene.add.sprite(x, y - 4, 'fx/fire'), 'fx/fire'), 'fx/fire').setOrigin(0.5, 1).setDepth(y - 1);
 }
 
 /** Fonte termal: bacia natural do pack, água separada, vapor e banco. */
@@ -519,21 +498,13 @@ export function buildThermal(scene: Phaser.Scene, solids: Solid[]): void {
   const r = THERMAL_TILES;
   const cx = (r.tx + r.tw / 2) * TILE;
   const base = (r.ty + r.th) * TILE;
-  scene.add.image(cx, base, 'prop/thermal/basin').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.decor);
+  showArt(scene.add.image(cx, base, 'prop/thermal/basin'), 'prop/thermal/basin').setOrigin(0.5, 1).setDepth(DEPTH.decor);
   solids.push({ key: 'prop/thermal/basin', x: cx, y: base });
-  scene.add.image(cx, base, 'prop/thermal/water').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.decor + 1).setAlpha(0.9);
-  scene.add
-    .image(cx - (r.tw / 2 - 0.4) * TILE, base - 2, 'prop/thermal/bench')
+  showArt(scene.add.image(cx, base, 'prop/thermal/water'), 'prop/thermal/water').setOrigin(0.5, 1).setDepth(DEPTH.decor + 1).setAlpha(0.9);
+  showArt(scene.add.image(cx - (r.tw / 2 - 0.4) * TILE, base - 2, 'prop/thermal/bench'), 'prop/thermal/bench')
     .setOrigin(0.5, 1)
-    .setScale(ART_SCALE)
     .setDepth(base);
-  const steam = scene.add
-    .sprite(cx, base - 24, 'fx/steam')
-    .setOrigin(0.5, 1)
-    .setScale(ART_SCALE)
-    .setDepth(DEPTH.floating)
-    .setAlpha(0.8);
-  steam.play('fx/steam');
+  playArt(showArt(scene.add.sprite(cx, base - 24, 'fx/steam'), 'fx/steam'), 'fx/steam').setOrigin(0.5, 1).setDepth(DEPTH.floating).setAlpha(0.8);
   label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
 /**
@@ -542,7 +513,7 @@ export function buildThermal(scene: Phaser.Scene, solids: Solid[]): void {
  */
 export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phaser.GameObjects.Image[]; lamps: Point[] } {
   const prop = (id: string, x: number, y: number): void => {
-    scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    showArt(scene.add.image(x, y, id), id).setOrigin(0.5, 1).setDepth(y);
     solids.push({ key: id, x, y, opts: BASE });
   };
   prop('prop/well', 21 * TILE + 16, 16 * TILE);
@@ -559,14 +530,9 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phas
   const lights: Phaser.GameObjects.Image[] = [];
   const lamps: Point[] = [];
   const lamp = (x: number, y: number): void => {
-    scene.add.image(x, y, 'prop/lamp').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    showArt(scene.add.image(x, y, 'prop/lamp'), 'prop/lamp').setOrigin(0.5, 1).setDepth(y);
     solids.push({ key: 'prop/lamp', x, y, opts: { fromBottom: 4, minCover: 0.15 } });
-    const light = scene.add
-      .image(x, y, 'prop/lamp-lights')
-      .setOrigin(0.5, 1)
-      .setScale(ART_SCALE)
-      .setDepth(DEPTH.lights)
-      .setAlpha(0);
+    const light = showArt(scene.add.image(x, y, 'prop/lamp-lights'), 'prop/lamp-lights').setOrigin(0.5, 1).setDepth(DEPTH.lights).setAlpha(0);
     lights.push(light);
     // A chama fica no alto do poste, um pouco à direita do meio (x 11, y 14 da arte 16×32).
     lamps.push({ x: x + 6, y: y - 36 });

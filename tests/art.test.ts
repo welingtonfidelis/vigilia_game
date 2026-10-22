@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { ACTS, BUILDING_IDS, CLASS_IDS } from '../src/sim/index.ts';
-import { animFrames, CLASS_LOOK, frameRect, heroSprite, MAYOR_SPRITE, MONSTERS, T, WINDOW_TILES } from '../src/render/assets.ts';
-import { PACK_ASSETS } from '../src/render/pack.ts';
-import { dirtMask, dirtTile } from '../src/render/ground.ts';
+import { MONSTERS } from '../src/render/assets.ts';
+import { heroSpriteId, PACK_ASSETS } from '../src/render/pack.ts';
+import { PACK32 } from '../src/render/pack32.ts';
+import { dirtMask } from '../src/render/ground.ts';
 import { COLS, door, LANDMARKS, ROWS, TILE, WORLD_H, WORLD_W } from '../src/render/layout.ts';
-
-const TOWN_TILES = 132;
 
 describe('pack de arena 1.9', () => {
   it('cobre os seis atos, os quatro andares e as variantes de chefe', () => {
@@ -27,18 +26,20 @@ describe('pack de arena 1.9', () => {
   });
 });
 
-describe('sprites do 0x72', () => {
-  it('toda classe, nos dois gêneros, tem quadros parado e correndo (e a arma existe)', () => {
+describe('arte própria', () => {
+  const ids = new Set(PACK_ASSETS.map((a) => a.id));
+  const byId = new Map(PACK_ASSETS.map((a) => [a.id, a]));
+
+  it('toda classe, nos dois gêneros, tem folha no pack com quadros parado e correndo', () => {
     for (const cls of CLASS_IDS) {
       for (const gender of ['m', 'f'] as const) {
-        const base = heroSprite(cls, gender);
-        expect(animFrames(base, 'idle'), base).toHaveLength(4);
-        expect(animFrames(base, 'run'), base).toHaveLength(4);
+        const id = heroSpriteId(cls, gender);
+        const anims = byId.get(id)?.animations;
+        expect(anims?.idle, id).toBeDefined();
+        expect(anims?.run, id).toBeDefined();
       }
-      const weapon = CLASS_LOOK[cls].weapon;
-      if (weapon) expect(frameRect(weapon), weapon).not.toBeNull();
     }
-    expect(animFrames(MAYOR_SPRITE, 'run')).toHaveLength(4);
+    expect(byId.get('char/mayor')?.animations?.run).toBeDefined();
   });
 
   it('todo inimigo e todo chefe dos 6 atos tem um monstro com quadros', () => {
@@ -46,36 +47,23 @@ describe('sprites do 0x72', () => {
       for (const id of [...act.enemies.map((e) => e.id), act.boss.id]) {
         const look = MONSTERS[id];
         expect(look, id).toBeDefined();
-        expect(look!.asset, id).toBeTruthy();
+        expect(ids.has(look!.asset), id).toBe(true);
         expect(look!.frameSize, id).toHaveLength(2);
       }
     }
   });
 
-  it('os quadros cabem na folha de 512×512', () => {
-    for (const name of ['coin_anim_f0', 'chest_full_open_anim_f0', 'floor_stairs', 'column', 'edge_down', 'big_demon_idle_anim_f3']) {
-      const r = frameRect(name)!;
-      expect(r[0] + r[2]).toBeLessThanOrEqual(512);
-      expect(r[1] + r[3]).toBeLessThanOrEqual(512);
-    }
+  it('nenhuma peça vem de pack de terceiros', () => {
+    for (const a of PACK_ASSETS) expect(a.file, a.id).not.toMatch(/kenney|0x72|tiny-town|dungeontileset/i);
+    for (const e of Object.values(PACK32)) expect(e.file).toMatch(/^export32\//);
+  });
+
+  it('a peça 32-bit de cada id tem par 16-bit no pack', () => {
+    for (const id of Object.keys(PACK32)) expect(ids.has(id), id).toBe(true);
   });
 });
 
 describe('vila em tiles', () => {
-  it('todo índice do Tiny Town usado existe na folha 12×11', () => {
-    const used: number[] = [];
-    const walk = (v: unknown) => {
-      if (typeof v === 'number') used.push(v);
-      else if (v && typeof v === 'object') Object.values(v).forEach(walk);
-    };
-    walk(T);
-    used.push(...WINDOW_TILES);
-    for (const i of used) {
-      expect(i).toBeGreaterThanOrEqual(0);
-      expect(i).toBeLessThan(TOWN_TILES);
-    }
-  });
-
   it('estradas têm pelo menos 2 tiles de largura (o autotile precisa de borda dos dois lados)', () => {
     const mask = dirtMask();
     const at = (x: number, y: number) => (y < 0 || y >= ROWS || x < 0 || x >= COLS ? true : mask[y]![x]!);
@@ -84,7 +72,6 @@ describe('vila em tiles', () => {
         if (!mask[y]![x]) continue;
         expect(at(x, y - 1) || at(x, y + 1), `terra solta na vertical em ${x},${y}`).toBe(true);
         expect(at(x - 1, y) || at(x + 1, y), `terra solta na horizontal em ${x},${y}`).toBe(true);
-        expect(dirtTile(mask, x, y)).toBeLessThan(TOWN_TILES);
       }
     }
   });

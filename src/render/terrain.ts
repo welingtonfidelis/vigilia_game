@@ -6,20 +6,36 @@
 //  · marcas de carroça na estrada da estalagem e chão queimado em volta da fogueira;
 //  · a fonte termal num rebaixo úmido, com barranco do lado de cima;
 //  · os paredões de rocha e as escadarias de pedra dos três níveis (relief.ts).
-// Pinta uma vez ao abrir a vila (dezenas de ms) e vira uma textura única.
+// Pinta uma vez ao abrir a vila (dezenas de ms) e vira uma textura única. Na arte 32-bit,
+// pinta com o tileset 32-bit no dobro de pixels: medidas e ruídos crescem junto, e o grão
+// (tufos, pedrinhas, fendas) fica do tamanho do pixel novo.
 
 import Phaser from 'phaser';
 import { ART_SCALE } from './assets.ts';
 import { AUTUMN, dirtMask, pathMask } from './ground.ts';
-import { COLS, LANDMARKS, ROWS, THERMAL_TILES, TILE } from './layout.ts';
+import { CEMETERY_GROUND, COLS, LANDMARKS, ROWS, THERMAL_TILES, TILE } from './layout.ts';
 import { PACK_TILES } from './pack.ts';
 import { CLIFFS, cliffTop, inCliff, stairAt } from './relief.ts';
 import { DEPTH, seeded } from './town.ts';
+import { artMode, hiKey } from './art32.ts';
 
-/** Lado do tile na arte. */
-const T = 16;
-const W = COLS * T;
-const H = ROWS * T;
+// Medidas do chão em pintura (valem durante uma chamada de buildGround).
+/** Pixels do chão por pixel da arte 16-bit: 1, ou 2 na arte 32-bit. */
+let S = 1;
+/** Lado do tile no chão. */
+let T = 16;
+let W = COLS * T;
+let H = ROWS * T;
+/** Unidades do mundo por pixel do chão. */
+let PX = ART_SCALE;
+
+function useScale(s: number): void {
+  S = s;
+  T = 16 * s;
+  W = COLS * T;
+  H = ROWS * T;
+  PX = ART_SCALE / s;
+}
 
 type RGB = [number, number, number];
 
@@ -84,12 +100,28 @@ function boxBlur(src: Float32Array, r: number): Float32Array {
   return out;
 }
 
-/** Máscara de tiles → campo 0..1 por pixel, com as quinas arredondadas. */
-function field(tiles: boolean[][], r: number): Float32Array {
+/** Retângulo em unidades do mundo. */
+interface WorldRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Máscara de tiles (mais retângulos soltos da grade, em unidades do mundo) → campo 0..1
+ * por pixel, com as quinas arredondadas.
+ */
+function field(tiles: boolean[][], r: number, rects: WorldRect[] = []): Float32Array {
   const bin = new Float32Array(W * H);
   for (let y = 0; y < H; y++) {
     const row = tiles[Math.floor(y / T)]!;
     for (let x = 0; x < W; x++) if (row[Math.floor(x / T)]) bin[y * W + x] = 1;
+  }
+  for (const rect of rects) {
+    for (let y = Math.max(0, Math.round(rect.y / PX)); y < Math.min(H, Math.round((rect.y + rect.h) / PX)); y++) {
+      for (let x = Math.max(0, Math.round(rect.x / PX)); x < Math.min(W, Math.round((rect.x + rect.w) / PX)); x++) bin[y * W + x] = 1;
+    }
   }
   return boxBlur(boxBlur(bin, r), r);
 }
@@ -149,10 +181,13 @@ const STONE = { nose: [172, 172, 170] as RGB, tread: [148, 148, 150] as RGB, tre
 const MOSS: RGB = [70, 98, 56];
 
 export function buildGround(scene: Phaser.Scene): boolean[][] {
+  const hires = artMode() === '32' && scene.textures.exists(hiKey('tile/town/terrain'));
+  useScale(hires ? 2 : 1);
+  const tex = (id: string): string => (hires && scene.textures.exists(hiKey(id)) ? hiKey(id) : id);
   const mask = dirtMask();
   const paths = pathMask();
-  const sheet = pixelsOf(scene, 'tile/town/terrain');
-  const autumn = [0, 1, 2, 3].map((i) => pixelsOf(scene, `tile/town/autumn-grass-${i}`));
+  const sheet = pixelsOf(scene, tex('tile/town/terrain'));
+  const autumn = [0, 1, 2, 3].map((i) => pixelsOf(scene, tex(`tile/town/autumn-grass-${i}`)));
   const tileRGB = (name: string, u: number, v: number): RGB => {
     const cell = PACK_TILES[name]!;
     const i = ((cell[1] * T + v) * sheet.w + cell[0] * T + u) * 4;
@@ -183,7 +218,7 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
         const src = autumn[Math.floor(rnd() * autumn.length)]!;
         for (let v = 0; v < T; v++) {
           for (let u = 0; u < T; u++) {
-            const i = (v * src.w + u) * 4;
+            const i = (Math.floor((v * src.h) / T) * src.w + Math.floor((u * src.w) / T)) * 4;
             c.set(tx * T + u, ty * T + v, [src.data[i]!, src.data[i + 1]!, src.data[i + 2]!]);
           }
         }
@@ -192,13 +227,14 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   }
 
   // 2. Terra e trilha com borda orgânica.
-  const dirtF = field(mask, 4);
-  const pathF = field(paths, 3);
+  // A terra do cemitério sai da grade de tiles: fica com a mesma folga até a cerca nos quatro lados.
+  const dirtF = field(dirtMask(false), 4 * S, [CEMETERY_GROUND]);
+  const pathF = field(paths, 3 * S);
   const isDirt = new Uint8Array(W * H);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const i = y * W + x;
-      const n = noise2(x / 5, y / 5, 1) * 0.65 + noise2(x / 2, y / 2, 2) * 0.35;
+      const n = noise2(x / (5 * S), y / (5 * S), 1) * 0.65 + noise2(x / (2 * S), y / (2 * S), 2) * 0.35;
       if (dirtF[i]! + (n - 0.5) * 0.55 > 0.5) isDirt[i] = 1;
     }
   }
@@ -208,13 +244,13 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
       if (!isDirt[i]) continue;
       const tx = Math.floor(x / T);
       const ty = Math.floor(y / T);
-      const n = noise2(x / 4, y / 4, 7);
+      const n = noise2(x / (4 * S), y / (4 * S), 7);
       const trail = pathF[i]! + (n - 0.5) * 0.5 > 0.5;
       const pick = h2(tx, ty, trail ? 11 : 13);
       const name = trail ? (pick < 0.5 ? 'trail' : 'trail-c') : pick < 0.5 ? 'dirt' : 'dirt-c';
       const u = h2(tx, ty, 17) < 0.5 ? x % T : T - 1 - (x % T);
       const v = h2(tx, ty, 19) < 0.5 ? y % T : T - 1 - (y % T);
-      const k = 1 + (noise2(x / 24, y / 24, 23) - 0.5) * 0.14;
+      const k = 1 + (noise2(x / (24 * S), y / (24 * S), 23) - 0.5) * 0.14;
       const col = tileRGB(name, u, v);
       c.set(x, y, [col[0] * k, col[1] * k, col[2] * k]);
     }
@@ -229,7 +265,7 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
       }
       const n = !dirtAt(x, y - 1);
       if (n || !dirtAt(x - 1, y) || !dirtAt(x + 1, y) || !dirtAt(x, y + 1)) c.mix(x, y, RIM, n ? 0.62 : 0.45);
-      else if (!dirtAt(x, y - 2)) c.shade(x, y, 0.88);
+      else if (!dirtAt(x, y - 1 - S)) c.shade(x, y, 0.88);
     }
   }
   // Tufos de grama entrando na terra e pedrinhas soltas.
@@ -252,24 +288,24 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   }
 
   // 3. Marcas de carroça na estrada de baixo, saindo da carroça parada na estalagem.
-  const rutY = 26 * T + 9;
-  for (let x = 128; x < 400; x++) {
-    const fade = Math.min(1, (400 - x) / 120);
-    const y0 = Math.round(rutY + Math.sin(x / 37) * 1.6);
-    for (const dy of [0, 7]) {
+  const rutY = 26 * T + 9 * S;
+  for (let x = 128 * S; x < 400 * S; x++) {
+    const fade = Math.min(1, (400 * S - x) / (120 * S));
+    const y0 = Math.round(rutY + Math.sin(x / (37 * S)) * 1.6 * S);
+    for (const dy of [0, 7 * S]) {
       if (!dirtAt(x, y0 + dy) || h2(x, dy, 37) > 0.25 + 0.75 * fade) continue;
-      c.shade(x, y0 + dy, 0.74);
-      c.shade(x, y0 + dy + 1, 1.1);
+      for (let j = 0; j < S; j++) c.shade(x, y0 + dy + j, 0.74);
+      c.shade(x, y0 + dy + S, 1.1);
     }
   }
 
   // 4. Chão queimado em volta da fogueira: cinza e carvão.
-  const fire = { x: LANDMARKS.fogueira.x / ART_SCALE, y: LANDMARKS.fogueira.y / ART_SCALE - 3 };
-  for (let y = Math.floor(fire.y - 18); y < fire.y + 18; y++) {
-    for (let x = Math.floor(fire.x - 22); x < fire.x + 22; x++) {
-      const d = Math.hypot((x - fire.x) / 22, (y - fire.y) / 15);
+  const fire = { x: LANDMARKS.fogueira.x / PX, y: LANDMARKS.fogueira.y / PX - 3 * S };
+  for (let y = Math.floor(fire.y - 18 * S); y < fire.y + 18 * S; y++) {
+    for (let x = Math.floor(fire.x - 22 * S); x < fire.x + 22 * S; x++) {
+      const d = Math.hypot((x - fire.x) / (22 * S), (y - fire.y) / (15 * S));
       if (d >= 1) continue;
-      const k = (1 - d) ** 1.4 * (0.75 + 0.5 * noise2(x / 3, y / 3, 41));
+      const k = (1 - d) ** 1.4 * (0.75 + 0.5 * noise2(x / (3 * S), y / (3 * S), 41));
       c.shade(x, y, 1 - 0.45 * Math.min(1, k));
       const r = h2(x, y, 43);
       if (d < 0.7 && r < 0.07) c.set(x, y, [92, 88, 84]);
@@ -278,10 +314,10 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   }
 
   // 5. Fonte termal num rebaixo úmido: chão mais escuro, barranco em cima, beirada embaixo.
-  const pool = { x: ((THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE) / ART_SCALE, y: ((THERMAL_TILES.ty + THERMAL_TILES.th) * TILE) / ART_SCALE - 26, rx: 64, ry: 30 };
-  for (let y = Math.floor(pool.y - pool.ry - 2); y < pool.y + pool.ry + 3; y++) {
-    for (let x = Math.floor(pool.x - pool.rx - 2); x < pool.x + pool.rx + 3; x++) {
-      const d = Math.hypot((x - pool.x) / pool.rx, (y - pool.y) / pool.ry) + (noise2(x / 4, y / 4, 47) - 0.5) * 0.08;
+  const pool = { x: ((THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE) / PX, y: ((THERMAL_TILES.ty + THERMAL_TILES.th) * TILE) / PX - 26 * S, rx: 64 * S, ry: 30 * S };
+  for (let y = Math.floor(pool.y - pool.ry - 2 * S); y < pool.y + pool.ry + 3 * S; y++) {
+    for (let x = Math.floor(pool.x - pool.rx - 2 * S); x < pool.x + pool.rx + 3 * S; x++) {
+      const d = Math.hypot((x - pool.x) / pool.rx, (y - pool.y) / pool.ry) + (noise2(x / (4 * S), y / (4 * S), 47) - 0.5) * 0.08;
       if (d > 1.02) continue;
       if (d > 0.94) {
         // Beirada: barranco escuro do lado de cima (a parede que olha para a câmera), lábio claro embaixo.
@@ -299,8 +335,8 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   const terrace = CLIFFS.find((cl) => cl.id === 'cemiterio');
   if (terrace) {
     for (let x = 0; x < W; x++) {
-      if (!inCliff(terrace, x * ART_SCALE + 1)) continue;
-      const top = Math.round(cliffTop(terrace, x * ART_SCALE + 1) / ART_SCALE);
+      if (!inCliff(terrace, x * PX + 1)) continue;
+      const top = Math.round(cliffTop(terrace, x * PX + 1) / PX);
       for (let y = 0; y < top; y++) c.shade(x, y, 1.06);
     }
   }
@@ -308,7 +344,7 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
 
   // 7. Tufinhos e flores soltos no gramado (fora da rocha e da terra).
   const detail = seeded(41);
-  for (let i = 0; i < 260; i++) {
+  for (let i = 0; i < 260 * S * S; i++) {
     const x = Math.floor(detail() * W);
     const y = Math.floor(detail() * H);
     const kind = detail();
@@ -331,16 +367,16 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   if (scene.textures.exists(key)) scene.textures.remove(key);
   scene.textures.addCanvas(key, canvas);
   scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
-  scene.add.image(0, 0, key).setOrigin(0, 0).setScale(ART_SCALE).setDepth(DEPTH.ground);
+  scene.add.image(0, 0, key).setOrigin(0, 0).setScale(PX).setDepth(DEPTH.ground);
   return mask;
 }
 
-/** Pixel da arte dentro da rocha de algum paredão (ou dos degraus). */
+/** Pixel do chão dentro da rocha de algum paredão (ou dos degraus). */
 function onRock(x: number, y: number): boolean {
-  const wx = x * ART_SCALE + 1;
+  const wx = x * PX + 1;
   return CLIFFS.some((cl) => {
-    const top = cliffTop(cl, wx) / ART_SCALE;
-    return y >= top - 1 && y < top + cl.height / ART_SCALE + 1;
+    const top = cliffTop(cl, wx) / PX;
+    return y >= top - 1 && y < top + cl.height / PX + 1;
   });
 }
 
@@ -355,7 +391,7 @@ const ROCK: { hi: RGB; mid: RGB; lo: RGB; deep: RGB; crack: RGB } = {
 
 const lerp3 = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
-/** Grade das pedras da parede: uma semente por célula, sorteada dentro dela. */
+/** Grade das pedras da parede (em pixels da 16-bit): uma semente por célula, sorteada dentro dela. */
 const ROCK_CW = 14;
 const ROCK_CH = 15;
 
@@ -365,8 +401,10 @@ const ROCK_CH = 15;
  * quanto o ponto está perto da borda dela e de que lado da pedra ele fica.
  */
 function rockAt(x: number, r: number, seed: number): { id: number; edge: number; dx: number; dy: number } {
-  const gx = Math.floor(x / ROCK_CW);
-  const gy = Math.floor(r / ROCK_CH);
+  const cw = ROCK_CW * S;
+  const ch = ROCK_CH * S;
+  const gx = Math.floor(x / cw);
+  const gy = Math.floor(r / ch);
   let d1 = Infinity;
   let d2 = Infinity;
   let id = 0;
@@ -374,10 +412,10 @@ function rockAt(x: number, r: number, seed: number): { id: number; edge: number;
   let dy = 0;
   for (let j = gy - 1; j <= gy + 1; j++) {
     for (let i = gx - 1; i <= gx + 1; i++) {
-      const sx = (i + 0.15 + 0.7 * h2(i, j, seed)) * ROCK_CW;
-      const sy = (j + 0.15 + 0.7 * h2(i, j, seed + 1)) * ROCK_CH;
-      const ex = (x - sx) / ROCK_CW;
-      const ey = (r - sy) / ROCK_CH;
+      const sx = (i + 0.15 + 0.7 * h2(i, j, seed)) * cw;
+      const sy = (j + 0.15 + 0.7 * h2(i, j, seed + 1)) * ch;
+      const ex = (x - sx) / cw;
+      const ey = (r - sy) / ch;
       const d = Math.hypot(ex, ey * 0.8);
       if (d < d1) {
         d2 = d1;
@@ -388,7 +426,7 @@ function rockAt(x: number, r: number, seed: number): { id: number; edge: number;
       } else if (d < d2) d2 = d;
     }
   }
-  return { id, edge: (d2 - d1) * ROCK_CW, dx, dy };
+  return { id, edge: (d2 - d1) * cw, dx, dy };
 }
 
 /**
@@ -397,28 +435,30 @@ function rockAt(x: number, r: number, seed: number): { id: number; edge: number;
  * escadas, degraus de pedra com muretas dos lados.
  */
 function paintCliff(c: Canvas, cliff: (typeof CLIFFS)[number]): void {
-  const h = Math.round(cliff.height / ART_SCALE);
+  const h = Math.round(cliff.height / PX);
   const seed = cliff.id === 'norte' ? 51 : cliff.id === 'praca' ? 53 : 57;
   for (let x = 0; x < W; x++) {
-    const wx = x * ART_SCALE + 1;
+    const wx = x * PX + 1;
     if (!inCliff(cliff, wx)) continue;
-    const top = Math.round(cliffTop(cliff, wx) / ART_SCALE);
+    const top = Math.round(cliffTop(cliff, wx) / PX);
     const stair = stairAt(cliff, wx);
     // Sombra no chão ao pé da parede.
-    for (let r = 0; r < 12; r++) c.shade(x, top + h + r, 1 - 0.45 * (1 - r / 12) ** 2);
+    for (let r = 0; r < 12 * S; r++) c.shade(x, top + h + r, 1 - 0.45 * (1 - r / (12 * S)) ** 2);
     // Grama do alto um pouco mais clara junto da borda (a luz pega na quina).
-    c.shade(x, top - 1, 1.12);
-    c.shade(x, top - 2, 1.06);
+    for (let j = 0; j < S; j++) {
+      c.shade(x, top - 1 - j, 1.12);
+      c.shade(x, top - 1 - S - j, 1.06);
+    }
     if (stair) {
       paintStairs(c, x, top, h, stair, seed);
       continue;
     }
-    const hang = h2(x, 2, seed) > 0.45 ? 1 + Math.floor(h2(x, 3, seed) ** 1.5 * 6) : 0;
-    const lipH = 3;
+    const hang = h2(x, 2, seed) > 0.45 ? 1 + Math.floor(h2(x, 3, seed) ** 1.5 * 6 * S) : 0;
+    const lipH = 3 * S;
     for (let r = 0; r < h; r++) {
       const y = top + r;
       if (r < lipH) {
-        c.set(x, y, LIP[Math.min(r, 1)]!);
+        c.set(x, y, LIP[r < S ? 0 : 1]);
         continue;
       }
       if (r < lipH + hang) {
@@ -426,35 +466,36 @@ function paintCliff(c: Canvas, cliff: (typeof CLIFFS)[number]): void {
         continue;
       }
       // Faixa de terra entre o capim e a rocha, com raiz aparecendo.
-      if (r < lipH + 3) {
+      if (r < lipH + 3 * S) {
         c.set(x, y, h2(x, y, seed + 4) < 0.12 ? [92, 70, 48] : r === lipH ? [56, 40, 30] : [72, 52, 38]);
         continue;
       }
-      if (r >= h - 2) {
-        c.set(x, y, r === h - 1 ? ROCK.crack : ROCK.deep);
+      if (r >= h - 2 * S) {
+        c.set(x, y, r >= h - S ? ROCK.crack : ROCK.deep);
         continue;
       }
       const rock = rockAt(x, r, seed);
       // Tom de cada pedra e luz geral: o alto da parede pega luz, o pé fica na sombra.
-      const t = (r - lipH - 3) / (h - 5 - lipH);
+      const t = (r - lipH - 3 * S) / (h - 5 * S - lipH);
       const tone = 0.84 + 0.26 * h2(rock.id, 3, seed);
       let col = t < 0.4 ? lerp3(ROCK.hi, ROCK.mid, t / 0.4) : lerp3(ROCK.mid, ROCK.lo, (t - 0.4) / 0.6);
       // Veio fino dentro da pedra (estrato), só em algumas.
       if (h2(rock.id, 9, seed) < 0.4 && Math.abs(rock.dy + 0.15 * rock.dx) < 0.05) col = lerp3(col, ROCK.lo, 0.5);
-      if (rock.edge < 0.75) col = ROCK.crack;
-      else if (rock.edge < 2.4) {
+      // Fenda de 1 px em qualquer escala; a quina iluminada cresce com o pixel.
+      if (rock.edge < (S > 1 ? 1 : 0.75)) col = ROCK.crack;
+      else if (rock.edge < 2.4 * S) {
         // Borda da pedra: o lado de cima/esquerda acende, o de baixo/direita escurece.
         const lit = -rock.dx * 0.6 - rock.dy;
         col = lit > 0.15 ? lerp3(col, ROCK.hi, 0.55) : lit < -0.1 ? lerp3(col, ROCK.deep, 0.6) : col;
       }
-      const k = tone * (0.95 + 0.1 * noise2(x / 2, y / 2, seed + 2));
+      const k = tone * (0.95 + 0.1 * noise2(x / (2 * S), y / (2 * S), seed + 2));
       c.set(x, y, [col[0] * k, col[1] * k, col[2] * k]);
       if (t < 0.25 && rock.edge < 3 && h2(x, y, seed + 3) < 0.12) c.set(x, y, MOSS);
     }
     // Pedregulho caído no pé da parede.
     const pr = h2(x, 5, seed);
     if (pr < 0.12) {
-      const py = top + h + Math.floor(h2(x, 6, seed) * 3);
+      const py = top + h + Math.floor(h2(x, 6, seed) * 3 * S);
       c.set(x, py, pr < 0.05 ? PEBBLE[1] : PEBBLE[0]);
       if (pr < 0.04) c.set(x + 1, py, PEBBLE[0]);
     }
@@ -462,11 +503,11 @@ function paintCliff(c: Canvas, cliff: (typeof CLIFFS)[number]): void {
 }
 
 function paintStairs(c: Canvas, x: number, top: number, h: number, stair: { x: number; w: number }, seed: number): void {
-  const x0 = Math.round(stair.x / ART_SCALE);
-  const x1 = Math.round((stair.x + stair.w) / ART_SCALE);
+  const x0 = Math.round(stair.x / PX);
+  const x1 = Math.round((stair.x + stair.w) / PX);
   const u = x - x0;
-  const wall = u < 3 || x >= x1 - 3;
-  const steps = Math.max(3, Math.round(h / 5));
+  const wall = u < 3 * S || x >= x1 - 3 * S;
+  const steps = Math.max(3, Math.round(h / (5 * S)));
   const stepH = h / steps;
   for (let r = 0; r < h; r++) {
     const y = top + r;
@@ -474,9 +515,9 @@ function paintStairs(c: Canvas, x: number, top: number, h: number, stair: { x: n
       // Mureta de pedra dos lados da escada: topo claro, face mais escura embaixo.
       const outer = u === 0 || x === x1 - 1;
       const k = 1 - 0.35 * (r / h);
-      const base: RGB = r < 2 ? STONE.nose : outer ? STONE.riser2 : STONE.tread2;
+      const base: RGB = r < 2 * S ? STONE.nose : outer ? STONE.riser2 : STONE.tread2;
       c.set(x, y, [base[0] * k, base[1] * k, base[2] * k]);
-      if (r > 2 && (r + u * 3) % 7 === 0) c.set(x, y, STONE.joint);
+      if (r > 2 * S && (r + u * 3) % (7 * S) === 0) c.set(x, y, STONE.joint);
       continue;
     }
     const k = Math.floor(r / stepH);
@@ -491,7 +532,7 @@ function paintStairs(c: Canvas, x: number, top: number, h: number, stair: { x: n
     const wear = f < 0.6 ? 1 + 0.06 * mid : 1;
     const n = 0.95 + 0.1 * h2(x, y, seed + 7);
     c.set(x, y, [col[0] * wear * n, col[1] * wear * n, col[2] * wear * n]);
-    if (f >= 0.6 && (u + k * 5) % 9 === 0) c.set(x, y, STONE.joint);
+    if (f >= 0.6 && (u + k * 5 * S) % (9 * S) === 0) c.set(x, y, STONE.joint);
     if (f < 0.6 && h2(x, y, seed + 9) < 0.03) c.set(x, y, MOSS);
   }
 }

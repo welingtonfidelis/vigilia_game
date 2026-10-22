@@ -1,5 +1,5 @@
-// Texturas pequenas que os pacotes não têm (lápide, fogueira, berrante, ícones de atividade),
-// desenhadas pixel a pixel no mesmo tamanho de arte (16 px) para casar com Tiny Town e 0x72.
+// Texturas pequenas que o pack não tem (lápide, fogueira, berrante, ícones de atividade),
+// desenhadas pixel a pixel no mesmo tamanho de arte (16 px) do pack.
 
 import Phaser from 'phaser';
 import type { ActivityKind, Citizen, CitizenJob, Gender } from '../sim/index.ts';

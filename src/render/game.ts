@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Session } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
+import { setArtMode, type ArtMode } from './art32.ts';
 import { installKeys } from './keys.ts';
 import { VillageScene } from './VillageScene.ts';
 
@@ -39,4 +40,19 @@ export function startRenderer(parent: HTMLElement, session: Session, ui: UiStore
     observer.observe(parent);
   }
   return handle;
+}
+
+/**
+ * Troca a arte (16-bit ↔ 32-bit) na hora: a cena da vila é refeita com as texturas do
+ * modo novo. O mundo é da sessão, então nada do jogo se perde; o corredor e a interface
+ * leem o modo a cada desenho.
+ */
+export function switchArt(handle: Renderer, session: Session, ui: UiStore, art: ArtMode): void {
+  setArtMode(art);
+  const game = handle.game;
+  if (!game || !game.scene.getScene('village')) return;
+  // Parar antes de remover: é no encerramento que a cena solta a sessão e a tela.
+  game.scene.stop('village');
+  game.scene.remove('village');
+  game.scene.add('village', new VillageScene(session, ui), true);
 }

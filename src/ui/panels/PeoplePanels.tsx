@@ -362,6 +362,16 @@ export function MenuPanel() {
         </label>
       ))}
 
+      <h3>Arte</h3>
+      <div class="seg" role="radiogroup" aria-label="Arte do jogo">
+        {(['16', '32'] as const).map((a) => (
+          <button key={a} class={`btn small${prefs.art === a ? ' active' : ''}`} role="radio" aria-checked={prefs.art === a} onClick={() => ui.setPrefs({ art: a })}>
+            {a}-bit
+          </button>
+        ))}
+      </div>
+      <p class="sub">A 32-bit tem o dobro de pixels e mais detalhe; peça que ainda não foi redesenhada aparece em 16-bit. Troca na hora, sem perder nada.</p>
+
       <h3>Tela</h3>
       <div class="row stepper">
         <button class="btn" onClick={() => scale(-0.1)} aria-label="Diminuir interface">
@@ -391,11 +401,7 @@ export function MenuPanel() {
 
       <h3>Créditos</h3>
       <p class="sub">
-        Arte em pixel do Vigília Art Pack (CC0), feita para o jogo: vila, heróis, monstros e masmorra. Algumas peças ainda vêm do{' '}
-        <a href="https://0x72.itch.io/dungeontileset-ii" target="_blank" rel="noopener noreferrer">
-          16x16 DungeonTileset II
-        </a>
-        , de 0x72 (CC0): o baú e a flecha do corredor, os vultos da incursão e os ecos de heróis mortos.
+        Toda a arte em pixel é do Vigília Art Pack (CC0), feita para o jogo: vila, heróis, monstros e masmorra, em 16-bit e em 32-bit.
       </p>
     </PanelShell>
   );

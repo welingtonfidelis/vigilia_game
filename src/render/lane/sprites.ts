@@ -1,9 +1,11 @@
-// Sprites do corredor em canvas: carrega as folhas e sabe qual quadro desenhar.
-// Dois formatos: o pack do Vigília (folhas em linha com animações nomeadas) e a
-// folha única do 0x72 (para ecos de heróis mortos e o que ainda não tem arte nova).
+// Sprites do corredor em canvas: carrega as folhas do pack (em linha, com animações
+// nomeadas) e sabe qual quadro desenhar. No modo 32-bit a folha tem o dobro de pixels:
+// o recorte e o tamanho na tela continuam nas medidas da 16-bit, e `density` diz quantos
+// pixels da folha valem um.
 
 import type { Hero, Party, Unit, World } from '../../sim/index.ts';
-import { animFrames, DUNGEON_URL, frameRect, heroSprite, monsterBase } from '../assets.ts';
+import { monsterBase } from '../assets.ts';
+import { artFile } from '../art32.ts';
 import { heroSpriteId, packAsset, packUrl } from '../pack.ts';
 import { WALK_SPEED } from './model.ts';
 
@@ -25,6 +27,8 @@ export function image(url: string): HTMLImageElement | null {
 export interface SpriteSource {
   /** Folha de onde sai o quadro desta animação. */
   sheet(anim: Anim): string;
+  /** Pixels da folha por pixel da 16-bit (2 na folha 32-bit). */
+  density(anim: Anim): number;
   /** Tem caminhada de perfil própria (com o sobe-e-desce desenhado nela). */
   walks: boolean;
   /** Recorte [x, y, w, h] na folha para a animação no tempo `t` (s desde o início dela). */
@@ -52,8 +56,10 @@ export function packSprite(id: string, walkId?: string): SpriteSource | null {
   const walkFps = walk?.stride ? (WALK_SPEED * walkFrames.length) / walk.stride : (walk?.animations?.walk?.fps ?? 10);
   const [ww, wh] = walk?.frameSize ?? [w, h];
   const useWalk = (anim: Anim): boolean => anim === 'run' && walkFrames.length > 0;
+  const art = (anim: Anim) => (useWalk(anim) ? artFile(walkId!, walk!.file) : artFile(id, asset.file));
   return {
-    sheet: (anim) => packUrl(useWalk(anim) ? walk!.file : asset.file),
+    sheet: (anim) => packUrl(art(anim).file),
+    density: (anim) => (art(anim).hires ? 2 : 1),
     walks: walkFrames.length > 0,
     height: h,
     ghost: false,
@@ -77,52 +83,26 @@ export function packSprite(id: string, walkId?: string): SpriteSource | null {
   };
 }
 
-/** Sprite do 0x72: só idle e corrida (4 quadros); o resto reaproveita o idle. */
-export function x72Sprite(base: string, ghost = false): SpriteSource | null {
-  const idle = animFrames(base, 'idle');
-  const first = idle[0] ? frameRect(idle[0]) : null;
-  if (!first) return null;
-  const run = animFrames(base, 'run');
-  return {
-    sheet: () => DUNGEON_URL,
-    walks: false,
-    height: first[3],
-    ghost,
-    duration: () => 0.6,
-    frame: (anim, t) => {
-      const list = anim === 'run' && run.length ? run : idle;
-      const name = list[Math.floor(t * 8) % list.length] ?? list[0]!;
-      return frameRect(name) ?? first;
-    },
-  };
-}
-
 export function heroSource(hero: Hero): SpriteSource | null {
   const id = heroSpriteId(hero.classId, hero.gender);
-  return packSprite(id, `${id}/walk`) ?? x72Sprite(heroSprite(hero.classId, hero.gender));
+  return packSprite(id, `${id}/walk`);
 }
 
 /** Monstro com a variante de profundidade do andar e a fase 2 dos chefes. */
 export function enemySource(world: World, party: Party, unit: Unit): SpriteSource | null {
   const look = monsterBase(world, unit, party.act);
-  let id = look.asset;
-  if (id) {
-    if (unit.tags.includes('boss')) {
-      if (unit.hp <= unit.maxHp * 0.5 && packAsset(`${id}-phase2`)) id = `${id}-phase2`;
-    } else if (party.floor >= 2 && packAsset(`${id}-core`)) {
-      id = `${id}-core`;
-    } else if (party.floor >= 1 && packAsset(`${id}-deep`)) {
-      id = `${id}-deep`;
-    }
-    const sprite = packSprite(id);
-    if (sprite) return sprite;
+  if (look.ghost) {
+    // Eco de herói morto: a folha do próprio herói, em tom fantasma.
+    const sprite = packSprite(look.asset, `${look.asset}/walk`);
+    return sprite && { ...sprite, ghost: true };
   }
-  return x72Sprite(look.base ?? 'skelet', look.ghost);
+  let id = look.asset;
+  if (unit.tags.includes('boss')) {
+    if (unit.hp <= unit.maxHp * 0.5 && packAsset(`${id}-phase2`)) id = `${id}-phase2`;
+  } else if (party.floor >= 2 && packAsset(`${id}-core`)) {
+    id = `${id}-core`;
+  } else if (party.floor >= 1 && packAsset(`${id}-deep`)) {
+    id = `${id}-deep`;
+  }
+  return packSprite(id);
 }
-
-/** Quadro solto da folha do 0x72 (baú, moeda, flecha, caveira). */
-export function x72Frame(name: string): readonly [number, number, number, number] | null {
-  return frameRect(name);
-}
-
-export { DUNGEON_URL };

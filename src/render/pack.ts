@@ -14427,6 +14427,68 @@ export const PACK_ASSETS: PackAsset[] = [
       72,
       94
     ]
+  },
+  {
+    "id": "fx/coin",
+    "type": "fx",
+    "file": "export/png/fx-coin.png",
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "fps": 8,
+    "size": [
+      8,
+      8
+    ],
+    "frameSize": [
+      8,
+      8
+    ],
+    "sheetSize": [
+      32,
+      8
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4
+  },
+  {
+    "id": "prop/chest",
+    "type": "prop",
+    "file": "export/png/prop-chest.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      16
+    ],
+    "frameSize": [
+      16,
+      16
+    ],
+    "sheetSize": [
+      48,
+      16
+    ],
+    "columns": 3,
+    "rows": 1,
+    "frames": 3
+  },
+  {
+    "id": "fx/arrow",
+    "type": "prop",
+    "file": "export/png/fx-arrow.png",
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "size": [
+      8,
+      3
+    ]
   }
 ];
 

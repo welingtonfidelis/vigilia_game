@@ -1,8 +1,7 @@
 // Chão da vila em tiles: onde há terra (estradas e terreiros), florestas e a peça certa
 // de cada canto. Puro (sem Phaser) para dar para testar no Node.
 
-import { T } from './assets.ts';
-import { CAVE_PATH, CEMETERY_TILES, COLS, EXPANSION_LOTS, HOME_PATHS, LOT_TILES, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, type TileRect } from './layout.ts';
+import { CAVE_PATH, CEMETERY_GROUND, COLS, EXPANSION_LOTS, HOME_PATHS, LOT_TILES, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, TILE, type TileRect } from './layout.ts';
 import { STAIR_PATHS } from './relief.ts';
 
 export const inRect = (r: TileRect, x: number, y: number): boolean => x >= r.tx && x < r.tx + r.tw && y >= r.ty && y < r.ty + r.th;
@@ -30,14 +29,18 @@ function yards(): TileRect[] {
   );
 }
 
-export function dirtMask(): boolean[][] {
-  const cemeteryGround = {
-    tx: CEMETERY_TILES.tx + 1,
-    ty: CEMETERY_TILES.ty + 1,
-    tw: CEMETERY_TILES.tw - 2,
-    th: CEMETERY_TILES.th,
-  };
-  const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, THERMAL_YARD, CAVE_PATH, ...HOME_PATHS, ...EXPANSION_LOTS, ...yards(), cemeteryGround];
+/** Tiles que a terra do cemitério toca (ela não segue a grade: tem folga até a cerca). */
+export function cemeteryGroundTiles(): TileRect {
+  const g = CEMETERY_GROUND;
+  const tx = Math.floor(g.x / TILE);
+  const ty = Math.floor(g.y / TILE);
+  return { tx, ty, tw: Math.ceil((g.x + g.w) / TILE) - tx, th: Math.ceil((g.y + g.h) / TILE) - ty };
+}
+
+/** Tiles de terra. Sem `cemetery`, fica de fora a terra do cemitério (que o chão pinta à parte). */
+export function dirtMask(cemetery = true): boolean[][] {
+  const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, THERMAL_YARD, CAVE_PATH, ...HOME_PATHS, ...EXPANSION_LOTS, ...yards()];
+  if (cemetery) areas.push(cemeteryGroundTiles());
   return Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => areas.some((r) => inRect(r, x, y))));
 }
 
@@ -45,31 +48,4 @@ export function dirtMask(): boolean[][] {
 export function pathMask(): boolean[][] {
   const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, CAVE_PATH, ...HOME_PATHS];
   return Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => areas.some((r) => inRect(r, x, y))));
-}
-
-/** Escolhe a peça de terra pela vizinhança (fora do mapa conta como terra: a estrada continua). */
-export function dirtTile(mask: boolean[][], x: number, y: number): number {
-  const d = (dx: number, dy: number): boolean => {
-    const yy = y + dy;
-    const xx = x + dx;
-    if (yy < 0 || yy >= ROWS || xx < 0 || xx >= COLS) return true;
-    return mask[yy]![xx]!;
-  };
-  const n = d(0, -1);
-  const s = d(0, 1);
-  const e = d(1, 0);
-  const w = d(-1, 0);
-  if (!n && !w) return T.dirtTL;
-  if (!n && !e) return T.dirtTR;
-  if (!s && !w) return T.dirtBL;
-  if (!s && !e) return T.dirtBR;
-  if (!n) return T.dirtT;
-  if (!s) return T.dirtB;
-  if (!w) return T.dirtL;
-  if (!e) return T.dirtR;
-  if (!d(-1, -1)) return T.dirtInNW;
-  if (!d(1, -1)) return T.dirtInNE;
-  if (!d(1, 1)) return T.dirtInSE;
-  if (!d(-1, 1)) return T.dirtInSW;
-  return T.dirt;
 }

@@ -223,7 +223,7 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
         <p class="sub report-survivors">Sobreviventes: {report.survivors.join(', ') || 'nenhum'}.</p>
         <div class="report-actions">
           <button class="btn" onClick={onClose}>Fechar relatório</button>
-          <button class="btn primary" onClick={onAbismo}>Voltar ao Abismo</button>
+          <button class="btn primary" onClick={onAbismo}>Voltar à vila</button>
         </div>
       </section>
     </div>
@@ -345,7 +345,7 @@ export function BattlePanel(props: { partyId: number }) {
         </div>
       )}
 
-      {!report && !historyReport && !historyOpen && <footer class="battle-bottom"><span>{world.parties.length} expedição{world.parties.length === 1 ? '' : 'ões'} ativa{world.parties.length === 1 ? '' : 's'}</span><span>O combate segue automático.</span><button class="btn small" onClick={() => ui.open({ kind: 'dungeon' })}>Voltar ao Abismo</button></footer>}
+      {!report && !historyReport && !historyOpen && <footer class="battle-bottom"><span>{world.parties.length} expedição{world.parties.length === 1 ? '' : 'ões'} ativa{world.parties.length === 1 ? '' : 's'}</span><span>O combate segue automático.</span><button class="btn small" onClick={() => ui.open({ kind: 'dungeon' })}>Voltar à vila</button></footer>}
     </section>
   );
 }
