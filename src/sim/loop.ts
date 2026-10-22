@@ -5,7 +5,7 @@ import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { maybeSeasonalEvent } from './events.ts';
 import { formParties } from './party.ts';
-import { processForge } from './items.ts';
+import { processForge, raiseLegendaries } from './items.ts';
 import { dailyPatronage } from './patronage.ts';
 import { dailyPets } from './pets.ts';
 import { dailyPeople } from './people.ts';
@@ -46,6 +46,7 @@ export function runDays(world: World, days: number, hooks: Hooks = {}): void {
 
 function daily(world: World): void {
   dailyEconomy(world);
+  raiseLegendaries(world);
   dailyCorruption(world);
   dailyTown(world);
   dailyPatronage(world);

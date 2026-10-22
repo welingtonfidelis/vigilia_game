@@ -5,6 +5,7 @@ import { citizenMood } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
 import { decreeDailyCost, decreeTaxMultiplier } from './decrees.ts';
 import type { BuildingId, ItemSlot, MaterialId, SpecId, World } from './types.ts';
+import { scaledCost } from './difficulty.ts';
 
 export const level = (world: World, id: BuildingId): number => world.town.buildings[id];
 
@@ -19,7 +20,9 @@ export const totalBuildingLevels = (world: World): number =>
 export function nextLevelCost(world: World, id: BuildingId): LevelCost | null {
   const lvl = level(world, id);
   if (lvl >= MAX_BUILDING_LEVEL) return null;
-  return BUILDINGS[id].costs[lvl] ?? null;
+  const cost = BUILDINGS[id].costs[lvl];
+  // O ouro segue a dificuldade; o material do abismo, não.
+  return cost ? { ...cost, gold: scaledCost(world, cost.gold) } : null;
 }
 
 export function canAfford(world: World, cost: LevelCost): boolean {
@@ -61,8 +64,12 @@ export const restPrice = (world: World): number => level(world, 'estalagem');
 export const trainPrice = (world: World): number => B.trainPrice * level(world, 'campo');
 
 export function hornCost(world: World): number {
-  return Math.min(B.hornMaxCost, Math.round(B.hornBaseCost * (1 + B.hornCostGrowth * world.town.hornUses)));
+  return scaledCost(world, Math.min(B.hornMaxCost, Math.round(B.hornBaseCost * (1 + B.hornCostGrowth * world.town.hornUses))));
 }
+
+/** Limpar a floresta do distrito sul e erguer cada casa (já com a dificuldade). */
+export const expansionClearCost = (world: World): number => scaledCost(world, B.expansionClearCost);
+export const expansionHouseCost = (world: World): number => scaledCost(world, B.expansionHouseCost);
 
 /** Pensão diária dos aposentados: o tesouro sustenta quem já pendurou as armas. */
 export function pensionPerDay(world: World): number {
@@ -81,7 +88,7 @@ export const citizenTaxesPerDay = (world: World): number =>
 
 /** A festa cresce com a população: mais gente, mais mesa, mais ouro. */
 export function festivalCost(world: World): number {
-  return Math.round(B.festivalBaseCost + B.festivalCostPerCitizen * world.town.population);
+  return scaledCost(world, Math.round(B.festivalBaseCost + B.festivalCostPerCitizen * world.town.population));
 }
 
 // ── Diário ────────────────────────────────────────────────────────────────

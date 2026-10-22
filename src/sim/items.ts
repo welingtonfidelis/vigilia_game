@@ -21,6 +21,7 @@ import { hasSpec, level, maxGearTier } from './economy.ts';
 import { heroStats } from './hero.ts';
 import { chance, pick } from './rng.ts';
 import type { BenchService, ClassId, Hero, Item, ItemAffix, ItemSlot, MaterialId, Party, Rarity, World } from './types.ts';
+import { difficultyOf, scaledCost } from './difficulty.ts';
 
 export const ITEM_SLOTS: readonly ItemSlot[] = ['weapon', 'armor', 'amulet'];
 
@@ -215,6 +216,39 @@ export function nextTierWorth(world: World, hero: Hero, slot: 'weapon' | 'armor'
 export const dropTier = (world: World, act: number, floor: number, slot: ItemSlot): number =>
   Math.max(1, Math.min(B.dropTierMax, act * 2 + floor, Math.max(1, maxGearTier(world, slot === 'amulet' ? undefined : slot))));
 
+/**
+ * Tier da lendária que o chefe deixa: acima do que a forja faz na hora (ou do tier do
+ * ato, o que for maior), para a peça de chefe valer o nome por bastante tempo.
+ */
+export const legendaryTier = (world: World, act: number, floor: number, slot: ItemSlot): number =>
+  Math.min(B.dropTierMax + B.legendaryDropEdge + 1, Math.max(act * 2 + floor, maxGearTier(world, slot === 'amulet' ? undefined : slot)) + B.legendaryDropEdge);
+
+/**
+ * Lendárias acompanham a vila: quando o ferreiro sobe ou se especializa, toda lendária
+ * de arma e armadura fica pelo menos B.legendaryFollowEdge acima do teto da forja (o
+ * polimento do joalheiro leva até 2 acima). Chamado uma vez por dia.
+ */
+export function raiseLegendaries(world: World): void {
+  const raised: Item[] = [];
+  for (const item of allItems(world)) {
+    if (item.rarity !== 'lendaria' || item.slot === 'amulet') continue;
+    const floor = maxGearTier(world, item.slot) + B.legendaryFollowEdge;
+    if (item.tier >= floor) continue;
+    const owner = world.heroes.find((h) => h.items?.[item.slot] === item);
+    const before = owner ? heroStats(world, owner).maxHp : 0;
+    item.tier = floor;
+    if (owner) {
+      owner.gear[item.slot] = item.tier;
+      const after = heroStats(world, owner).maxHp;
+      if (after > before) owner.hp += after - before;
+    }
+    raised.push(item);
+  }
+  if (raised.length === 0) return;
+  const names = raised.map((i) => i.title ?? itemName(i, null)).join(', ');
+  record(world, 'item', [], `O ferreiro ajustou ${raised.length === 1 ? 'a lendária' : 'as lendárias'} ${names} ao tier da vila.`);
+}
+
 export type DropSource = 'bau' | 'elite' | 'chefe';
 
 /**
@@ -228,8 +262,12 @@ export function rollDrop(world: World, party: Party, source: DropSource): Item |
   let rarity: Rarity | null = null;
   // O primeiro chefe de cada ato deixa uma lendária.
   if (source === 'chefe') rarity = !world.acts[party.act]!.bossDefeated ? 'lendaria' : null;
-  else if (source === 'elite') rarity = chance(world.rng, B.eliteEpicChance) ? 'epica' : chance(world.rng, B.eliteRareChance) ? 'rara' : null;
-  else rarity = chance(world.rng, B.chestEpicChance + B.chestEpicPerFloor * f) ? 'epica' : chance(world.rng, B.chestRareChance + B.chestRarePerFloor * f) ? 'rara' : null;
+  else {
+    // A dificuldade mexe na chance de peça rara e épica (a lendária do chefe não muda).
+    const luck = difficultyOf(world).rarity;
+    if (source === 'elite') rarity = chance(world.rng, B.eliteEpicChance * luck) ? 'epica' : chance(world.rng, B.eliteRareChance * luck) ? 'rara' : null;
+    else rarity = chance(world.rng, (B.chestEpicChance + B.chestEpicPerFloor * f) * luck) ? 'epica' : chance(world.rng, (B.chestRareChance + B.chestRarePerFloor * f) * luck) ? 'rara' : null;
+  }
   if (!rarity) return null;
   const act = ACTS[party.act]!;
   const material = act.material;
@@ -239,7 +277,7 @@ export function rollDrop(world: World, party: Party, source: DropSource): Item |
   const item = newItem(world, {
     slot,
     rarity,
-    tier: dropTier(world, party.act, f, slot),
+    tier: rarity === 'lendaria' ? legendaryTier(world, party.act, f, slot) : dropTier(world, party.act, f, slot),
     material,
     affixes: [first],
     origin: `${where} no ano ${yearOf(dayOf(world.tick))}`,
@@ -317,14 +355,18 @@ export interface Commission {
   tier: number;
 }
 
-/** Quanto custa encomendar uma peça (o tier é o máximo que o ferreiro forja hoje). */
+/**
+ * Quanto custa encomendar uma peça. A encomenda sai acima do que se compra pronto: rara
+ * um tier acima do teto da forja, épica dois.
+ */
 export function commissionCost(world: World, slot: ItemSlot, rarity: 'rara' | 'epica'): Commission {
-  const tier = slot === 'amulet' ? 0 : maxGearTier(world, slot);
+  const edge = rarity === 'epica' ? B.commissionEpicTierEdge : B.commissionRareTierEdge;
+  const tier = slot === 'amulet' ? 0 : maxGearTier(world, slot) + edge;
   // O preço sobe devagar com o tier: o que pesa na encomenda é o material do abismo.
   const base = B.commissionBase + B.commissionPerTier * Math.max(4, slot === 'amulet' ? maxGearTier(world) : tier);
   return rarity === 'epica'
-    ? { gold: Math.round(base * B.commissionEpicMult), material: B.commissionEpicMaterial, days: B.commissionEpicDays, tier }
-    : { gold: Math.round(base), material: B.commissionRareMaterial, days: B.commissionRareDays, tier };
+    ? { gold: scaledCost(world, Math.round(base * B.commissionEpicMult)), material: B.commissionEpicMaterial, days: B.commissionEpicDays, tier }
+    : { gold: scaledCost(world, Math.round(base)), material: B.commissionRareMaterial, days: B.commissionRareDays, tier };
 }
 
 /** Por que a forja não aceita esta encomenda (null = aceita). */

@@ -10,6 +10,7 @@ import { record } from './chronicle.ts';
 import { citizenNames, guardDefense, raidCitizenLoss, refreshJobs } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
 import { decreeDefenseMultiplier } from './decrees.ts';
+import { difficultyOf } from './difficulty.ts';
 import { heroStrength } from './hero.ts';
 import { maybeInjure } from './people.ts';
 import { chance, int, pick } from './rng.ts';
@@ -75,7 +76,7 @@ function damageBuilding(world: World): BuildingId | null {
 /** Resolve a incursão. Exportado para os testes forçarem o cenário. */
 export function resolveRaid(world: World, act: number, corruption: number): Raid {
   const defense = defensePower(world);
-  const power = raidPower(act, corruption);
+  const power = Math.round(raidPower(act, corruption) * difficultyOf(world).raid);
   const ratio = defense / (defense + power);
   const outcome: RaidOutcome = ratio >= B.raidRepelRatio ? 'repelido' : ratio >= B.raidCostlyRatio ? 'custoso' : 'saque';
 

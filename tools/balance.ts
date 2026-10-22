@@ -1,12 +1,13 @@
 // Balanceador headless: roda várias campanhas com o prefeito automático e resume
 // ritmo, mortalidade e economia. Uso: npm run balance -- --seeds 20 --years 10 [--json] [--saves]
+// [--difficulty facil|normal|dificil]
 // Com --saves (o playtest automático: npm run playtest), a cada 5 anos salva e carrega o
 // mundo e segue jogando com o carregado; o save tem que voltar idêntico.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { ACTS } from '../src/data/acts.ts';
 import { ACT_COUNT, autoMayor, checksum, createWorld, deserialize, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
-import type { World } from '../src/sim/index.ts';
+import type { Difficulty, World } from '../src/sim/index.ts';
 import { parseArgs, num } from './args.ts';
 
 const args = parseArgs(process.argv.slice(2));
@@ -14,6 +15,7 @@ const seeds = num(args.seeds, 12);
 const years = num(args.years, 10);
 const firstSeed = num(args.from, 1);
 const checkSaves = !!args.saves;
+const difficulty = (typeof args.difficulty === 'string' ? args.difficulty : 'normal') as Difficulty;
 /** De quantos em quantos anos o playtest salva e carrega. */
 const SAVE_EVERY = 5;
 let saveChecks = 0;
@@ -28,7 +30,7 @@ interface Run {
 const runs: Run[] = [];
 for (let s = firstSeed; s < firstSeed + seeds; s++) {
   const t0 = performance.now();
-  let world = createWorld(s);
+  let world = createWorld(s, difficulty);
   for (let y = 0; y < years; y += SAVE_EVERY) {
     runDays(world, Math.min(SAVE_EVERY, years - y) * DAYS_PER_YEAR, { onHour: autoMayor });
     if (!checkSaves) continue;
@@ -48,7 +50,7 @@ const yearOfDay = (day: number) => day / DAYS_PER_YEAR;
 const hoursAt1x = (year: number) => (year * DAYS_PER_YEAR * TICKS_PER_DAY) / TICKS_PER_SECOND / 3600;
 
 // ── Por semente ───────────────────────────────────────────────────────────
-console.log(`\nVigília · balanceamento · ${seeds} sementes × ${years} anos\n`);
+console.log(`\nVigília · balanceamento · ${seeds} sementes × ${years} anos · ${difficulty}\n`);
 const header = ['seed', 'chefes (ano)', 'mortes/ano', 'recrut', 'saíram', 'elenco', 'nv médio', 'tesouro', 'ouro heróis', 'impasses', 'ócio máx', 'ms'];
 console.log(header.join(' | '));
 for (const { seed, world, ms } of runs) {

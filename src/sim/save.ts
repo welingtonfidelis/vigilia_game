@@ -26,7 +26,14 @@ function migrate(world: World): World {
   if (world.version < 7) migrateToV7(world);
   if (world.version < 8) migrateToV8(world);
   if (world.version < 9) migrateToV9(world);
+  if (world.version < 10) migrateToV10(world);
   return world;
+}
+
+/** v9 → v10: dificuldade da campanha; quem já jogava segue no Normal. */
+function migrateToV10(world: World): void {
+  world.difficulty ??= 'normal';
+  world.version = 10;
 }
 
 /** v2 → v3 (Fase A): a data da última festa na praça. */

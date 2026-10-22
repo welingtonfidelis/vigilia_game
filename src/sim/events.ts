@@ -6,6 +6,7 @@ import { dayOf, seasonOf, yearOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import type { CommandResult } from './commands.ts';
 import type { World } from './types.ts';
+import { scaledCost } from './difficulty.ts';
 
 const fail = (reason: string): CommandResult => ({ ok: false, reason });
 const OK: CommandResult = { ok: true };
@@ -33,6 +34,9 @@ export function maybeSeasonalEvent(world: World): void {
   record(world, 'evento', [], `${def.title}: ${def.intro}`);
 }
 
+/** Custo de uma escolha de evento, já com a dificuldade. */
+export const eventChoiceCost = (world: World, cost: number): number => scaledCost(world, cost);
+
 /** Resolve a escolha do evento pendente. */
 export function resolveSeasonalEvent(world: World, choiceId: string): CommandResult {
   const pending = world.town.event;
@@ -40,8 +44,9 @@ export function resolveSeasonalEvent(world: World, choiceId: string): CommandRes
   const def = SEASONAL_EVENTS[pending.id];
   const choice = def.choices.find((c) => c.id === choiceId);
   if (!choice) return fail('Escolha inválida para este evento.');
-  if (world.town.treasury < choice.cost) return fail(`Faltam ${Math.ceil(choice.cost - world.town.treasury)} de ouro.`);
-  world.town.treasury -= choice.cost;
+  const cost = eventChoiceCost(world, choice.cost);
+  if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro.`);
+  world.town.treasury -= cost;
   const heroes = world.heroes.filter((h) => h.status === 'town' || h.status === 'expedition');
 
   const applyMood = (heroDelta: number, citizenDelta: number): void => {

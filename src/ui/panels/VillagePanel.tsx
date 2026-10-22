@@ -7,6 +7,8 @@ import {
   commands,
   activeHeroes,
   citizenMood,
+  expansionClearCost,
+  expansionHouseCost,
   formatDate,
   heroCapacity,
   JOB_NAMES,
@@ -89,22 +91,22 @@ export function VillagePanel() {
 
       <h3>Distrito Sul <span class="sub">({builtHouses}/3 casas)</span></h3>
       <p class="sub">
-        A floresta ao sul esconde três lotes de moradia. Limpar a área custa {fmt(BALANCE.expansionClearCost)} de ouro; cada casa custa{' '}
-        {fmt(BALANCE.expansionHouseCost)} e aumenta a capacidade da vila em {BALANCE.expansionHouseCapacity}, além de abrir {BALANCE.expansionHouseHeroSlots} vaga de herói.
+        A floresta ao sul esconde três lotes de moradia. Limpar a área custa {fmt(expansionClearCost(world))} de ouro; cada casa custa{' '}
+        {fmt(expansionHouseCost(world))} e aumenta a capacidade da vila em {BALANCE.expansionHouseCapacity}, além de abrir {BALANCE.expansionHouseHeroSlots} vaga de herói.
       </p>
       {!expansion.cleared ? (
-        <button class="btn" disabled={world.town.treasury < BALANCE.expansionClearCost} onClick={() => command(commands.clearSouthExpansion)}>
-          Limpar os lotes do sul ({fmt(BALANCE.expansionClearCost)})
+        <button class="btn" disabled={world.town.treasury < expansionClearCost(world)} onClick={() => command(commands.clearSouthExpansion)}>
+          Limpar os lotes do sul ({fmt(expansionClearCost(world))})
         </button>
       ) : (
         <div class="expansion-lots">
           {EXPANSION_LOTS.map((_, i) => {
             const built = expansion.houses[i] === true;
-            const blocked = built || world.town.treasury < BALANCE.expansionHouseCost;
+            const blocked = built || world.town.treasury < expansionHouseCost(world);
             return (
               <button key={i} class={`expansion-lot${built ? ' built' : ''}`} disabled={blocked} onClick={() => command(commands.buildExpansionHouse, i)}>
                 <strong>Lote {i + 1}</strong>
-                <span>{built ? 'Casa construída' : `Construir casa (${fmt(BALANCE.expansionHouseCost)})`}</span>
+                <span>{built ? 'Casa construída' : `Construir casa (${fmt(expansionHouseCost(world))})`}</span>
                 <small>{built ? `+${BALANCE.expansionHouseCapacity} pop · +${BALANCE.expansionHouseHeroSlots} herói` : 'Lote aberto'}</small>
               </button>
             );

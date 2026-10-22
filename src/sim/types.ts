@@ -592,9 +592,13 @@ export interface DailySample {
   corruption: number[];
 }
 
+/** Dificuldade da campanha (multiplicadores em src/data/difficulty.ts). */
+export type Difficulty = 'facil' | 'normal' | 'dificil';
+
 export interface World {
   version: number;
   seed: number;
+  difficulty: Difficulty;
   rng: RngState;
   tick: number;
   nextId: number;

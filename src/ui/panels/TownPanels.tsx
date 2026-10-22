@@ -29,6 +29,8 @@ import {
   upgradeGain,
   dayOf,
   DECREES,
+  decreeDayCost,
+  decreeEnactCost,
   DECREE_IDS,
   decreeDailyCost,
   guardCount,
@@ -413,7 +415,9 @@ export function CofferPanel() {
         {DECREE_IDS.map((id) => {
           const def = DECREES[id];
           const on = town.decrees.includes(id);
-          const blocked = !on && (activeDecrees >= BALANCE.maxActiveDecrees || town.treasury < def.enactCost);
+          const enact = decreeEnactCost(world, def);
+          const daily = decreeDayCost(world, def);
+          const blocked = !on && (activeDecrees >= BALANCE.maxActiveDecrees || town.treasury < enact);
           return (
             <button
               key={id}
@@ -425,7 +429,7 @@ export function CofferPanel() {
               <strong>{def.name}</strong>
               <span>{def.description}</span>
               <small>{def.detail}</small>
-              <em>{on ? 'Ativo · revogar' : `Promulgar · ${def.enactCost} de ouro${def.dailyCost ? ` · ${def.dailyCost}/dia` : ''}`}</em>
+              <em>{on ? 'Ativo · revogar' : `Promulgar · ${fmt(enact)} de ouro${daily ? ` · ${daily.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/dia` : ''}`}</em>
             </button>
           );
         })}

@@ -7,13 +7,14 @@ import { hasSpec } from './economy.ts';
 import { hasTrait, heroStrength } from './hero.ts';
 import { chance, int, pick, range, weighted } from './rng.ts';
 import type { Affix, Combat, EnemyUnitDef, Hero, Party, Room, RoomKind, Unit, World } from './types.ts';
+import { difficultyOf } from './difficulty.ts';
 
 export const AFFIXES: Affix[] = ['veloz', 'vampirico', 'explosivo', 'couracado', 'feroz'];
 
 export const isBossFloor = (floor: number): boolean => floor === B.floorsPerAct - 1;
 
 export function floorPower(world: World, act: number, floor: number): number {
-  return ACTS[act]!.power * (1 + B.floorPowerGrowth * floor) * (1 + world.acts[act]!.corruption / B.corruptionStatDivisor);
+  return ACTS[act]!.power * (1 + B.floorPowerGrowth * floor) * (1 + world.acts[act]!.corruption / B.corruptionStatDivisor) * difficultyOf(world).enemy;
 }
 
 export function travelTicks(act: number, floor: number): number {
@@ -165,7 +166,7 @@ export function dailyCorruption(world: World): void {
   world.acts.forEach((act, i) => {
     if (!act.unlocked) return;
     const before = act.corruption;
-    act.corruption = Math.min(100, act.corruption + B.corruptionPerDay * (act.bossDefeated ? 0.5 : 1));
+    act.corruption = Math.min(100, act.corruption + B.corruptionPerDay * (act.bossDefeated ? 0.5 : 1) * difficultyOf(world).corruption);
     if (before < 70 && act.corruption >= 70) {
       record(world, 'corrupcao', [], `A corrupção ${ACTS[i]!.of} passou do limite: os monstros voltam a ocupar salas já limpas.`);
     }

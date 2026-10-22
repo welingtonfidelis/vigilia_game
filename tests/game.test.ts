@@ -59,11 +59,11 @@ describe('sessão: acumulador de tick fixo', () => {
     expect(ticks).toBeLessThanOrEqual(Math.min(MAX_STEPS_PER_FRAME, (MAX_FRAME_MS / 1000) * TICKS_PER_SECOND * 4));
   });
 
-  it('aba em segundo plano: recupera o tempo real que passou, com teto e respeitando a pausa', () => {
+  it('aba em segundo plano: recupera o tempo real que passou, sempre em 1×, com teto e respeitando a pausa', () => {
     const session = new Session(createWorld(1));
-    session.setSpeed(2);
-    expect(session.catchUp(3000)).toBe(3 * TICKS_PER_SECOND * 2);
-    expect(session.catchUp(MAX_CATCH_UP_MS * 3)).toBe((MAX_CATCH_UP_MS / 1000) * TICKS_PER_SECOND * 2);
+    session.setSpeed(4);
+    expect(session.catchUp(3000)).toBe(3 * TICKS_PER_SECOND);
+    expect(session.catchUp(MAX_CATCH_UP_MS * 3)).toBe((MAX_CATCH_UP_MS / 1000) * TICKS_PER_SECOND);
     session.togglePause();
     expect(session.catchUp(5000)).toBe(0);
   });

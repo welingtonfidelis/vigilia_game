@@ -11,6 +11,8 @@ export type Speed = (typeof SPEEDS)[number];
 export const MAX_FRAME_MS = 250;
 /** Teto de ticks por quadro: 4× a 60 fps dá menos de 1; isto só protege quadros lentos. */
 export const MAX_STEPS_PER_FRAME = 40;
+/** Velocidade máxima com a aba em segundo plano. */
+export const BACKGROUND_SPEED = 1;
 /** Teto do que a aba em segundo plano recupera de uma vez (5 minutos reais). */
 export const MAX_CATCH_UP_MS = 5 * 60 * 1000;
 
@@ -70,10 +72,10 @@ export class Session {
   }
 
   /** Avança o relógio real. Devolve quantos ticks rodaram. */
-  update(deltaMs: number): number {
+  update(deltaMs: number, speed: number = this.speed): number {
     if (this.paused) return 0;
     const ms = Math.min(Math.max(0, deltaMs), MAX_FRAME_MS);
-    this.acc += (ms / 1000) * TICKS_PER_SECOND * this.speed;
+    this.acc += (ms / 1000) * TICKS_PER_SECOND * speed;
     const steps = Math.min(Math.floor(this.acc), MAX_STEPS_PER_FRAME);
     this.acc -= steps;
     if (this.acc > 1) this.acc = 1;
@@ -84,12 +86,14 @@ export class Session {
   /**
    * Roda o tempo real que passou, em pedaços de um quadro (o relógio da aba em segundo
    * plano acorda de segundo em segundo, ou bem menos quando o navegador economiza).
-   * No máximo MAX_CATCH_UP_MS por chamada, para a volta não congelar a página.
+   * No máximo MAX_CATCH_UP_MS por chamada, para a volta não congelar a página. Sempre
+   * em 1×: 2× e 4× são para quem está olhando, a vila não corre sozinha a 4×.
    */
   catchUp(deltaMs: number): number {
     let steps = 0;
+    const speed = Math.min(this.speed, BACKGROUND_SPEED);
     for (let left = Math.min(Math.max(0, deltaMs), MAX_CATCH_UP_MS); left > 0; left -= MAX_FRAME_MS) {
-      steps += this.update(Math.min(left, MAX_FRAME_MS));
+      steps += this.update(Math.min(left, MAX_FRAME_MS), speed);
     }
     return steps;
   }

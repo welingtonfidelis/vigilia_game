@@ -25,6 +25,7 @@ import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
 import { chance, int, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, World } from './types.ts';
+import { difficultyOf } from './difficulty.ts';
 
 const members = (world: World, party: Party): Hero[] =>
   party.memberIds.map((id) => world.heroes.find((h) => h.id === id)!).filter((h) => h.status === 'expedition');
@@ -404,7 +405,7 @@ function arrive(world: World, party: Party): void {
 
   // Afortunado: cada peça com o afixo engorda o saque do grupo.
   const lucky = heroes.reduce((n, h) => n + affixCount(h, 'afortunado'), 0);
-  party.loot.gold *= 1 + B.affixGold * lucky;
+  party.loot.gold *= (1 + B.affixGold * lucky) * difficultyOf(world).gold;
   // Ouro: o imposto vai para o tesouro, o resto é dividido por fatias.
   const tax = party.loot.gold * town.lootTax;
   town.treasury += tax;

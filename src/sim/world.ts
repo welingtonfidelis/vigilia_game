@@ -3,7 +3,7 @@ import { BUILDINGS, BUILDING_IDS } from '../data/buildings.ts';
 import { BALANCE as B, SAVE_VERSION, START_HOUR, TICKS_PER_HOUR } from './config.ts';
 import { seedRng } from './rng.ts';
 import { seedCitizens } from './citizens.ts';
-import type { BuildingId, MaterialId, Metrics, World } from './types.ts';
+import type { BuildingId, Difficulty, MaterialId, Metrics, World } from './types.ts';
 
 export function emptyMetrics(): Metrics {
   return {
@@ -38,12 +38,13 @@ export function emptyMetrics(): Metrics {
   };
 }
 
-export function createWorld(seed: number): World {
+export function createWorld(seed: number, difficulty: Difficulty = 'normal'): World {
   const buildings = Object.fromEntries(BUILDING_IDS.map((id) => [id, BUILDINGS[id].startLevel])) as Record<BuildingId, number>;
   const materials = Object.fromEntries(ACTS.map((a) => [a.material, 0])) as Record<MaterialId, number>;
   const world: World = {
     version: SAVE_VERSION,
     seed,
+    difficulty,
     rng: seedRng(seed),
     tick: START_HOUR * TICKS_PER_HOUR,
     nextId: 1,

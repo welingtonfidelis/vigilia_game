@@ -1,10 +1,11 @@
 // Elenco, cemitério, menu, boas-vindas e fim de ato.
 
 import { useState } from 'preact/hooks';
-import { ACTS, BALANCE, byWhom, childAge, createWorld, dayOf, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS, yearOf } from '../../sim/index.ts';
+import { ACTS, BALANCE, byWhom, childAge, commands, createWorld, dayOf, DIFFICULTIES, DIFFICULTY_IDS, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS, yearOf } from '../../sim/index.ts';
+import type { Difficulty } from '../../sim/index.ts';
 import type { Hero, HeroStatus, RetiredRole } from '../../sim/index.ts';
 import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../../game/storage.ts';
-import { Bar, HeroLink, PanelShell, Stat, useGame } from '../components.tsx';
+import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { activityText, className, fmt, liveHp, plural } from '../format.ts';
 import { GRAVE_SLOTS, graveOrder } from '../../render/layout.ts';
 import { ChildIcon, HeroPortrait } from '../PixelSprite.tsx';
@@ -237,6 +238,9 @@ export function MenuPanel() {
   const meta = readSaveMeta(store);
   const [confirmNew, setConfirmNew] = useState(false);
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1_000_000));
+  const current: Difficulty = world.difficulty ?? 'normal';
+  const [newDifficulty, setNewDifficulty] = useState<Difficulty>(current);
+  const command = useCommand();
   const prefs = ui.prefs;
   const scale = (d: number) => ui.setPrefs({ uiScale: Math.round(Math.max(0.8, Math.min(1.6, prefs.uiScale + d)) * 10) / 10 });
   return (
@@ -279,13 +283,30 @@ export function MenuPanel() {
         <input type="checkbox" checked={prefs.pauseOnDeath} onChange={(e) => ui.setPrefs({ pauseOnDeath: (e.target as HTMLInputElement).checked })} /> Pausar quando um herói morrer
       </label>
       <label class="check">
-        <input type="checkbox" checked={prefs.runInBackground} onChange={(e) => ui.setPrefs({ runInBackground: (e.target as HTMLInputElement).checked })} /> Continuar o jogo com a aba em segundo plano
+        <input type="checkbox" checked={prefs.runInBackground} onChange={(e) => ui.setPrefs({ runInBackground: (e.target as HTMLInputElement).checked })} /> Continuar o jogo com a aba em segundo plano (sempre em 1×)
       </label>
+
+      <h3>Dificuldade</h3>
+      <div class="seg" role="radiogroup" aria-label="Dificuldade da campanha">
+        {DIFFICULTY_IDS.map((d) => (
+          <button key={d} class={`btn small${current === d ? ' active' : ''}`} role="radio" aria-checked={current === d} onClick={() => command(commands.setDifficulty, d)}>
+            {DIFFICULTIES[d].name}
+          </button>
+        ))}
+      </div>
+      <p class="sub">{DIFFICULTIES[current].description} Trocar vale daqui em diante.</p>
 
       <h3>Novo jogo</h3>
       {confirmNew ? (
         <>
           <p class="tag warn">O jogo atual será perdido (o save também).</p>
+          <div class="seg" role="radiogroup" aria-label="Dificuldade da nova vila">
+            {DIFFICULTY_IDS.map((d) => (
+              <button key={d} class={`btn small${newDifficulty === d ? ' active' : ''}`} role="radio" aria-checked={newDifficulty === d} onClick={() => setNewDifficulty(d)}>
+                {DIFFICULTIES[d].name}
+              </button>
+            ))}
+          </div>
           <div class="row stepper">
             <label for="seed">Semente</label>
             <input id="seed" type="number" value={seed} onInput={(e) => setSeed(Math.abs(Math.round(Number((e.target as HTMLInputElement).value) || 0)))} />
@@ -295,7 +316,7 @@ export function MenuPanel() {
               class="btn danger"
               onClick={() => {
                 clearSave(store);
-                session.replace(createWorld(seed));
+                session.replace(createWorld(seed, newDifficulty));
                 session.setPaused(false);
                 setConfirmNew(false);
                 ui.open({ kind: 'welcome' });

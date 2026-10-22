@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -99,6 +99,13 @@ export const BALANCE = {
   affixValue: 0.8,
   arsenalMax: 24,
   dropTierMax: 12,
+  /** A lendária do chefe cai este tanto acima do teto da forja (ou do tier do ato). */
+  legendaryDropEdge: 2,
+  /** E nunca fica abaixo do teto da forja mais isto, quando o ferreiro sobe. */
+  legendaryFollowEdge: 1,
+  /** Encomenda na forja: rara e épica saem este tanto acima do teto da forja. */
+  commissionRareTierEdge: 1,
+  commissionEpicTierEdge: 2,
   // Chances por sala, só em andar ainda não conquistado.
   eliteEpicChance: 0.06,
   eliteRareChance: 0.25,

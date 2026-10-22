@@ -1,4 +1,4 @@
-import { commands, SEASONAL_EVENTS, SEASONS } from '../../sim/index.ts';
+import { commands, eventChoiceCost, SEASONAL_EVENTS, SEASONS } from '../../sim/index.ts';
 import { fmt } from '../format.ts';
 import { useCommand, useGame } from '../components.tsx';
 
@@ -25,12 +25,13 @@ export function EventPanel() {
         <p class="event-intro">{def.intro}</p>
         <div class="event-choices">
           {def.choices.map((c) => {
-            const blocked = c.cost > world.town.treasury;
+            const cost = eventChoiceCost(world, c.cost);
+            const blocked = cost > world.town.treasury;
             return (
               <button key={c.id} class="event-choice" disabled={blocked} onClick={() => choose(c.id)}>
                 <strong>{c.label}</strong>
                 <span>{c.detail}</span>
-                <em>{c.cost > 0 ? `Custa ${fmt(c.cost)} de ouro` : 'Sem custo'}</em>
+                <em>{cost > 0 ? `Custa ${fmt(cost)} de ouro` : 'Sem custo'}</em>
               </button>
             );
           })}

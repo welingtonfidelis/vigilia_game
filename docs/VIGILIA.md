@@ -114,7 +114,7 @@ O RNG (mulberry32) vive dentro do `World`. Por isso salvar no meio de um combate
 
 A tela fala com o núcleo só por `src/sim/index.ts`: `step()` no acumulador da sessão, `commands.*` para as alavancas do prefeito e consultas somente-leitura (custos, vagas, limiar de fuga, salas do andar). Um teste confirma que jogar pela sessão, quadro a quadro, dá o mesmo mundo que rodar o núcleo direto.
 
-A câmera é fixa em 1,5× e acompanha o prefeito; não há zoom por roda ou pinça.
+A câmera acompanha o prefeito com zoom fixo: 1,5× na tela grande e 1× no celular (lado curto da tela menor que 600 px); não há zoom por roda ou pinça.
 
 **Atalhos de depuração** (só em `npm run dev`, no console do navegador): `vigilia.days(n)` avança n dias, `vigilia.advance(ticks)`, `vigilia.autoplay(n)` deixa o prefeito automático jogar n dias e `vigilia.frames(n)` roda quadros do Phaser na mão (útil com a aba em segundo plano, quando o navegador para o `requestAnimationFrame`).
 
@@ -272,6 +272,35 @@ O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que ap
 - A floresta do distrito sul cobre os lotes até o prefeito mandar limpar.
 - Menu: sem a dica de zoom (que saiu do jogo), com uma seção sobre as velas do prefeito. A versão é `0.<commits>.0`.
 - A área de clique do portão estava na praça, ao lado do quadro; voltou para a passagem do portão.
+
+**Dificuldade, tiers de equipamento e segundo plano (feedback do playtest):**
+
+- **Tiers maiores.** Relato de jogador: das lendárias que conseguiu, só uma era de tier alto (12). Era assim porque a lendária cai no tier do ato em que saiu e não sobe mais sem polimento. Mudanças:
+  - A lendária cai **2 tiers acima** do que a forja faz na hora (ou do tier do ato, o que for maior).
+  - A lendária **acompanha a vila**: quando o ferreiro sobe de nível ou se especializa, toda lendária fica pelo menos **1 tier acima** do teto da forja. O polimento do joalheiro continua levando até 2 acima.
+  - **Encomendas na forja** saem acima do que se compra pronto: rara **+1 tier**, épica **+2 tiers**.
+- **Dificuldade (Fácil, Normal, Difícil).** Escolhida no novo jogo e trocável no menu a qualquer momento (vale dali em diante; fica na crônica). Normal é o balanceamento de sempre. Os multiplicadores:
+
+  | | Fácil | Normal | Difícil |
+  |---|---|---|---|
+  | Experiência dos heróis (abismo e treino) | 1,4× | 1× | 0,85× |
+  | Ouro do saque de cada expedição | 1,3× | 1× | 0,85× |
+  | Chance de peça rara e épica (baús e elites) | 1,5× | 1× | 0,65× |
+  | Custos do prefeito (prédios, berrante, festa, decretos, eventos, encomendas, lotes) | 0,8× | 1× | 1,25× |
+  | Força dos monstros nos andares | 0,9× | 1× | 1× |
+  | Corrupção por dia | 0,8× | 1× | 1,15× |
+  | Força das incursões | 0,8× | 1× | 1,25× |
+
+  O save antigo abre em Normal. Retrato com o prefeito automático, já com os tiers novos (10 sementes × 30 anos, `npm run balance -- --difficulty <id>`):
+
+  | | Fácil | Normal | Difícil |
+  |---|---|---|---|
+  | Último chefe | ano 9,4 (7–14), em todas | ano 14,5 (9–21), em todas | ano 21 (17–28), em 70% |
+  | Mortes por ano | 4,2 | 5,0 | 5,0 |
+  | Ouro dos heróis no fim | 29 mil | 21,5 mil | 13,5 mil |
+
+  No Difícil, o que segura é a economia e a corrupção. Com os monstros 10% mais fortes, só 20% das campanhas fechavam em 30 anos, então a força dos monstros ficou igual à do Normal.
+- **Segundo plano em 1×.** Com a aba em segundo plano, o jogo segue sempre em 1×, qualquer que seja a velocidade escolhida. Os 2× e 4× ficam só para quem está olhando, e a vila não avança horas de jogo sozinha a 4×.
 
 ---
 
@@ -966,7 +995,7 @@ Este documento é o contrato visual para uma pessoa ou IA criar/substituir a art
 | Motor | Phaser 3.90 + Preact |
 | Mundo | 50×40 tiles; 1600×1280 unidades |
 | Tile | 16×16 px de arte; `ART_SCALE = 2` (32 unidades por tile) |
-| Câmera | fixa em **1,5×**, acompanhando o prefeito; **sem zoom** por roda/pinça |
+| Câmera | fixa em **1,5×** (no celular, **1×**), acompanhando o prefeito; **sem zoom** por roda/pinça |
 | Estilo | fantasia sombria, top-down 3/4, fachadas frontais |
 | Pós-processamento | dessaturação −55%, brilho 0,8, contraste +0,08, vinheta |
 | Chão | assado numa `RenderTexture`; UVs recuadas 0,5 texel contra vazamento do atlas |
@@ -1010,7 +1039,7 @@ Este documento é o contrato visual para uma pessoa ou IA criar/substituir a art
 
 #### Escala na tela
 
-Com `ART_SCALE = 2` e câmera `1,5×`, **1 pixel de arte = 3 pixels de tela**. Detalhes de 1 px são visíveis, mas não dependa deles para leitura. Teste em:
+Com `ART_SCALE = 2` e câmera `1,5×`, **1 pixel de arte = 3 pixels de tela** (no celular, a `1×`, são 2). Detalhes de 1 px são visíveis, mas não dependa deles para leitura. Teste em:
 
 - desktop: 1370×1289;
 - celular: 390×844 (a câmera fica mais fechada).

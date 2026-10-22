@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { commands, createWorld, deserialize, heroCapacity, heroStats, maxGearTier, SAVE_VERSION, serialize, TICKS_PER_DAY } from '../src/sim/index.ts';
 import type { Hero, Party, World } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
-import { benchOffer, commissionBlocker, equip, itemName, merchantVisit, newItem, offer, processForge, rollDrop, shareLoot, useBench } from '../src/sim/items.ts';
+import { benchOffer, commissionBlocker, equip, itemName, legendaryTier, merchantVisit, newItem, offer, processForge, raiseLegendaries, rollDrop, shareLoot, stash, useBench } from '../src/sim/items.ts';
 import { springTrap } from '../src/sim/expedition.ts';
 import { combatTick, startCombat } from '../src/sim/combat.ts';
 
@@ -118,7 +118,23 @@ describe('forja e especializações', () => {
     processForge(world);
     expect(world.town.forge).toHaveLength(0);
     expect(world.town.arsenal[0]?.affixes).toContain('afiado');
-    expect(world.town.arsenal[0]?.tier).toBe(maxGearTier(world, 'weapon'));
+    // A encomenda rara sai um tier acima do que se compra pronto.
+    expect(world.town.arsenal[0]?.tier).toBe(maxGearTier(world, 'weapon') + 1);
+  });
+
+  it('lendária cai acima do teto da forja e acompanha o ferreiro quando ele sobe', () => {
+    const { world } = townWith(0);
+    world.town.buildings.ferreiro = 1;
+    // Ato I, primeiro andar: o tier do ato é baixo; vale o teto da forja + 2.
+    expect(legendaryTier(world, 0, 0, 'weapon')).toBe(maxGearTier(world, 'weapon') + 2);
+    const item = newItem(world, { slot: 'weapon', rarity: 'lendaria', tier: 3, origin: 'teste' });
+    stash(world, item);
+    world.town.buildings.ferreiro = 3;
+    raiseLegendaries(world);
+    expect(item.tier).toBe(maxGearTier(world, 'weapon') + 1);
+    const tier = item.tier;
+    raiseLegendaries(world);
+    expect(item.tier).toBe(tier);
   });
 
   it('nível 3 exige especialização; os efeitos valem na hora', () => {

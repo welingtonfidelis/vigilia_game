@@ -97,8 +97,14 @@ const INJURED_PACE = 0.6;
 const INTERACT_RADIUS = 78;
 /** Nomes de heróis e crianças aparecem perto do prefeito (e sempre sob o ponteiro ou selecionados). */
 const NAME_RADIUS = 200;
-/** Zoom fixo: o mapa é um recorte que acompanha o prefeito, como no Tristram. */
+/**
+ * Zoom fixo: o mapa é um recorte que acompanha o prefeito, como no Tristram. 1,5× na
+ * tela grande; no celular (lado curto menor que SMALL_SCREEN px) 1×, para caber mais
+ * vila na tela. Os dois deixam o pixel da arte inteiro (3 e 2 px de tela).
+ */
 const CAMERA_ZOOM = 1.5;
+const CAMERA_ZOOM_SMALL = 1;
+const SMALL_SCREEN = 600;
 
 interface Interactable {
   id: string;
@@ -319,7 +325,7 @@ export class VillageScene extends Phaser.Scene {
 
   private fitCamera(): void {
     const { width, height } = this.scale.gameSize;
-    const zoom = CAMERA_ZOOM;
+    const zoom = Math.min(width, height) < SMALL_SCREEN ? CAMERA_ZOOM_SMALL : CAMERA_ZOOM;
     const cam = this.cameras.main;
     cam.setZoom(zoom);
     // Tela maior que a vila: centraliza na horizontal e põe a sobra em cima, onde ela

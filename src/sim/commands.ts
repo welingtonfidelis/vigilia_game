@@ -5,11 +5,14 @@ import { BUILDINGS, MAX_BUILDING_LEVEL } from '../data/buildings.ts';
 import { SPEC_DEFS, SPECS } from '../data/specs.ts';
 import { dayOf } from './calendar.ts';
 import { record, floorLabel, heroLabel } from './chronicle.ts';
-import { DECREES, DECREE_IDS } from './decrees.ts';
+import { decreeEnactCost, DECREES, DECREE_IDS } from './decrees.ts';
+import { DIFFICULTIES } from '../data/difficulty.ts';
 import { resolveSeasonalEvent as resolveSeasonalEventImpl } from './events.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
 import {
   canAfford,
+  expansionClearCost,
+  expansionHouseCost,
   festivalCost,
   heroCapacity,
   hornCost,
@@ -26,7 +29,7 @@ import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
 import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import { chance, int } from './rng.ts';
-import type { BuildingId, DecreeId, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
+import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
@@ -182,7 +185,7 @@ export function setLootTax(world: World, rate: number): CommandResult {
 export function clearSouthExpansion(world: World): CommandResult {
   const expansion = world.town.expansion;
   if (expansion.cleared) return fail('Os lotes do sul já estão limpos.');
-  const cost = B.expansionClearCost;
+  const cost = expansionClearCost(world);
   if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para limpar os lotes.`);
   world.town.treasury -= cost;
   expansion.cleared = true;
@@ -196,7 +199,7 @@ export function buildExpansionHouse(world: World, index: number): CommandResult 
   if (!expansion.cleared) return fail('Limpe os lotes do sul primeiro.');
   if (!Number.isInteger(index) || index < 0 || index >= expansion.houses.length) return fail('Lote inválido.');
   if (expansion.houses[index]) return fail('Esse lote já tem casa.');
-  const cost = B.expansionHouseCost;
+  const cost = expansionHouseCost(world);
   if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para a casa.`);
   world.town.treasury -= cost;
   expansion.houses[index] = true;
@@ -214,10 +217,20 @@ export function toggleDecree(world: World, id: DecreeId): CommandResult {
     return OK;
   }
   if (world.town.decrees.length >= B.maxActiveDecrees) return fail(`Só cabem ${B.maxActiveDecrees} decretos ativos.`);
-  if (world.town.treasury < def.enactCost) return fail(`Faltam ${Math.ceil(def.enactCost - world.town.treasury)} de ouro para promulgar.`);
-  world.town.treasury -= def.enactCost;
+  const cost = decreeEnactCost(world, def);
+  if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para promulgar.`);
+  world.town.treasury -= cost;
   world.town.decrees.push(id);
   record(world, 'decreto', [], `O prefeito promulgou o decreto "${def.name}": ${def.description}`);
+  return OK;
+}
+
+/** Troca a dificuldade da campanha (vale dali em diante e fica na crônica). */
+export function setDifficulty(world: World, difficulty: Difficulty): CommandResult {
+  if (!DIFFICULTIES[difficulty]) return fail('Dificuldade desconhecida.');
+  if ((world.difficulty ?? 'normal') === difficulty) return OK;
+  world.difficulty = difficulty;
+  record(world, 'prefeito', [], `A campanha seguiu na dificuldade ${DIFFICULTIES[difficulty].name}.`);
   return OK;
 }
 

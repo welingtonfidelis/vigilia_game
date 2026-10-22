@@ -8,6 +8,7 @@ import { chance, int, next, pick, range, weighted } from './rng.ts';
 import { hasSpec } from './economy.ts';
 import { affixCount, emptyItems } from './items.ts';
 import type { Doctrine, Hero, InjuryKind, Rank, TraitId, World } from './types.ts';
+import { difficultyOf } from './difficulty.ts';
 
 export interface HeroStats {
   maxHp: number;
@@ -218,7 +219,8 @@ function levelUp(world: World, hero: Hero, announce: boolean): void {
 
 export function gainXp(world: World, hero: Hero, amount: number): void {
   if (hero.level >= maxLevel(hero)) return;
-  hero.xp += amount;
+  // A dificuldade acelera ou atrasa a subida de nível (abismo e treino).
+  hero.xp += amount * difficultyOf(world).xp;
   while (hero.level < maxLevel(hero) && hero.xp >= xpToNext(hero.level)) {
     hero.xp -= xpToNext(hero.level);
     const before = heroStats(world, hero).maxHp;
