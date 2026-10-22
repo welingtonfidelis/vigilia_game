@@ -1339,7 +1339,7 @@ Upgrade só de render, guiado pela arte de referência (vila noturna em degraus)
 - **Fase 3, terreno e relevo:**
   - Terra e trilha com borda orgânica (sem blocos de tile), tufos de grama, pedrinhas, marcas de carroça na estalagem e cinza na fogueira.
   - Níveis ligados por paredões de rocha e escadarias de pedra:
-    - platô do cemitério, o mais alto: uma meseta no canto de cima à esquerda, com faixa de grama em volta da cerca. A borda faz curva e desce na diagonal, então a lateral de rocha aparece do lado do portão; embaixo do cemitério são dois degraus de paredão até o templo, e há pinheiros no pé da encosta. Quem entra pelo portão não dá de cara com as covas, e a escadaria do cemitério desce direto para o templo;
+    - platô do cemitério, o mais alto: uma meseta no canto de cima à esquerda, com faixa de grama em volta da cerca. Por dentro, a terra das covas fica solta da cerca com a mesma folga nos quatro lados (12 unidades do mundo da grade ou do poste até a terra), e nenhuma lápide encosta na grade de cima. Para caber, a cerca de cima sobe 3/4 de tile; a de baixo não desce, porque a borda do platô passa logo abaixo do canto direito. A borda faz curva e desce na diagonal, então a lateral de rocha aparece do lado do portão; embaixo do cemitério são dois degraus de paredão até o templo, e há pinheiros no pé da encosta. Quem entra pelo portão não dá de cara com as covas, e a escadaria do cemitério desce direto para o templo;
     - alto: portão e, ao lado dele, a torrinha do berrante (arte nova, com o mesmo chifre do portão antigo);
     - meio: templo, taverna, guilda, praça e a caverna encravada na rocha;
     - baixo: estalagem, casa de cura, campo, ferreiro e fonte.

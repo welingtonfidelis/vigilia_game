@@ -13,7 +13,7 @@
 import Phaser from 'phaser';
 import { ART_SCALE } from './assets.ts';
 import { AUTUMN, dirtMask, pathMask } from './ground.ts';
-import { COLS, LANDMARKS, ROWS, THERMAL_TILES, TILE } from './layout.ts';
+import { CEMETERY_GROUND, COLS, LANDMARKS, ROWS, THERMAL_TILES, TILE } from './layout.ts';
 import { PACK_TILES } from './pack.ts';
 import { CLIFFS, cliffTop, inCliff, stairAt } from './relief.ts';
 import { DEPTH, seeded } from './town.ts';
@@ -100,12 +100,28 @@ function boxBlur(src: Float32Array, r: number): Float32Array {
   return out;
 }
 
-/** Máscara de tiles → campo 0..1 por pixel, com as quinas arredondadas. */
-function field(tiles: boolean[][], r: number): Float32Array {
+/** Retângulo em unidades do mundo. */
+interface WorldRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Máscara de tiles (mais retângulos soltos da grade, em unidades do mundo) → campo 0..1
+ * por pixel, com as quinas arredondadas.
+ */
+function field(tiles: boolean[][], r: number, rects: WorldRect[] = []): Float32Array {
   const bin = new Float32Array(W * H);
   for (let y = 0; y < H; y++) {
     const row = tiles[Math.floor(y / T)]!;
     for (let x = 0; x < W; x++) if (row[Math.floor(x / T)]) bin[y * W + x] = 1;
+  }
+  for (const rect of rects) {
+    for (let y = Math.max(0, Math.round(rect.y / PX)); y < Math.min(H, Math.round((rect.y + rect.h) / PX)); y++) {
+      for (let x = Math.max(0, Math.round(rect.x / PX)); x < Math.min(W, Math.round((rect.x + rect.w) / PX)); x++) bin[y * W + x] = 1;
+    }
   }
   return boxBlur(boxBlur(bin, r), r);
 }
@@ -211,7 +227,8 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
   }
 
   // 2. Terra e trilha com borda orgânica.
-  const dirtF = field(mask, 4 * S);
+  // A terra do cemitério sai da grade de tiles: fica com a mesma folga até a cerca nos quatro lados.
+  const dirtF = field(dirtMask(false), 4 * S, [CEMETERY_GROUND]);
   const pathF = field(paths, 3 * S);
   const isDirt = new Uint8Array(W * H);
   for (let y = 0; y < H; y++) {

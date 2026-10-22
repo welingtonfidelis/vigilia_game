@@ -650,14 +650,12 @@ export class VillageScene extends Phaser.Scene {
         const x = (lot.tx + lot.tw / 2) * TILE;
         const y = (lot.ty + lot.th) * TILE;
         const id = `building/house/0${i + 1}`;
-        this.expansionHouses[i] = this.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+        this.expansionHouses[i] = showArt(this.add.image(x, y, id), id).setOrigin(0.5, 1).setDepth(y);
         this.nav.setLayer(`casa-nova:${i}`, this.cellsOf([{ key: id, x, y }]));
         this.shadows.set(`casa-nova:${i}`, [this.caster({ key: id, x, y })]);
         this.lighting.setGroup(`janelas:casa-nova:${i}`, this.windowLights(`${id}-lights`, x, y));
-        this.expansionLights[i] = this.add
-          .image(x, y, `${id}-lights`)
+        this.expansionLights[i] = showArt(this.add.image(x, y, `${id}-lights`), `${id}-lights`)
           .setOrigin(0.5, 1)
-          .setScale(ART_SCALE)
           .setDepth(DEPTH.lights)
           .setAlpha(0);
       } else if (!built && this.expansionHouses[i]) {
@@ -1277,7 +1275,7 @@ export class VillageScene extends Phaser.Scene {
     for (const { hero, index } of standing) {
       if (this.graves.has(hero.id)) continue;
       const p = gravePoint(index);
-      const stone = this.add.image(p.x, p.y, 'decal/grave').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y);
+      const stone = showArt(this.add.image(p.x, p.y, 'decal/grave'), 'decal/grave').setOrigin(0.5, 1).setDepth(p.y);
       if (!initial) {
         stone.setAlpha(0);
         this.tweens.add({ targets: stone, alpha: 1, duration: 1200 });

@@ -121,7 +121,19 @@ export const ROADS: TileRect[] = [
 
 /** Cemitério cercado (em tiles) e a grade das covas lá dentro. */
 export const CEMETERY_TILES: TileRect = { tx: 1, ty: 0, tw: 12, th: 6 };
-export const CEMETERY = { x: 3 * TILE, y: 1.5 * TILE, cols: 9, dx: 32, dy: 26, rows: 5 };
+/**
+ * Linhas da cerca (unidades do mundo, topo do tile). A de cima sobe 3/4 de tile para
+ * caber a terra e as covas; a de baixo fica onde está, porque logo abaixo vem a borda do
+ * platô (no canto direito ela já passa a menos de um tile da cerca).
+ */
+export const CEMETERY_FENCE = { top: 8, bottom: (CEMETERY_TILES.ty + CEMETERY_TILES.th) * TILE };
+/**
+ * Terra do cemitério (unidades do mundo): a mesma folga de grama até a cerca nos quatro
+ * lados (nos lados, do poste à terra; em cima e embaixo, da grade à terra).
+ */
+export const CEMETERY_GROUND = { x: (CEMETERY_TILES.tx + 1) * TILE, y: CEMETERY_FENCE.top + 40, w: (CEMETERY_TILES.tw - 2) * TILE, h: 136 };
+/** Covas: a lápide (24 de altura) começa logo abaixo da cerca de cima e o montinho da última fileira acaba antes do fim da terra. */
+export const CEMETERY = { x: 3 * TILE, y: CEMETERY_GROUND.y + 16, cols: 9, dx: 32, dy: 27, rows: 5 };
 
 /** Covas que cabem dentro da cerca; quando lota, a nova toma o lugar da mais antiga. */
 export const GRAVE_SLOTS = CEMETERY.cols * CEMETERY.rows;
