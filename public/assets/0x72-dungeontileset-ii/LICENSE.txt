@@ -1,9 +1,0 @@
-16x16 DungeonTileset II (v1.7)
-Autor: Robert (0x72) — https://0x72.itch.io/dungeontileset-ii
-
-Licença: Creative Commons Zero v1.0 Universal (CC0), conforme a página do autor:
-"You can use this tileset for whatever you like (CC-0)."
-Crédito não é obrigatório; creditamos mesmo assim.
-
-Baixado em 2026-10-19 (0x72_DungeonTilesetII_v1.7.zip, 416 379 bytes,
-sha256 a5b23341ebc831d7798bfb9666d864a08c079bb7aed18e3cf023a27d517c1512).

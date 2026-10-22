@@ -1290,34 +1290,6 @@ kbd {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Sprites do 0x72 na UI ───────────────────────────────────────────── */
-
-.px {
-  display: inline-block;
-  flex: none;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  vertical-align: bottom;
-}
-
-.px-anim {
-  animation: px-frames 0.7s steps(var(--px-steps)) infinite;
-}
-
-@keyframes px-frames {
-  from {
-    background-position: var(--px-from) var(--px-y);
-  }
-  to {
-    background-position: var(--px-to) var(--px-y);
-  }
-}
-
-.px-ghost {
-  opacity: 0.55;
-  filter: grayscale(1) brightness(1.2);
-}
-
 .unit {
   flex-direction: row;
   align-items: flex-end;

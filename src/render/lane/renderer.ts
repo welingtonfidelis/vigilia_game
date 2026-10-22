@@ -12,7 +12,8 @@
 
 import { CLASSES, heroStats, partyRooms, TICKS_PER_SECOND } from '../../sim/index.ts';
 import type { CombatEvent, Hero, Party, Room, Unit, World } from '../../sim/index.ts';
-import { packAsset, packUrl } from '../pack.ts';
+import { artFile } from '../art32.ts';
+import { packAsset, packUrl, type PackAsset } from '../pack.ts';
 import {
   cameraTarget,
   ENTRY_W,
@@ -33,9 +34,28 @@ import {
   wallVariant,
   type EventCursor,
 } from './model.ts';
-import { DUNGEON_URL, enemySource, heroSource, image, x72Frame, type Anim, type SpriteSource } from './sprites.ts';
+import { enemySource, heroSource, image, type Anim, type SpriteSource } from './sprites.ts';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'] as const;
+
+/** Peça do pack pronta para desenhar no modo de arte atual. */
+interface Art {
+  asset: PackAsset;
+  img: HTMLImageElement;
+  /** Pixels da imagem por pixel da 16-bit (2 na 32-bit); o desenho segue nas medidas da 16-bit. */
+  k: number;
+}
+
+/** A 32-bit quando existe neste modo; enquanto ela carrega, a 16-bit. */
+function art(id: string): Art | null {
+  const asset = packAsset(id);
+  if (!asset) return null;
+  const { file, hires } = artFile(id, asset.file);
+  const hi = hires ? image(packUrl(file)) : null;
+  if (hi) return { asset, img: hi, k: 2 };
+  const img = image(packUrl(asset.file));
+  return img ? { asset, img, k: 1 } : null;
+}
 
 /** Onde o grupo estava ao começar a volta (para a câmera, quando a tela abre já na volta). */
 const stopXOrEntry = (party: Party, rooms: Room[]): number =>
@@ -739,9 +759,10 @@ export class LaneRenderer {
   private drawCorridor(rooms: Room[], roman: string, party: Party, left: number, right: number): void {
     const { ctx } = this;
     const draw = (id: string, x: number): void => {
-      const asset = packAsset(id);
-      const img = asset ? image(packUrl(asset.file)) : null;
-      if (img && x + img.width >= left && x <= right) ctx.drawImage(img, x, 0);
+      const a = art(id);
+      if (!a) return;
+      const w = a.img.width / a.k;
+      if (x + w >= left && x <= right) ctx.drawImage(a.img, x, 0, w, a.img.height / a.k);
     };
     draw(`corridor/${roman}/entry`, 0);
     for (let i = 0; i < Math.max(1, rooms.length); i++) {
@@ -756,31 +777,30 @@ export class LaneRenderer {
     const depth = packAsset(`arena/${roman}/back-${floor + 1}`) ?? packAsset(`arena/${roman}/back`);
     const plain = packAsset(`arena/${roman}/back`) ?? depth;
     const boss = packAsset(`arena/${roman}/back-4`) ?? depth;
-    const mid = packAsset(`arena/${roman}/mid`);
+    const pillars = art(`arena/${roman}/mid`);
     // Um painel antes da primeira sala, para o grupo sair da escuridão.
     for (let i = -1; i < Math.max(1, rooms.length); i++) {
       const x = roomX(i);
       if (x + ROOM_W < left || x > right) continue;
       const asset = rooms[i]?.kind === 'chefe' ? boss : i % 2 === 0 ? depth : plain;
-      const img = asset ? image(packUrl(asset.file)) : null;
-      if (img) this.ctx.drawImage(img, x, 0, ROOM_W, LANE_H);
-      const pillars = mid ? image(packUrl(mid.file)) : null;
+      const back = asset ? art(asset.id) : null;
+      if (back) this.ctx.drawImage(back.img, x, 0, ROOM_W, LANE_H);
       // Os pilares nas bordas de cada painel escondem a emenda entre salas.
-      if (pillars) this.ctx.drawImage(pillars, x, 0, ROOM_W, pillars.height);
+      if (pillars) this.ctx.drawImage(pillars.img, x, 0, ROOM_W, pillars.img.height / pillars.k);
     }
   }
 
   private drawFloor(id: string, left: number, right: number, parallax: number, cam: number, drop = 0): void {
-    const asset = packAsset(id);
-    const img = asset ? image(packUrl(asset.file)) : null;
-    if (!asset || !img) return;
-    const w = img.width;
-    const y = (asset.stageY ?? 128) + drop;
+    const a = art(id);
+    if (!a) return;
+    const w = a.img.width / a.k;
+    const h = a.img.height / a.k;
+    const y = (a.asset.stageY ?? 128) + drop;
     // Na tela, a camada anda `parallax` vezes o que a câmera anda. Com parallax > 1
     // o primeiro plano passa mais rápido que o chão: é isso que dá profundidade.
     const shift = cam * (1 - parallax);
     const start = Math.floor((left - shift) / w) * w + shift;
-    for (let x = start; x < right; x += w) this.ctx.drawImage(img, Math.round(x), y);
+    for (let x = start; x < right; x += w) this.ctx.drawImage(a.img, Math.round(x), y, w, h);
   }
 
   private drawRoomContents(rooms: Room[], roman: string, corridor: boolean, left: number, right: number): void {
@@ -803,12 +823,9 @@ export class LaneRenderer {
       }
       const tx = threatX(i);
       switch (room.kind) {
-        case 'bau': {
-          const sheet = image(DUNGEON_URL);
-          const f = x72Frame(room.cleared ? 'chest_full_open_anim_f2' : 'chest_full_open_anim_f0');
-          if (sheet && f) ctx.drawImage(sheet, f[0], f[1], f[2], f[3], tx - 8, ROW_Y[1] - 16, 16, 16);
+        case 'bau':
+          this.drawChest(tx, ROW_Y[1], room.cleared);
           break;
-        }
         case 'santuario':
           this.drawProp('prop/arena/altar', tx, ROW_Y[0], t);
           break;
@@ -822,9 +839,7 @@ export class LaneRenderer {
           // O mercador espera com a arca até o grupo passar; depois segue caminho.
           if (!room.cleared) {
             this.drawVillager('char/villager/artesa/m', tx + 6, ROW_Y[0]);
-            const sheet = image(DUNGEON_URL);
-            const f = x72Frame('chest_full_open_anim_f2');
-            if (sheet && f) ctx.drawImage(sheet, f[0], f[1], f[2], f[3], tx - 14, ROW_Y[0] - 14, 16, 16);
+            this.drawChest(tx - 6, ROW_Y[0] + 2, true);
           }
           break;
         case 'armadilha':
@@ -832,9 +847,8 @@ export class LaneRenderer {
           break;
         case 'chefe': {
           this.drawProp(`prop/arena/${roman}/boss-gate`, tx + 40, ROW_Y[0] - 2, t);
-          const ritual = packAsset('decal/arena/ritual-circle');
-          const img = ritual ? image(packUrl(ritual.file)) : null;
-          if (img) ctx.drawImage(img, tx - 40, ROW_Y[1] - 10);
+          const ritual = art('decal/arena/ritual-circle');
+          if (ritual) ctx.drawImage(ritual.img, tx - 40, ROW_Y[1] - 10, ritual.img.width / ritual.k, ritual.img.height / ritual.k);
           break;
         }
         default:
@@ -845,16 +859,24 @@ export class LaneRenderer {
 
   /** Morador do pack (quadro parado), virado para quem chega pela esquerda. */
   private drawVillager(id: string, x: number, y: number): void {
-    const asset = packAsset(id);
-    const img = asset ? image(packUrl(asset.file)) : null;
-    if (!asset || !img) return;
-    const [w, h] = asset.frameSize ?? asset.size ?? [16, 21];
+    const a = art(id);
+    if (!a) return;
+    const [w, h] = a.asset.frameSize ?? a.asset.size ?? [16, 21];
     const { ctx } = this;
     ctx.save();
     ctx.translate(Math.round(x), y);
     ctx.scale(-1, 1);
-    ctx.drawImage(img, 0, 0, w, h, -Math.floor(w / 2), -h, w, h);
+    ctx.drawImage(a.img, 0, 0, w * a.k, h * a.k, -Math.floor(w / 2), -h, w, h);
     ctx.restore();
+  }
+
+  /** Baú do pack: fechado até o grupo passar, depois aberto com o ouro à mostra. */
+  private drawChest(x: number, y: number, open: boolean): void {
+    const a = art('prop/chest');
+    if (!a) return;
+    const [w, h] = a.asset.frameSize ?? [16, 16];
+    const f = open ? (a.asset.frames ?? 3) - 1 : 0;
+    this.ctx.drawImage(a.img, f * w * a.k, 0, w * a.k, h * a.k, Math.round(x - w / 2), Math.round(y - h), w, h);
   }
 
   /** Espinhos no chão da sala: baixos até o grupo passar; depois de pegar alguém, ficam erguidos. */
@@ -875,14 +897,14 @@ export class LaneRenderer {
   }
 
   private drawProp(id: string, x: number, y: number, t: number): void {
-    const asset = packAsset(id);
-    const img = asset ? image(packUrl(asset.file)) : null;
-    if (!asset || !img) return;
-    const [w, h] = asset.size ?? [img.width, img.height];
-    const loop = asset.animations?.loop;
+    const a = art(id);
+    if (!a) return;
+    const { img, k } = a;
+    const [w, h] = a.asset.size ?? [img.width / k, img.height / k];
+    const loop = a.asset.animations?.loop;
     if (loop) {
       const f = loop.frames[Math.floor(t * (loop.fps || 8)) % loop.frames.length] ?? 0;
-      this.ctx.drawImage(img, f * w, 0, w, h, Math.round(x - w / 2), Math.round(y - h), w, h);
+      this.ctx.drawImage(img, f * w * k, 0, w * k, h * k, Math.round(x - w / 2), Math.round(y - h), w, h);
     } else {
       this.ctx.drawImage(img, Math.round(x - w / 2), Math.round(y - h), w, h);
     }
@@ -911,6 +933,7 @@ export class LaneRenderer {
     const marching = a.anim === 'run' && a.side === 'hero' && a.leaving === null;
     const t = marching ? this.stride : this.fx - a.animStart;
     const [sx, sy, sw, sh] = sprite.frame(a.anim, t);
+    const d = sprite.density(a.anim);
     const bob = a.anim === 'run' && !sprite.walks ? Math.floor(t * 10) % 2 : 0;
     const x = Math.round(a.x + this.lungeOffset(a) + a.knock);
     const y = Math.round(a.y) - bob;
@@ -920,11 +943,11 @@ export class LaneRenderer {
     let alpha = sprite.ghost ? 0.6 : 1;
     if (a.leaving !== null) alpha *= Math.max(0, 1 - (this.fx - a.leaving) / EXIT_TIME);
     ctx.globalAlpha = alpha;
-    ctx.drawImage(img, sx, sy, sw, sh, -Math.floor(sw / 2), -sh, sw, sh);
+    ctx.drawImage(img, sx * d, sy * d, sw * d, sh * d, -Math.floor(sw / 2), -sh, sw, sh);
     if (a.flash > 0) {
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = Math.min(1, a.flash * 10) * 0.9;
-      ctx.drawImage(img, sx, sy, sw, sh, -Math.floor(sw / 2), -sh, sw, sh);
+      ctx.drawImage(img, sx * d, sy * d, sw * d, sh * d, -Math.floor(sw / 2), -sh, sw, sh);
     }
     ctx.restore();
   }
@@ -934,13 +957,14 @@ export class LaneRenderer {
     const img = sprite ? image(sprite.sheet('death')) : null;
     if (!sprite || !img) return;
     const [sx, sy, sw, sh] = sprite.frame('death', 99);
+    const d = sprite.density('death');
     const { ctx } = this;
     ctx.save();
     ctx.translate(Math.round(c.x), Math.round(c.y));
     if (c.flip) ctx.scale(-1, 1);
     ctx.globalAlpha = 0.75;
     ctx.filter = 'brightness(0.55) saturate(0.6)';
-    ctx.drawImage(img, sx, sy, sw, sh, -Math.floor(sw / 2), -sh, sw, sh);
+    ctx.drawImage(img, sx * d, sy * d, sw * d, sh * d, -Math.floor(sw / 2), -sh, sw, sh);
     ctx.restore();
   }
 
@@ -959,7 +983,7 @@ export class LaneRenderer {
 
   private drawProjectiles(): void {
     const { ctx } = this;
-    const sheet = image(DUNGEON_URL);
+    const arrow = art('fx/arrow');
     for (const p of this.projectiles) {
       const k = (this.fx - p.start) / p.dur;
       if (k < 0) continue;
@@ -967,16 +991,17 @@ export class LaneRenderer {
       // Um arco leve: flechas sobem um pouco antes de descer.
       const y = p.y0 + (p.y1 - p.y0) * k - Math.sin(k * Math.PI) * (p.kind === 'arrow' ? 6 : 2);
       const dir = Math.sign(p.x1 - p.x0) || 1;
-      if (p.kind === 'arrow' && sheet) {
-        const f = x72Frame('weapon_arrow');
-        if (f) {
-          ctx.save();
-          ctx.translate(Math.round(x), Math.round(y));
-          ctx.rotate(dir > 0 ? Math.PI / 2 : -Math.PI / 2);
-          ctx.drawImage(sheet, f[0], f[1], f[2], f[3], -f[2] / 2, -f[3] / 2, f[2], f[3]);
-          ctx.restore();
-          continue;
-        }
+      if (p.kind === 'arrow' && arrow) {
+        // A flecha do pack aponta para a direita; inclina com o arco do voo.
+        const [w, h] = arrow.asset.size ?? [8, 3];
+        const slope = (p.y1 - p.y0 - 6 * Math.PI * Math.cos(k * Math.PI)) / (Math.abs(p.x1 - p.x0) || 1);
+        ctx.save();
+        ctx.translate(Math.round(x), Math.round(y));
+        ctx.scale(dir, 1);
+        ctx.rotate(Math.atan(slope));
+        ctx.drawImage(arrow.img, -w / 2, -h / 2, w, h);
+        ctx.restore();
+        continue;
       }
       const colors: Record<Projectile['kind'], [string, string]> = {
         arrow: ['#e8dcc0', '#8a7a5a'],
@@ -996,16 +1021,16 @@ export class LaneRenderer {
 
   private drawSparks(): void {
     for (const s of this.sparks) {
-      const asset = packAsset(s.id);
-      const img = asset ? image(packUrl(asset.file)) : null;
-      if (!asset || !img) continue;
+      const a = art(s.id);
+      if (!a) continue;
+      const { asset, img } = a;
       const play = asset.animations?.play ?? asset.animations?.loop;
       const [w, h] = asset.frameSize ?? asset.size ?? [32, 32];
       const frames = play?.frames ?? [0];
       const i = Math.min(frames.length - 1, Math.floor((this.fx - s.start) * (play?.fps ?? 16)));
       // Efeitos grandes do pack ficam pela metade: o corredor é mais apertado que a arena.
       const k = w > 32 ? 0.5 : 1;
-      this.ctx.drawImage(img, (frames[i] ?? 0) * w, 0, w, h, Math.round(s.x - (w * k) / 2), Math.round(s.y - (h * k) / 2), w * k, h * k);
+      this.ctx.drawImage(img, (frames[i] ?? 0) * w * a.k, 0, w * a.k, h * a.k, Math.round(s.x - (w * k) / 2), Math.round(s.y - (h * k) / 2), w * k, h * k);
     }
   }
 

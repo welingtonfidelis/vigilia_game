@@ -91,6 +91,8 @@ export interface Prefs {
   pauseOnDeath: boolean;
   /** Com a aba em segundo plano o jogo segue correndo (o padrão é parar junto com a tela). */
   runInBackground: boolean;
+  /** Arte do jogo: 16-bit (pack de sempre) ou 32-bit (o dobro de pixels). */
+  art: '16' | '32';
   autosave: boolean;
   muted: boolean;
   /** Volumes de 0 a 1. */
@@ -104,6 +106,7 @@ export const DEFAULT_PREFS: Prefs = {
   uiScale: 1,
   pauseOnDeath: false,
   runInBackground: false,
+  art: '16',
   autosave: true,
   muted: false,
   masterVolume: 0.8,

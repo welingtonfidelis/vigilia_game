@@ -1,4 +1,5 @@
-// A vila montada com tiles do Tiny Town (Kenney) e peças do DungeonTileset II (0x72).
+// A vila montada com as peças do pack do Vigília: árvores, cemitério, adereços, portão,
+// cofre, fogueira e o resto do que fica no chão entre os prédios.
 
 import Phaser from 'phaser';
 import { ART_SCALE } from './assets.ts';
@@ -6,7 +7,7 @@ import { AUTUMN, FORESTS, inRect } from './ground.ts';
 import type { FootprintOptions } from './nav.ts';
 import { onFace } from './relief.ts';
 import { sway } from './fx/wind.ts';
-import { showArt } from './pilot32.ts';
+import { playArt, showArt } from './art32.ts';
 import { FogSystem } from './fx/fog.ts';
 import { ParallaxLayer, type Edge } from './fx/parallax.ts';
 import {
@@ -346,31 +347,6 @@ export function smooth<T extends Phaser.GameObjects.Text>(text: T): T {
 }
 
 /**
- * Puxa as UVs de cada moldura meio texel para dentro. Em zoom fracionário (1,5×/2,5×)
- * a borda de um tile cai em meio pixel e a GPU amostra o pixel da moldura vizinha do
- * atlas: é a linha vertical que aparece ao lado de portão, quadro e prédios. Meio texel
- * basta para a amostra continuar dentro do próprio tile, sem mudar o desenho em 1×.
- * O chão já foi assado antes disto, então a textura estática não é afetada.
- */
-export function insetTownFrames(scene: Phaser.Scene, texels = 0.5): void {
-  const texture = scene.textures.get('town');
-  const source = texture.getSourceImage() as { width: number; height: number };
-  const tw = source.width;
-  const th = source.height;
-  for (const frame of Object.values(texture.frames)) {
-    if (!frame || frame.name === '__BASE') continue;
-    frame.setUVs(
-      frame.width,
-      frame.height,
-      frame.cutX / tw + texels / tw,
-      frame.cutY / th + texels / th,
-      (frame.cutX + frame.width) / tw - texels / tw,
-      (frame.cutY + frame.height) / th - texels / th,
-    );
-  }
-}
-
-/**
  * Plaquinha: fundo escuro translúcido, de cantos redondos, atrás do texto. Deixa o nome
  * legível em cima de telhado, rocha ou grama sem o contorno grosso, e a arte respira.
  * O fundo é pintado no próprio canvas do texto toda vez que o texto muda.
@@ -514,7 +490,7 @@ export function buildCampfire(scene: Phaser.Scene, solids: Solid[]): void {
   const { x, y } = LANDMARKS.fogueira;
   showArt(scene.add.image(x, y, 'prop/campfire/on'), 'prop/campfire/on').setOrigin(0.5, 1).setDepth(y - 2);
   solids.push({ key: 'prop/campfire/on', x, y, opts: { fromBottom: 10, minCover: 0.3 } });
-  scene.add.sprite(x, y - 4, 'fx/fire').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).play('fx/fire');
+  playArt(showArt(scene.add.sprite(x, y - 4, 'fx/fire'), 'fx/fire'), 'fx/fire').setOrigin(0.5, 1).setDepth(y - 1);
 }
 
 /** Fonte termal: bacia natural do pack, água separada, vapor e banco. */
@@ -530,13 +506,7 @@ export function buildThermal(scene: Phaser.Scene, solids: Solid[]): void {
     .setOrigin(0.5, 1)
     .setScale(ART_SCALE)
     .setDepth(base);
-  const steam = scene.add
-    .sprite(cx, base - 24, 'fx/steam')
-    .setOrigin(0.5, 1)
-    .setScale(ART_SCALE)
-    .setDepth(DEPTH.floating)
-    .setAlpha(0.8);
-  steam.play('fx/steam');
+  playArt(showArt(scene.add.sprite(cx, base - 24, 'fx/steam'), 'fx/steam'), 'fx/steam').setOrigin(0.5, 1).setDepth(DEPTH.floating).setAlpha(0.8);
   label(scene, LANDMARKS.termas.x, r.ty * TILE - 24, 'Fonte termal', 13, '#c8e8e0');
 }
 /**

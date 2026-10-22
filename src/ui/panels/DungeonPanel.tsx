@@ -13,7 +13,8 @@ import type { ExpeditionSummary } from '../../game/session.ts';
 import { Bar, HeroLink, PanelShell, useCommand, useGame } from '../components.tsx';
 import { className, fmt, floorName, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { IconSkull, RoomIcon } from '../icons.tsx';
-import { HERO_CROP, HeroPortrait, MonsterPortrait, monsterBase, PixelSprite } from '../PixelSprite.tsx';
+import { imgSrc } from '../../render/art32.ts';
+import { HeroPortrait, MonsterPortrait, monsterBase } from '../PixelSprite.tsx';
 import { loadReportHistory } from '../report-history.ts';
 
 function ActOverview(props: { world: World }) {
@@ -78,10 +79,10 @@ function EnemyRow(props: { unit: Unit; world: World; act: number }) {
   return (
     <div class={`unit enemy${u.alive ? '' : ' down'}`}>
       <span class="unit-art">
-        {look.asset ? (
-          <MonsterPortrait asset={look.asset} />
+        {look.portrait ? (
+          <img class="monster-portrait portrait-ghost" {...imgSrc(look.portrait)} width={32} height={36} alt="" aria-hidden="true" />
         ) : (
-          <PixelSprite base={look.base ?? 'skelet'} scale={u.tags.includes('boss') ? 1 : 2} crop={look.ghost ? HERO_CROP : 0} ghost={look.ghost} animate={u.alive} />
+          <MonsterPortrait asset={look.asset} />
         )}
       </span>
       <div class="unit-info">

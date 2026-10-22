@@ -1,13 +1,14 @@
-// Heróis e prefeito com os sprites do 0x72 (parado/correndo, virando para o lado do movimento).
+// Heróis, prefeito, crianças, moradores e bichos com as folhas do pack (parado/andando,
+// virando para o lado do movimento), em 16-bit ou 32-bit conforme a preferência de arte.
 // Só posição visual: quem decide para onde vão é o núcleo.
 
 import Phaser from 'phaser';
 import type { ActivityKind, Child, Citizen, Hero, Pet } from '../sim/index.ts';
 import { citizenLook, ICON_KINDS } from './art.ts';
-import { ART_SCALE, heroSprite } from './assets.ts';
+import { ART_SCALE } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
 import { softFootShadowTexture } from './fx/shadows.ts';
-import { pilotHero } from './pilot32.ts';
+import { charVisual } from './art32.ts';
 import { Route } from './nav.ts';
 import { DEPTH, pill, smooth } from './town.ts';
 import type { Point } from './layout.ts';
@@ -34,11 +35,11 @@ function breathe(body: Phaser.GameObjects.Sprite, scale: number, on: boolean, ph
   body.setScale(scale * (1 - 0.012 * k), scale * (1 + 0.032 * k));
 }
 
-/** Altura da cabeça acima dos pés (o quadro do 0x72 tem folga em cima). */
+/** Altura da cabeça acima dos pés num quadro de 28 px de altura (a folha de 32 px soma). */
 const HEAD_Y = -44;
 
-interface WalkerVisual {
-  texture: string;
+/** Nomes das animações de parado e andando na folha do pack. */
+interface WalkerAnims {
   idle: string;
   run: string;
 }
@@ -46,9 +47,9 @@ interface WalkerVisual {
 abstract class Walker {
   readonly root: Phaser.GameObjects.Container;
   protected readonly body: Phaser.GameObjects.Sprite;
-  protected readonly weapon: Phaser.GameObjects.Image | null;
-  protected readonly base: string;
-  protected readonly visual: WalkerVisual | undefined;
+  /** Prefixo das animações da folha no modo atual (16-bit ou p32/…). */
+  private readonly anim: string;
+  private readonly names: WalkerAnims;
   protected moving = false;
   /** Caminho em volta dos prédios até o destino atual. */
   readonly route = new Route();
@@ -61,29 +62,16 @@ abstract class Walker {
   private playing = '';
   private left = false;
 
-  constructor(
-    scene: Phaser.Scene,
-    x: number,
-    y: number,
-    base: string,
-    weapon: string | null,
-    scale = ART_SCALE,
-    visual?: WalkerVisual,
-    hires = false,
-  ) {
-    this.base = base;
-    this.visual = visual;
-    this.hires = hires;
-    this.scale = hires ? scale / 2 : scale;
-    const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(scale * 0.5);
-    this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(scale) : null;
-    this.body = scene.add
-      .sprite(0, 2, visual?.texture ?? 'dungeon', visual ? 0 : `${base}_idle_anim_f0`)
-      .setOrigin(0.5, 1)
-      .setScale(this.scale);
-    const parts: Phaser.GameObjects.GameObject[] = [shadow, this.body];
-    if (this.weapon) parts.push(this.weapon);
-    this.root = scene.add.container(Math.round(x), Math.round(y), parts).setDepth(y);
+  /** `id` é a folha do pack (char/…); `names`, as animações de parado e andando nela. */
+  constructor(scene: Phaser.Scene, x: number, y: number, id: string, names: WalkerAnims = { idle: 'idle', run: 'run' }) {
+    const visual = charVisual(scene, id);
+    this.anim = visual.anim;
+    this.names = names;
+    this.hires = visual.hires;
+    this.scale = visual.hires ? ART_SCALE / 2 : ART_SCALE;
+    const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(ART_SCALE * 0.5);
+    this.body = scene.add.sprite(0, 2, visual.texture, 0).setOrigin(0.5, 1).setScale(this.scale);
+    this.root = scene.add.container(Math.round(x), Math.round(y), [shadow, this.body]).setDepth(y);
     this.play('idle');
   }
 
@@ -132,11 +120,10 @@ abstract class Walker {
     if (left === this.left) return;
     this.left = left;
     this.body.setFlipX(left);
-    if (this.weapon) this.weapon.setFlipX(left).setX(left ? -10 : 10);
   }
 
   private play(kind: 'idle' | 'run'): void {
-    const key = this.visual ? this.visual[kind] : `${this.base}_${kind}`;
+    const key = `${this.anim}:${this.names[kind]}`;
     if (this.playing === key) return;
     this.playing = key;
     this.body.play(key, true);
@@ -147,7 +134,6 @@ abstract class Walker {
     this.play(this.moving ? 'run' : 'idle');
     this.body.anims.timeScale = Math.min(2, rate > 0 ? rate : 0.6);
     const step = this.moving && (this.body.anims.currentFrame?.index ?? 0) % 2 === 0;
-    if (this.weapon) this.weapon.y = step ? -14 : -12;
     // Andando, o corpo sobe 1 px da arte a cada passo (o pulinho da caminhada).
     this.body.y = step && !this.hires ? 2 - ART_SCALE : 2;
     breathe(this.body, this.scale, this.breathes && !this.moving, this.breathPhase);
@@ -180,15 +166,9 @@ export class HeroSprite extends Walker {
   commit: Commit | null = null;
 
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
-    // Heróis redesenhados do pack 1.4 (direção sombria), com a arma de classe no sprite.
+    // Heróis redesenhados do pack, com a arma de classe no sprite.
     const texture = heroSpriteId(hero.classId, hero.gender);
-    // Piloto 32-bit (?arte=32): o Guardião vem na folha de 48×64.
-    const pilot = pilotHero(scene, texture);
-    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null, ART_SCALE, pilot ?? {
-      texture,
-      idle: `${texture}:idle`,
-      run: `${texture}:run`,
-    }, pilot !== null);
+    super(scene, at.x, at.y, texture);
     this.id = hero.id;
     this.headY = HEAD_Y - ((packAsset(texture)?.frameSize?.[1] ?? 28) - 28) * ART_SCALE;
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);
@@ -218,7 +198,6 @@ export class HeroSprite extends Walker {
       this.label.setColor(color);
     }
     this.bandage.setVisible(hero.injury !== null);
-    this.weapon?.setVisible(!retired);
   }
 
   setActivityIcon(kind: ActivityKind | null): void {
@@ -261,12 +240,7 @@ export class ChildSprite extends Walker {
   hidden = false;
 
   constructor(scene: Phaser.Scene, child: Child, at: Point) {
-    const texture = `char/child/${child.gender}`;
-    super(scene, at.x, at.y, heroSprite(child.classId, child.gender), null, ART_SCALE, {
-      texture,
-      idle: `${texture}:idle`,
-      run: `${texture}:walk`,
-    });
+    super(scene, at.x, at.y, `char/child/${child.gender}`, { idle: 'idle', run: 'walk' });
     this.id = child.id;
     this.parents = child.parents;
     this.breathes = true;
@@ -300,11 +274,7 @@ export class Mayor extends Walker {
   readonly label: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'doc', null, ART_SCALE, {
-      texture: 'char/mayor',
-      idle: 'char/mayor:idle',
-      run: 'char/mayor:run',
-    });
+    super(scene, x, y, 'char/mayor');
     this.label = pill(smooth(scene.add.text(x, y + 6, 'Prefeito', { ...LABEL_STYLE, color: '#ffd98a', fontStyle: 'bold' })))
       .setOrigin(0.5, 0)
       .setDepth(DEPTH.labels);
@@ -321,7 +291,10 @@ export class CitizenSprite {
   readonly id: number;
   readonly root: Phaser.GameObjects.Container;
   private readonly body: Phaser.GameObjects.Sprite;
+  /** Folha do pack (os quadros de andar vêm dela) e a textura mostrada (16 ou 32-bit). */
   private readonly texture: string;
+  private readonly shown: string;
+  private readonly scale: number;
   private moving = false;
   private left = false;
   private frameTime = 0;
@@ -334,8 +307,11 @@ export class CitizenSprite {
     this.id = citizen.id;
     const look = citizenLook(citizen);
     this.texture = `char/villager/${look}/${citizen.gender}`;
+    const visual = charVisual(scene, this.texture);
+    this.shown = visual.texture;
+    this.scale = visual.hires ? ART_SCALE / 2 : ART_SCALE;
     const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(ART_SCALE * 0.45);
-    this.body = scene.add.sprite(0, 2, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
+    this.body = scene.add.sprite(0, 2, this.shown, 0).setOrigin(0.5, 1).setScale(this.scale);
     this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
   }
 
@@ -374,16 +350,16 @@ export class CitizenSprite {
   animate(rate: number, dt: number): void {
     if (!this.moving || rate <= 0) {
       this.frameTime = 0;
-      if (this.body.frame.name !== '0') this.body.setTexture(this.texture, 0);
+      if (this.body.frame.name !== '0') this.body.setTexture(this.shown, 0);
       this.body.y = 2;
-      breathe(this.body, ART_SCALE, true, this.breathPhase);
+      breathe(this.body, this.scale, true, this.breathPhase);
       return;
     }
-    breathe(this.body, ART_SCALE, false, this.breathPhase);
+    breathe(this.body, this.scale, false, this.breathPhase);
     this.frameTime += dt * rate;
     const walk = packAsset(this.texture)?.animations?.walk ?? { frames: [0, 1], fps: 6 };
     const frame = walk.frames[Math.floor(this.frameTime * walk.fps) % walk.frames.length] ?? 0;
-    if (this.body.frame.name !== String(frame)) this.body.setTexture(this.texture, frame);
+    if (this.body.frame.name !== String(frame)) this.body.setTexture(this.shown, frame);
     // Quadro 0 no meio da passada (pés juntos): o corpo sobe 1 px da arte.
     this.body.y = frame === 0 ? 2 - ART_SCALE : 2;
   }
@@ -414,6 +390,8 @@ export class PetSprite {
   readonly route = new Route();
   private readonly body: Phaser.GameObjects.Sprite;
   private readonly texture: string;
+  /** Prefixo das animações da folha no modo atual (16-bit ou p32/…). */
+  private readonly anim: string;
   private moving = false;
   private left = false;
   private playing = '';
@@ -425,8 +403,10 @@ export class PetSprite {
     this.name = pet.name;
     this.species = pet.species;
     this.texture = `char/pet/${pet.species}/${pet.look}`;
+    const visual = charVisual(scene, this.texture);
+    this.anim = visual.anim;
     const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(ART_SCALE * 0.3, ART_SCALE * 0.25);
-    this.body = scene.add.sprite(0, 1, this.texture, 0).setOrigin(0.5, 1).setScale(ART_SCALE);
+    this.body = scene.add.sprite(0, 1, visual.texture, 0).setOrigin(0.5, 1).setScale(visual.hires ? ART_SCALE / 2 : ART_SCALE);
     this.root = scene.add.container(Math.round(at.x), Math.round(at.y), [shadow, this.body]).setDepth(at.y);
   }
 
@@ -468,7 +448,7 @@ export class PetSprite {
   /** Pose quando parado; andando, a caminhada da folha. `rate` segue a velocidade do jogo. */
   animate(pose: PetPose, rate: number): void {
     const kind = this.moving ? 'walk' : pose;
-    const key = `${this.texture}:${kind}`;
+    const key = `${this.anim}:${kind}`;
     if (this.playing !== key) {
       this.playing = key;
       this.body.play(key, true);

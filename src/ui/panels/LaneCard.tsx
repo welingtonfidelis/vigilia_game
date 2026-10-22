@@ -6,13 +6,14 @@ import { useEffect, useRef } from 'preact/hooks';
 import { ACTS, BALANCE, commands, fleeLimit, floorLabel, isBossFloor, maxLevel, partyRooms, xpToNext } from '../../sim/index.ts';
 import type { Hero, Party } from '../../sim/index.ts';
 import { lanes } from '../../render/lane/lanes.ts';
+import { hiUrl } from '../../render/art32.ts';
 import { packUrl } from '../../render/pack.ts';
 import { useCommand, useGame } from '../components.tsx';
 import { fmt, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
 
 function RoomNode(props: { state: 'normal' | 'current' | 'cleared' }) {
-  return <span class={`arena-room-node ${props.state}`} style={{ backgroundImage: `url(${packUrl('export/ui/ui-room-node.png')})` }} aria-hidden="true" />;
+  return <span class={`arena-room-node ${props.state}`} style={{ backgroundImage: `url(${hiUrl(packUrl('export/ui/ui-room-node.png'))})` }} aria-hidden="true" />;
 }
 
 const pct = (v: number): string => `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`;

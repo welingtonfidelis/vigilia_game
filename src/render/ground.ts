@@ -1,7 +1,6 @@
 // Chão da vila em tiles: onde há terra (estradas e terreiros), florestas e a peça certa
 // de cada canto. Puro (sem Phaser) para dar para testar no Node.
 
-import { T } from './assets.ts';
 import { CAVE_PATH, CEMETERY_TILES, COLS, EXPANSION_LOTS, HOME_PATHS, LOT_TILES, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, type TileRect } from './layout.ts';
 import { STAIR_PATHS } from './relief.ts';
 
@@ -45,31 +44,4 @@ export function dirtMask(): boolean[][] {
 export function pathMask(): boolean[][] {
   const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, CAVE_PATH, ...HOME_PATHS];
   return Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => areas.some((r) => inRect(r, x, y))));
-}
-
-/** Escolhe a peça de terra pela vizinhança (fora do mapa conta como terra: a estrada continua). */
-export function dirtTile(mask: boolean[][], x: number, y: number): number {
-  const d = (dx: number, dy: number): boolean => {
-    const yy = y + dy;
-    const xx = x + dx;
-    if (yy < 0 || yy >= ROWS || xx < 0 || xx >= COLS) return true;
-    return mask[yy]![xx]!;
-  };
-  const n = d(0, -1);
-  const s = d(0, 1);
-  const e = d(1, 0);
-  const w = d(-1, 0);
-  if (!n && !w) return T.dirtTL;
-  if (!n && !e) return T.dirtTR;
-  if (!s && !w) return T.dirtBL;
-  if (!s && !e) return T.dirtBR;
-  if (!n) return T.dirtT;
-  if (!s) return T.dirtB;
-  if (!w) return T.dirtL;
-  if (!e) return T.dirtR;
-  if (!d(-1, -1)) return T.dirtInNW;
-  if (!d(1, -1)) return T.dirtInNE;
-  if (!d(1, 1)) return T.dirtInSE;
-  if (!d(-1, 1)) return T.dirtInSW;
-  return T.dirt;
 }

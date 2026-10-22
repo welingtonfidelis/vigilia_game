@@ -71,9 +71,9 @@ src/render/ Phaser: só lê o World a cada quadro
   town.ts, ground.ts  vila no tileset do pack Vigília 1.9 (marcos, casas, árvores, enfeites de transição, copas da frente e neblina); ground.ts diz onde há terra e trilha
   terrain.ts     chão pintado pixel a pixel numa textura única: terra e trilha com borda orgânica, tufos e pedrinhas, marcas de carroça, cinza da fogueira, rebaixo da fonte, paredões de rocha e escadarias
   relief.ts      relevo em degraus (platô do cemitério; alto: portão e berrante; meio: templo, taverna, guilda, praça e caverna; baixo: estalagem, casa de cura, campo, ferreiro, fonte): borda e altura dos paredões (a encosta da meseta é vedada coluna a coluna), escadarias e as células que eles bloqueiam (puro, testado)
-  buildings.ts   os 7 prédios como carimbos de tiles: ruína e níveis 1–3, janelas que acendem
-  sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9; o 0x72 fica só para ecos de herói
-  art.ts         o pouco que os pacotes não têm (lápide, fogueira, berrante, ícones), pixel a pixel
+  sprites.ts     moradores, prefeito, crianças, heróis, retratos e monstros do pack 1.9
+  art32.ts       modo de arte 16/32: escolhe a peça 32-bit quando ela existe (índice em pack32.ts, gerado por `npm run pack32`)
+  art.ts         o pouco que o pack não tem (lápide, fogueira, berrante, ícones), pixel a pixel
   nav.ts         grade de bloqueios e rotas da vila (A*), lidos da transparência da arte (puro, testado)
   fx/            visual 2.5D, componentes reutilizáveis sem regra de jogo:
     shadows.ts     camada única de sombras projetadas (silhueta achatada e deitada para leste), oclusão na base das paredes e sombra suave de pé
@@ -159,13 +159,13 @@ Vigília é um projeto original inspirado na **proposta** de [**Tristram**](http
 - A Bippinbits está desenvolvendo a versão completa oficial do Tristram. Este projeto não tem relação com ela nem com a Bippinbits.
 - "Tristram" e "Diablo" são marcas da Blizzard Entertainment. Vigília não usa elementos desse universo e não é afiliado à Blizzard.
 
-#### Arte de terceiros (CC0)
+#### Arte
 
-As duas licenças são CC0 (domínio público), com uso livre inclusive comercial. Creditamos por gentileza:
+Toda a arte é própria, sem peças de terceiros:
 
 - **Vigília Art Pack 1.9** (Equipe Vigília, CC0 1.0): terreno, 7 prédios × 3 níveis + ruína, casas, portão/berrante, termas, props, FX, moradores, prefeito, crianças, heróis com ataque/morte, retratos, 18 inimigos + 6 chefes, variantes de profundidade, 6 arenas de dungeon em camadas, 24 fundos por andar, UI de dungeon, outono, lamparinas, bancos e carroças. Fica em `public/assets/vigilia/`, com `licenses/LICENSE.md` e o gerador no pacote original.
-- **[Tiny Town](https://kenney.nl/assets/tiny-town)**, de Kenney (kenney.nl): legado da vila/prédios antigos; permanece em `public/assets/kenney-tiny-town/` com o `License.txt` original.
-- **[16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)**, de Robert (0x72): fallback dos ecos de herói no painel da masmorra; fica em `public/assets/0x72-dungeontileset-ii/`, com o `LICENSE.txt` e a origem do arquivo.
+- **Arte 32-bit** (mesma licença): o par de cada peça com o dobro de pixels, em `public/assets/vigilia/export32/`, gerado pelos scripts versionados em `art32/`.
+- Até a versão 1.x o jogo usava também o [Tiny Town](https://kenney.nl/assets/tiny-town), de Kenney, e o [16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii), do 0x72 (ambos CC0). Os dois saíram do jogo com a arte 32-bit.
 
 ### O que o M1 entrega
 
@@ -301,6 +301,50 @@ O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que ap
 
   No Difícil, o que segura é a economia e a corrupção. Com os monstros 10% mais fortes, só 20% das campanhas fechavam em 30 anos, então a força dos monstros ficou igual à do Normal.
 - **Segundo plano em 1×.** Com a aba em segundo plano, o jogo segue sempre em 1×, qualquer que seja a velocidade escolhida. Os 2× e 4× ficam só para quem está olhando, e a vila não avança horas de jogo sozinha a 4×.
+
+**Arte própria em 32-bit e opção 16/32 (branch `arte-32bit`, só entra no main depois do teste):**
+
+- **Objetivo:**
+  - Redesenhar toda a arte em 32-bit, com o dobro de pixels, 4 a 5 tons por material, contorno colorido de 1 px e luz de cima e da esquerda. O piloto foi a taverna nível 3 e o Guardião em 48×64.
+  - Tirar toda a arte de terceiros: o Kenney Tiny Town e o DungeonTileset II, do 0x72.
+  - O jogador escolhe no menu **Arte: 16-bit / 32-bit**, e a troca acontece na hora.
+- **Convenção da peça 32-bit:**
+  - Espelha a 16-bit: mesmo id, arquivo com o mesmo nome em `export32/` no lugar de `export/`.
+  - Tem dimensões exatamente 2×, inclusive cada quadro; mesma quantidade e ordem de quadros; mesma âncora.
+  - O jogo mostra a 32-bit em meia escala; colisão, sombras, janelas acesas e rótulos continuam lendo a 16-bit, que tem o mesmo enquadramento.
+  - Peça que ainda não tem versão 32-bit aparece em 16-bit, então a opção funciona desde o começo.
+  - Os geradores ficam versionados no repositório, em `art32/` (Python + Pillow), com a base comum em `art32/lib32.py`.
+  - `npm run pack32` lista o que existe em `export32/` num índice (`src/render/pack32.ts`).
+- **A troca 16/32:**
+  - A preferência `art` fica nas preferências da tela, não no save.
+  - Na vila, a cena reinicia e o mundo segue intacto.
+  - O corredor do abismo escolhe a folha a cada quadro. Na 32-bit, o recorte é o dobro e o desenho fica nas medidas da 16-bit; o canvas já é desenhado na densidade da tela, então o detalhe aparece.
+  - Retratos e ícones da interface trocam com a próxima renderização. Em `<img>`, a 32-bit vai sozinha num `srcset` "2x", que mantém o tamanho natural da 16-bit; em fundos CSS, o `background-size` já é fixo.
+  - `npm run pack32` também lista todo arquivo de `export32/` com par em `export/` (retratos pequenos, ícones), para a interface.
+- **Arte de terceiros que sai e o que entra no lugar:**
+  - Ecos de heróis mortos no abismo: a folha do próprio herói, em tom fantasma.
+  - Vultos que correm do abismo para a praça na incursão: monstros do ato.
+  - Moeda animada, baú e flecha do corredor: arte nova do pack.
+  - Retrato de monstro reserva na interface: o retrato do pack.
+  - Prédios em blocos de tiles (`src/render/buildings.ts`, sem uso): sai.
+  - Ajuste de UV do atlas do Kenney (`insetTownFrames`): sai.
+  - Créditos: o menu deixa de citar Kenney e 0x72.
+- **Etapas:**
+  1. Opção 16/32 e índice das peças 32-bit. **Feito.**
+  2. Tirar a arte de terceiros. **Feito:** as pastas do Kenney e do 0x72 saíram do repositório, e um teste confere que nenhuma peça vem delas.
+  3. Vila: chão, prédios nos 4 estados, casinhas, enfeites, árvores, portão, berrante, caverna, fonte e cemitério. **Feito.** O chão é pintado direto no dobro de pixels com o tileset 32-bit (medidas e ruídos crescem junto; tufos, pedrinhas e fendas ficam do tamanho do pixel novo).
+  4. Personagens: os 12 heróis com todas as animações (parado, andando, golpe, acerto e morte), prefeito, moradores, crianças e bichos. **Feito.** Na 32-bit o herói morre caindo de costas (o último quadro é o corpo no chão), em vez de virar pó.
+  5. Abismo: monstros, chefes com fases e variantes, corredor e arena dos 6 atos, efeitos. **Feito.**
+  6. Interface: retratos e ícones. **Feito.** O modelo animado da ficha do herói (48×64) usa, na 32-bit, a folha 32-bit do herói, que tem quadros do mesmo tamanho.
+- **Situação:** 401 das 461 peças têm versão 32-bit. As que faltam não aparecem no jogo (o portão antigo com berrante, as folhas 16×28 antigas dos heróis, os modelos 48×64 da ficha, que a folha 32-bit substitui), são vetoriais (os ícones SVG) ou são ícones do site.
+- **Pendente, depois do teste:**
+  - Desenhar o canvas da vila na densidade da tela. Hoje ele é desenhado no tamanho CSS: no zoom do computador (1,5×) o pixel 32-bit ocupa 1,5 pixel do canvas e as linhas finas ficam com espessura irregular. No celular, com zoom 1, o pixel 32-bit cai em 1 pixel do canvas.
+  - Escolher o modo padrão (hoje 16-bit).
+- **Aceite:**
+  - Cada peça 32-bit respeita a convenção.
+  - A vila, o corredor e a interface rodam nos dois modos, sem nenhuma imagem de terceiros carregada.
+  - Testes e build passam.
+  - Só depois do teste do jogador o branch entra no main.
 
 ---
 
@@ -979,7 +1023,7 @@ O pack entregue tem 354 assets e cobre:
 - 6 arenas de dungeon em camadas (back, mid, floor, fore), 24 fundos por andar, profundidades compartilhadas, 34 props, 7 FX e moldura/barra/banner/nó de sala;
 - outono, lamparinas, bancos, carroças e ícones web/favicon.
 
-O pacote de origem fica em `~/Downloads/vigilia-art-v01/`; no repositório, os arquivos usados pelo jogo ficam em `public/assets/vigilia/`. O 0x72 permanece apenas como fallback de ecos de herói.
+O pacote de origem fica em `~/Downloads/vigilia-art-v01/`; no repositório, os arquivos usados pelo jogo ficam em `public/assets/vigilia/`.
 
 ### 3.2 Diretrizes
 
@@ -998,8 +1042,8 @@ Este documento é o contrato visual para uma pessoa ou IA criar/substituir a art
 | Câmera | fixa em **1,5×** (no celular, **1×**), acompanhando o prefeito; **sem zoom** por roda/pinça |
 | Estilo | fantasia sombria, top-down 3/4, fachadas frontais |
 | Pós-processamento | dessaturação −55%, brilho 0,8, contraste +0,08, vinheta |
-| Chão | assado numa `RenderTexture`; UVs recuadas 0,5 texel contra vazamento do atlas |
-| Prédios | 7 lotes, 3 níveis + ruína; hoje compostos com tiles do Tiny Town |
+| Chão | pintado pixel a pixel numa textura única (`terrain.ts`) |
+| Prédios | 7 lotes, 3 níveis + ruína, imagens do pack |
 | Casinhas | 5 na borda sul, 4×3 tiles; hoje compostas com tiles |
 | Portão + berrante | imagem única 80×96 px (5×6 tiles), hoje **gerada em código** |
 | Fonte termal | bacia 80×64 px (5×4 tiles) + terreiro 7×6, hoje **gerada em código** |
@@ -1221,7 +1265,7 @@ public/assets/vigilia/
   export/...
 ```
 
-Os pacotes atuais (`public/assets/kenney-tiny-town` e `0x72-dungeontileset-ii`) **não devem ser sobrescritos**: eles têm licença/atribuição próprias. O pack `vigilia` é adicional, com fallback para os antigos.
+O pack `vigilia` é a única arte do jogo; a versão 32-bit fica ao lado, em `export32/`.
 
 #### Formato do manifesto
 
@@ -1269,7 +1313,7 @@ Não aprove um lote inteiro antes do teste de estilo; o custo de correção é m
 
 ### 3.2.9 Integração atual (para quem for programar)
 
-- O jogo lê `town` (Tiny Town) e `dungeon` (0x72) no carregamento; texturas pequenas são geradas em `src/render/art.ts` e `src/render/town.ts`.
+- O jogo lê as peças do pack no carregamento (e as 32-bit, no modo 32-bit); texturas pequenas são geradas em `src/render/art.ts` e `src/render/town.ts`.
 - O portão/berrante atual é uma textura `gate-horn` gerada em `src/render/town.ts`; a fonte termal e as casinhas também são geradas/compostas em código.
 - O novo pack deve ser carregado por um loader próprio e mapeado pelos IDs do manifesto; **não** trocar os IDs de jogo.
 - Prédios podem virar **uma imagem por nível/ruína** (recomendado para arte externa) ou um kit de tiles; a primeira opção exige adaptar `buildings.ts`.

@@ -3,6 +3,7 @@
 
 import Phaser from 'phaser';
 import {
+  ACTS,
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
@@ -15,7 +16,7 @@ import type { BuildingId, ChronicleEntry, Hero, World } from '../sim/index.ts';
 import type { Session, SessionEvent } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { makeTextures } from './art.ts';
-import { animFrames, ART_SCALE, CLASS_LOOK, DUNGEON_URL, FRAMES_0X72, MAYOR_SPRITE, TOWN_URL } from './assets.ts';
+import { ART_SCALE, MONSTERS, type MonsterLook } from './assets.ts';
 import { PACK_ASSETS, buildingTexture, lightsTexture, packUrl } from './pack.ts';
 import { moveAxis } from './keys.ts';
 import { CELL, NavGrid, type AlphaMask, type Route } from './nav.ts';
@@ -51,7 +52,7 @@ import { registerWind } from './fx/wind.ts';
 import type { FogSystem } from './fx/fog.ts';
 import type { ParallaxLayer } from './fx/parallax.ts';
 import { faceCells } from './relief.ts';
-import { preloadPilot, registerPilotAnims, showArt } from './pilot32.ts';
+import { playArt, preload32, registerAnims32, showArt } from './art32.ts';
 import { buildGround } from './terrain.ts';
 import {
   buildAbyss,
@@ -69,7 +70,6 @@ import {
   DECOR,
   buildThermal,
   DEPTH,
-  insetTownFrames,
   label,
   scatterTrees,
   smooth,
@@ -222,8 +222,6 @@ export class VillageScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.spritesheet('town', TOWN_URL, { frameWidth: 16, frameHeight: 16 });
-    this.load.image('dungeon', DUNGEON_URL);
     for (const a of PACK_ASSETS) {
       // UI/retratos são DOM (SVG/PNG), não texturas do Phaser.
       if (a.type === 'ui-icon' || a.type === 'portrait' || a.type === 'arena-layer' || a.type === 'ui' || a.type === 'web-icon') continue;
@@ -239,20 +237,17 @@ export class VillageScene extends Phaser.Scene {
       if (a.lights) this.load.image(lightsTexture(a.id), packUrl(a.lights));
     }
     this.load.json('vigilia-terrain', packUrl('export/tiles/town-terrain.json'));
-    preloadPilot(this.load);
+    preload32(this.load, this.textures);
   }
 
   create(): void {
     this.registerArt();
-    registerPilotAnims(this);
+    registerAnims32(this);
     registerWind(this.game);
     this.shadows = new ShadowLayer(this, WORLD_W, WORLD_H, DEPTH.shadow);
     this.lighting = new LightingSystem(this, { x: -400, y: -400, width: WORLD_W + 800, height: WORLD_H + 800, depth: DEPTH.night, haloDepth: DEPTH.lights });
     this.particles = new ParticleSystem(this);
     const mask = buildGround(this);
-    // O chão já foi assado; daqui para baixo, todo tile-imagem (prédios, cercas,
-    // portão, quadro, árvores) usa UVs um pouco para dentro contra o vazamento do atlas.
-    insetTownFrames(this);
     this.abyss = buildAbyss(this);
     const solids: Solid[] = [];
     scatterTrees(this, mask, solids);
@@ -294,14 +289,16 @@ export class VillageScene extends Phaser.Scene {
     cam.setBackgroundColor('#07060a');
     cam.setRoundPixels(true);
     cam.startFollow(this.mayor.root, true, 0.12, 0.12);
-    // Fantasia sombria: o Tiny Town é colorido; tira saturação e brilho da cena inteira.
+    // Fantasia sombria: tira um pouco de saturação e brilho da cena inteira.
     if (this.game.renderer.type === Phaser.WEBGL) {
       this.grade = cam.postFX.addColorMatrix();
       this.applyGrade(0);
       this.vignette = cam.postFX.addVignette(0.5, 0.5, 0.95, 0.32);
     }
     this.fitCamera();
-    this.scale.on('resize', () => this.fitCamera());
+    const onResize = () => this.fitCamera();
+    this.scale.on('resize', onResize);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off('resize', onResize));
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => (this.downOnMap = this.onCanvas(p)));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
@@ -344,27 +341,11 @@ export class VillageScene extends Phaser.Scene {
     this.layoutSigns();
   }
 
-  /** Quadros do 0x72 a partir da tabela e as animações de heróis, monstros e moedas. */
+  /** Texturas desenhadas em código e as animações do pack (personagens e FX). */
   private registerArt(): void {
     makeTextures(this);
-    const sheet = this.textures.get('dungeon');
-    for (const [name, [x, y, w, h]] of Object.entries(FRAMES_0X72)) sheet.add(name, 0, x, y, w, h);
-    const bodies = new Set<string>([MAYOR_SPRITE]);
-    for (const look of Object.values(CLASS_LOOK)) for (const g of ['m', 'f']) bodies.add(`${look.body}_${g}`);
-    for (const base of bodies) {
-      for (const kind of ['idle', 'run'] as const) {
-        this.anims.create({
-          key: `${base}_${kind}`,
-          frames: animFrames(base, kind).map((frame) => ({ key: 'dungeon', frame })),
-          frameRate: kind === 'run' ? 10 : 6,
-          repeat: -1,
-        });
-      }
-    }
-    this.anims.create({ key: 'coin', frames: [0, 1, 2, 3].map((i) => ({ key: 'dungeon', frame: `coin_anim_f${i}` })), frameRate: 8, repeat: -1 });
     this.anims.create({ key: 'fire', frames: [{ key: 'fire0' }, { key: 'fire1' }, { key: 'fire2' }], frameRate: 7, repeat: -1 });
 
-    // Animações do pack novo (personagens e FX).
     for (const a of PACK_ASSETS) {
       if (a.animations) {
         for (const [name, anim] of Object.entries(a.animations)) {
@@ -432,7 +413,7 @@ export class VillageScene extends Phaser.Scene {
    * Acende fogo e halo sobre a grelha (que anda para a direita a cada nível).
    */
   private syncForge(level: number): void {
-    if (!this.forgeFire) this.forgeFire = this.add.sprite(0, 0, 'fx/fire').setOrigin(0.5, 1).setScale(1).play('fx/fire');
+    if (!this.forgeFire) this.forgeFire = playArt(showArt(this.add.sprite(0, 0, 'fx/fire'), 'fx/fire', 1), 'fx/fire').setOrigin(0.5, 1);
     const coalX = FORGE_COALS_X[level];
     const lit = level >= 1 && coalX !== undefined;
     this.forgeFire.setVisible(lit);
@@ -579,7 +560,7 @@ export class VillageScene extends Phaser.Scene {
     signs.sort((a, b) => a.lot.x - b.lot.x);
     for (const { id, view, lot } of signs) {
       const sign = view.sign;
-      // A arte de sempre (o piloto 32-bit mostra outra imagem, com o dobro de pixels).
+      // A arte 16-bit (a 32-bit, quando ligada, mostra outra imagem com o dobro de pixels).
       sign.setY(this.roofTop(buildingTexture(id, buildingLevel(this.world, id)), lot.y + lot.h / 2) - 4);
       let rect = sign.getBounds();
       for (let tries = 0; tries < 3; tries++) {
@@ -1246,14 +1227,17 @@ export class VillageScene extends Phaser.Scene {
       .setOrigin(0)
       .setDepth(DEPTH.night + 1);
     this.tweens.add({ targets: flash, alpha: 0, duration: 1400, onComplete: () => flash.destroy() });
-    const frames = ['wogol_idle_anim_f0', 'chort_idle_anim_f0', 'imp_idle_anim_f0', 'skelet_idle_anim_f0'];
+    const looks = this.raidMonsters();
     const start = LANDMARKS.abismo;
     for (let i = 0; i < 6; i++) {
-      const shade = this.add
-        .sprite(start.x + (i - 2.5) * 26, start.y + 26, 'dungeon', frames[i % frames.length]!)
-        .setScale(ART_SCALE)
+      const look = looks[i % looks.length]!;
+      const shade = showArt(this.add.sprite(0, 0, look.asset, 0), look.asset)
+        .setPosition(start.x + (i - 2.5) * 26, start.y + 26)
+        .setOrigin(0.5, 1)
+        .setTint(0x6a5070)
         .setDepth(start.y + 40)
         .setAlpha(0.9);
+      playArt(shade, look.asset, 'run');
       this.tweens.add({
         targets: shade,
         x: LANDMARKS.cofre.x + (i - 2.5) * 60,
@@ -1266,6 +1250,15 @@ export class VillageScene extends Phaser.Scene {
       });
     }
     this.floatText(LANDMARKS.cofre.x, LANDMARKS.cofre.y - 120, 'Incursão!', '#ff8a7a');
+  }
+
+  /** Os monstros comuns do ato mais corrompido: são eles que sobem na incursão. */
+  private raidMonsters(): MonsterLook[] {
+    const open = this.world.acts.filter((a) => a.unlocked);
+    const worst = open.reduce((best, a) => (a.corruption > best.corruption ? a : best), open[0] ?? this.world.acts[0]!);
+    const def = ACTS[this.world.acts.indexOf(worst)] ?? ACTS[0]!;
+    const looks = def.enemies.map((e) => MONSTERS[e.id]).filter((m): m is MonsterLook => !!m);
+    return looks.length ? looks : [MONSTERS.esqueleto!];
   }
 
   private syncGraves(initial: boolean): void {

@@ -5,7 +5,8 @@ import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
 import { startAudio } from './audio/index.ts';
 import { lanes } from './render/lane/lanes.ts';
-import { startRenderer } from './render/game.ts';
+import { startRenderer, switchArt } from './render/game.ts';
+import { setArtMode } from './render/art32.ts';
 import { isTyping } from './render/keys.ts';
 import { HudRoot, OverlayRoot } from './ui/App.tsx';
 import { UiStore, type Tone } from './ui/store.ts';
@@ -14,6 +15,7 @@ import './ui/style.css';
 const store = browserStore();
 const ui = new UiStore();
 ui.prefs = loadPrefs(store);
+setArtMode(ui.prefs.art);
 
 const loaded = loadWorld(store);
 const session = new Session(loaded.ok ? loaded.world : createWorld(Math.floor(Math.random() * 1_000_000)));
@@ -91,12 +93,17 @@ session.subscribe((event) => {
 const applyScale = () => document.documentElement.style.setProperty('--ui-scale', String(ui.prefs.uiScale));
 applyScale();
 let lastPrefs = JSON.stringify(ui.prefs);
+let lastArt = ui.prefs.art;
 ui.subscribe(() => {
   const now = JSON.stringify(ui.prefs);
   if (now === lastPrefs) return;
   lastPrefs = now;
   savePrefs(store, ui.prefs);
   applyScale();
+  if (ui.prefs.art !== lastArt) {
+    lastArt = ui.prefs.art;
+    switchArt(renderer, session, ui, ui.prefs.art);
+  }
 });
 
 const saveNow = () => {
