@@ -7,6 +7,7 @@ import { citizenLook, ICON_KINDS } from './art.ts';
 import { ART_SCALE, heroSprite } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
 import { softFootShadowTexture } from './fx/shadows.ts';
+import { pilotHero } from './pilot32.ts';
 import { Route } from './nav.ts';
 import { DEPTH, pill, smooth } from './town.ts';
 import type { Point } from './layout.ts';
@@ -53,6 +54,8 @@ abstract class Walker {
   readonly route = new Route();
   /** Parado, respira (escala vertical em ciclo); quem já tem respiração na arte não precisa. */
   protected breathes = false;
+  /** Folha 32-bit (dobro de pixels): meia escala e sem o pulinho, que já vem nos quadros. */
+  private readonly hires: boolean;
   private readonly scale: number;
   private readonly breathPhase = Math.random() * Math.PI * 2;
   private playing = '';
@@ -66,16 +69,18 @@ abstract class Walker {
     weapon: string | null,
     scale = ART_SCALE,
     visual?: WalkerVisual,
+    hires = false,
   ) {
     this.base = base;
     this.visual = visual;
-    this.scale = scale;
+    this.hires = hires;
+    this.scale = hires ? scale / 2 : scale;
     const shadow = scene.add.image(0, 1, softFootShadowTexture(scene)).setScale(scale * 0.5);
     this.weapon = weapon ? scene.add.image(10, -12, 'dungeon', weapon).setOrigin(0.5, 1).setScale(scale) : null;
     this.body = scene.add
       .sprite(0, 2, visual?.texture ?? 'dungeon', visual ? 0 : `${base}_idle_anim_f0`)
       .setOrigin(0.5, 1)
-      .setScale(scale);
+      .setScale(this.scale);
     const parts: Phaser.GameObjects.GameObject[] = [shadow, this.body];
     if (this.weapon) parts.push(this.weapon);
     this.root = scene.add.container(Math.round(x), Math.round(y), parts).setDepth(y);
@@ -144,7 +149,7 @@ abstract class Walker {
     const step = this.moving && (this.body.anims.currentFrame?.index ?? 0) % 2 === 0;
     if (this.weapon) this.weapon.y = step ? -14 : -12;
     // Andando, o corpo sobe 1 px da arte a cada passo (o pulinho da caminhada).
-    this.body.y = step ? 2 - ART_SCALE : 2;
+    this.body.y = step && !this.hires ? 2 - ART_SCALE : 2;
     breathe(this.body, this.scale, this.breathes && !this.moving, this.breathPhase);
   }
 }
@@ -177,11 +182,13 @@ export class HeroSprite extends Walker {
   constructor(scene: Phaser.Scene, hero: Hero, at: Point) {
     // Heróis redesenhados do pack 1.4 (direção sombria), com a arma de classe no sprite.
     const texture = heroSpriteId(hero.classId, hero.gender);
-    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null, ART_SCALE, {
+    // Piloto 32-bit (?arte=32): o Guardião vem na folha de 48×64.
+    const pilot = pilotHero(scene, texture);
+    super(scene, at.x, at.y, heroSprite(hero.classId, hero.gender), null, ART_SCALE, pilot ?? {
       texture,
       idle: `${texture}:idle`,
       run: `${texture}:run`,
-    });
+    }, pilot !== null);
     this.id = hero.id;
     this.headY = HEAD_Y - ((packAsset(texture)?.frameSize?.[1] ?? 28) - 28) * ART_SCALE;
     this.ring = scene.add.image(0, 2, 'ring').setScale(ART_SCALE).setVisible(false);

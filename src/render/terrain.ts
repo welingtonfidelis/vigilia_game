@@ -15,6 +15,7 @@ import { COLS, LANDMARKS, ROWS, THERMAL_TILES, TILE } from './layout.ts';
 import { PACK_TILES } from './pack.ts';
 import { CLIFFS, cliffTop, inCliff, stairAt } from './relief.ts';
 import { DEPTH, seeded } from './town.ts';
+import { PILOT32 } from './pilot32.ts';
 
 /** Lado do tile na arte. */
 const T = 16;
@@ -322,17 +323,86 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
     }
   }
 
+  // Piloto 32-bit (?arte=32): o chão vai ao dobro de pixels, com grão novo.
+  const k = PILOT32 ? 2 : 1;
   const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = W * k;
+  canvas.height = H * k;
   const ctx = canvas.getContext('2d')!;
-  ctx.putImageData(new ImageData(c.data, W, H), 0, 0);
+  ctx.putImageData(new ImageData(PILOT32 ? hiresGround(c.data) : c.data, W * k, H * k), 0, 0);
   const key = 'ground/painted';
   if (scene.textures.exists(key)) scene.textures.remove(key);
   scene.textures.addCanvas(key, canvas);
   scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
-  scene.add.image(0, 0, key).setOrigin(0, 0).setScale(ART_SCALE).setDepth(DEPTH.ground);
+  scene.add.image(0, 0, key).setOrigin(0, 0).setScale(ART_SCALE / k).setDepth(DEPTH.ground);
   return mask;
+}
+
+/**
+ * Chão no dobro de pixels (piloto 32-bit): amplia suavizando as diagonais (Scale2x) e
+ * põe grão do tamanho do pixel novo: pontas de capim na grama, pedrinhas e torrões na
+ * terra, variação na rocha.
+ */
+function hiresGround(src: Uint8ClampedArray): Uint8ClampedArray<ArrayBuffer> {
+  const W2 = W * 2;
+  const H2 = H * 2;
+  const out = new Uint8ClampedArray(W2 * H2 * 4);
+  const idx = (x: number, y: number): number => (Math.min(H - 1, Math.max(0, y)) * W + Math.min(W - 1, Math.max(0, x))) * 4;
+  const same = (a: number, b: number): boolean => src[a] === src[b] && src[a + 1] === src[b + 1] && src[a + 2] === src[b + 2];
+  const put = (x: number, y: number, from: number): void => {
+    const o = (y * W2 + x) * 4;
+    out[o] = src[from]!;
+    out[o + 1] = src[from + 1]!;
+    out[o + 2] = src[from + 2]!;
+    out[o + 3] = 255;
+  };
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const p = idx(x, y);
+      const a = idx(x, y - 1);
+      const b = idx(x + 1, y);
+      const c = idx(x - 1, y);
+      const d = idx(x, y + 1);
+      put(2 * x, 2 * y, same(c, a) && !same(c, d) && !same(a, b) ? a : p);
+      put(2 * x + 1, 2 * y, same(a, b) && !same(a, c) && !same(b, d) ? b : p);
+      put(2 * x, 2 * y + 1, same(d, c) && !same(d, b) && !same(c, a) ? c : p);
+      put(2 * x + 1, 2 * y + 1, same(b, d) && !same(b, a) && !same(d, c) ? d : p);
+    }
+  }
+  for (let y = 0; y < H2; y++) {
+    for (let x = 0; x < W2; x++) {
+      const o = (y * W2 + x) * 4;
+      const r = out[o]!;
+      const g = out[o + 1]!;
+      const b = out[o + 2]!;
+      const n = h2(x, y, 61);
+      let k = 1;
+      if (g > r + 8 && g > b) {
+        // Grama: tom miúdo e umas pontas de capim (claro em cima, sombra embaixo).
+        k = 0.93 + 0.14 * n;
+        if (n > 0.965 && y + 1 < H2) {
+          k = 1.28;
+          const below = o + W2 * 4;
+          out[below] = out[below]! * 0.8;
+          out[below + 1] = out[below + 1]! * 0.8;
+          out[below + 2] = out[below + 2]! * 0.8;
+        }
+      } else if (r > g && g > b && r - b > 24) {
+        // Terra: grão, pedrinha clara e torrão escuro.
+        k = 0.95 + 0.1 * n;
+        if (n < 0.035) k = 0.78;
+        else if (n > 0.982) k = 1.22;
+      } else if (Math.abs(r - g) < 14 && Math.abs(g - b) < 16) {
+        k = 0.94 + 0.12 * n;
+      }
+      if (k !== 1) {
+        out[o] = r * k;
+        out[o + 1] = g * k;
+        out[o + 2] = b * k;
+      }
+    }
+  }
+  return out;
 }
 
 /** Pixel da arte dentro da rocha de algum paredão (ou dos degraus). */

@@ -6,6 +6,7 @@ import { AUTUMN, FORESTS, inRect } from './ground.ts';
 import type { FootprintOptions } from './nav.ts';
 import { onFace } from './relief.ts';
 import { sway } from './fx/wind.ts';
+import { showArt } from './pilot32.ts';
 import { FogSystem } from './fx/fog.ts';
 import { ParallaxLayer, type Edge } from './fx/parallax.ts';
 import {
@@ -73,7 +74,7 @@ function packTree(scene: Phaser.Scene, solids: Solid[], name: string, px: number
   // Pé na parede de rocha de um paredão: árvore ali pareceria pendurada no barranco.
   if (onFace(px, py, 6)) return;
   // A sombra vem da camada de sombras (silhueta projetada a partir do que está em `solids`).
-  sway(scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py));
+  sway(showArt(scene.add.image(px, py, name), name).setOrigin(0.5, 1).setDepth(py));
   solids.push({ key: name, x: px, y: py, opts: TRUNK });
 }
 
@@ -152,7 +153,7 @@ export const DECOR: Decor[] = [
 
 export function buildDecor(scene: Phaser.Scene, solids: Solid[]): void {
   for (const d of DECOR) {
-    scene.add.image(d.x, d.y, d.id).setOrigin(0.5, 1).setScale(ART_SCALE).setFlipX(d.flip === true).setDepth(d.y);
+    showArt(scene.add.image(d.x, d.y, d.id), d.id).setOrigin(0.5, 1).setFlipX(d.flip === true).setDepth(d.y);
     solids.push({ key: d.id, x: d.x, y: d.y, opts: d.opts ?? BASE });
   }
 }
@@ -293,7 +294,7 @@ export function buildOvergrowth(scene: Phaser.Scene): { images: Phaser.GameObjec
         v < 0.42 ? 'prop/tree/pine' : v < 0.66 ? 'prop/tree/autumn-small' : v < 0.78 ? 'prop/tree/dead' : v < 0.9 ? 'prop/tree/01' : v < 0.95 ? 'prop/boulder/01' : 'prop/boulder/02';
       const px = Math.round((x + 0.5) * TILE + (rnd() - 0.5) * 12);
       const py = Math.round((y + 1) * TILE - rnd() * 6);
-      const img = scene.add.image(px, py, name).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(py);
+      const img = showArt(scene.add.image(px, py, name), name).setOrigin(0.5, 1).setDepth(py);
       images.push(name.startsWith('prop/tree') ? sway(img) : img);
       solids.push({ key: name, x: px, y: py, opts: name.startsWith('prop/boulder') ? BASE : TRUNK });
     }
@@ -475,7 +476,7 @@ export interface BoardView {
 export function buildBoard(scene: Phaser.Scene, solids: Solid[]): BoardView {
   const x = 28 * TILE;
   const base = 17 * TILE;
-  const board = scene.add.image(x, base, 'prop/board').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(base);
+  const board = showArt(scene.add.image(x, base, 'prop/board'), 'prop/board').setOrigin(0.5, 1).setDepth(base);
   solids.push({ key: 'prop/board', x, y: base, opts: BASE });
   label(scene, x, base - 2 * TILE - 4, 'Quadro', 13).setOrigin(0.5, 1);
   let last = '';
@@ -494,14 +495,16 @@ export interface CofferView {
 
 export function buildCoffer(scene: Phaser.Scene, solids: Solid[]): CofferView {
   const { x, y } = LANDMARKS.cofre;
-  const chest = scene.add.image(x, y + 8, 'prop/coffer').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y + 8);
+  const chest = showArt(scene.add.image(x, y + 8, 'prop/coffer'), 'prop/coffer').setOrigin(0.5, 1).setDepth(y + 8);
+  // Arte de 32-bit vem com o dobro de pixels: a escala de base cai pela metade.
+  const unit = chest.scaleX / ART_SCALE;
   solids.push({ key: 'prop/coffer', x, y: y + 8, opts: { fromBottom: 12, minCover: 0.3 } });
   let shown = -1;
   const update = (treasury: number) => {
     const step = Math.floor(Math.log2(treasury / 15 + 1));
     if (step === shown) return;
     shown = step;
-    chest.setScale(ART_SCALE + Math.min(0.35, step * 0.015));
+    chest.setScale((ART_SCALE + Math.min(0.35, step * 0.015)) * unit);
   };
   label(scene, x, y + 10, 'Cofre', 13);
   return { update };
@@ -509,7 +512,7 @@ export function buildCoffer(scene: Phaser.Scene, solids: Solid[]): CofferView {
 
 export function buildCampfire(scene: Phaser.Scene, solids: Solid[]): void {
   const { x, y } = LANDMARKS.fogueira;
-  scene.add.image(x, y, 'prop/campfire/on').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
+  showArt(scene.add.image(x, y, 'prop/campfire/on'), 'prop/campfire/on').setOrigin(0.5, 1).setDepth(y - 2);
   solids.push({ key: 'prop/campfire/on', x, y, opts: { fromBottom: 10, minCover: 0.3 } });
   scene.add.sprite(x, y - 4, 'fx/fire').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).play('fx/fire');
 }
@@ -542,7 +545,7 @@ export function buildThermal(scene: Phaser.Scene, solids: Solid[]): void {
  */
 export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phaser.GameObjects.Image[]; lamps: Point[] } {
   const prop = (id: string, x: number, y: number): void => {
-    scene.add.image(x, y, id).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    showArt(scene.add.image(x, y, id), id).setOrigin(0.5, 1).setDepth(y);
     solids.push({ key: id, x, y, opts: BASE });
   };
   prop('prop/well', 21 * TILE + 16, 16 * TILE);
@@ -559,14 +562,9 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phas
   const lights: Phaser.GameObjects.Image[] = [];
   const lamps: Point[] = [];
   const lamp = (x: number, y: number): void => {
-    scene.add.image(x, y, 'prop/lamp').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y);
+    showArt(scene.add.image(x, y, 'prop/lamp'), 'prop/lamp').setOrigin(0.5, 1).setDepth(y);
     solids.push({ key: 'prop/lamp', x, y, opts: { fromBottom: 4, minCover: 0.15 } });
-    const light = scene.add
-      .image(x, y, 'prop/lamp-lights')
-      .setOrigin(0.5, 1)
-      .setScale(ART_SCALE)
-      .setDepth(DEPTH.lights)
-      .setAlpha(0);
+    const light = showArt(scene.add.image(x, y, 'prop/lamp-lights'), 'prop/lamp-lights').setOrigin(0.5, 1).setDepth(DEPTH.lights).setAlpha(0);
     lights.push(light);
     // A chama fica no alto do poste, um pouco à direita do meio (x 11, y 14 da arte 16×32).
     lamps.push({ x: x + 6, y: y - 36 });

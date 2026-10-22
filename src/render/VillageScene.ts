@@ -51,6 +51,7 @@ import { registerWind } from './fx/wind.ts';
 import type { FogSystem } from './fx/fog.ts';
 import type { ParallaxLayer } from './fx/parallax.ts';
 import { faceCells } from './relief.ts';
+import { preloadPilot, registerPilotAnims, showArt } from './pilot32.ts';
 import { buildGround } from './terrain.ts';
 import {
   buildAbyss,
@@ -238,10 +239,12 @@ export class VillageScene extends Phaser.Scene {
       if (a.lights) this.load.image(lightsTexture(a.id), packUrl(a.lights));
     }
     this.load.json('vigilia-terrain', packUrl('export/tiles/town-terrain.json'));
+    preloadPilot(this.load);
   }
 
   create(): void {
     this.registerArt();
+    registerPilotAnims(this);
     registerWind(this.game);
     this.shadows = new ShadowLayer(this, WORLD_W, WORLD_H, DEPTH.shadow);
     this.lighting = new LightingSystem(this, { x: -400, y: -400, width: WORLD_W + 800, height: WORLD_H + 800, depth: DEPTH.night, haloDepth: DEPTH.lights });
@@ -403,9 +406,9 @@ export class VillageScene extends Phaser.Scene {
     if (level === view.level) return;
     const lot = LOTS[id];
     const texture = buildingTexture(id, level);
-    view.base.setTexture(texture);
+    showArt(view.base, texture);
     if (this.textures.exists(lightsTexture(texture))) {
-      view.lights.setTexture(lightsTexture(texture));
+      showArt(view.lights, lightsTexture(texture));
       view.lights.setVisible(true);
     } else {
       view.lights.setVisible(false);
@@ -568,15 +571,16 @@ export class VillageScene extends Phaser.Scene {
    */
   private layoutSigns(): void {
     const placed: Phaser.Geom.Rectangle[] = [];
-    const signs: { view: BuildingView; lot: (typeof LOTS)[BuildingId] }[] = [];
+    const signs: { id: BuildingId; view: BuildingView; lot: (typeof LOTS)[BuildingId] }[] = [];
     for (const id of BUILDING_IDS) {
       const view = this.buildings.get(id);
-      if (view) signs.push({ view, lot: LOTS[id] });
+      if (view) signs.push({ id, view, lot: LOTS[id] });
     }
     signs.sort((a, b) => a.lot.x - b.lot.x);
-    for (const { view, lot } of signs) {
+    for (const { id, view, lot } of signs) {
       const sign = view.sign;
-      sign.setY(this.roofTop(view.base.texture.key, lot.y + lot.h / 2) - 4);
+      // A arte de sempre (o piloto 32-bit mostra outra imagem, com o dobro de pixels).
+      sign.setY(this.roofTop(buildingTexture(id, buildingLevel(this.world, id)), lot.y + lot.h / 2) - 4);
       let rect = sign.getBounds();
       for (let tries = 0; tries < 3; tries++) {
         const padded = new Phaser.Geom.Rectangle(rect.x - 6, rect.y - 1, rect.width + 12, rect.height + 2);
