@@ -61,6 +61,8 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   doacao: 'gold',
   cidadao: 'info',
   incursao: 'bad',
+  desejo: 'info',
+  nemesis: 'bad',
 };
 
 // Um Senhor caiu: pausa e mostra a tela (o último fecha a campanha).

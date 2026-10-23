@@ -4,13 +4,15 @@ import { CLASSES } from '../data/classes.ts';
 import { RANKS } from '../data/classes.ts';
 import { record, floorLabel, listNames, ofWhom } from './chronicle.ts';
 import { lordOf } from '../data/lords.ts';
-import { TICKS_PER_HOUR } from './config.ts';
+import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
 import { abyssPressure, confidence, lairRooms, lairSpot, lordConfidence, mysteryConfidence, openPassage, openPassages, passageCapacity, passageOf, spotOf, travelTicks } from './dungeon.ts';
 import { maxParties, maxPartySize } from './economy.ts';
 import { getBond, hasTrait, traitSum } from './hero.ts';
 import { townHeroes } from './town.ts';
 import { buyProvisions } from './patronage.ts';
 import { noteWish, wishPairBonus } from './wishes.ts';
+import { huntSpot, nemesisMigrate } from './nemesis.ts';
+import { takeRumorSeed } from './rumors.ts';
 import type { Hero, Party, Spot, World } from './types.ts';
 
 export const busyParties = (world: World): Party[] => world.parties.filter((p) => p.phase !== 'voltando');
@@ -109,6 +111,10 @@ export function chooseTarget(world: World, members: Hero[]): Target {
     );
     if (opt && opt.confidence >= need - 0.25) return { ...opt, contractId: contract.id };
   }
+  // Quem chora alguém que uma nêmesis levou quer descer onde ela foi vista (M6 F2).
+  const hunt = huntSpot(world, members);
+  const prey = hunt && options.find((o) => o.spot?.passageId === hunt.passageId && o.spot.floor === hunt.floor);
+  if (prey && prey.confidence >= need - B.nemesisHuntSlack) return prey;
   const bold = options.filter((o) => o.confidence >= need);
   // Uma passagem muito pressionada ameaça a vila: quem pode, desce nela para conter.
   if (abyssPressure(world) >= 60) {
@@ -124,7 +130,10 @@ function depart(world: World, members: Hero[]): void {
   const target = chooseTarget(world, members);
   // Passagem nova: o mundo já existe na semente, mas só se revela quando o grupo entra.
   const opened = target.spot === null;
-  const spot = target.spot ?? spotOf(openPassage(world), 0);
+  // Passagem nova: segue o rumor que o prefeito marcou no mapa da guilda (M6 F2).
+  const fresh = target.spot ? null : openPassage(world, takeRumorSeed(world));
+  if (fresh) nemesisMigrate(world, fresh);
+  const spot = target.spot ?? spotOf(fresh!, 0);
   const party = launch(world, members, spot, target.confidence, target.contractId);
   party.opened = opened;
   if (target.contractId !== null) {

@@ -1669,7 +1669,7 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
 
 - 1 petição a cada 4 dias em média, válida por 5 dias, até 3 na mesa; desejo em cerca de 10% dos heróis, com 30 a 60 dias de prazo.
 - 3 cargos, revistos na primavera; torneio de 8 no último dia da estação.
-- Nêmesis: até 3 vivas, degrau até 3, 50% de chance de fuga abaixo de 25% da vida.
+- Nêmesis: 5% de chance de nascer, até 3 vivas, degrau até 3, 50% de chance de fuga abaixo de 25% da vida, 35% de chance de se mudar para cada passagem nova, corpo de elite (vida ×2,5 e ataque ×1,3).
 - 3 rumores por vaga; encontros no lugar de parte das salas vazias; 1 hora para o conselho do corvo.
 - Enfeites liberados por feitos, com ouro simbólico de até 50.
 
@@ -1710,6 +1710,46 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
   - Por campanha: 10 petições por ano e 340 desejos (133 cumpridos pelo prefeito automático e 167 esquecidos).
   - Os alertas de contratos perdidos abaixo de 20% e de ócio vêm das sementes, não da F1: no `main`, as sementes 21 a 40 também dão 16% e 9 dias.
   - O chefe máximo ficou 1,8 ano depois, um pouco acima da margem de 1,5 do item 13. Com 40 sementes, o ruído da média é de uns 2 anos. Sem o bônus do par, o resultado sai idêntico: o prefeito automático quase nunca conversa com os dois no mesmo dia, então o par não explica a diferença.
+
+##### 17. Como ficou a F2
+
+- **Nêmesis** (`src/sim/nemesis.ts`, epítetos em `src/data/nemesis.ts`). Mudanças em relação ao item 5:
+  - **Nascimento:** o monstro comum que matou alguém e saiu vivo da luta vira nêmesis com 5% de chance. A spec não tinha chance; sem ela nasciam 34 por campanha, e a meta é de 5 a 15.
+  - Saem vivos: quem estava de pé quando o grupo fugiu, recuou ou caiu, e quem fugiu na névoa. Abaixo de 25% da vida, o monstro que matou alguém naquela luta tem 50% de chance de fugir. Na tela, ele vira as costas e some.
+  - **Ao nascer, ela some na névoa.** Fica sem lugar e volta numa passagem nova (35% de chance por passagem), num andar antes do guardião. Na primeira versão ela ficava no mesmo andar, e o próximo grupo a matava sem drama.
+  - **Corpo de elite:** vida ×2,5 e ataque ×1,3, mais 15% por degrau, sem o ouro de elite (o ouro é o de um monstro comum). Com só os degraus, um rato nêmesis caía num golpe.
+  - **A confiança do grupo conta a nêmesis:** o andar onde ela foi vista soma a ameaça a mais da sala dela. Quem não vai à caça tende a evitar o andar.
+  - **Caçada:** parentes e amigos das vítimas (laço de 40 ou mais, cônjuge, pais e filhos) aceitam 0,25 de confiança a menos para descer no andar dela. O quadro ganha o alvo "caçar …".
+  - **Caçada em andar já conquistado:** vira um contrato especial, que se cumpre quando ela cai. Se outro grupo a derrubar, as caçadas que ninguém pegou devolvem o ouro ao tesouro.
+  - Aparece uma vez por descida para cada grupo, numa sala de bando ou de elite, no lugar de um monstro.
+  - **Queda:** quem deu o golpe ganha o feito "vingou …", que entra no epitáfio. Os parentes e amigos no grupo ganham ânimo e alívio no luto.
+- **Rumores** (`src/sim/rumors.ts`, frases em `src/data/rumors.ts`): uma frase por regra e uma por bioma.
+  - Os três rumores preferem biomas diferentes. A semente vem de um RNG próprio e muda a cada passagem aberta e a cada nível.
+  - O prefeito marca o rumor no painel do Abismo, no lugar da antiga "passagem desconhecida". O alvo de passagem nova no quadro diz qual rumor segue.
+  - O tamanho é garantido: os andares só dependem do nível.
+- **Telas:**
+  - Seção **Nêmesis** no painel do Abismo: nome, degrau, quem ela levou, onde foi vista e o botão de caçada. As caídas aparecem com quem as derrubou.
+  - O andar dela fica marcado em vermelho no mapa da guilda.
+  - No corredor, uma aura vermelha pulsa sob ela, com o nome em cima.
+  - Avisos no nascimento, no encontro e na queda. A crônica põe as nêmesis em "Perdas", os desejos em "Heróis" e as audiências em "Vila".
+- **Prefeito automático:** posta a caçada antes dos outros contratos quando o grupo chega ao andar.
+- **Testes:** 12 novos (`tests/nemesis.test.ts`), 234 no total.
+- **Retrato (Normal, 40 sementes × 100 anos de cada lado):**
+
+  | | `main` | F1 | F2 |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 6,8 | ano 6,8 | ano 6,0 |
+  | Senhor do nível 5 | ano 31,9 | ano 33,1 | ano 32,5 |
+  | Chefe máximo | ano 75,0 | ano 76,8 | ano 77,5 |
+  | Ouro dos heróis no fim | 90,8 mil | 87,4 mil | 87,3 mil |
+  | Tesouro médio no fim | 12,1 mil | 12,2 mil | 11,9 mil |
+  | Mortes por ano | 4,8 | 5,0 | 4,6 |
+  | Contratos do Senhor perdidos | 19% | 17% | 18% |
+
+  - Por campanha: 11,5 nêmesis, 12 encontros, 13 heróis levados por elas e 11,5 caídas.
+  - O chefe máximo chega 2,5 anos depois do `main`, acima da margem de 1,5 do item 13. O ruído da média é de uns 2 anos, mas desde a F1 ele vem um pouco depois em toda rodada (76,8, 76,3 e 77,5).
+  - A nêmesis não aumenta as mortes: com nascimento de 15%, 34 por campanha e o corpo de elite, ficaram em 4,5 por ano.
+- **Pedido durante a F2 (2026-10-23): mais postes de luz.** A rua de baixo não tinha nenhum. Entraram quatro: entre a estalagem e a casa de cura, no pé da escada da fonte termal, antes do campo de treino e entre o campo e o ferreiro. Entrou também um na ponta oeste da rua de cima, na frente do templo. Cada um acende à noite com o halo dos outros.
 
 ### 10. Decisões em aberto
 

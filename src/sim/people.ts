@@ -289,7 +289,7 @@ const TRAIT_EPITAPH: Partial<Record<string, string>> = {
   marcado: 'Cada cicatriz, uma história.',
 };
 
-const DEED_PRIORITY = ['chefe', 'ultimoDePe', 'conquista', 'matador'] as const;
+const DEED_PRIORITY = ['chefe', 'nemesis', 'ultimoDePe', 'desejo', 'conquista', 'matador'] as const;
 
 export function epitaph(world: World, hero: Hero): string {
   const parts = [`Aqui jaz ${hero.name}, ${className(hero)} de rank ${hero.rank}.`];

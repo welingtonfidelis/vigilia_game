@@ -10,11 +10,16 @@ import {
   floorLabel,
   formatDate,
   isGuardianFloor,
+  livingNemeses,
   MATERIAL_NAMES,
+  nemesisStep,
+  nemesisWhere,
   openPassages,
   partyRooms,
   passageCapacity,
   rulesLabel,
+  rumorBoard,
+  TICKS_PER_DAY,
 } from '../../sim/index.ts';
 import type { MaterialId, Party, Passage, Unit, World } from '../../sim/index.ts';
 import type { ExpeditionSummary } from '../../game/session.ts';
@@ -68,15 +73,102 @@ function AbyssOverview(props: { world: World }) {
       {abyss.passages.map((p) => (
         <PassageCard key={p.id} world={world} passage={p} />
       ))}
-      {free > 0 && (
-        <div class="act passage unknown">
-          <div class="act-head">
-            <strong>Passagem desconhecida</strong>
-          </div>
-          <p class="sub">Ninguém sabe o que há do outro lado. O próximo grupo que descer pode abri-la.</p>
-        </div>
-      )}
+      {free > 0 && <Rumors world={world} />}
     </div>
+  );
+}
+
+/** Rumores da próxima passagem (M6 F2): o prefeito marca qual delas o próximo grupo abre. */
+function Rumors(props: { world: World }) {
+  const { world } = props;
+  const command = useCommand();
+  const board = rumorBoard(world);
+  return (
+    <div class="act passage unknown rumors">
+      <div class="act-head">
+        <strong>Rumores da próxima passagem</strong>
+      </div>
+      <p class="sub">A guilda ouviu falar de três passagens do mesmo tamanho. O próximo grupo que descer abre a marcada.</p>
+      <div class="rumor-list">
+        {board.list.map((r, i) => {
+          const marked = board.marked === i;
+          return (
+            <button key={r.seed} class={`rumor${marked ? ' marked' : ''}`} aria-pressed={marked} onClick={() => command(commands.markRumor, i)}>
+              <strong>{BIOMES[r.biome]!.name}</strong>
+              {r.rule && (
+                <span class="tag" title={DIM_RULES[r.rule].blurb}>
+                  {DIM_RULES[r.rule].name}
+                </span>
+              )}
+              <span>{r.text}</span>
+              <em>{marked ? 'Marcada: é a próxima a abrir' : 'Marcar esta'}</em>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Nêmesis (M6 F2): os monstros que levaram heróis e fugiram, e onde foram vistos. */
+function Nemeses(props: { world: World }) {
+  const { world } = props;
+  const command = useCommand();
+  const living = livingNemeses(world);
+  const fallen = (world.abyss.nemeses ?? []).filter((n) => n.fallen).slice(-3).reverse();
+  if (living.length === 0 && fallen.length === 0) return null;
+  return (
+    <>
+      <h3>Nêmesis</h3>
+      {living.map((n) => {
+        const where = nemesisWhere(world, n);
+        const passage = n.passageId === null ? undefined : world.abyss.passages.find((p) => p.id === n.passageId);
+        const reachable = !!passage && !passage.sealed && passage.discovered && (n.floor === 0 || passage.conquered[n.floor - 1]);
+        const posted = world.town.contracts.some((c) => c.passageId === n.passageId && c.floor === n.floor);
+        const reward = passage ? commands.suggestedReward(passage.level, n.floor) : 0;
+        return (
+          <div key={n.id} class="nemesis">
+            <div class="act-head">
+              <strong>{n.name}</strong>
+              <span class="tag bad">degrau {nemesisStep(n)}</span>
+            </div>
+            <p class="sub">
+              {n.enemyName} que levou{' '}
+              {n.victims.map((id, i) => (
+                <>
+                  {i > 0 && (i === n.victims.length - 1 ? ' e ' : ', ')}
+                  <HeroLink key={id} id={id} />
+                </>
+              ))}
+              . {where ? `Vista no ${where}.` : 'Sumiu na névoa: volta numa passagem que ainda vai abrir.'}
+            </p>
+            {reachable && !posted && (
+              <button class="btn small" disabled={world.town.treasury < reward} onClick={() => command(commands.postContract, n.passageId, n.floor, reward)}>
+                Postar caçada ({fmt(reward)} de ouro)
+              </button>
+            )}
+            {posted && <p class="sub gold">Há um contrato no quadro para esse andar.</p>}
+          </div>
+        );
+      })}
+      {fallen.length > 0 && (
+        <p class="sub">
+          Caídas:{' '}
+          {fallen.map((n, i) => (
+            <span key={n.id}>
+              {i > 0 && ' · '}
+              {n.name} ({formatDate(n.fallen!.day * TICKS_PER_DAY)}
+              {n.fallen!.by !== null && (
+                <>
+                  , por <HeroLink id={n.fallen!.by} />
+                </>
+              )}
+              )
+            </span>
+          ))}
+        </p>
+      )}
+    </>
   );
 }
 
@@ -117,8 +209,13 @@ function PassageCard(props: { world: World; passage: Passage }) {
           const open = f === 0 || passage.conquered[f - 1];
           const map = passage.maps[f];
           const cleared = map ? map.filter((r) => r.cleared).length : 0;
+          const prey = livingNemeses(world).find((n) => n.passageId === passage.id && n.floor === f);
           return (
-            <div key={f} class={`floor ${done ? 'done' : open ? 'open' : 'locked'}`} title={floorName(passage, f)}>
+            <div
+              key={f}
+              class={`floor ${done ? 'done' : open ? 'open' : 'locked'}${prey ? ' nemesis-floor' : ''}`}
+              title={prey ? `${floorName(passage, f)} · ${prey.name} foi vista aqui` : floorName(passage, f)}
+            >
               <span>{isGuardianFloor(passage, f) ? <IconSkull /> : f + 1}</span>
               <small>{done ? 'conquistado' : open ? (map ? `${cleared}/${map.length} salas` : 'inexplorado') : 'trancado'}</small>
             </div>
@@ -339,6 +436,7 @@ export function DungeonPanel() {
         </p>
       )}
       <AbyssOverview world={world} />
+      <Nemeses world={world} />
       <h3>Grupos no abismo</h3>
       {parties.length === 0 ? (
         <p class="sub">Ninguém lá embaixo agora. Os heróis montam grupos sozinhos no quadro quando estão descansados.</p>

@@ -8,13 +8,13 @@ type Filter = 'tudo' | 'mortes' | 'gloria' | 'herois' | 'vila';
 
 const FILTERS: Record<Filter, { label: string; kinds: ChronicleKind[] | null }> = {
   tudo: { label: 'Tudo', kinds: null },
-  mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco', 'lesao', 'cicatriz'] },
+  mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco', 'lesao', 'cicatriz', 'nemesis'] },
   gloria: { label: 'Glória', kinds: ['conquista', 'passagem', 'chefe', 'promocao', 'traco', 'nivel', 'fim'] },
   herois: {
     label: 'Heróis',
-    kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao'],
+    kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao', 'desejo'],
   },
-  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito', 'festival', 'doacao', 'cidadao', 'incursao', 'decreto', 'evento', 'bicho'] },
+  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito', 'festival', 'doacao', 'cidadao', 'incursao', 'decreto', 'evento', 'bicho', 'audiencia'] },
 };
 
 const TONE: Partial<Record<ChronicleKind, string>> = {
@@ -42,6 +42,8 @@ const TONE: Partial<Record<ChronicleKind, string>> = {
   incursao: 'bad',
   decreto: 'info',
   evento: 'info',
+  desejo: 'info',
+  nemesis: 'bad',
 };
 
 const PAGE = 150;

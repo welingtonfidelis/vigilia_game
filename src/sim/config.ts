@@ -387,4 +387,24 @@ export const BALANCE = {
   wishVeteranXp: 0.25,
   /** Chance de quem desceu com o amigo perder o traço Traumatizado. */
   wishHealTrauma: 0.5,
+
+  // Nêmesis e rumores (M6 F2)
+  /** Chance de o monstro que matou alguém e saiu vivo da luta virar nêmesis. */
+  nemesisBirthChance: 0.05,
+  /** Abaixo desta fração da vida, o monstro que matou alguém nesta luta pode fugir na névoa. */
+  nemesisFleeBelow: 0.25,
+  nemesisFleeChance: 0.5,
+  /** Nêmesis vivas ao mesmo tempo. */
+  nemesisMax: 3,
+  /** A nêmesis luta com o corpo de um elite (sem o ouro de elite), e cada herói que ela matou soma um degrau, até o teto. */
+  nemesisHp: 2.5,
+  nemesisAtk: 1.3,
+  nemesisStepBonus: 0.15,
+  nemesisMaxStep: 3,
+  /** Chance de uma nêmesis sem lugar se mudar para uma passagem que acabou de abrir. */
+  nemesisMigrateChance: 0.35,
+  /** Quanto de confiança a menos quem quer vingar alguém aceita para caçar a nêmesis. */
+  nemesisHuntSlack: 0.25,
+  /** Rumores que a guilda traz para cada vaga de passagem nova. */
+  rumorCount: 3,
 } as const;

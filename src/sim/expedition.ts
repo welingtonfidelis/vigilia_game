@@ -26,6 +26,7 @@ import {
 import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
 import { noteWish } from './wishes.ts';
+import { nemesisAfterCombat, nemesisById } from './nemesis.ts';
 import { chance, int, pick, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, Spot, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
@@ -64,6 +65,7 @@ function stepParty(world: World, party: Party): void {
     case 'combate': {
       const result = combatTick(world, party);
       if (result === 'andamento') return;
+      nemesisAfterCombat(world, party.combat!, result);
       syncHeroes(world, party.combat!);
       party.combat = null;
       for (const h of members(world, party)) maybeInjure(world, h, h.hp / heroStats(world, h).maxHp, `do ${floorLabel(party)}`);
@@ -522,8 +524,14 @@ function arrive(world: World, party: Party): void {
   // Contrato
   const contract = town.contracts.find((c) => c.id === party.contractId);
   // Passagem nova: vale ter aberto a passagem. Andar: vale o andar estar conquistado.
+  // Caçada (M6 F2): vale a nêmesis ter caído.
   const done =
-    !!contract && (contract.passageId === null ? party.opened === true : passageOf(world, contract.passageId)?.conquered[contract.floor] === true);
+    !!contract &&
+    (contract.nemesisId !== undefined
+      ? !!nemesisById(world, contract.nemesisId)?.fallen
+      : contract.passageId === null
+        ? party.opened === true
+        : passageOf(world, contract.passageId)?.conquered[contract.floor] === true);
   if (contract && done && heroes.length > 0) {
     // A guilda Mercenária completa a recompensa do bolso dela.
     const reward = Math.round(contract.reward * (hasSpec(world, 'mercenaria') ? B.specMercenariaReward : 1));

@@ -162,9 +162,12 @@ const upkeepShare = sum((w) => w.metrics.maintenance) / Math.max(1, sum((w) => w
 console.log(`  ${upkeepShare >= 0.15 && upkeepShare <= 0.3 ? '✔' : '✘'} manutenção e consertos: ${pct(upkeepShare)} do que entrou no tesouro (meta 15% a 30%)`);
 console.log(`  consertos por campanha ${per((w) => w.metrics.repairs)} · conservação média no fim ${fmt(mean(all.map((w) => w.metrics.daily.at(-1)!.care)), 0)}`);
 
-console.log('\n── Audiências e desejos (M6 F1) ──');
+console.log('\n── Audiências, desejos e nêmesis (M6) ──');
 console.log(`  petições por ano ${perYear((w) => w.metrics.audiences?.asked ?? 0)} · respondidas ${perYear((w) => w.metrics.audiences?.answered ?? 0)} · vencidas ${perYear((w) => w.metrics.audiences?.expired ?? 0)}`);
 console.log(`  desejos por campanha ${per((w) => w.metrics.wishes?.made ?? 0)} · cumpridos ${per((w) => w.metrics.wishes?.done ?? 0)} · esquecidos ${per((w) => w.metrics.wishes?.failed ?? 0)}`);
+console.log(
+  `  nêmesis por campanha ${per((w) => w.metrics.nemeses?.born ?? 0)} · encontros ${per((w) => w.metrics.nemeses?.met ?? 0)} · heróis que levaram ${per((w) => w.metrics.nemeses?.kills ?? 0)} · caídas ${per((w) => w.metrics.nemeses?.fallen ?? 0)}`,
+);
 
 console.log('\n── Confiança ao descer × desfecho (calibra a escolha de andar) ──');
 const buckets = new Map<string, { n: number; deaths: number; wipes: number; conquests: number }>();

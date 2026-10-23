@@ -1,0 +1,28 @@
+// Nêmesis (M6 F2): os epítetos que a vila dá ao monstro que levou alguém e fugiu.
+
+export const NEMESIS_NAMES: readonly string[] = [
+  'Garra-Fria',
+  'Olho-Torto',
+  'Dente-de-Ferro',
+  'Sombra-Longa',
+  'Mão-Rubra',
+  'Boca-de-Cinza',
+  'Unha-Negra',
+  'Pele-de-Pedra',
+  'Rasga-Véu',
+  'Quebra-Escudo',
+  'Uivo-Baixo',
+  'Passo-Mudo',
+  'Meia-Cara',
+  'Fome-Velha',
+  'Três-Cortes',
+  'Bico-Torto',
+  'Sem-Sono',
+  'Rabo-de-Brasa',
+  'Ferrugem',
+  'Lamento',
+  'Viúva-Branca',
+  'Corta-Sino',
+  'Cinza-Viva',
+  'Espinho-Fundo',
+];

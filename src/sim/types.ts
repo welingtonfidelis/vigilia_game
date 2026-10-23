@@ -244,7 +244,7 @@ export interface HeroTrait {
 
 export interface Deed {
   tick: number;
-  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador' | 'desejo';
+  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador' | 'desejo' | 'nemesis';
   text: string;
 }
 
@@ -357,7 +357,7 @@ export interface EnemyUnitDef {
   tags: EnemyTag[];
 }
 
-export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen';
+export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen' | 'nemesis';
 export type Affix = 'veloz' | 'vampirico' | 'explosivo' | 'couracado' | 'feroz';
 export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos' | 'colmeia' | 'canto' | 'placas' | 'exercito';
 
@@ -389,6 +389,14 @@ export interface Unit {
   lifesteal?: number;
   /** Até este tick o herói fica parado, encantado pelo canto do Coro Submerso. */
   charmedUntil?: number;
+  /** O monstro de src/data/biomes.ts por trás da unidade. */
+  defId?: string;
+  /** Heróis que este monstro matou nesta luta (para virar nêmesis, M6 F2). */
+  kills?: number[];
+  /** Já tentou fugir na névoa nesta luta. */
+  fleeTried?: boolean;
+  /** Esta unidade é a nêmesis com este id. */
+  nemesisId?: number;
 }
 
 export interface Combat {
@@ -504,6 +512,8 @@ export interface Party extends Spot {
   /** O quanto o grupo se achava capaz ao descer (1 = no limite). */
   confidence: number;
   moments: string[];
+  /** Nêmesis que este grupo já encontrou nesta descida (aparece uma vez por descida). */
+  nemesisMet?: number[];
   /** Quem levou ração e tochas nesta descida (gasta metade da energia entre as salas). */
   provisioned?: number[];
   /** Quem levou relíquia do templo (foge menos nesta descida). */
@@ -549,6 +559,47 @@ export interface AbyssState {
   amulet: Amulet | null;
   /** Fragmentos do nível atual comprados dos mercadores do abismo (no máximo fragmentBuyMax). */
   bought: number;
+  /** Monstros que levaram heróis e fugiram (M6 F2), vivos e caídos, e o contador próprio. */
+  nemeses?: Nemesis[];
+  nemesisSeq?: number;
+  /** O que a guilda ouve sobre a próxima passagem (M6 F2). */
+  rumors?: RumorBoard;
+}
+
+/** Monstro que levou heróis e saiu vivo da luta (M6 F2). */
+export interface Nemesis {
+  id: number;
+  /** Epíteto que a vila deu ("Garra-Fria"). */
+  name: string;
+  /** O monstro de sempre por baixo (id e nome do tipo em src/data/biomes.ts). */
+  enemyId: string;
+  enemyName: string;
+  bornDay: number;
+  /** Heróis que ela matou: cada um é um degrau (até nemesisMaxStep). */
+  victims: number[];
+  /** Onde está agora (null = sumiu na névoa até uma passagem nova abrir). */
+  passageId: number | null;
+  floor: number;
+  /** Último dia em que um grupo deu de cara com ela. */
+  seenDay: number | null;
+  fallen: { day: number; by: number | null } | null;
+}
+
+/** Os rumores sobre a próxima passagem; `key` muda a cada passagem aberta (M6 F2). */
+export interface RumorBoard {
+  key: number;
+  level: number;
+  list: Rumor[];
+  /** O rumor que o prefeito marcou no mapa da guilda (o primeiro, sem escolha). */
+  marked: number;
+}
+
+export interface Rumor {
+  seed: number;
+  biome: number;
+  /** A regra que o rumor revela (null = nenhuma). */
+  rule: DimRuleId | null;
+  text: string;
 }
 
 export interface Remains {
@@ -570,6 +621,8 @@ export interface Contract {
   reward: number;
   postedTick: number;
   takenBy: number | null;
+  /** Caçada (M6 F2) num andar já conquistado: cumpre quando esta nêmesis cai. */
+  nemesisId?: number;
 }
 
 export interface ExpansionState {
@@ -701,6 +754,8 @@ export type ChronicleKind =
   /** Audiências da manhã e desejos dos heróis (M6 F1). */
   | 'audiencia'
   | 'desejo'
+  /** Nêmesis que nasce, aparece e cai (M6 F2). */
+  | 'nemesis'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -756,6 +811,8 @@ export interface Metrics {
   audiences?: { asked: number; answered: number; expired: number };
   /** Desejos dos heróis (M6 F1): dados, cumpridos e esquecidos. */
   wishes?: { made: number; done: number; failed: number };
+  /** Nêmesis (M6 F2): nascidas, encontros, heróis que mataram e caídas. */
+  nemeses?: { born: number; met: number; kills: number; fallen: number };
 }
 
 export interface DailySample {

@@ -9,6 +9,7 @@ import { makeEnemy, spawnRoom } from './dungeon.ts';
 import { epitaph, maybeInjure, widow } from './people.ts';
 import { addBond, fleeLimit, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
 import { affixCount, takeItems } from './items.ts';
+import { bringNemesis, maybeFlee, nemesisFalls } from './nemesis.ts';
 import { chance, int, pick, range, shuffle, weighted } from './rng.ts';
 import type { BossMech, Combat, CombatEvent, Hero, Party, Room, Unit, World } from './types.ts';
 
@@ -72,6 +73,8 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     if (party.rules.includes('mare')) u.interval = Math.round(u.interval * 1.15);
   }
   combat.units.push(...spawnRoom(world, combat, room, party));
+  // A nêmesis do andar entra no lugar de um monstro do bando (M6 F2).
+  bringNemesis(world, party, combat, room);
   return combat;
 }
 
@@ -111,6 +114,8 @@ export function combatTick(world: World, party: Party): CombatResult {
     if (u.side === 'hero') heroAct(world, party, c, u);
     else enemyAct(world, party, c, u);
   }
+  // Quem matou alguém e ficou por um fio pode fugir na névoa (e virar nêmesis).
+  for (const u of c.units) if (u.side === 'enemy') maybeFlee(world, party, u);
 
   if (c.enraged && c.ticks % TICKS_PER_SECOND === 0) {
     for (const u of activeHeroUnits(c)) {
@@ -293,6 +298,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
       party.loot.materials[unit.material] = (party.loot.materials[unit.material] ?? 0) + qty;
     }
     const slayer = killer ? heroOf(world, killer) : undefined;
+    if (unit.nemesisId !== undefined) nemesisFalls(world, party, unit, slayer);
     if (slayer) {
       slayer.stats.kills++;
       if (slayer.stats.kills === 100) {
@@ -325,6 +331,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
   }
 
   const hero = heroOf(world, unit)!;
+  if (killer?.side === 'enemy') (killer.kills ??= []).push(hero.id);
   heroDies(world, party, hero, by);
   for (const ally of activeHeroUnits(c)) {
     const other = heroOf(world, ally)!;

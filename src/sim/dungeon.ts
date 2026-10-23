@@ -129,6 +129,7 @@ export function makeEnemy(world: World, combat: Combat, def: EnemyUnitDef, spot:
     xp: B.xpPerEnemy * Math.pow(lp, 1.2) * floorMult * (opts.boss ? 30 : opts.guardian ? 10 : opts.elite ? 3 : 1),
     gold: B.goldPerEnemy * B.goldPace * Math.pow(lp, 0.9) * floorMult * rewardMult * range(world.rng, 0.8, 1.2) * (spot.rules.includes('calor') ? 1.3 : 1),
     material: opts.boss || opts.guardian || chance(world.rng, opts.elite ? 0.8 : B.materialChance) ? BIOMES[spot.biome]!.material : null,
+    defId: def.id,
   };
 }
 
@@ -240,9 +241,12 @@ export function generatePassage(id: number, seed: number, level: number, day: nu
   };
 }
 
-/** Abre uma passagem nova no nível atual. Ninguém sabe o que há nela até entrar. */
-export function openPassage(world: World): Passage {
-  const seed = int(world.rng, 1, 0x7fffffff);
+/**
+ * Abre uma passagem nova no nível atual. Ninguém sabe o que há nela até entrar; a semente vem
+ * do rumor que o prefeito marcou (M6 F2) ou, sem rumor, do RNG.
+ */
+export function openPassage(world: World, rumorSeed?: number): Passage {
+  const seed = rumorSeed ?? int(world.rng, 1, 0x7fffffff);
   const passage = generatePassage(world.nextId++, seed, world.abyss.level, dayOf(world.tick));
   world.abyss.passages.push(passage);
   world.metrics.passagesOpened++;
@@ -445,7 +449,17 @@ export function confidence(world: World, heroes: Hero[], spot: Spot, passage?: P
   const guardianFloor = passage ? isGuardianFloor(passage, spot.floor) : spot.floor === passageFloors(spot.level) - 1;
   const map = passage?.maps[spot.floor];
   const rooms = map ? map.filter((r) => !r.cleared && r.kind !== 'guardiao').length : guardianFloor ? 4 : 5 + spot.floor;
-  let conf = Math.sqrt(party / (pack * Math.max(1, rooms) * 0.5));
+  // Uma nêmesis vista neste andar (M6 F2): a sala dela soma a ameaça a mais que ela traz.
+  let threat = pack * Math.max(1, rooms);
+  const nemesis = (world.abyss.nemeses ?? []).find((n) => !n.fallen && n.passageId === spot.passageId && n.floor === spot.floor);
+  const nemDef = nemesis && BIOMES[BIOME_OF_ENEMY.get(nemesis.enemyId) ?? -1]?.enemies.find((e) => e.id === nemesis.enemyId);
+  if (nemesis && nemDef) {
+    const step = 1 + B.nemesisStepBonus * Math.min(B.nemesisMaxStep, nemesis.victims.length);
+    const nem = enemyStrength(nemDef, power * B.nemesisHp * step, defBonus);
+    nem.dps *= B.nemesisAtk;
+    threat += Math.max(0, (nem.ehp + avg.ehp * (packSize - 1)) * (nem.dps + avg.dps * (packSize - 1)) - pack);
+  }
+  let conf = Math.sqrt(party / (threat * 0.5));
   if (guardianFloor) {
     const g = guardianDef(spot.biome);
     const boss = enemyStrength(g, power * B.guardianHp, defBonus + 10);

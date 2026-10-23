@@ -8,6 +8,7 @@ import { maybeSeasonalEvent } from './events.ts';
 import { morningAudiences } from './audiences.ts';
 import { dayOf, hourOf } from './calendar.ts';
 import { dailyWishes, weeklyWishes } from './wishes.ts';
+import { dailyNemeses } from './nemesis.ts';
 import { formParties } from './party.ts';
 import { processForge, raiseLegendaries } from './items.ts';
 import { dailyPatronage } from './patronage.ts';
@@ -55,6 +56,7 @@ function daily(world: World): void {
   dailyCare(world);
   raiseLegendaries(world);
   dailyPressure(world);
+  dailyNemeses(world);
   dailyTown(world);
   dailyPatronage(world);
   dailyPets(world);

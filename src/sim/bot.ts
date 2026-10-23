@@ -6,6 +6,7 @@ import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
 import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, graveCost, honorGrave, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
 import { autoAnswer } from './audiences.ts';
+import { livingNemeses } from './nemesis.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
@@ -82,7 +83,7 @@ export function autoMayor(world: World): void {
     if (town.treasury > cost + fund + (lowMorale ? 300 : 900)) holdFestival(world);
   }
 
-  // Contratos para todos os andares da fronteira, até o limite do quadro.
+  // Contratos para todos os andares da fronteira (e a caçada às nêmesis), até o limite do quadro.
   for (const frontier of frontierFloors(world)) {
     if (town.contracts.length >= maxContracts(world)) break;
     if (town.contracts.some((c) => c.passageId === frontier.passageId && c.floor === frontier.floor)) continue;
@@ -188,7 +189,14 @@ function frontierFloors(world: World): { passageId: number; level: number; floor
     const f = p.conquered.findIndex((c) => !c);
     if (f >= 0) out.push({ passageId: p.id, level: p.level, floor: f });
   }
-  return out.sort((a, b) => b.level - a.level || b.floor - a.floor);
+  out.sort((a, b) => b.level - a.level || b.floor - a.floor);
+  // Caçada (M6 F2): o andar onde uma nêmesis foi vista vem primeiro, se o grupo chega lá.
+  for (const n of livingNemeses(world)) {
+    const p = openPassages(world).find((x) => x.id === n.passageId);
+    if (!p || !p.discovered || (n.floor > 0 && !p.conquered[n.floor - 1])) continue;
+    if (!out.some((t) => t.passageId === p.id && t.floor === n.floor)) out.unshift({ passageId: p.id, level: p.level, floor: n.floor });
+  }
+  return out;
 }
 
 /**

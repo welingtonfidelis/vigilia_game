@@ -43,6 +43,8 @@ import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts'
 import { activeHeroes, townHeroes } from './town.ts';
 import { noteWish } from './wishes.ts';
 import { answerPetition as answerPetitionImpl } from './audiences.ts';
+import { markRumor as markRumorImpl } from './rumors.ts';
+import { livingNemeses } from './nemesis.ts';
 import { chance, int } from './rng.ts';
 import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
 
@@ -188,15 +190,20 @@ export function postContract(world: World, passageId: number | null, floor: numb
     if (!passage || passage.sealed) return fail('Essa passagem não está mais aberta.');
     if (!passage.discovered) return fail('Ninguém entrou nessa passagem ainda.');
     if (floor < 0 || floor >= passage.floors) return fail('Esse andar não existe nessa passagem.');
-    if (passage.conquered[floor]) return fail('Esse andar já foi conquistado.');
+    if (passage.conquered[floor] && !livingNemeses(world).some((n) => n.passageId === passageId && n.floor === floor)) {
+      return fail('Esse andar já foi conquistado.');
+    }
   } else if (world.town.contracts.some((c) => c.passageId === null)) {
     return fail('Já há um contrato de passagem nova no quadro.');
   }
   if (world.town.contracts.length >= maxContracts(world)) return fail('O quadro está cheio.');
   if (world.town.treasury < reward) return fail('O tesouro não cobre a recompensa.');
   spend(world, 'contrato', reward);
-  world.town.contracts.push({ id: world.nextId++, passageId, floor, reward, postedTick: world.tick, takenBy: null });
-  const goal = passage ? `conquistar o ${floorLabel({ biome: passage.biome, floor })}` : 'abrir uma passagem nova';
+  // Andar já conquistado com uma nêmesis: o contrato é a caçada a ela (M6 F2).
+  const prey = passage?.conquered[floor] ? livingNemeses(world).find((n) => n.passageId === passageId && n.floor === floor) : undefined;
+  world.town.contracts.push({ id: world.nextId++, passageId, floor, reward, postedTick: world.tick, takenBy: null, ...(prey ? { nemesisId: prey.id } : {}) });
+  const where = passage ? floorLabel({ biome: passage.biome, floor }) : '';
+  const goal = prey ? `caçar ${prey.name} no ${where}` : passage ? `conquistar o ${where}` : 'abrir uma passagem nova';
   record(world, 'contrato', [], `Novo contrato no quadro: ${goal} por ${reward} de ouro.`);
   return OK;
 }
@@ -549,6 +556,9 @@ export function holdFestival(world: World): CommandResult {
   noteWish(world, { kind: 'festa' });
   return OK;
 }
+
+/** O prefeito marca no mapa da guilda o rumor que a próxima passagem segue (M6 F2). */
+export const markRumor = (world: World, index: number): CommandResult => markRumorImpl(world, index);
 
 /** Resposta do prefeito a uma petição da audiência da manhã (M6 F1). */
 export const answerPetition = (world: World, petitionId: number, choiceId: string): CommandResult => answerPetitionImpl(world, petitionId, choiceId);
