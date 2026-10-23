@@ -2269,19 +2269,20 @@ kbd {
   z-index: 3;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  max-width: calc(100% - 150px);
+  gap: 6px;
+  max-width: calc(100% - 140px);
   margin: 0;
   padding: 0;
   list-style: none;
   pointer-events: none;
 }
+/* Quadros um pouco maiores que no M4 (pedido do playtest): nome, nível e vida legíveis. */
 .party-frame {
   display: flex;
   align-items: center;
-  gap: 5px;
-  width: 136px;
-  padding: 3px 7px 4px 3px;
+  gap: 6px;
+  width: 160px;
+  padding: 4px 8px 5px 4px;
   border: 1px solid rgba(230, 211, 166, 0.14);
   border-radius: 3px;
   background: rgba(8, 8, 11, 0.8);
@@ -2299,7 +2300,7 @@ kbd {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 .pf-name {
@@ -2314,20 +2315,20 @@ kbd {
   color: #e6d3a6;
   font-family: var(--serif);
   font-weight: normal;
-  font-size: 0.72rem;
+  font-size: 0.86rem;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 .pf-name small {
   flex: none;
-  color: #a89a7c;
-  font-size: 0.6rem;
+  color: #c2b490;
+  font-size: 0.72rem;
 }
 .pf-name small.up { color: #e8c25a; }
 .pf-bar {
   position: relative;
   display: block;
-  height: 4px;
+  height: 5px;
   overflow: hidden;
   border-radius: 1px;
   background: rgba(0, 0, 0, 0.75);
@@ -2340,7 +2341,7 @@ kbd {
   bottom: 0;
   display: block;
 }
-.pf-bar.hp { height: 9px; }
+.pf-bar.hp { height: 12px; }
 .pf-bar.hp i { background: linear-gradient(180deg, #6fbf6a, #2f6d3a); }
 .pf-bar.hp.low i { background: linear-gradient(180deg, #d0644e, #7a2a20); }
 .pf-bar.hp em {
@@ -2348,13 +2349,13 @@ kbd {
   right: 3px;
   top: 0;
   color: #f4ead2;
-  font: 700 8px/9px system-ui, sans-serif;
+  font: 700 10px/12px system-ui, sans-serif;
   font-style: normal;
   text-shadow: 0 1px 0 #000;
 }
 .pf-bar.xp i { background: #c8a050; }
 .pf-bar.xp i.gain { background: rgba(232, 194, 90, 0.42); }
-.pf-status { font-size: 0.6rem; line-height: 1; }
+.pf-status { font-size: 0.72rem; line-height: 1; }
 .pf-status.bad { color: #d07060; }
 .pf-status.warn { color: #a7a0dc; }
 .party-frame.dead,
@@ -2384,7 +2385,8 @@ kbd {
 /* Grupo voltando para a vila: o corredor fica vazio e este aviso no meio. */
 .lane-exit {
   position: absolute;
-  top: 50%;
+  /* Abaixo do meio, para não encostar na linha dos quadros do grupo. */
+  top: 60%;
   left: 50%;
   z-index: 4;
   display: flex;
@@ -2415,8 +2417,11 @@ kbd {
 }
 /* No celular o corredor ocupa a largura toda e o grupo vira uma faixa embaixo. */
 @media (max-width: 620px) {
-  .lane-card { flex: 0 1 auto; }
-  .lane-view { flex: 0 1 300px; min-height: 140px; }
+  /* Os corredores empilham no tamanho natural e a lista rola: espremidos, a faixa do grupo
+     era cortada e só a primeira linha de heróis aparecia. */
+  .battle-multi { overflow-y: auto; }
+  .lane-card { flex: none; }
+  .lane-view { flex: 0 0 220px; min-height: 140px; }
   .lane-party {
     position: static;
     justify-content: center;

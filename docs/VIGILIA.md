@@ -1422,7 +1422,10 @@ Quatro dimensões mais fundas, uma por Senhor dos níveis 6 a 9. Os Senhores man
 
 ##### 15.8 Fila de ajustes pedidos durante o M5
 
-- **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que hoje estão pequenos demais para ler. Pedido em 2026-10-23.
+- ✅ **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que estavam pequenos demais para ler. Pedido em 2026-10-23. Feito:
+  - O quadro passou de 136 para 160 px. O nome subiu de 0,72 para 0,86 rem, o nível de 0,6 para 0,72 rem, a barra de vida de 9 para 12 px (números de 8 para 10 px) e a de experiência de 4 para 5 px. Os cinco quadros seguem numa linha no desktop.
+  - O aviso de volta à vila desceu para não encostar nos quadros.
+  - No celular, a lista de corredores rola, e cada corredor tem 220 px. Antes, três corredores espremidos cortavam a faixa do grupo, e só a primeira linha de heróis aparecia.
 
 ##### 16. Escolhas feitas por padrão (fáceis de trocar)
 
