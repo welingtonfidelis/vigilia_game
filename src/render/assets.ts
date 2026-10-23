@@ -2,7 +2,7 @@
 // Phaser: a interface em DOM também usa (retratos e monstros em CSS). Toda a arte é do
 // pack próprio do Vigília (public/assets/vigilia/), em 16-bit e 32-bit.
 
-import { ACTS } from '../sim/index.ts';
+import { BIOMES } from '../sim/index.ts';
 import type { ClassId, Unit, World } from '../sim/index.ts';
 import { heroPortraitUrl, heroSpriteId } from './pack.ts';
 
@@ -30,7 +30,7 @@ export interface MonsterLook {
   portrait?: string;
 }
 
-/** Inimigos de cada ato (por id em src/data/acts.ts) e o chefe. */
+/** Monstros de cada bioma (por id em src/data/biomes.ts) e os Senhores. */
 export const MONSTERS: Record<string, MonsterLook> = {
   esqueleto: { asset: 'char/monster/esqueleto', frameSize: [24, 32] },
   rato: { asset: 'char/monster/rato', frameSize: [24, 16] },
@@ -56,11 +56,31 @@ export const MONSTERS: Record<string, MonsterLook> = {
   lamento: { asset: 'char/monster/lamento', frameSize: [24, 32] },
   arauto: { asset: 'char/monster/arauto', frameSize: [32, 40] },
   aquiloQueVigia: { asset: 'char/boss/aquiloQueVigia', frameSize: [64, 64] },
+  // Dimensões fundas (M5 F6)
+  zangao: { asset: 'char/monster/zangao', frameSize: [24, 32] },
+  mariposa: { asset: 'char/monster/mariposa', frameSize: [24, 24] },
+  casulo: { asset: 'char/monster/casulo', frameSize: [32, 40] },
+  rainhaEsporos: { asset: 'char/boss/rainhaEsporos', frameSize: [56, 56] },
+  peixeLanterna: { asset: 'char/monster/peixeLanterna', frameSize: [24, 24] },
+  aguaViva: { asset: 'char/monster/aguaViva', frameSize: [24, 28] },
+  caranguejo: { asset: 'char/monster/caranguejo', frameSize: [40, 32] },
+  coroSubmerso: { asset: 'char/boss/coroSubmerso', frameSize: [56, 60] },
+  automato: { asset: 'char/monster/automato', frameSize: [24, 32] },
+  aranhaEngrenagem: { asset: 'char/monster/aranhaEngrenagem', frameSize: [32, 24] },
+  fornalha: { asset: 'char/monster/fornalha', frameSize: [32, 40] },
+  colosso: { asset: 'char/boss/colosso', frameSize: [64, 64] },
+  mumia: { asset: 'char/monster/mumia', frameSize: [24, 32] },
+  chacal: { asset: 'char/monster/chacal', frameSize: [32, 24] },
+  escorpiao: { asset: 'char/monster/escorpiao', frameSize: [40, 32] },
+  reiOssuarios: { asset: 'char/boss/reiOssuarios', frameSize: [48, 60] },
 };
 
-/** Qual folha desenha esta unidade (monstro do ato, chefe ou o eco de um herói morto). */
-export function monsterBase(world: World, unit: Unit, act: number): MonsterLook {
-  const def = ACTS[act];
+/** Monstros de todos os biomas, do nome mais longo ao mais curto (o invasor também acha a dele). */
+const ALL_ENEMIES = BIOMES.flatMap((b) => b.enemies).sort((a, b) => b.name.length - a.name.length);
+
+/** Qual folha desenha esta unidade (monstro do bioma, invasor, Senhor ou o eco de um herói morto). */
+export function monsterBase(world: World, unit: Unit, biome: number): MonsterLook {
+  const def = BIOMES[biome];
   if (!def) return MONSTERS.esqueleto!;
   if (unit.tags.includes('boss')) return MONSTERS[def.boss.id] ?? MONSTERS.esqueleto!;
   if (unit.name.startsWith('Eco de ')) {
@@ -68,6 +88,6 @@ export function monsterBase(world: World, unit: Unit, act: number): MonsterLook 
     if (!lost) return { asset: 'char/monster/sombra', ghost: true };
     return { asset: heroSpriteId(lost.classId, lost.gender), ghost: true, portrait: heroPortraitUrl(lost.classId, lost.gender, true) };
   }
-  const enemy = def.enemies.find((e) => unit.name.startsWith(e.name));
+  const enemy = ALL_ENEMIES.find((e) => unit.name.startsWith(e.name));
   return (enemy && MONSTERS[enemy.id]) || MONSTERS.esqueleto!;
 }

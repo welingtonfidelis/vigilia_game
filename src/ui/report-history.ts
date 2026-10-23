@@ -1,7 +1,8 @@
 // Histórico local dos últimos relatórios de expedição (não faz parte do save do mundo).
 import type { DungeonReport } from './panels/BattlePanel.tsx';
 
-const KEY = 'vigilia.report-history.v1';
+// v2: relatórios do abismo das dimensões (M5); os da campanha de atos ficaram para trás.
+const KEY = 'vigilia.report-history.v2';
 const LIMIT = 10;
 
 export function loadReportHistory(): DungeonReport[] {

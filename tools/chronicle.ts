@@ -1,8 +1,7 @@
 // Roda uma campanha com o prefeito automático e imprime a Crônica da Vila.
 // Uso: npm run chronicle -- --seed 7 --years 3 [--all]
 
-import { ACTS } from '../src/data/acts.ts';
-import { autoMayor, createWorld, describeHero, formatDate, runDays, DAYS_PER_YEAR } from '../src/sim/index.ts';
+import { abyssPressure, autoMayor, BIOMES, createWorld, describeHero, formatDate, rulesLabel, runDays, DAYS_PER_YEAR } from '../src/sim/index.ts';
 import type { ChronicleKind } from '../src/sim/index.ts';
 import { parseArgs, num } from './args.ts';
 
@@ -26,9 +25,8 @@ console.log('\n─── Na vila hoje ───');
 for (const h of alive) console.log(`  ${describeHero(h)} · ${h.stats.expeditions} exp · ${Math.round(h.gold)} ouro`);
 console.log('\n─── Memorial ───');
 for (const h of dead) console.log(`  ${describeHero(h)} · ${h.death?.where} · ${formatDate(h.death!.tick)}`);
-const frontier = world.acts
-  .map((a, i) => (a.unlocked ? `${ACTS[i]!.name}: ${a.conquered.filter(Boolean).length}/4${a.bossDefeated ? ' ✝' : ''}` : null))
-  .filter(Boolean)
+const passages = world.abyss.passages
+  .map((p) => `${p.discovered ? BIOMES[p.biome]!.name : 'desconhecida'} (nível ${p.level}, ${rulesLabel(p.rules)}): ${p.conquered.filter(Boolean).length}/${p.floors}${p.sealed ? ' ✝' : ''}`)
   .join(' · ');
-console.log(`\nAbismo: ${frontier}`);
+console.log(`\nAbismo: nível ${world.abyss.level} · pressão ${Math.round(abyssPressure(world))} · ${passages || 'nenhuma passagem aberta'}`);
 console.log(`Tesouro: ${Math.round(world.town.treasury)} · População: ${Math.round(world.town.population)} · Reputação: ${world.town.reputation}\n`);

@@ -1,7 +1,7 @@
 // Salvar e carregar no localStorage. Qualquer acesso pode falhar (aba anônima,
 // cota cheia, armazenamento bloqueado), então tudo passa por try/catch.
 
-import { deserialize, formatDate, serialize } from '../sim/index.ts';
+import { deserialize, formatDate, OldSaveError, serialize } from '../sim/index.ts';
 import type { World } from '../sim/index.ts';
 
 export interface KeyValueStore {
@@ -13,6 +13,8 @@ export interface KeyValueStore {
 export const SAVE_KEY = 'vigilia:save';
 export const META_KEY = 'vigilia:save:meta';
 export const PREFS_KEY = 'vigilia:prefs';
+/** Save de antes do M5, guardado para exportar quando a campanha nova começa. */
+export const OLD_SAVE_KEY = 'vigilia:save:antigo';
 
 export interface SaveMeta {
   savedAt: number;
@@ -23,7 +25,7 @@ export interface SaveMeta {
 }
 
 export type StoreResult = { ok: true } | { ok: false; reason: string };
-export type LoadResult = { ok: true; world: World } | { ok: false; reason: string };
+export type LoadResult = { ok: true; world: World } | { ok: false; reason: string; old?: boolean };
 
 export function browserStore(): KeyValueStore | null {
   try {
@@ -59,9 +61,27 @@ export function loadWorld(store: KeyValueStore | null): LoadResult {
   try {
     const json = store.getItem(SAVE_KEY);
     if (!json) return { ok: false, reason: 'Não há jogo salvo.' };
-    return { ok: true, world: deserialize(json) };
+    try {
+      return { ok: true, world: deserialize(json) };
+    } catch (err) {
+      if (!(err instanceof OldSaveError)) throw err;
+      // Save de antes do abismo das dimensões: fica guardado à parte, e o jogo começa de novo.
+      store.setItem(OLD_SAVE_KEY, json);
+      store.removeItem(SAVE_KEY);
+      store.removeItem(META_KEY);
+      return { ok: false, reason: err.message, old: true };
+    }
   } catch (err) {
     return { ok: false, reason: `O save não abriu: ${errorText(err)}` };
+  }
+}
+
+/** O save de antes do M5, se a vila tinha um (para exportar). */
+export function readOldSave(store: KeyValueStore | null): string | null {
+  try {
+    return store?.getItem(OLD_SAVE_KEY) ?? null;
+  } catch {
+    return null;
   }
 }
 

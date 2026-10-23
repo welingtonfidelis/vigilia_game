@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. Próximo: o playtest guiado e o M5.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) está pronto no branch `abismo-procedural` e espera o teste do jogador para ir ao `main`.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -91,7 +91,7 @@ src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
   music.ts       trilha generativa em Ré menor: dia, noite, luto, tensão (chefe) e alvorada (fim)
   ambience.ts    vento, grilos, pássaros, fogueira, metal distante do combate e o zumbido do abismo (cresce com a corrupção)
   engine.ts      mesa com canais de música, ambiente e efeitos, reverb e compressor
-src/data/   classes, traços, atos/inimigos/chefes, prédios, nomes (dados puros)
+src/data/   classes, traços, biomas/monstros/Senhores, regras das dimensões, prédios, nomes (dados puros)
 src/sim/    regras: tudo determinístico, estado 100% JSON
   world.ts       cria o mundo
   loop.ts        step(): 1 tick = 0,1 s em 1× · hora = 20 ticks · dia = 480 ticks · ano = 40 dias (~32 min)
@@ -100,7 +100,7 @@ src/sim/    regras: tudo determinístico, estado 100% JSON
   expedition.ts  descida, salas, saque, conquista, retorno, luto, contratos
   people.ts      lesões e cicatrizes, casamentos e filhos, aposentados com função, velhice e epitáfios
   combat.ts      combate em tempo real: papéis, ânimo, fuga, retirada, vingança, mecânicas de chefe
-  dungeon.ts     andares (mapa persistente até conquistar), inimigos, afixos, corrupção, estimativa de força
+  dungeon.ts     abismo (M5): nível, passagens geradas por semente, andares (mapa persistente até conquistar), guardião, inimigos, afixos, regras, pressão por passagem, estimativa de força
   economy.ts     tesouro, preços, efeitos dos prédios, população e impostos
   commands.ts    alavancas do prefeito (berrante, construir, contrato, sino, doutrina, imposto, patrocínio, dispensar)
   chronicle.ts   Crônica da Vila (eventos com texto em pt-BR)
@@ -252,17 +252,17 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Fabricação no ferreiro:** encomenda de arma, armadura ou amuleto com ouro e material do abismo; rara a partir do nível 2, épica com a especialização do encaixe; fila com prazo e entrega no cofre.
 - [x] **Especializações de nível 3:** ao subir um prédio para o nível 3, um diálogo oferece os dois caminhos (Cervejaria × Casa de apostas, Quartos de luxo × Dormitório, Lâminas × Couraças, Luz × Penitência, Mercenária × Ordem, Disciplina × Arena, Cirurgia × Ervas); prédios que já estavam no nível 3 escolhem pelo painel (`src/data/specs.ts`). Save v8 → v9 migra sozinho.
 - [x] **Andares mais claros:** o cabeçalho do corredor diz "andar 2 de 4" e onde fica o chefe; cada sala mostra "sala 3 de 5" ao passar o mouse.
-- [x] **Bancada do joalheiro** (ferreiro nível 3): heróis ricos vão sozinhos encantar (+1 afixo; rara vira épica), reforjar (troca um afixo que não serve à classe) ou polir a lendária (+1 tier), com o próprio ouro; a história da peça guarda cada serviço e o painel do ferreiro mostra quem passou.
+- [x] **Bancada do joalheiro** (ferreiro nível 3; no M5, nível 5): heróis ricos vão sozinhos encantar (+1 afixo; rara vira épica), reforjar (troca um afixo que não serve à classe) ou polir a lendária (+1 tier), com o próprio ouro; a história da peça guarda cada serviço e o painel do ferreiro mostra quem passou.
 - [x] **Salas novas:** mercador errante (vende uma peça a quem pagar, ouro do herói) e armadilha (dardos ou espinhos; arqueiros e lanceiros percebem antes; fere sem matar). O corredor desenha o mercador com a arca e os espinhos.
 - [x] **Chefes em duas fases:** abaixo de 50% cada chefe ganha um segundo comportamento (urnas que estouram, couraça dura e golpe duplo, jardim que brota, silêncio nas curas, caçada aos feridos, olhar que drena o ânimo); o corredor treme e o relatório conta. O relatório da expedição ganhou a lista de momentos.
 - [x] **Provisões:** ao partir, cada herói compra ração e tochas (gasta metade da energia entre as salas) e, com templo, uma relíquia (foge menos), com o próprio ouro e guardando reserva; o preço cresce com a profundidade. É o gasto que se repete e segura o ouro dos heróis.
 - [x] **Mecenato:** quem junta fortuna paga obras na vila com o nome gravado (estátua, vitral, fonte, muro dos nomes), cada nível mais caro; efeito até o 5º nível e o **mural dos mecenas** no Cofre (`src/sim/patronage.ts`).
 - [x] **Playtest automático:** `npm run playtest` roda 30 sementes × 30 anos salvando e carregando a cada 5 anos e confere ritmo, mortalidade, ouro, tesouro e saves. Todos os critérios passam.
-- [ ] Playtest guiado (roteiro na seção 9.4): é a próxima etapa, antes do M5.
+- [x] **Playtest guiado** (roteiro na seção 9.4): o jogo até o ano 2 trouxe os ajustes da seção seguinte (famílias, bichos, tiers e dificuldade). O resto do roteiro seguiu junto com o teste do M5.
 
-### Próximo: playtest guiado e M5
+### Próximo: teste do M5
 
-O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. Depois vem o M5 (Lenda): gerações, Eras e Pactos, profundezas infinitas, polimento e PT/EN. Ver a seção 9 do GDD (neste documento).
+O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes abaixo. O **M5: O Abismo das Dimensões** (seção 9.5 do GDD) está pronto no branch `abismo-procedural`: fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção. As fases F1 a F6 e o ajuste do ouro (15.9) estão feitos. O M5 espera o teste do jogador antes de ir para o `main`, e o que aparecer no teste entra na fila da seção 15.8.
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -283,12 +283,13 @@ O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que ap
 
   | | Fácil | Normal | Difícil |
   |---|---|---|---|
-  | Experiência dos heróis (abismo e treino) | 1,4× | 1× | 0,85× |
+  | Experiência dos heróis (abismo e treino) | 1,4× | 1× | 0,9× (era 0,85× antes do M5) |
   | Ouro do saque de cada expedição | 1,3× | 1× | 0,85× |
-  | Chance de peça rara e épica (baús e elites) | 1,5× | 1× | 0,65× |
+  | Chance de peça rara e épica (baús e elites) | 1,5× | 1× | 0,8× (era 0,65× antes do M5) |
+  | Chance de fragmento de amuleto (M5) | 1,15× | 1× | 1× |
   | Custos do prefeito (prédios, berrante, festa, decretos, eventos, encomendas, lotes) | 0,8× | 1× | 1,25× |
   | Força dos monstros nos andares | 0,9× | 1× | 1× |
-  | Corrupção por dia | 0,8× | 1× | 1,15× |
+  | Pressão do abismo por dia | 0,8× | 1× | 1,15× |
   | Força das incursões | 0,8× | 1× | 1,25× |
 
   O save antigo abre em Normal. Retrato com o prefeito automático, já com os tiers novos (10 sementes × 30 anos, `npm run balance -- --difficulty <id>`):
@@ -299,7 +300,7 @@ O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que ap
   | Mortes por ano | 4,2 | 5,0 | 5,0 |
   | Ouro dos heróis no fim | 29 mil | 21,5 mil | 13,5 mil |
 
-  No Difícil, o que segura é a economia e a corrupção. Com os monstros 10% mais fortes, só 20% das campanhas fechavam em 30 anos, então a força dos monstros ficou igual à do Normal.
+  No Difícil, o que segura é a economia e a corrupção. Com os monstros 10% mais fortes, só 20% das campanhas fechavam em 30 anos, então a força dos monstros ficou igual à do Normal. O retrato da campanha 5× do M5 está na seção 9.5 (item 15.5).
 - **Segundo plano em 1×.** Com a aba em segundo plano, o jogo segue sempre em 1×, qualquer que seja a velocidade escolhida. Os 2× e 4× ficam só para quem está olhando, e a vila não avança horas de jogo sozinha a 4×.
 
 **Arte própria em 32-bit e opção 16/32 (branch `arte-32bit`, só entra no main depois do teste):**
@@ -769,9 +770,9 @@ vigilia/
 | **M0: Núcleo** ✅ | Simulação headless com heróis, necessidades, traços, expedição, combate, economia, save e balanceador | Simula 10 anos sem soft-lock; relatório de mortalidade e ouro coerente |
 | **M1: Fatia vertical** ✅ | Vila jogável com 7 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
 | **M2: Pessoas** ✅ | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
-| **M3: Vila viva** 🟡 | Cidadãos e incursões noturnas entregues; faltam lotes e expansão, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
-| **M4: Profundidade** | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
-| **M5: Lenda** | Atos V–VI, gerações, Eras e Pactos, profundezas infinitas, celular, polimento, PT/EN | Campanha completa e motivo para recomeçar |
+| **M3: Vila viva** ✅ | Cidadãos, incursões noturnas, lotes e expansão sul, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
+| **M4: Profundidade** ✅ | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
+| **M5: O Abismo das Dimensões** 🟡 | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5). Fases F1 a F6 prontas no branch `abismo-procedural`; falta o teste do jogador para ir ao `main` | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
 
 #### 9.1 Especificação do M2: Pessoas
 
@@ -990,6 +991,493 @@ Jogue em 1× e 2×, no computador e no celular. Anote em `docs/PLAYTEST.md` (ou 
 5. **Meio de campanha (Atos III e IV).** Mercador e armadilha aparecem? Os heróis ricos vão à bancada? O ouro deles fica razoável?
 6. **Fim (Atos V e VI).** Os chefes pedem composição? Alguém pagou uma obra (mural dos mecenas)? O ritmo cansa em algum ponto?
 7. **Celular.** Painéis, diálogo de decisão, corredor empilhado, botão Acompanhar e som ao voltar do segundo plano.
+
+#### 9.5 Especificação do M5: O Abismo das Dimensões
+
+Os atos fixos dão lugar a um **motor de fase procedural**. Cada descida abre passagem para uma dimensão diferente. Fragmentos de amuleto levam aos Senhores do abismo, um nível por vez até o 10, e depois ao chefe máximo. Depois dele, o jogo segue sem fim. A campanha fica cerca de 5 vezes mais longa, e a vila cresce devagar, com prédios que se desgastam.
+
+**Decisões do usuário (2026-10-22):**
+
+- Os 6 atos viram **dimensões** sorteadas a cada descida. Mais adiante entram dimensões novas, com arte nova.
+- Saves antigos não são convertidos: abrem com aviso e começam uma **campanha nova**.
+- Ritmo **~5× o atual**: o chefe máximo cai perto do ano 80, cerca de 40 h em 1×. Os heróis envelhecem e se aposentam várias vezes no caminho.
+- Desgaste dos prédios com **conserto mandado pelo prefeito**.
+
+**História.** A caverna a leste não é só uma masmorra: ela liga a Vigília a outras dimensões, mundos de criaturas agressivas governados por monstros poderosos, os **Senhores**. Ninguém sabe o que há do outro lado até atravessar. Nas lutas, às vezes os heróis acham um **fragmento de amuleto**. Com cinco, o joalheiro monta o amuleto, que abre caminho até o covil do Senhor daquele nível. No fim de tudo está **Aquilo que Vigia**, que dá nome à vila.
+
+##### O ciclo
+
+1. Os grupos descem pela guilda, como hoje. Cada um entra numa **passagem**: uma já aberta, que a guilda conhece, ou uma nova, que ninguém conhece.
+2. A passagem nova revela uma dimensão quando o grupo entra: cenário, monstros, uma regra especial, o número de andares e as salas.
+3. Combates vencidos e voltas triunfais têm uma chance pequena de render um **fragmento** do nível atual.
+4. Com 5 fragmentos do mesmo nível, o joalheiro monta o **amuleto**, e a guilda abre o **contrato do Senhor**.
+5. Os heróis mais fortes enfrentam o Senhor:
+   - **Vitória:** o **nível do abismo** sobe 1.
+   - **Derrota:** o amuleto se perde.
+6. O amuleto do nível 10 leva ao chefe máximo. Depois dele vem o **pós-jogo**: níveis sem fim, amuletos e Senhores cada vez mais fortes.
+
+##### 1. Nível do abismo
+
+- Um número global, que começa em **1** e sobe 1 a cada Senhor vencido.
+- Toda passagem **nova** abre no nível atual. Uma passagem já aberta mantém o nível com que abriu até fechar, então dá para voltar a um mundo mais fácil enquanto ele existir.
+- O nível define a força dos monstros, o tier do saque, o nível dos fragmentos e o material das salas.
+- Substitui o "ato" como medida de progresso. A crônica e o relatório passam a dizer "nível 4 do abismo".
+
+##### 2. Dimensões
+
+Uma dimensão é um **bioma** (cenário, monstros e material) com **regras** sorteadas. Os seis atos de hoje viram os seis primeiros biomas e mantêm toda a arte: corredor, arena, monstros com variantes, chefes e retratos.
+
+| Bioma | Aparece a partir do nível | Material | Monstros | Senhor ligado |
+|---|---|---|---|---|
+| Catacumbas | 1 | ossos | esqueleto, rato, acólito | Guardião das Urnas |
+| Minas Inundadas | 1 | ferro-negro | mineiro, enguia, golem | Couraça Submersa |
+| Jardim de Fungos | 2 | esporos | esporento, aranha, brotado | Mãe-Bolor |
+| Cidade Afogada | 3 | pérolas negras | sacerdote, sereia, cavaleiro salobro | Arcebispo Sem Fôlego |
+| Forja Abissal | 5 | brasas | ferreiro cinzento, cão de brasa, escravo da forja | O Martelo Que Não Dorme |
+| Coração do Abismo | 7 | fragmentos de alma | sombra faminta, lamento, arauto do fundo | Aquilo que Vigia (chefe máximo) |
+| Colmeia Pálida (F6) | 6 | esporos | zangão de quitina, mariposa pálida, casulo vivo | A Rainha dos Esporos |
+| Fossa Cantante (F6) | 7 | pérolas negras | peixe-lanterna, água-viva abissal, caranguejo de casco negro | O Coro Submerso |
+| Cidadela de Engrenagens (F6) | 8 | ferro-negro | autômato sentinela, aranha de engrenagem, fornalha ambulante | O Colosso de Ferro-negro |
+| Deserto de Ossos (F6) | 9 | ossos | múmia errante, chacal de ossos, escorpião gigante | O Rei dos Ossuários |
+
+**Biomas novos:** quatro, um por Senhor dos níveis 6 a 9 (seção 7). Entram na tabela a partir do nível 6, com arte própria em 16 e 32-bit (cenário, três monstros com variantes, o Senhor com as duas fases e os retratos).
+
+**Gerador.** Usa uma semente própria da passagem: o mesmo mundo sai sempre igual, e o save guarda só a semente e o que já mudou.
+
+- **Andares:** 3 no nível 1, mais um a cada 3 níveis, até 6.
+- **Salas por andar:** 4 + andar + 0 a 2, com os mesmos tipos de hoje (matilha, elite, baú, santuário, vazia, prisioneiro, mercador, armadilha). O peso de cada tipo muda com a regra.
+- **Guardião da passagem:** no último andar. É um elite grande, com 2 ou 3 afixos e acólitos. Vencê-lo **sela** a passagem.
+- **Monstros:** os três do bioma.
+  - A partir do nível 4, uma matilha pode trazer um **invasor** de outro bioma já liberado.
+  - Elites com 1 afixo até o nível 2, 2 afixos até o 5 e 3 depois.
+- **Regras:** nenhuma ou 1 até o nível 4, 1 ou 2 até o 9 e 2 depois. Ficam escondidas até o grupo entrar.
+
+| Regra | Efeito |
+|---|---|
+| Calmaria | Nenhum (a mais comum no começo) |
+| Névoa espessa | Crítico pela metade, dos dois lados |
+| Maré alta | Todos 15% mais lentos; descida 1 h mais longa |
+| Esporos no ar | Os heróis perdem 2% da vida a cada sala andada |
+| Calor da forja | Inimigos com 20% mais ataque; 30% mais ouro |
+| Silêncio | Cura 40% menor |
+| Ganância | 50% mais baús e elites |
+| Lua de sangue | O afixo vampírico aparece duas vezes mais |
+| Ecos | Os ecos de heróis mortos aparecem com mais frequência |
+
+##### 3. Passagens: o mistério e o mapa da guilda
+
+- **Passagem nova:** a guilda só sabe que ela existe. O painel mostra "passagem desconhecida" até o primeiro grupo entrar. Aí a crônica registra: "O grupo de Mira abriu passagem para as Catacumbas, sob Névoa espessa".
+- **Passagens abertas:**
+  - A guilda guarda até **1 + nível da guilda** abertas ao mesmo tempo.
+  - Cada uma fica aberta por **40 dias** (um ano de jogo) ou até ser selada.
+  - Salas limpas continuam limpas; é o mapa persistente de hoje, agora por passagem.
+- **Selar:** vencer o guardião fecha a passagem com uma recompensa grande (ouro, material e chance maior de fragmento) e baixa a pressão do abismo.
+- **Restos de heróis caídos** ficam na passagem onde morreram. Um grupo que voltar lá antes de ela fechar recupera o corpo e o equipamento. Se fechar antes, o memorial registra que o abismo ficou com ele.
+- **Escolha do grupo:** a guilda decide entre voltar a uma passagem conhecida (mais segura, a confiança usa o que já se sabe) e abrir uma nova (mistério, mais recompensa). O prefeito orienta pelo **quadro**: os contratos passam a apontar uma passagem e um andar, ou "abrir uma passagem nova".
+
+##### 4. Pressão do abismo e incursões
+
+A corrupção por ato vira a **pressão de cada passagem**, de 0 a 100. A vila sente a da passagem mais pressionada.
+
+- **Começa** em 30 quando a passagem abre.
+- **Sobe** 2 por dia.
+- **Desce** 1 a cada sala limpa nela e 10 a cada andar conquistado. Selada, a passagem fecha e deixa de contar.
+- **Efeitos:**
+  - Os monstros daquela passagem ficam mais fortes, como a corrupção de antes.
+  - Acima de 70, salas já limpas dela voltam a ser ocupadas.
+  - Quando a mais pressionada passa de 55, voltam as **incursões**. Os monstros sobem por ela, com força proporcional ao nível dela.
+  - Os eventos sazonais que mexiam na corrupção passam a mexer na pressão de todas as passagens.
+
+Na implementação (F1), uma pressão única para o abismo inteiro caía rápido demais: são cerca de 600 salas limpas por ano contra um número só. Com uma pressão por passagem, os números da corrupção de antes continuam valendo, e uma passagem abandonada apodrece sozinha.
+
+##### 5. Fragmentos e amuletos
+
+- **Onde caem:** só em passagens do **nível atual**.
+- **Chances iniciais** (o balanceador ajusta):
+  - 0,3% por combate de matilha vencido;
+  - 1% por elite;
+  - 4% pelo guardião;
+  - 3% numa **volta triunfal** (o grupo volta inteiro, tendo feito o que foi fazer).
+- **Quem carrega:** o herói que acha leva o fragmento.
+  - Se ele morrer, o fragmento fica com os restos na passagem.
+  - Na volta, entrega ao prefeito; o fragmento vai para o Cofre, e o herói ganha lealdade e fama na crônica.
+- **Montagem:** com 5 fragmentos do mesmo nível, o **joalheiro** (na bancada do Cofre) monta o amuleto. Custa ouro proporcional ao nível e leva 2 dias.
+- **Fragmentos de níveis passados** viram relíquia de museu (ouro pequeno ao vender) ou enfeite no memorial.
+- Só existe **um amuleto por vez**: o do nível atual.
+
+##### 6. Contrato do Senhor
+
+- Com o amuleto pronto, a guilda abre o **contrato do Senhor de nível N**.
+- **Formação do grupo:** a guilda propõe os heróis **mais fortes disponíveis** (saudáveis, na vila, fora de expedição), até o tamanho máximo de grupo da guilda. O prefeito pode trocar qualquer um por outro disponível e confirma; aí o grupo parte.
+- **A descida:**
+  - Vai direto ao covil, sem passar por uma passagem.
+  - Tem duas salas de guarda (elites do bioma do Senhor) e depois o Senhor, com as duas fases e as mecânicas de hoje.
+  - O sino de retirada funciona, mas recuar também gasta o amuleto.
+- **Vitória:**
+  - O nível do abismo sobe 1.
+  - O grupo ganha uma lendária (regra de hoje: acima do teto da forja), muito ouro, reputação e um capítulo na crônica.
+  - A vila ganha uma festa sem custo.
+  - Os fragmentos passam a cair no nível novo.
+- **Derrota** (o grupo foge ou cai): o amuleto se desfaz, e são precisos 5 fragmentos novos do mesmo nível. Os mortos ficam no covil, sem resgate.
+
+##### 7. Os Senhores e o chefe máximo
+
+| Nível | Senhor | Arte |
+|---|---|---|
+| 1 | O Guardião das Urnas | a de hoje |
+| 2 | A Couraça Submersa | a de hoje |
+| 3 | A Mãe-Bolor | a de hoje |
+| 4 | O Arcebispo Sem Fôlego | a de hoje |
+| 5 | O Martelo Que Não Dorme | a de hoje |
+| 6 | A Rainha dos Esporos (Colmeia Pálida, mecânica colmeia) | nova (F6) |
+| 7 | O Coro Submerso (Fossa Cantante, canto) | nova (F6) |
+| 8 | O Colosso de Ferro-negro (Cidadela de Engrenagens, placas) | nova (F6) |
+| 9 | O Rei dos Ossuários (Deserto de Ossos, exército) | nova (F6) |
+| 10 (chefe máximo) | **Aquilo que Vigia**, no Coração do Abismo | a de hoje (fase 2 incluída) |
+
+Decisão do usuário (2026-10-22): os níveis acima do 5 têm Senhores inéditos, e não os cinco primeiros de volta.
+
+Correção na F2: pela regra do usuário, o amuleto do nível 10 leva ao chefe máximo. Então o Senhor do nível 10 é o próprio Vigia, e os Senhores novos ficam nos níveis 6 a 9 (quatro, não cinco).
+
+Até a F6, o jogo usou nomes novos com a arte e a mecânica de um dos cinco primeiros, só para a campanha poder ser jogada e balanceada de ponta a ponta (na F6 eles viraram os chefes dos biomas novos, com os mesmos nomes):
+- 6: A Rainha dos Esporos (Mãe-Bolor);
+- 7: O Coro Submerso (Arcebispo);
+- 8: O Colosso de Ferro-negro (Couraça);
+- 9: O Rei dos Ossuários (Guardião).
+
+Ficam em `src/data/lords.ts`.
+
+##### 8. Fim e pós-jogo
+
+- Vencer o Vigia **fecha a campanha**: tela de fim com o resumo dos anos, os heróis lendários e o memorial. Continua valendo `endedTick`.
+- O jogo **continua**:
+  - O nível do abismo segue em 11, 12, ... sem limite.
+  - Os Senhores voltam em ciclo, como **Ecos**, mais fortes a cada volta.
+  - A cada 10 níveis, o Vigia volta como chefe do amuleto.
+- Prédios, heróis e equipamento continuam crescendo sem teto (seção 9).
+
+##### 9. Escala sem fim
+
+Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de força quase em quadrado. A escala nova mantém isso: os três lados crescem de forma **polinomial** (perto do quadrado do nível do abismo). Assim os números ficam legíveis por muito tempo; no nível 50, um monstro tem algumas centenas de milhares de vida.
+
+- **Monstros:** força ∝ ~N² (N = nível do abismo), mais o crescimento por andar e a pressão.
+- **Heróis:** o teto de nível de cada rank sobe **+4 por nível do abismo** (rank E: 10 no nível 1; rank S: 30 no nível 1 e 66 no nível 10). O resto da progressão de ranks segue igual.
+- **Equipamento:**
+  - Tier sem teto (sai o `dropTierMax`).
+  - Saque no tier do nível + andar: **2 por nível até o 6, depois 4 por nível** (nível 6: 10; nível 10: 26; nível 30: 106). Era 3N na proposta; 4 por nível é o que casa com o quadrado da força (seção 15.3).
+  - O saque não fica mais preso ao teto da forja: acima do que a vila forja, o equipamento vem do abismo.
+  - O ferreiro de nível n forja até o tier **3n + 1**, sem passar do tier do nível do abismo + 4 (F4: a forja só faz o que o abismo já mostrou).
+  - A regra das lendárias (acima do teto da forja) continua.
+- **Defesa:** a defesa extra dos monstros para de crescer no nível 6, e a da armadura conta só até o tier 12 (acima, a armadura dá vida). O dano é ataque × 100/(100 + defesa); com a defesa crescendo sem teto dos dois lados, as lutas ficariam cada vez mais longas e a fúria decidiria tudo. Assim vida e ataque crescem juntos dos dois lados, e a duração das lutas se mantém.
+- **Recrutas:** chegam com 3 níveis a mais por nível do abismo e com arma e armadura comuns de metade do tier do nível. Quem chega a uma vila do nível 8 vem de um mundo mais duro.
+- **Interface:** números compactos a partir de 10 mil ("12,3 mil", "4,5 mi").
+- **Coeficientes:** saem do balanceador. A regra é que um grupo bem cuidado no nível N tenha a mesma chance que no nível 1.
+
+##### 10. Vila longa: mais níveis e manutenção
+
+- **Níveis:**
+  - Os 7 prédios vão até o **nível 10** na campanha e seguem subindo no pós-jogo.
+  - O custo dos níveis 1 a 3 é o de hoje. Do 4 em diante, o ouro é o do nível 3 vezes **1,75 a cada nível**, com o material do bioma da faixa: pérolas negras (4 e 5), brasas (6 e 7), fragmentos de alma (8 e 9) e alma com brasas do 10 em diante, de 20 unidades no nível 4 a mais 8 por nível.
+  - Os efeitos de hoje viram curvas: o nível 1 vale 1 e cada nível acima vale 0,55. O efeito atual do nível 3 fica entre o 4 e o 5.
+  - **Marcos:** a especialização no nível 3 (como hoje), a **bancada do joalheiro no 5** (era no 3) e, no **7**, o prédio ganha também o outro caminho do par.
+- **Arte por faixa:** a de nível 1 para os níveis 1 a 3, a de nível 2 para os níveis 4 a 6 e a de nível 3 do 7 em diante; a ruína continua no nível 0. Peças novas: **andaime** (durante o conserto) e **desgaste** (quando a conservação está baixa).
+- **Conservação (0 a 100):**
+  - **Cai:** 0,25 por dia (cerca de 10 por ano). Incursões tiram de 10 a 30 de 1 ou 2 prédios (vitória custosa) ou de 2 a 3 (saque). Dois eventos sazonais novos também desgastam: a **tempestade** (verão: 15 em 2 prédios) e a **geada** (inverno: 8 em todos). A proteção custa metade do conserto que ela evita.
+  - **Efeitos por faixa:**
+
+    | Conservação | Efeito |
+    |---|---|
+    | 50 ou mais | normal |
+    | 25 a 50 | o prédio rende 80% |
+    | abaixo de 25 | rende 50% e não pode subir de nível |
+    | 0 | perde um nível e volta a 50 |
+
+- **Conserto:**
+  - O prefeito manda consertar no painel do prédio.
+  - **Custo:** 50% do ouro do nível atual para cada 100 de estrago. Acima de 40 de estrago, também o material da faixa (1 a cada 10 de estrago).
+  - **Duração:** 1 dia, mais 1 a cada 40 de estrago (de 1 a 3), com andaime; nesse tempo o prédio rende 80%, não se desgasta e não sobe de nível.
+  - Subir de nível também deixa o prédio inteiro.
+  - O tesouro avisa quando um prédio cai abaixo de 50.
+- A **manutenção diária** de hoje (por nível) continua. O conserto é o gasto grande que equilibra a economia longa.
+
+##### 11. Ritmo e metas do balanceador
+
+`npm run balance` passa a simular **100 anos** por semente. Metas de partida:
+
+| Meta | Alvo |
+|---|---|
+| Senhor do nível 1 | anos 4 a 7 |
+| Senhor do nível 5 | anos 30 a 40 |
+| Chefe máximo | cai em pelo menos 80% das sementes, com média entre os anos 70 e 90 |
+| Contratos do Senhor perdidos | 20% a 35% (tem que haver tensão) |
+| Mortes por ano | 3 a 6 |
+| Impasses e ócio | 0 impasses; ócio de no máximo 4 dias |
+| Nível médio dos prédios | ~3 no ano 10, ~6 no ano 40, ~8 no ano 75 (era ~9 antes do ajuste do ouro, 15.9) |
+| Manutenção e consertos | de 15% a 30% do que entra no tesouro |
+| Ouro dos heróis no fim | 50 a 150 mil em 100 anos (definido na F5, com o primeiro retrato) |
+| Tesouro no fim | até 60 mil em 100 anos (o antigo "até 20 mil" era da campanha de 16 anos) |
+| Fácil e Difícil | chefe máximo entre os anos 45 e 65 no Fácil (80% das sementes) e entre 85 e 115 no Difícil (2/3 das sementes, em 130 anos) |
+
+O prefeito automático aprende a montar amuletos, abrir o contrato do Senhor e mandar consertar. O balanceador marca ✔/✘ em cada meta (no Fácil e no Difícil valem as faixas de ano dos Senhores).
+
+##### 12. Save
+
+`SAVE_VERSION` 11.
+
+- Um save antigo (10 ou menos) abre o aviso: "O abismo mudou. Esta versão começa uma campanha nova."
+- O save antigo fica guardado numa chave à parte, com botão para exportar.
+- O mundo novo guarda o nível do abismo, a pressão, as passagens (semente, nível, dias, salas limpas e restos), os fragmentos, o amuleto e a conservação dos prédios.
+
+##### 13. Telas
+
+- **Painel do Abismo:**
+  - nível do abismo, pressão e fragmentos (x/5);
+  - lista de passagens abertas, com bioma, regras, andares selados, dias até fechar e restos;
+  - a linha "passagem desconhecida".
+- **Corredor e arena:** usam a arte do bioma da passagem (hoje é a do ato).
+- **Cofre:** fragmentos, montagem do amuleto na bancada e o contrato do Senhor, com o grupo proposto e a troca de membros.
+- **Prédios:** barra de conservação, botão Consertar e níveis até 10.
+- **Fim:** tela de fim da campanha e um aviso de pós-jogo.
+
+##### 14. O que sai
+
+- Atos lineares e liberados em ordem.
+- Corrupção por ato.
+- Mapas persistentes por ato.
+- Contratos por ato e andar.
+- O fim no chefe do Ato VI.
+- O "profundezas infinitas" do M5 antigo fica coberto pelo pós-jogo. Gerações, Eras e Pactos ficam para depois.
+
+##### 15. Fases de entrega
+
+Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador.
+
+| Fase | Entrega | Pronto quando |
+|---|---|---|
+| **F1** Motor de dimensões ✅ | Nível do abismo, gerador por semente (bioma, regras, andares, salas, monstros), passagens com mistério e mapa da guilda, restos por passagem, pressão e incursões, quadro com contratos novos, corredor e arena por bioma, save 11 e aviso de campanha nova | Testes do gerador (mesma semente, mesmo mundo; cada regra com efeito), balanceador sem impasse; jogável do nível 1 ao 2 sem amuleto, com o nível subindo por um atalho de teste |
+| **F2** Amuletos e Senhores ✅ | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–9 e o Vigia no 10, fim e pós-jogo com os retornos | Os Senhores caem em ordem pelo prefeito automático. A campanha inteira até o Vigia depende da escala da F3 |
+| **F3** Escala sem fim ✅ | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
+| **F4** Vila longa ✅ | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
+| **F5** Balanceamento 5× ✅ | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
+| **F6** Biomas e Senhores novos ✅ | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
+
+##### 15.1 Como ficou a F1
+
+- **Código:**
+  - `src/sim/dungeon.ts` concentra o abismo: nível, força por nível (`levelPower`), normalização por bioma, gerador de passagens e salas por semente, guardião, regras, pressão por passagem e fechamento.
+  - Os biomas e os Senhores ficam em `src/data/biomes.ts` (os antigos atos). As regras ficam em `src/data/rules.ts`.
+  - O grupo leva um "lugar" (`Spot`): a passagem, o nível, o bioma, as regras e o andar.
+- **Monstros normalizados:** cada bioma tem a mesma ameaça média no mesmo nível. O bioma muda o jeito da luta (couraça, enxame, retaguarda), não a força.
+- **Guardião:** é o monstro mais forte do bioma, com 2 afixos (3 a partir do nível 5), 5× a vida e dois acólitos. No corredor, ele usa a variante mais marcada do monstro e o portão do covil. Vencido, deixa uma peça épica e sela a passagem.
+- **Escolha dos grupos:**
+  - Preferem descer mais fundo nas passagens conhecidas.
+  - Quando não há andar novo à altura e a guilda tem vaga, abrem uma passagem nova. A confiança num mundo desconhecido é a média dos biomas possíveis, com 10% de desconto.
+  - Com uma passagem acima de 60 de pressão, quem pode desce nela para conter.
+- **Contratos:** apontam um andar de uma passagem conhecida ou "abrir uma passagem nova". Se a passagem fechar, a recompensa volta ao tesouro.
+- **Save 11:** um save antigo vai para a chave `vigilia:save:antigo`, e as boas-vindas avisam e oferecem o download.
+- **Atalhos de teste:**
+  - `vigilia.abyssLevel(n)` no console do navegador, só em desenvolvimento.
+  - `npm run balance -- --level-every N` sobe o nível a cada N anos.
+- **Retrato (3 sementes × 10 anos, nível 1 o tempo todo):**
+  - 116 expedições e cerca de 600 salas limpas por ano.
+  - 19 passagens seladas por ano.
+  - Pressão entre 8 e 29.
+  - Quase ninguém morre: sem Senhores, o nível não sobe, e os heróis sobram.
+- **Retrato com o atalho (nível subindo a cada 2 anos, até o 13):** roda sem erro, mas as mortes disparam (≈40 por ano). É o esperado: a escala dos heróis e do equipamento é a F3, e o ritmo real vem dos amuletos (F2) e do balanceamento (F5).
+
+##### 15.2 Como ficou a F2
+
+- **Fragmentos:** a chance é de 0,1% por matilha vencida, 0,3% por elite, 1,2% pelo guardião e 0,9% pela volta triunfal (todos voltam, depois de uma conquista), vezes a sorte da dificuldade. Só cai em passagens do nível atual, e nunca no covil.
+  - O grupo carrega o fragmento. Se ninguém voltar, ele fica com os restos de quem caiu por último.
+  - Na volta, o fragmento vai para o Cofre.
+  - Fragmento de um nível já vencido vira relíquia de museu (40 de ouro). Os que sobram no Cofre quando o Senhor cai também.
+- **Amuleto:** o joalheiro monta com 5 fragmentos e 300 × força do nível^0,8 de ouro, ajustado pela dificuldade. Fica pronto em 2 dias. Só existe um por vez.
+- **Contrato do Senhor:** fica no Cofre e no painel do amuleto (botão "Amuleto e contrato" no Abismo).
+  - A guilda propõe os mais fortes na vila, sem lesão, até o tamanho do grupo. O prefeito marca e desmarca quem vai, e a tela mostra a confiança estimada.
+  - O covil tem duas salas de guarda (elites) e o Senhor. Fica no fundo do nível e não é uma passagem.
+  - Quem morre lá não deixa restos.
+- **Vitória:** o nível sobe 1, o amuleto se cumpre, a vila festeja sem custo, cai uma lendária e o jogo pausa na tela "o Senhor caiu".
+- **Derrota:** se o grupo cai, foge ou recua, o amuleto se desfaz.
+- **Fim da campanha:** vencer o Vigia no nível 10 fecha a campanha (tela de fim). O jogo segue no 11 com os retornos: "O Guardião das Urnas (1º retorno)", e a cada 10 níveis o Vigia volta.
+- **Prefeito automático:** monta o amuleto quando tem os fragmentos e o ouro. Desafia com o grupo mais forte quando a confiança passa de 1,1, ou de 0,85 depois de 60 dias esperando.
+- **Retrato (6 sementes × 40 anos):** os Senhores do nível 1 caem no ano 3,4 em média, e os do nível 5 no ano 27,9. Todas as sementes param no nível 6 ou 7, porque os heróis batem no teto de nível 30 e de tier 12, e os monstros seguem crescendo. Isso é a F3. Só 3% dos contratos se perdem, porque o prefeito automático só vai quando se acha capaz; a meta de 20% a 35% é da F5.
+
+##### 15.3 Como ficou a F3
+
+- **Calibragem:** um grupo "bem cuidado" (rank A, no teto de nível, com o equipamento do nível) tem a mesma confiança do nível 6 ao 50:
+
+  | Nível | Força dos monstros | Teto do rank A | Tier | Vida do guardião herói | Confiança |
+  |---|---|---|---|---|---|
+  | 6 | 9,2 | 46 | 11 | 2,5 mil | 4,5 |
+  | 10 | 25,6 | 62 | 27 | 6,0 mil | 4,1 |
+  | 20 | 102 | 102 | 67 | 20 mil | 3,7 |
+  | 30 | 230 | 142 | 107 | 42 mil | 3,6 |
+  | 50 | 639 | 222 | 187 | 109 mil | 3,7 |
+
+  Os testes conferem a confiança e lutas de verdade contra elites: a taxa de vitória no nível 30 fica a até 35 pontos da do nível 6.
+- **Interface:** números a partir de 10 mil aparecem compactos ("12,3 mil", "4,5 mi", "1,2 bi").
+- **Retrato (4 sementes × 100 anos, salvando e carregando a cada 5 anos):**
+  - **O que deu certo:** os Senhores caem em ordem até o nível 15 ou 16, sem impasse, e o save volta idêntico (80/80).
+  - **Ritmo:** Senhor do nível 1 no ano 3,2; do 5 no ano 25,9; o Vigia (nível 10) no ano 55,4, em todas as sementes. O pós-jogo segue a cerca de 7 anos por nível.
+  - **Ainda fora das metas (F4 e F5):**
+    - Mortalidade de 0,9 por ano (meta: 3 a 6).
+    - Ouro dos heróis no fim em 119 mil.
+    - Tesouro de até 223 mil, sem a manutenção da vila longa.
+    - O Vigia cai cedo (meta: anos 70 a 90).
+    - Só 7% dos contratos do Senhor se perdem (meta: 20% a 35%).
+
+##### 15.4 Como ficou a F4
+
+- **Código:**
+  - `src/sim/economy.ts` separa o nível **construído** (`builtLevel`: painel, arte e custo) do **efetivo** (`level`: o construído vezes o rendimento da conservação, nunca abaixo de 1).
+  - Os efeitos contínuos usam o **grau** (`grade`), e as curvas ficam num lugar só (`EFFECTS`), que a simulação e o painel compartilham.
+  - A conservação, o desgaste, o conserto e a perda de nível ficam em `src/sim/care.ts`.
+- **Vila e telas:**
+  - A arte segue a faixa do nível (`artLevel` em `src/render/pack.ts`).
+  - O **andaime** e as marcas de **desgaste** (rachaduras, musgo e buracos, com o prédio mais apagado) são desenhados na hora sobre a arte do nível (`src/render/scaffold.ts`), nos dois modos de arte. A placa mostra "em obra".
+  - O painel do prédio mostra "Nível N de 10", a barra de conservação, o conserto (custo e dias) e os dois caminhos.
+  - O Cofre lista os prédios gastos, e os objetivos pedem o conserto do mais gasto.
+- **Prefeito automático:**
+  - Conserta abaixo de 55 de conservação, antes de qualquer obra.
+  - Guarda o ouro da próxima obra: festa, encomenda e mecenato só usam o que sobra, e os contratos esperam metade.
+  - Sem isso, os contratos e o mecenato levavam de 60% a 75% do tesouro e a vila parava no nível 2 até o ano 20.
+- **Balanceador:**
+  - Mostra o nível médio dos prédios nos anos 10, 40 e 75, a parte do que entra no tesouro que sai em manutenção e consertos, e a coluna de prédios e conservação no ano a ano.
+  - O tesouro agora registra o que entra (`earn`) e para onde sai cada moeda (`spend`, em `metrics.spent`).
+- **Retrato (8 sementes × 100 anos, salvando e carregando a cada 5 anos):**
+  - Save idêntico em 160 de 160. Saves 11 da F1 a F3 abrem com os prédios inteiros.
+  - **Manutenção e consertos:** 16% do que entra (meta: 15% a 30%), com cerca de 120 consertos por campanha e conservação média de 79 no fim.
+  - **Nível médio dos prédios:** 4,1 no ano 10, 7,2 no 40 e 8,2 no 75 (metas: ~3, ~6 e ~9). O começo está rápido porque as pérolas do nível 4 chegam com o abismo 3, por volta do ano 6.
+  - **Com a vila forte, o abismo andou mais rápido:** o Vigia caiu no ano 44 (era 55 na F3). A forja presa ao nível do abismo segurou só um pouco.
+  - **Fica para a F5:** desacelerar o abismo até as metas (Senhor do 1 nos anos 4 a 7, Vigia de 70 a 90). Isso também atrasa as pérolas e deve trazer a vila para ~3 no ano 10. Continuam fora das metas: mortalidade (1,2 por ano), contratos do Senhor perdidos (6%) e ouro dos heróis (214 mil).
+
+##### 15.5 Como ficou a F5
+
+- **O diagnóstico:** o ritmo é o relógio dos fragmentos, e com 5× mais tempo em cada nível os heróis subiam no ritmo antigo e chegavam ao teto muito antes do Senhor. A confiança mediana dos grupos era 3,4 no nível 1, quase ninguém morria e o Senhor caía até com 0,85. Quatro alavancas, todas em `src/sim/config.ts`:
+
+  | Alavanca | Valor | O que faz |
+  |---|---|---|
+  | `xpPace` | 0,4 | Toda a experiência (abismo e treino) segue o ritmo da campanha. |
+  | `fragmentPace` | 0,52 | A chance de cada fragmento: é o relógio dos Senhores. |
+  | `enemyLethality` | 2,8 | Monstros (menos o Senhor) com ataque × 2,8 e vida ÷ 2,8: a ameaça e a confiança ficam iguais, mas a luta fica curta e perigosa. O viés de confiança e andares mais íngremes quase não mexiam nas mortes; esta alavanca mexe, e muito (2 dá ~2 mortes por ano, 3 dá ~5, 4 dá 14). |
+  | `floorPowerGrowth` | 0,25 | Cada andar 25% mais forte (era 18%). Com 35%, o guardião do 6º andar ficava fora de alcance nos níveis 8 a 10. |
+
+- **Senhores:**
+  - Cada desafio sorteia afixos para o Senhor: 1 até o nível 3 e 2 depois. **Explosivo não entra**, porque 8% da vida do Senhor em cada herói matava o grupo na hora da vitória.
+  - A confiança contra o Senhor passou a contar a defesa do nível (até +50, que ficava de fora) e a composição: −15% sem tanque e −15% sem curandeiro. A guilda propõe um tanque e um curandeiro à altura (pelo menos metade da força do melhor) antes dos outros.
+  - Cada Senhor ganhou `power` e `threat` em `src/data/lords.ts`, medidos com `npm run lords` (grupos sintéticos contra cada Senhor, pela expedição de verdade). `threat` corrige a mecânica que a conta não vê, para a confiança 1 dar metade de chance. `power` põe em ~1,15 o grupo que vence o guardião mais fundo do nível com 1,5. A conta antiga errava muito de um Senhor para outro: o do nível 1 quase não perdia, e o do nível 9 só caía com confiança 1,6.
+  - **Grupos reais vencem mais que os sintéticos** (itens com afixos, lendárias, traços, provisões): a metade de chance deles fica em 0,61, com a curva mais suave (inclinação 3,7). A escala `lordConfidenceScale` = 1,6 deixa a confiança mostrada honesta para eles: 1 ≈ metade, 1,2 ≈ dois terços ("O grupo acha que dá conta"), 1,5 ≈ 80%.
+  - O prefeito automático desafia com 1,2; depois de 90 dias, com 1; depois de 240, com 0,85.
+- **Vila:** o ouro do nível 4 em diante cresce 1,65× por nível (era 1,75×), para a vila chegar perto do 9 no ano 75 com o abismo mais lento.
+- **Dificuldade:**
+  - Os fragmentos ganharam multiplicador próprio (`fragments`): Fácil 1,15, Normal e Difícil 1. Antes seguiam a sorte das peças raras (1,5× e 0,65×), forte demais para um relógio de 80 anos.
+  - No Difícil, a experiência foi de 0,85 para 0,9 e as peças raras de 0,65 para 0,8, para a cauda das campanhas que empacavam no nível 5.
+- **Retrato (10 sementes; 100 anos no Normal e no Fácil, 130 no Difícil):**
+
+  | | Fácil | Normal | Difícil |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 4,7 | ano 5,5 (4,5–7) | ano 6,9 |
+  | Senhor do nível 5 | ano 23 | ano 32,6 (24–44) | ano 56 (em 90%) |
+  | Chefe máximo | ano 54 (47–70), em todas | ano 73 (62–92), em 90% | ano 90 (67–112), em 70% |
+  | Contratos do Senhor perdidos | 18% | 23% | 22% |
+  | Mortes por ano | 3,1 | 4,8 | 4,5 |
+  | Nível médio dos prédios (anos 10, 40 e 75) | 3,8 · 8,4 · 10,6 | 3,1 · 6,9 · 8,4 | 3,0 · 5,6 · 6,3 |
+  | Manutenção e consertos | 17% | 18% | 20% |
+  | Ouro dos heróis no fim | 223 mil | 105 mil (79–130) | 85 mil |
+
+  No Normal todas as metas ficam verdes: 0 impasses, ócio de no máximo 1 dia, tesouro de até 44 mil no fim e save idêntico em 200 de 200. No Difícil, uma semente teve 5 dias de ócio seguidos.
+- **Em tempo de jogo:** o Vigia cai por volta de 39 horas em 1× no Normal (cerca de 29 no Fácil e 48 no Difícil).
+- **Para a F6:** os Senhores novos dos níveis 6 a 9 saem com `power` e `threat` medidos por `npm run lords`. Depois, uma rodada do balanceador confere as faixas.
+
+##### 15.6 Spec da F6: biomas e Senhores novos
+
+Quatro dimensões mais fundas, uma por Senhor dos níveis 6 a 9. Os Senhores mantêm os nomes provisórios, e cada bioma é de uma das famílias de material de sempre. Assim a vila não ganha recursos novos, e a faixa de material dos prédios continua valendo.
+
+| Nível | Bioma | Material | Monstros | Senhor | Mecânica do Senhor |
+|---|---|---|---|---|---|
+| 6 | **Colmeia Pálida**: floresta de árvores-esporo brancas e câmaras de quitina | esporos | Mariposa Pálida (voa, rápida), Zangão de Quitina (soldado), Casulo Vivo (tanque) | A Rainha dos Esporos | **Colmeia:** solta zangões a cada tanto; enquanto houver zangão vivo, ela leva 40% menos dano. Na fase 2, sobe para o alto do ninho (fica na retaguarda) e solta mais. |
+| 7 | **Fossa Cantante**: fenda do fundo do mar, escura, com luz viva | pérolas negras | Peixe-lanterna (retaguarda), Água-viva Abissal (enxame), Caranguejo de Casco Negro (tanque) | O Coro Submerso | **Canto:** a cada tanto, encanta o herói que mais bate, que fica parado por 4 s. Na fase 2, encanta dois e se cura um pouco a cada canto. |
+| 8 | **Cidadela de Engrenagens**: fortaleza de ferro preto, vapor e latão | ferro-negro | Aranha de Engrenagem (enxame), Autômato Sentinela (soldado), Fornalha Ambulante (tanque) | O Colosso de Ferro-negro | **Placas:** uma blindagem de 30% da vida absorve o dano e volta se não for quebrada a tempo. Na fase 2, superaquece: jatos de vapor em todos, e a defesa cai pela metade. |
+| 9 | **Deserto de Ossos**: dunas de ossos gigantes sob um sol preto | ossos | Chacal de Ossos (enxame), Múmia Errante (soldado), Escorpião Gigante (tanque) | O Rei dos Ossuários | **Exército:** quem cai do lado dele pode levantar de novo como esqueleto (uma vez cada). Na fase 2, cada golpe dele cura e ele levanta dois de uma vez. |
+
+- **Biomas:** entram no sorteio a partir do nível de cada um (6, 7, 8 e 9) e seguem a normalização de sempre (mesma ameaça média; o bioma muda o jeito da luta).
+- **Senhores:** os níveis 6 a 9 passam a ser os chefes desses biomas, com covil, guardas e arte próprios, e perdem a marca de provisório. `power` e `threat` saem de `npm run lords`, e uma rodada do balanceador confere as faixas da seção 11.
+- **Arte (16 e 32-bit, nos geradores de `art32/`):**
+  - Por bioma: os três monstros com as variantes do fundo (`-deep` e `-core`) e retrato; o Senhor com a fase 2 e o retrato; o corredor (entrada, duas paredes, arco, chão e primeiro plano); o portão do covil e três objetos; os efeitos de golpe e impacto.
+  - O corredor substitui a arena (é o que o jogo desenha quando ele existe), então os biomas novos não precisam das camadas de arena.
+  - O gerador desenha as duas resoluções do mesmo desenho, com o mesmo enquadramento: a 16-bit é nativa, sem redução da 32-bit. O pack original não tem mais o gerador dele aqui, por isso tudo sai de `art32/`.
+  - O índice das peças novas é gerado junto (`src/render/pack-dimensoes.ts`) e somado ao do pack; `npm run pack32` registra as 32-bit.
+- **Corredor e telas:** o corredor ganha os numerais VII a X para os biomas novos, com luz ambiente e objetos de cada um. O retrato aparece onde os outros aparecem.
+
+##### 15.7 Como ficou a F6
+
+- **Arte:**
+  - Tudo sai de `art32/dimensoes32.py`, que desenha as duas resoluções do mesmo desenho, com coordenadas em unidades da 16-bit multiplicadas pela escala. A 16-bit é nativa e o enquadramento das duas bate por construção. A base (`dimensoes32_base.py`) traz formas orgânicas (oval inclinado, membro que afina, asa com veios, ventre em segmentos), a folha de 19 quadros com as variantes, o retrato, o kit do corredor e o índice `src/render/pack-dimensoes.ts`, que o `pack.ts` soma ao do pack.
+  - São 108 peças em cada resolução: 16 personagens com variantes e retratos, os 4 corredores, 16 objetos e 8 efeitos (recoloridos dos do ato V).
+  - O corredor dos biomas novos vai do VII ao X, com objetos, sangue, poeira e luz ambiente próprios.
+- **Senhores:**
+  - Mecânicas novas no combate (`src/sim/combat.ts`, constantes `lord*` no config): colmeia, canto, placas e exército, como na seção 15.6. Os esqueletos que o Rei levanta não dão ouro nem experiência e não levantam de novo.
+  - `power` e `threat` dos quatro saíram de três rodadas de `npm run lords`: metade de chance entre 0,93 e 1,00 de confiança contra o grupo sintético. As mecânicas pesam muito: o Colosso começou com metade de chance só perto de 2,2 e o Coro perto de 1,4, e o Rei cedia já com 0,58.
+- **Retrato (10 sementes × 100 anos):** no Normal, todas as metas da seção 11 seguem verdes, com os biomas novos no sorteio. Senhor do nível 6 no ano 38,6, do 9 no 58,6 e o Vigia no 72,1, em todas as sementes; 21% dos contratos do Senhor perdidos, 4,4 mortes por ano e save idêntico em 200 de 200. O Vigia cai no ano 55,5 no Fácil e no 86,8 no Difícil (em 70%, em 130 anos).
+
+##### 15.8 Fila de ajustes pedidos durante o M5
+
+- ✅ **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que estavam pequenos demais para ler. Pedido em 2026-10-23. Feito:
+  - O quadro passou de 136 para 160 px. O nome subiu de 0,72 para 0,86 rem, o nível de 0,6 para 0,72 rem, a barra de vida de 9 para 12 px (números de 8 para 10 px) e a de experiência de 4 para 5 px. Os cinco quadros seguem numa linha no desktop.
+  - O aviso de volta à vila desceu para não encostar nos quadros.
+  - No celular, a lista de corredores rola, e cada corredor tem 220 px. Antes, três corredores espremidos cortavam a faixa do grupo, e só a primeira linha de heróis aparecia.
+- ✅ **Ouro rápido demais no Normal** (pedido em 2026-10-23, numa campanha nova). Feito: ver 15.9.
+
+##### 15.9 Ajuste do ouro: menos saque e a compra de fragmentos
+
+- **Diagnóstico** (prefeito "humano" simulado, que só toca o berrante, constrói, conserta e manda o grupo ao Senhor):
+  - O tesouro junta cerca de 30 mil no ano 10 e 118 mil no ano 20.
+  - A vila trava anos esperando material do abismo: fica no nível 5 do ano 13 ao 30, até as brasas do abismo 5.
+  - Nesse tempo, o ouro não tem onde ser gasto. O prefeito automático não mostrava isso porque gasta tudo em contratos, festas e mecenato.
+  - O que entra no tesouro: o imposto sobre o saque (cerca de 40%), as oferendas dos heróis ricos no templo, a margem da forja, o imposto dos moradores e o descanso. Quase tudo nasce do ouro dos monstros, que ainda estava no ritmo da campanha antiga.
+- **Decisão do usuário (2026-10-23):** menos ouro e um gasto novo que vira progresso.
+- **Menos ouro:** o ouro de todo monstro cai pela metade (`goldPace` 0,5). Os heróis ganham menos, e o tesouro também (pelo imposto e pelo que eles gastam na vila).
+- **Compra de fragmentos:** no Cofre, o joalheiro compra fragmentos de amuleto do nível atual de mercadores do abismo.
+  - **Preço:** 6 vezes o preço de montar o amuleto do nível, e 1,5 vez mais caro a cada compra no mesmo nível. A dificuldade ajusta o preço. No nível 1, saem 1.800, 2.700 e 4.050 de ouro.
+  - **Limite:** no máximo 3 por nível. Os outros 2 do amuleto têm de vir do abismo. A contagem volta a zero quando o abismo desce.
+  - O prefeito automático compra quando o tesouro sobra (duas vezes o preço, além da reserva e da próxima obra).
+- **Metas:** as da seção 11 continuam valendo. O prefeito humano não pode passar de 30 mil no ano 20.
+
+**Feito (2026-10-23):**
+
+- **Prefeito automático:** com os fragmentos prontos, ele guarda o ouro do joalheiro antes de obra nova (e contratos, festas e mecenato só usam o que sobra).
+  - Antes, contratos e mecenato comiam o tesouro e o amuleto ficava décadas sem sair. Com o ouro pela metade, 2 de 10 sementes paravam no nível 4 com 10 fragmentos no Cofre e um grupo com confiança 2.
+  - Era o mesmo defeito por trás da cauda do Difícil que "empacava no nível 5" (15.5).
+- **Difícil:** com o defeito corrigido, o Difícil ficou só 5 anos atrás do Normal no meio da campanha (Senhor do nível 5 no ano 36,7). A chance de fragmento do Difícil foi de 1 para 0,9.
+- **Vila:** com menos ouro, a meta do ano 75 passou de ~9 para ~8. Testado e descartado: guardar a obra inteira antes dos contratos leva a vila ao 9, mas o tesouro volta a juntar 35 a 81 mil no fim (esperando prédios de 25 a 40 mil) e a manutenção passa de 30% do que entra.
+- **Prefeito humano simulado** (3 sementes, 75 anos; constrói o mais barato, conserta e compra fragmento quando não há obra):
+  - Tesouro de 1,9 a 17 mil no ano 20 (era 118 mil) e no máximo 21 mil no ano 75.
+  - A vila fica perto do 8 no ano 75.
+- **Retrato:**
+
+  | | Fácil (10 × 90 anos) | Normal (20 × 100 anos) | Difícil (10 × 130 anos) |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 4,8 | ano 6,5 (2,5–10,7) | ano 8,0 |
+  | Senhor do nível 5 | ano 24,0 | ano 32,3 (22,9–43,5), em todas | ano 41,3, em todas |
+  | Chefe máximo | ano 62,5, em todas | ano 75,7 (58–99), em 90% | ano 101,9, em todas |
+  | Contratos do Senhor perdidos | 19% | 21% | 22% |
+  | Mortes por ano | 2,5 | 4,8 | 5,3 |
+  | Nível médio dos prédios (anos 10, 40 e 75) | 3,3 · 7,1 · 8,4 | 2,6 · 5,9 · 7,3 | 2,1 · 4,4 · 6,0 |
+  | Manutenção e consertos | 15% | 19% | 21% |
+  | Ouro dos heróis no fim | 115 mil | 86,5 mil (60–107 mil) | 80 mil |
+  | Maior tesouro no fim | 28 mil | 17,4 mil | 17,4 mil |
+
+  - No Normal, todas as metas ficam verdes, menos o ócio: uma semente de 20 ficou 6 dias sem expedição no primeiro mês, com 4 dos 5 heróis tratando lesão. Com o ouro de antes, a mesma semente parava 4 dias no mesmo ponto, então é sorte de lesões, não o ajuste.
+
+##### 16. Escolhas feitas por padrão (fáceis de trocar)
+
+- Passagens ficam abertas 40 dias. A guilda guarda tantas quanto os grupos que ela comporta (1 + o grau dela).
+- Passagens já abertas mantêm o nível de quando abriram, então dá para voltar a um mundo mais fácil.
+- Recuar do Senhor também gasta o amuleto.
+- O Vigia volta a cada 10 níveis no pós-jogo.
+- O teto de nível dos heróis sobe +4 por nível do abismo; o tier do saque é 2 por nível até o 6 e 4 depois, mais o andar.
+- O segundo caminho do nível 7 é o outro do par (não há uma terceira opção). Ele para quando a conservação derruba o nível efetivo abaixo de 7.
+- O prédio em conserto rende 80%. O "Agora" do painel já mostra os efeitos com o rendimento da conservação.
 
 ### 10. Decisões em aberto
 

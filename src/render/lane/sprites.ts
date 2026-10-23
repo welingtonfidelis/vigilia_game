@@ -88,9 +88,9 @@ export function heroSource(hero: Hero): SpriteSource | null {
   return packSprite(id, `${id}/walk`);
 }
 
-/** Monstro com a variante de profundidade do andar e a fase 2 dos chefes. */
+/** Monstro com a variante de profundidade do andar, a do guardião e a fase 2 dos Senhores. */
 export function enemySource(world: World, party: Party, unit: Unit): SpriteSource | null {
-  const look = monsterBase(world, unit, party.act);
+  const look = monsterBase(world, unit, party.biome);
   if (look.ghost) {
     // Eco de herói morto: a folha do próprio herói, em tom fantasma.
     const sprite = packSprite(look.asset, `${look.asset}/walk`);
@@ -99,7 +99,8 @@ export function enemySource(world: World, party: Party, unit: Unit): SpriteSourc
   let id = look.asset;
   if (unit.tags.includes('boss')) {
     if (unit.hp <= unit.maxHp * 0.5 && packAsset(`${id}-phase2`)) id = `${id}-phase2`;
-  } else if (party.floor >= 2 && packAsset(`${id}-core`)) {
+  } else if ((unit.tags.includes('guardian') || party.floor >= 2) && packAsset(`${id}-core`)) {
+    // O guardião da passagem usa a variante mais marcada do monstro, em qualquer andar.
     id = `${id}-core`;
   } else if (party.floor >= 1 && packAsset(`${id}-deep`)) {
     id = `${id}-deep`;

@@ -9,14 +9,10 @@ describe('dificuldade', () => {
     expect([def.xp, def.gold, def.rarity, def.costs, def.enemy, def.corruption, def.raid]).toEqual([1, 1, 1, 1, 1, 1, 1]);
   });
 
-  it('o novo jogo guarda a dificuldade e o save antigo abre em Normal', () => {
+  it('o novo jogo guarda a dificuldade', () => {
     const world = createWorld(5, 'dificil');
     expect(difficultyOf(world).id).toBe('dificil');
     expect(deserialize(serialize(world)).difficulty).toBe('dificil');
-    const old = JSON.parse(serialize(createWorld(5))) as Record<string, unknown>;
-    delete old.difficulty;
-    old.version = 9;
-    expect(deserialize(JSON.stringify(old)).difficulty).toBe('normal');
   });
 
   it('custos do prefeito seguem a dificuldade', () => {
@@ -42,7 +38,8 @@ describe('dificuldade', () => {
     };
     expect(xpOf('facil')).toBeGreaterThan(xpOf('normal'));
     expect(xpOf('dificil')).toBeLessThan(xpOf('normal'));
-    expect(floorPower(createWorld(3, 'facil'), 0, 0)).toBeLessThan(floorPower(createWorld(3, 'normal'), 0, 0));
+    const spot = { passageId: -1, level: 1, biome: 0, rules: [], floor: 0 };
+    expect(floorPower(createWorld(3, 'facil'), spot)).toBeLessThan(floorPower(createWorld(3, 'normal'), spot));
   });
 
   it('dá para trocar no meio da campanha, e fica na crônica', () => {

@@ -1,6 +1,8 @@
+import { BUILDING_IDS } from '../data/buildings.ts';
 import { dayOf } from './calendar.ts';
-import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
-import { dailyCorruption } from './dungeon.ts';
+import { TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
+import { abyssPressure, dailyPressure } from './dungeon.ts';
+import { dailyCare, finishRepairs } from './care.ts';
 import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { maybeSeasonalEvent } from './events.ts';
@@ -25,6 +27,7 @@ export function step(world: World, hooks: Hooks = {}): void {
   if (world.tick % TICKS_PER_HOUR === 0) {
     hooks.onHour?.(world);
     hourlyTown(world);
+    finishRepairs(world);
     processForge(world);
     // A incursão acontece antes de os grupos partirem: quem está em casa defende.
     maybeRaid(world);
@@ -46,8 +49,9 @@ export function runDays(world: World, days: number, hooks: Hooks = {}): void {
 
 function daily(world: World): void {
   dailyEconomy(world);
+  dailyCare(world);
   raiseLegendaries(world);
-  dailyCorruption(world);
+  dailyPressure(world);
   dailyTown(world);
   dailyPatronage(world);
   dailyPets(world);
@@ -90,8 +94,9 @@ function trackIdle(world: World): void {
 
 function sample(world: World): void {
   const heroes = activeHeroes(world);
-  let deepest = 0;
-  world.acts.forEach((act, a) => act.conquered.forEach((c, f) => c && (deepest = Math.max(deepest, a * B.floorsPerAct + f + 1))));
+  // Mais fundo alcançado: andares conquistados do nível atual (os níveis contam de 10 em 10).
+  let deepest = (world.abyss.level - 1) * 10;
+  for (const p of world.abyss.passages) p.conquered.forEach((c, f) => c && (deepest = Math.max(deepest, (p.level - 1) * 10 + f + 1)));
   world.metrics.daily.push({
     day: dayOf(world.tick),
     treasury: Math.round(world.town.treasury),
@@ -100,6 +105,13 @@ function sample(world: World): void {
     avgLevel: heroes.length ? +(heroes.reduce((s, h) => s + h.level, 0) / heroes.length).toFixed(1) : 0,
     deepest,
     population: Math.round(world.town.population),
-    corruption: world.acts.map((a) => Math.round(a.corruption)),
+    pressure: Math.round(abyssPressure(world)),
+    level: world.abyss.level,
+    buildings: +(BUILDING_IDS.reduce((s, id) => s + world.town.buildings[id], 0) / BUILDING_IDS.length).toFixed(2),
+    care: Math.round(mean(BUILDING_IDS.filter((id) => world.town.buildings[id] > 0).map((id) => world.town.care[id]))),
   });
+}
+
+function mean(xs: number[]): number {
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 100;
 }

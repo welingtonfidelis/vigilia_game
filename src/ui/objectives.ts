@@ -2,14 +2,23 @@
 
 import {
   activeHeroes,
-  ACTS,
+  BALANCE,
+  BIOMES,
+  commands,
+  lordOf,
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
+  careOf,
   floorLabel,
   hornCost,
+  isGuardianFloor,
   MATERIAL_NAMES,
   nextLevelCost,
+  openPassages,
+  repairCost,
+  repairOf,
+  upgradeBlocker,
 } from '../sim/index.ts';
 import type { MaterialId, World } from '../sim/index.ts';
 import { fmt, midSentence } from './format.ts';
@@ -41,30 +50,58 @@ export function objectives(world: World): Objective[] {
   } else if (roster < 3 && town.arrivals.length === 0) {
     out.push({ horizon: 'agora', text: `Restam poucos heróis. Toque o berrante (${fmt(hornCost(world))} de ouro).` });
   } else if (buildingLevel(world, 'guilda') >= 1 && town.contracts.length === 0) {
-    out.push({ horizon: 'agora', text: 'Poste um contrato no quadro para levar os heróis ao próximo andar.' });
+    out.push({ horizon: 'agora', text: 'Poste um contrato no quadro para levar os heróis a uma passagem ou ao próximo andar.' });
   }
 
+  // Prédio gasto vem antes de qualquer obra nova: rende menos e, em 0, perde um nível.
+  const worn = wornest(world);
+  if (worn) out.push({ horizon: 'logo', text: worn });
   const upgrade = cheapestUpgrade(world);
   if (upgrade) out.push({ horizon: 'logo', text: upgrade });
 
-  const actIdx = world.acts.findIndex((a) => a.unlocked && !a.bossDefeated);
-  if (actIdx >= 0) {
-    const act = world.acts[actIdx]!;
-    const floor = act.conquered.findIndex((c) => !c);
-    const def = ACTS[actIdx]!;
-    out.push({
-      horizon: 'depois',
-      text: floor === act.conquered.length - 1 ? `Derrote ${midSentence(def.boss.name)} no ${floorLabel(actIdx, floor)}.` : `Conquiste o ${floorLabel(actIdx, floor)}.`,
-    });
+  // O amuleto: juntar fragmentos, montar e mandar o grupo ao Senhor.
+  const abyss = world.abyss;
+  const lord = lordOf(abyss.amulet?.level ?? abyss.level);
+  if (abyss.amulet && !abyss.amulet.inUse && world.tick >= abyss.amulet.readyTick) {
+    out.push({ horizon: 'logo', text: `O amuleto está pronto: mande um grupo enfrentar ${midSentence(lord.name)} (no Cofre ou no Abismo).` });
+  } else if (!abyss.amulet && abyss.fragments >= BALANCE.fragmentsPerAmulet) {
+    out.push({ horizon: 'logo', text: `Monte o amuleto do nível ${abyss.level} no Cofre (${fmt(commands.amuletCostFor(world, abyss.level))} de ouro).` });
+  } else if (!abyss.amulet && abyss.fragments > 0) {
+    out.push({ horizon: 'depois', text: `Junte fragmentos de amuleto do nível ${abyss.level}: ${abyss.fragments} de ${BALANCE.fragmentsPerAmulet}.` });
+  }
+  // O abismo: abrir a primeira passagem, depois descer até o guardião e selar.
+  const known = openPassages(world).filter((p) => p.discovered);
+  if (known.length === 0) {
+    out.push({ horizon: 'depois', text: 'Abra a primeira passagem: o próximo grupo que descer vai descobrir o que há do outro lado.' });
+  } else {
+    const deepest = known.reduce((a, b) => (b.level * 10 + b.conquered.filter(Boolean).length > a.level * 10 + a.conquered.filter(Boolean).length ? b : a));
+    const floor = deepest.conquered.findIndex((c) => !c);
+    if (floor >= 0) {
+      const name = BIOMES[deepest.biome]!.name;
+      out.push({
+        horizon: 'depois',
+        text: isGuardianFloor(deepest, floor) ? `Vença o guardião e sele a passagem para ${name}.` : `Conquiste o ${floorLabel({ biome: deepest.biome, floor })}.`,
+      });
+    }
   }
   return out.slice(0, 3);
+}
+
+/** "Conserte a taverna (conservação 32): …" para o prédio mais gasto abaixo de 50. */
+function wornest(world: World): string | null {
+  const worn = BUILDING_IDS.filter((id) => buildingLevel(world, id) > 0 && repairOf(world, id) === undefined && careOf(world, id) < BALANCE.careWorn);
+  if (worn.length === 0) return null;
+  const id = worn.reduce((a, b) => (careOf(world, b) < careOf(world, a) ? b : a));
+  const cost = repairCost(world, id);
+  const name = `${BUILDINGS[id].gender === 'm' ? 'o' : 'a'} ${BUILDINGS[id].name.toLowerCase()}`;
+  return `Conserte ${name} (conservação ${Math.floor(careOf(world, id))})${cost ? `: ${fmt(cost.gold)} de ouro` : ''}.`;
 }
 
 function cheapestUpgrade(world: World): string | null {
   let best: { text: string; gold: number } | null = null;
   for (const id of BUILDING_IDS) {
     const cost = nextLevelCost(world, id);
-    if (!cost) continue;
+    if (!cost || upgradeBlocker(world, id)) continue;
     const lvl = buildingLevel(world, id);
     // Ruínas primeiro: reconstruir vale mais do que melhorar.
     const weight = cost.gold + (lvl > 0 ? 10_000 : 0);

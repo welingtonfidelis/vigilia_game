@@ -1,7 +1,7 @@
 // Itens nomeados (M4): criar, nomear, equipar, guardar no arsenal, achar no abismo,
 // herdar e encomendar na forja. As peças entram nos números do combate pelos afixos.
 
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
 import {
   AFFIX_IDS,
   AFFIXES,
@@ -17,10 +17,11 @@ import {
 import { dayOf, yearOf } from './calendar.ts';
 import { floorLabel, ofWhom, record } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_DAY } from './config.ts';
-import { hasSpec, level, maxGearTier } from './economy.ts';
+import { earn, hasSpec, level, maxGearTier } from './economy.ts';
 import { heroStats } from './hero.ts';
+import { levelTier } from './dungeon.ts';
 import { chance, pick } from './rng.ts';
-import type { BenchService, ClassId, Hero, Item, ItemAffix, ItemSlot, MaterialId, Party, Rarity, World } from './types.ts';
+import type { BenchService, ClassId, Hero, Item, ItemAffix, ItemSlot, MaterialId, Party, Rarity, Spot, World } from './types.ts';
 import { difficultyOf, scaledCost } from './difficulty.ts';
 
 export const ITEM_SLOTS: readonly ItemSlot[] = ['weapon', 'armor', 'amulet'];
@@ -209,19 +210,22 @@ export function nextTierWorth(world: World, hero: Hero, slot: 'weapon' | 'armor'
 
 // ── Abismo ───────────────────────────────────────────────────────────────
 
-/**
- * Tier das peças que caem num andar: cresce com o ato e a profundidade, mas nunca passa
- * do que a forja da vila já faz (o abismo devolve peças da época; o ganho está nos afixos).
- */
-export const dropTier = (world: World, act: number, floor: number, slot: ItemSlot): number =>
-  Math.max(1, Math.min(B.dropTierMax, act * 2 + floor, Math.max(1, maxGearTier(world, slot === 'amulet' ? undefined : slot))));
+/** Tier do saque de um andar: cresce com o nível do abismo e a profundidade. */
+const spotTier = (spot: Pick<Spot, 'level' | 'floor'>): number => levelTier(spot.level) + spot.floor;
 
 /**
- * Tier da lendária que o chefe deixa: acima do que a forja faz na hora (ou do tier do
- * ato, o que for maior), para a peça de chefe valer o nome por bastante tempo.
+ * Tier das peças que caem num andar: cresce com o nível e a profundidade, sem teto (M5 F3).
+ * O abismo devolve peças da época dele; acima do que a forja da vila faz, é dele que vem o
+ * equipamento.
  */
-export const legendaryTier = (world: World, act: number, floor: number, slot: ItemSlot): number =>
-  Math.min(B.dropTierMax + B.legendaryDropEdge + 1, Math.max(act * 2 + floor, maxGearTier(world, slot === 'amulet' ? undefined : slot)) + B.legendaryDropEdge);
+export const dropTier = (_world: World, spot: Pick<Spot, 'level' | 'floor'>, _slot: ItemSlot): number => Math.max(1, spotTier(spot));
+
+/**
+ * Tier da lendária que o Senhor deixa: acima do que a forja faz na hora (ou do tier do
+ * nível, o que for maior), para a peça valer o nome por bastante tempo.
+ */
+export const legendaryTier = (world: World, spot: Pick<Spot, 'level' | 'floor'>, slot: ItemSlot): number =>
+  Math.max(spotTier(spot), maxGearTier(world, slot === 'amulet' ? undefined : slot)) + B.legendaryDropEdge;
 
 /**
  * Lendárias acompanham a vila: quando o ferreiro sobe ou se especializa, toda lendária
@@ -249,7 +253,7 @@ export function raiseLegendaries(world: World): void {
   record(world, 'item', [], `O ferreiro ajustou ${raised.length === 1 ? 'a lendária' : 'as lendárias'} ${names} ao tier da vila.`);
 }
 
-export type DropSource = 'bau' | 'elite' | 'chefe';
+export type DropSource = 'bau' | 'elite' | 'guardiao' | 'chefe';
 
 /**
  * Talvez uma peça para o saque do grupo (baú, elite ou chefe). Só em terreno novo: um
@@ -257,11 +261,13 @@ export type DropSource = 'bau' | 'elite' | 'chefe';
  * peças da campanha cabe no mapa e não cresce com a repetição.
  */
 export function rollDrop(world: World, party: Party, source: DropSource): Item | null {
-  if (!party.persistent) return null;
+  // Só terreno novo dá peças; o covil do Senhor também conta (luta única).
+  if (!party.persistent && !party.lord) return null;
   const f = party.floor;
   let rarity: Rarity | null = null;
-  // O primeiro chefe de cada ato deixa uma lendária.
-  if (source === 'chefe') rarity = !world.acts[party.act]!.bossDefeated ? 'lendaria' : null;
+  // O Senhor deixa uma lendária; o guardião da passagem, uma épica.
+  if (source === 'chefe') rarity = 'lendaria';
+  else if (source === 'guardiao') rarity = 'epica';
   else {
     // A dificuldade mexe na chance de peça rara e épica (a lendária do chefe não muda).
     const luck = difficultyOf(world).rarity;
@@ -269,22 +275,23 @@ export function rollDrop(world: World, party: Party, source: DropSource): Item |
     else rarity = chance(world.rng, (B.chestEpicChance + B.chestEpicPerFloor * f) * luck) ? 'epica' : chance(world.rng, (B.chestRareChance + B.chestRarePerFloor * f) * luck) ? 'rara' : null;
   }
   if (!rarity) return null;
-  const act = ACTS[party.act]!;
-  const material = act.material;
+  const biome = BIOMES[party.biome]!;
+  const material = biome.material;
   const first = chance(world.rng, 0.15) ? 'afortunado' : pick(world.rng, MATERIAL_AFFIX[material]);
-  const where = source === 'chefe' ? `tirado ${ofWhom(act.boss.name)} no ${floorLabel(party.act, f)}` : `achado no ${floorLabel(party.act, f)}`;
+  const where = source === 'chefe' ? `tirado ${ofWhom(biome.boss.name)} no ${floorLabel(party)}` : `achado no ${floorLabel(party)}`;
   const slot = pick(world.rng, ITEM_SLOTS);
   const item = newItem(world, {
     slot,
     rarity,
-    tier: rarity === 'lendaria' ? legendaryTier(world, party.act, f, slot) : dropTier(world, party.act, f, slot),
+    tier: rarity === 'lendaria' ? legendaryTier(world, party, slot) : dropTier(world, party, slot),
     material,
     affixes: [first],
     origin: `${where} no ano ${yearOf(dayOf(world.tick))}`,
   });
   (party.loot.items ??= []).push(item);
   const label = rarity === 'lendaria' ? `a lendária ${item.title}` : `uma peça ${rarity === 'epica' ? 'épica' : 'rara'}`;
-  party.moments.push(source === 'bau' ? `No baú havia ${label}.` : source === 'elite' ? `O elite deixou ${label}.` : `${act.boss.name} deixou ${label}.`);
+  const from = { bau: `No baú havia ${label}.`, elite: `O elite deixou ${label}.`, guardiao: `O guardião deixou ${label}.`, chefe: `${biome.boss.name} deixou ${label}.` };
+  party.moments.push(from[source]);
   return item;
 }
 
@@ -313,7 +320,7 @@ export function shareLoot(world: World, party: Party, heroes: Hero[]): void {
     if (item.rarity === 'epica' || item.rarity === 'lendaria') {
       const name = itemName(item, taker?.classId ?? null);
       const label = item.title ? `a lendária ${name}` : name.charAt(0).toLowerCase() + name.slice(1);
-      const where = floorLabel(party.act, party.floor);
+      const where = floorLabel(party);
       const text = lost
         ? taker
           ? `${taker.name} recuperou ${label}, que era de ${lost.name}, no ${where}.`
@@ -442,7 +449,7 @@ export interface BenchOffer {
  * (troca um afixo que não serve à classe) ou polir a lendária (+1 tier). null = nada a fazer.
  */
 export function benchOffer(world: World, hero: Hero): BenchOffer | null {
-  if (level(world, 'ferreiro') < 3) return null;
+  if (level(world, 'ferreiro') < B.benchSmithLevel) return null;
   let best: BenchOffer | null = null;
   const consider = (o: BenchOffer) => {
     if (o.price > hero.gold) return;
@@ -470,7 +477,7 @@ export function useBench(world: World, hero: Hero, offer: BenchOffer): void {
   if (!item || hero.gold < offer.price) return;
   hero.gold -= offer.price;
   // A forja fica com uma parte (o resto é o trabalho do joalheiro).
-  world.town.treasury += offer.price * B.benchTreasuryShare;
+  earn(world, offer.price * B.benchTreasuryShare, 'bancada');
   const year = yearOf(dayOf(world.tick));
   const before = item.rarity;
   const statsBefore = heroStats(world, hero).maxHp;
@@ -519,20 +526,19 @@ export function useBench(world: World, hero: Hero, offer: BenchOffer): void {
 export const merchantPrice = (item: Item): number => Math.round(itemPrice(item) * B.merchantMarkup);
 
 /**
- * O mercador mostra uma peça do ato; quem mais ganha com ela e tem o ouro compra (ouro do
- * herói) e já sai usando. Sem comprador, ele segue caminho. Devolve quem comprou.
+ * O mercador mostra uma peça da dimensão; quem mais ganha com ela e tem o ouro compra (ouro
+ * do herói) e já sai usando. Sem comprador, ele segue caminho. Devolve quem comprou.
  */
 export function merchantVisit(world: World, party: Party, heroes: Hero[]): Hero | null {
-  const act = ACTS[party.act]!;
-  const material = act.material;
+  const material = BIOMES[party.biome]!.material;
   const slot = pick(world.rng, ITEM_SLOTS);
   const item = newItem(world, {
     slot,
     rarity: chance(world.rng, B.merchantEpicChance) ? 'epica' : 'rara',
-    tier: dropTier(world, party.act, party.floor, slot),
+    tier: dropTier(world, party, slot),
     material,
     affixes: [pick(world.rng, MATERIAL_AFFIX[material])],
-    origin: `comprado de um mercador errante no ${floorLabel(party.act, party.floor)} no ano ${yearOf(dayOf(world.tick))}`,
+    origin: `comprado de um mercador errante no ${floorLabel(party)} no ano ${yearOf(dayOf(world.tick))}`,
   });
   const price = merchantPrice(item);
   let buyer: Hero | null = null;

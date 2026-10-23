@@ -1,14 +1,22 @@
 import {
-  ACTS,
+  abyssPressure,
+  BALANCE,
+  BIOMES,
+  lordOf,
   commands,
+  dayOf,
+  DIM_RULES,
   fleeLimit,
   floorLabel,
   formatDate,
-  isBossFloor,
+  isGuardianFloor,
   MATERIAL_NAMES,
+  openPassages,
   partyRooms,
+  passageCapacity,
+  rulesLabel,
 } from '../../sim/index.ts';
-import type { MaterialId, Party, Unit, World } from '../../sim/index.ts';
+import type { MaterialId, Party, Passage, Unit, World } from '../../sim/index.ts';
 import type { ExpeditionSummary } from '../../game/session.ts';
 import { Bar, HeroLink, PanelShell, useCommand, useGame } from '../components.tsx';
 import { className, fmt, floorName, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
@@ -17,39 +25,124 @@ import { imgSrc } from '../../render/art32.ts';
 import { HeroPortrait, MonsterPortrait, monsterBase } from '../PixelSprite.tsx';
 import { loadReportHistory } from '../report-history.ts';
 
-function ActOverview(props: { world: World }) {
+/** O abismo: nível, pressão e as passagens que a guilda acompanha. */
+function AbyssOverview(props: { world: World }) {
   const { world } = props;
+  const { ui } = useGame();
+  const abyss = world.abyss;
+  const lord = lordOf(abyss.amulet?.level ?? abyss.level);
+  const amuletText = !abyss.amulet
+    ? `Fragmentos: ${abyss.fragments} de ${BALANCE.fragmentsPerAmulet}`
+    : abyss.amulet.inUse
+      ? 'O amuleto desceu com o grupo ao covil'
+      : world.tick < abyss.amulet.readyTick
+        ? 'O joalheiro está montando o amuleto'
+        : 'Amuleto pronto: o contrato do Senhor espera um grupo';
+  const free = passageCapacity(world) - openPassages(world).length;
   return (
     <div class="acts">
-      {world.acts.map((act, a) => {
-        if (!act.unlocked) return null;
-        const def = ACTS[a]!;
-        return (
-          <div class="act" key={a}>
-            <div class="act-head">
-              <strong>
-                Ato {a + 1}: {def.name}
-              </strong>
-              {act.bossDefeated && <span class="tag gold">chefe derrotado</span>}
-            </div>
-            <div class="floors">
-              {act.conquered.map((done, f) => {
-                const open = f === 0 || act.conquered[f - 1];
-                const map = act.maps[f];
-                const cleared = map ? map.filter((r) => r.cleared).length : 0;
-                return (
-                  <div key={f} class={`floor ${done ? 'done' : open ? 'open' : 'locked'}`} title={floorName(a, f)}>
-                    <span>{isBossFloor(f) ? <IconSkull /> : f + 1}</span>
-                    <small>{done ? 'conquistado' : open ? (map ? `${cleared}/${map.length} salas` : 'inexplorado') : 'trancado'}</small>
-                  </div>
-                );
-              })}
-            </div>
-            <label>Corrupção</label>
-            <Bar kind="corruption" value={act.corruption} max={100} marker={70} markerTitle="Acima de 70, monstros voltam a salas limpas" text={`${Math.round(act.corruption)}`} slim />
+      <div class="act abyss-head">
+        <div class="act-head">
+          <strong>Nível {abyss.level} do abismo</strong>
+          <span class="sub">
+            {openPassages(world).length} de {passageCapacity(world)} passagens
+          </span>
+        </div>
+        <p class="sub">
+          Senhor do nível: <strong>{lord.name}</strong> · {amuletText}{' '}
+          <button class="link" onClick={() => ui.open({ kind: 'amulet' })}>
+            Amuleto e contrato
+          </button>
+        </p>
+        <label>Pressão do abismo (a da passagem mais pressionada)</label>
+        <Bar
+          kind="corruption"
+          value={abyssPressure(world)}
+          max={100}
+          marker={55}
+          markerTitle="Acima de 55, uma incursão pode subir à noite"
+          text={`${Math.round(abyssPressure(world))}`}
+          slim
+        />
+      </div>
+      {abyss.passages.map((p) => (
+        <PassageCard key={p.id} world={world} passage={p} />
+      ))}
+      {free > 0 && (
+        <div class="act passage unknown">
+          <div class="act-head">
+            <strong>Passagem desconhecida</strong>
           </div>
-        );
-      })}
+          <p class="sub">Ninguém sabe o que há do outro lado. O próximo grupo que descer pode abri-la.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PassageCard(props: { world: World; passage: Passage }) {
+  const { world, passage } = props;
+  if (!passage.discovered) {
+    return (
+      <div class="act passage unknown">
+        <div class="act-head">
+          <strong>Passagem desconhecida</strong>
+          <span class="tag">nível {passage.level}</span>
+        </div>
+        <p class="sub">Um grupo desceu para abri-la. O que há do outro lado só se sabe quando ele entrar.</p>
+      </div>
+    );
+  }
+  const biome = BIOMES[passage.biome]!;
+  const days = passage.closesDay - dayOf(world.tick);
+  const remains = world.remains.filter((r) => r.passageId === passage.id).length;
+  return (
+    <div class={`act passage${passage.sealed ? ' sealed' : ''}`}>
+      <div class="act-head">
+        <strong>{biome.name}</strong>
+        <span class="tag">nível {passage.level}</span>
+        {passage.sealed && <span class="tag gold">selada</span>}
+      </div>
+      <p class="sub rules">
+        {passage.rules.length === 0
+          ? 'Calmaria'
+          : passage.rules.map((r) => (
+              <span key={r} class="tag" title={DIM_RULES[r].blurb}>
+                {DIM_RULES[r].name}
+              </span>
+            ))}
+      </p>
+      <div class="floors">
+        {passage.conquered.map((done, f) => {
+          const open = f === 0 || passage.conquered[f - 1];
+          const map = passage.maps[f];
+          const cleared = map ? map.filter((r) => r.cleared).length : 0;
+          return (
+            <div key={f} class={`floor ${done ? 'done' : open ? 'open' : 'locked'}`} title={floorName(passage, f)}>
+              <span>{isGuardianFloor(passage, f) ? <IconSkull /> : f + 1}</span>
+              <small>{done ? 'conquistado' : open ? (map ? `${cleared}/${map.length} salas` : 'inexplorado') : 'trancado'}</small>
+            </div>
+          );
+        })}
+      </div>
+      {!passage.sealed && (
+        <>
+          <label>Pressão</label>
+          <Bar
+            kind="corruption"
+            value={passage.pressure}
+            max={100}
+            marker={70}
+            markerTitle="Acima de 70, monstros voltam a salas limpas desta passagem"
+            text={`${Math.round(passage.pressure)}`}
+            slim
+          />
+        </>
+      )}
+      <p class="sub">
+        {passage.sealed ? 'Fecha quando o último grupo voltar' : days > 0 ? `Fecha em ${days} ${days === 1 ? 'dia' : 'dias'}` : 'Fecha quando o último grupo voltar'}
+        {remains > 0 ? ` · restos de ${remains} ${remains === 1 ? 'herói' : 'heróis'}` : ''}
+      </p>
     </div>
   );
 }
@@ -62,7 +155,7 @@ function Rooms(props: { world: World; party: Party }) {
     <div class="rooms" aria-label="Salas do andar">
       {rooms.map((room, i) => {
         const current = i === party.roomIndex && party.phase !== 'voltando';
-        const known = room.cleared || current || room.kind === 'chefe' || i < party.roomIndex;
+        const known = room.cleared || current || room.kind === 'chefe' || room.kind === 'guardiao' || i < party.roomIndex;
         return (
           <span key={i} class={`room${room.cleared ? ' cleared' : ''}${current ? ' current' : ''}${known ? '' : ' fog'}`} title={known ? ROOM_LABELS[room.kind] : 'Desconhecida'}>
             <RoomIcon kind={known ? room.kind : null} />
@@ -73,9 +166,9 @@ function Rooms(props: { world: World; party: Party }) {
   );
 }
 
-function EnemyRow(props: { unit: Unit; world: World; act: number }) {
+function EnemyRow(props: { unit: Unit; world: World; biome: number }) {
   const u = props.unit;
-  const look = monsterBase(props.world, u, props.act);
+  const look = monsterBase(props.world, u, props.biome);
   return (
     <div class={`unit enemy${u.alive ? '' : ' down'}`}>
       <span class="unit-art">
@@ -106,7 +199,9 @@ function PartyCard(props: { world: World; party: Party }) {
     <article class={`party${party.phase === 'combate' ? ' fighting' : ''}`}>
       <header>
         <div>
-          <strong>{floorLabel(party.act, party.floor)[0]!.toUpperCase() + floorLabel(party.act, party.floor).slice(1)}</strong>
+          <strong>
+            {floorLabel(party)[0]!.toUpperCase() + floorLabel(party).slice(1)} <small class="muted">· nível {party.level} · {rulesLabel(party.rules)}</small>
+          </strong>
           <p class="sub">
             {phaseText(world, party)}
             {contract ? ` · contrato de ${fmt(contract.reward)}` : ''}
@@ -176,7 +271,7 @@ function PartyCard(props: { world: World; party: Party }) {
               .sort((a, b) => Number(b.tags.includes('boss')) - Number(a.tags.includes('boss')) || Number(b.alive) - Number(a.alive) || b.uid - a.uid)
               .slice(0, 8)
               .map((u) => (
-                <EnemyRow key={u.uid} unit={u} world={world} act={party.act} />
+                <EnemyRow key={u.uid} unit={u} world={world} biome={party.biome} />
               ))}
           </div>
         )}
@@ -198,7 +293,7 @@ function Summary(props: { s: ExpeditionSummary }) {
   return (
     <details class={`summary outcome-${s.outcome}`}>
       <summary>
-        <span class={`tag ${s.outcome === 'conquista' ? 'gold' : s.outcome === 'massacre' ? 'bad' : ''}`}>{OUTCOME_LABELS[s.outcome]}</span> {floorLabel(s.act, s.floor)} ·{' '}
+        <span class={`tag ${s.outcome === 'conquista' ? 'gold' : s.outcome === 'massacre' ? 'bad' : ''}`}>{OUTCOME_LABELS[s.outcome]}</span> {floorLabel(s)} ·{' '}
         {fmt(s.gold)} de ouro{s.dead.length > 0 && <span class="bad"> · {s.dead.length} {s.dead.length === 1 ? 'morte' : 'mortes'}</span>}
       </summary>
       <p class="sub">
@@ -243,7 +338,7 @@ export function DungeonPanel() {
           <button class="btn small" onClick={() => ui.open({ kind: 'battle', partyId: 0 })}>Relatórios recentes ({reports.length})</button>
         </p>
       )}
-      <ActOverview world={world} />
+      <AbyssOverview world={world} />
       <h3>Grupos no abismo</h3>
       {parties.length === 0 ? (
         <p class="sub">Ninguém lá embaixo agora. Os heróis montam grupos sozinhos no quadro quando estão descansados.</p>

@@ -19,7 +19,8 @@ export const MAX_CATCH_UP_MS = 5 * 60 * 1000;
 /** Resumo de uma expedição que acabou (o grupo some do World quando volta). */
 export interface ExpeditionSummary {
   id: number;
-  act: number;
+  level: number;
+  biome: number;
   floor: number;
   outcome: PartyOutcome;
   startedTick: number;
@@ -185,7 +186,8 @@ export class Session {
 function summarize(party: Party, tick: number): ExpeditionSummary {
   return {
     id: party.id,
-    act: party.act,
+    level: party.level,
+    biome: party.biome,
     floor: party.floor,
     outcome: party.outcome ?? 'retirada',
     startedTick: party.startedTick,

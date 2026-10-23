@@ -261,13 +261,13 @@ export function HeroPanel(props: { heroId: number }) {
   const { hp, max } = liveHp(world, hero);
   const flee = fleeLimit(world, hero);
   const alive = hero.status === 'town' || hero.status === 'expedition';
-  const capped = hero.level >= maxLevel(hero);
+  const capped = hero.level >= maxLevel(world, hero);
   const bonds = bondsOf(world, hero);
   const griefFor = hero.griefFor === null ? undefined : world.heroes.find((h) => h.id === hero.griefFor);
   const nextGear = Math.min(hero.gear.weapon, hero.gear.armor) + 1;
   const weaponBonus = Math.round(hero.gear.weapon * BALANCE.weaponAtkPerTier * 100);
   const armorHpBonus = Math.round(hero.gear.armor * BALANCE.armorHpPerTier * 100);
-  const armorDefBonus = hero.gear.armor * BALANCE.armorDefPerTier;
+  const armorDefBonus = Math.min(hero.gear.armor, BALANCE.armorDefTierCap) * BALANCE.armorDefPerTier;
   const cls = CLASSES[hero.classId];
   const role = hero.retiredRole;
 

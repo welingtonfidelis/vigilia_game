@@ -1,4 +1,4 @@
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
 import { BUILDINGS, BUILDING_IDS } from '../data/buildings.ts';
 import { BALANCE as B, SAVE_VERSION, START_HOUR, TICKS_PER_HOUR } from './config.ts';
 import { seedRng } from './rng.ts';
@@ -18,6 +18,13 @@ export function emptyMetrics(): Metrics {
     stalemates: 0,
     roomsCleared: 0,
     floorsConquered: 0,
+    passagesOpened: 0,
+    treasuryIn: 0,
+    maintenance: 0,
+    repairs: 0,
+    spent: {},
+    passagesSealed: 0,
+    lordFailures: 0,
     rankUps: 0,
     bossKills: [],
     idleDays: 0,
@@ -40,7 +47,7 @@ export function emptyMetrics(): Metrics {
 
 export function createWorld(seed: number, difficulty: Difficulty = 'normal'): World {
   const buildings = Object.fromEntries(BUILDING_IDS.map((id) => [id, BUILDINGS[id].startLevel])) as Record<BuildingId, number>;
-  const materials = Object.fromEntries(ACTS.map((a) => [a.material, 0])) as Record<MaterialId, number>;
+  const materials = Object.fromEntries(BIOMES.map((b) => [b.material, 0])) as Record<MaterialId, number>;
   const world: World = {
     version: SAVE_VERSION,
     seed,
@@ -75,14 +82,10 @@ export function createWorld(seed: number, difficulty: Difficulty = 'normal'): Wo
       arsenal: [],
       forge: [],
       specs: {},
+      care: Object.fromEntries(Object.keys(buildings).map((id) => [id, 100])) as Record<BuildingId, number>,
+      repairs: {},
     },
-    acts: ACTS.map((_, i) => ({
-      unlocked: i === 0,
-      corruption: i === 0 ? B.corruptionStart : 0,
-      conquered: Array.from({ length: B.floorsPerAct }, () => false),
-      maps: Array.from({ length: B.floorsPerAct }, () => null),
-      bossDefeated: false,
-    })),
+    abyss: { level: 1, passages: [], fragments: 0, amulet: null, bought: 0 },
     bonds: {},
     remains: [],
     chronicle: [],

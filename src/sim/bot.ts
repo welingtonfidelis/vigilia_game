@@ -4,13 +4,17 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { blowHorn, build, comfort, commission, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
-import { canAfford, festivalCost, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
+import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
+import { repairCost } from './care.ts';
+import { BUILDING_IDS } from '../data/buildings.ts';
+import { lordCandidates, lordConfidence, openPassages } from './dungeon.ts';
 import { BALANCE as B } from './config.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import type { BuildingId, ItemSlot, MaterialId, SpecId, World } from './types.ts';
+import type { LevelCost } from '../data/buildings.ts';
 
 /** O que o prefeito automático escolhe ao chegar no nível 3. */
 const BOT_SPECS: Record<BuildingId, SpecId> = {
@@ -23,7 +27,10 @@ const BOT_SPECS: Record<BuildingId, SpecId> = {
   casa: 'cirurgia',
 };
 
-/** Ordem em que o prefeito automático reconstrói a vila. */
+/** Depois das ruínas, cada rodada de níveis segue esta ordem. */
+const PRIORITY: BuildingId[] = ['ferreiro', 'guilda', 'estalagem', 'taverna', 'templo', 'casa', 'campo'];
+
+/** Ordem em que o prefeito automático reconstrói e melhora a vila (até o nível 30 do pós-jogo). */
 const BUILD_ORDER: [BuildingId, number][] = [
   ['guilda', 1],
   ['ferreiro', 1],
@@ -31,21 +38,14 @@ const BUILD_ORDER: [BuildingId, number][] = [
   ['templo', 1],
   ['casa', 1],
   ['campo', 1],
-  ['ferreiro', 2],
-  ['guilda', 2],
-  ['estalagem', 2],
-  ['taverna', 2],
-  ['templo', 2],
-  ['casa', 2],
-  ['campo', 2],
-  ['ferreiro', 3],
-  ['guilda', 3],
-  ['estalagem', 3],
-  ['taverna', 3],
-  ['templo', 3],
-  ['casa', 3],
-  ['campo', 3],
+  ...Array.from({ length: 29 }, (_, i) => PRIORITY.map((id): [BuildingId, number] => [id, i + 2])).flat(),
 ];
+
+/** O prefeito automático manda consertar abaixo desta conservação. */
+const REPAIR_BELOW = 55;
+
+/** Quanto do ouro da próxima obra o prefeito automático guarda antes de postar contratos. */
+const CONTRACT_FUND = 0.5;
 
 export function autoMayor(world: World): void {
   const town = world.town;
@@ -56,36 +56,43 @@ export function autoMayor(world: World): void {
   if (roster < wanted) blowHorn(world);
 
   const reserve = hornCost(world);
-  for (const [id, lvl] of BUILD_ORDER) {
-    if (level(world, id) >= lvl) continue;
-    const cost = nextLevelCost(world, id);
-    if (!cost) continue;
-    const materialsOk = canAfford(world, { gold: 0, ...(cost.materials ? { materials: cost.materials } : {}) });
-    if (!materialsOk) continue;
-    if (town.treasury - cost.gold >= reserve) build(world, id, lvl === 3 ? BOT_SPECS[id] : undefined);
-    break;
+  if (hourOf(world.tick) === 15) tendAmulet(world, reserve);
+  // Conserto primeiro; depois, a próxima obra da lista. O ouro que ela pede fica guardado:
+  // festas, contratos, encomendas e mecenato só usam o que sobra.
+  let fund = tendBuildings(world, reserve);
+  // Fragmentos prontos: o ouro do joalheiro fica guardado antes de obra nova.
+  const saving = !world.abyss.amulet && world.abyss.fragments >= B.fragmentsPerAmulet ? amuletCostFor(world, world.abyss.level) : 0;
+  const next = fund > 0 ? null : nextBuild(world);
+  if (next && town.treasury - next.cost.gold >= reserve + saving) build(world, next.id, next.lvl === B.specLevel ? BOT_SPECS[next.id] : undefined);
+  else if (next) fund = next.cost.gold;
+  fund += saving;
+
+  // Ouro sobrando vira fragmento: compra dos mercadores quando sobra o dobro do preço.
+  if (hourOf(world.tick) === 15 && !world.abyss.amulet && world.abyss.fragments < B.fragmentsPerAmulet) {
+    const price = fragmentPriceFor(world);
+    if (price !== null && town.treasury >= reserve + fund + 2 * price) buyFragment(world);
   }
 
   // Fim de jogo sem ouro morto: quando o tesouro sobra, a vila faz festa.
   if (hourOf(world.tick) === 14) {
     const cost = festivalCost(world);
     const lowMorale = townHeroes(world).some((h) => h.morale < 45);
-    if (town.treasury > cost + (lowMorale ? 300 : 900)) holdFestival(world);
+    if (town.treasury > cost + fund + (lowMorale ? 300 : 900)) holdFestival(world);
   }
 
   // Contratos para todos os andares da fronteira, até o limite do quadro.
   for (const frontier of frontierFloors(world)) {
-    if (town.contracts.length >= level(world, 'guilda')) break;
-    if (town.contracts.some((c) => c.act === frontier.act && c.floor === frontier.floor)) continue;
-    const reward = suggestedReward(frontier.act, frontier.floor);
-    if (town.treasury >= reward + reserve * 2) postContract(world, frontier.act, frontier.floor, reward);
+    if (town.contracts.length >= maxContracts(world)) break;
+    if (town.contracts.some((c) => c.passageId === frontier.passageId && c.floor === frontier.floor)) continue;
+    const reward = suggestedReward(frontier.level, frontier.floor);
+    if (town.treasury >= reward + reserve * 2 + fund * CONTRACT_FUND) postContract(world, frontier.passageId, frontier.floor, reward);
   }
 
   if (hourOf(world.tick) === 11) giveFromArsenal(world);
-  if (hourOf(world.tick) === 13 && dayOf(world.tick) % 3 === 0) orderFromForge(world, reserve);
+  if (hourOf(world.tick) === 13 && dayOf(world.tick) % 3 === 0) orderFromForge(world, reserve + fund);
 
   // Uma vez por dia, patrocina o equipamento do herói mais mal-equipado.
-  if (hourOf(world.tick) === 12 && town.treasury > reserve + 400) {
+  if (hourOf(world.tick) === 12 && town.treasury > reserve + fund + 400) {
     const cap = maxGearTier(world);
     const candidates = townHeroes(world).filter((h) => Math.min(h.gear.weapon, h.gear.armor) < cap);
     if (candidates.length > 0) {
@@ -95,6 +102,37 @@ export function autoMayor(world: World): void {
       if (gift >= 30) sponsor(world, hero.id, gift);
     }
   }
+}
+
+/** A próxima obra da lista que o prefeito automático pode pagar em material (null = nenhuma). */
+function nextBuild(world: World): { id: BuildingId; lvl: number; cost: LevelCost } | null {
+  for (const [id, lvl] of BUILD_ORDER) {
+    if (builtLevel(world, id) >= lvl) continue;
+    const cost = nextLevelCost(world, id);
+    if (!cost || upgradeBlocker(world, id)) continue;
+    if (!canAfford(world, { gold: 0, ...(cost.materials ? { materials: cost.materials } : {}) })) continue;
+    return { id, lvl, cost };
+  }
+  return null;
+}
+
+/**
+ * Conserta o prédio mais gasto. Se ele já rende menos e o conserto não cabe no tesouro,
+ * devolve o ouro do conserto: a vila junta para a obra antes de melhorar outro prédio.
+ */
+function tendBuildings(world: World, reserve: number): number {
+  const worn = BUILDING_IDS.filter((id) => builtLevel(world, id) > 0 && repairOf(world, id) === undefined && careOf(world, id) < REPAIR_BELOW).sort(
+    (a, b) => careOf(world, a) - careOf(world, b),
+  );
+  const worst = worn[0];
+  if (!worst) return 0;
+  const cost = repairCost(world, worst);
+  if (!cost) return 0;
+  if (canAfford(world, cost) && world.town.treasury - cost.gold >= reserve) {
+    repair(world, worst);
+    return 0;
+  }
+  return careOf(world, worst) < B.careWorn ? cost.gold : 0;
 }
 
 /** Dá a melhor peça do cofre a quem mais ganha com ela (uma por dia). */
@@ -128,14 +166,15 @@ function orderFromForge(world: World, reserve: number): void {
   commission(world, slot, material, rarity);
 }
 
-function frontierFloors(world: World): { act: number; floor: number }[] {
-  const out: { act: number; floor: number }[] = [];
-  world.acts.forEach((act, a) => {
-    if (!act.unlocked) return;
-    const f = act.conquered.findIndex((c) => !c);
-    if (f >= 0 && f < B.floorsPerAct) out.push({ act: a, floor: f });
-  });
-  return out.reverse();
+/** O primeiro andar ainda não conquistado de cada passagem conhecida, do nível mais alto ao mais baixo. */
+function frontierFloors(world: World): { passageId: number; level: number; floor: number }[] {
+  const out: { passageId: number; level: number; floor: number }[] = [];
+  for (const p of openPassages(world)) {
+    if (!p.discovered) continue;
+    const f = p.conquered.findIndex((c) => !c);
+    if (f >= 0) out.push({ passageId: p.id, level: p.level, floor: f });
+  }
+  return out.sort((a, b) => b.level - a.level || b.floor - a.floor);
 }
 
 /**
@@ -145,7 +184,7 @@ function frontierFloors(world: World): { act: number; floor: number }[] {
 function makeRoom(world: World): void {
   if (activeHeroes(world).length < heroCapacity(world) - 1 || world.town.reputation < 30) return;
   const typical = world.town.reputation >= 70 ? 3 : 2;
-  const capped = townHeroes(world).filter((h) => h.level >= maxLevel(h) && RANKS.indexOf(h.rank) < typical);
+  const capped = townHeroes(world).filter((h) => h.level >= maxLevel(world, h) && RANKS.indexOf(h.rank) < typical);
   if (capped.length === 0) return;
   const power = (h: (typeof capped)[number]) => {
     const s = heroStrength(world, h);
@@ -162,4 +201,25 @@ function tendPeople(world: World): void {
   if (heroes.length >= 4) speech(world);
   const doubtful = heroes.filter((h) => h.loyalty < 60).sort((a, b) => a.loyalty - b.loyalty);
   for (const h of doubtful) if (world.town.mayorEnergy > 0) talk(world, h.id);
+}
+
+/**
+ * Amuleto (M5 F2): monta quando tem os fragmentos e o ouro; desafia o Senhor quando o
+ * grupo mais forte se acha capaz, ou, depois de esperar muito, se acha quase capaz.
+ */
+function tendAmulet(world: World, reserve: number): void {
+  const abyss = world.abyss;
+  if (!abyss.amulet) {
+    if (abyss.fragments >= B.fragmentsPerAmulet && world.town.treasury >= amuletCostFor(world, abyss.level) + reserve) forgeAmulet(world);
+    return;
+  }
+  const amulet = abyss.amulet;
+  if (amulet.inUse || world.tick < amulet.readyTick) return;
+  const team = lordCandidates(world).slice(0, maxPartySize(world));
+  if (team.length < Math.min(3, maxPartySize(world))) return;
+  // A confiança contra o Senhor é honesta (1 ≈ metade de chance): o prefeito médio desce com
+  // uns 2/3 de chance ("acha que dá conta"), aceita menos depois de esperar e, se o grupo para de crescer, arrisca.
+  const conf = lordConfidence(world, team, amulet.level);
+  const waited = dayOf(world.tick - amulet.readyTick);
+  if (conf >= 1.2 || (waited >= 90 && conf >= 1) || (waited >= 240 && conf >= 0.85)) challengeLord(world, team.map((h) => h.id));
 }

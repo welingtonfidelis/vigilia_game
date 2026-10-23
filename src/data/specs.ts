@@ -1,4 +1,5 @@
-// Especializações de nível 3 (M4): ao chegar no nível 3, cada prédio escolhe um caminho.
+// Especializações (M4): ao chegar no nível 3, cada prédio escolhe um caminho; no nível 7 (M5 F4)
+// ganha também o outro.
 
 import type { BuildingId, SpecId } from '../sim/types.ts';
 
@@ -27,7 +28,7 @@ export const SPECS: Record<BuildingId, [SpecDef, SpecDef]> = {
   ],
   templo: [
     spec('templo', 'luz', 'Luz', 'Fé e luto se recuperam no dobro da velocidade.'),
-    spec('templo', 'penitencia', 'Penitência', 'Todos fogem menos (limiar −6) e limpar andares baixa a corrupção 10% a mais.'),
+    spec('templo', 'penitencia', 'Penitência', 'Todos fogem menos (limiar −6) e limpar salas baixa a pressão do abismo 10% a mais.'),
   ],
   guilda: [
     spec('guilda', 'mercenaria', 'Mercenária', '+1 grupo ao mesmo tempo e contratos pagam 25% a mais.'),

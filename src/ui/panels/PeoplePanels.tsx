@@ -1,10 +1,10 @@
-// Elenco, cemitério, menu, boas-vindas e fim de ato.
+// Elenco, cemitério, menu, boas-vindas e fim da campanha.
 
 import { useState } from 'preact/hooks';
-import { ACTS, BALANCE, byWhom, childAge, commands, createWorld, dayOf, DIFFICULTIES, DIFFICULTY_IDS, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS, yearOf } from '../../sim/index.ts';
+import { BALANCE, byWhom, childAge, commands, createWorld, dayOf, DIFFICULTIES, DIFFICULTY_IDS, formatDate, heroCapacity, ROLE_NAMES, roleCount, TRAITS, yearOf } from '../../sim/index.ts';
 import type { Difficulty } from '../../sim/index.ts';
 import type { Hero, HeroStatus, RetiredRole } from '../../sim/index.ts';
-import { clearSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../../game/storage.ts';
+import { clearSave, readOldSave, readSaveMeta, browserStore, loadWorld, saveWorld } from '../../game/storage.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { activityText, className, fmt, liveHp, plural } from '../format.ts';
 import { GRAVE_SLOTS, graveOrder } from '../../render/layout.ts';
@@ -197,7 +197,7 @@ export function CampaignEndPanel() {
       </p>
       <div class="stats">
         <Stat label="Anos de vila" value={years} />
-        <Stat label="Chefes derrotados" value={`${world.metrics.bossKills.length} de ${ACTS.length}`} />
+        <Stat label="Senhores vencidos" value={fmt(world.metrics.bossKills.length)} />
         <Stat label="Expedições" value={fmt(world.metrics.expeditions)} />
         <Stat label="Heróis caídos" value={fmt(world.metrics.deaths)} />
         <Stat label="Ouro saqueado" value={fmt(world.metrics.goldLooted)} />
@@ -407,10 +407,33 @@ export function MenuPanel() {
   );
 }
 
-export function WelcomePanel() {
+/** Baixa o save de antes do M5 como arquivo (o jogo não lê mais esse formato). */
+function exportOldSave(): void {
+  const json = readOldSave(browserStore());
+  if (!json) return;
+  const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'vigilia-save-antigo.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function WelcomePanel(props: { oldSave?: boolean }) {
   const { ui } = useGame();
   return (
     <PanelShell title="Bem-vindo a Vigília" subtitle="Você é o prefeito. Os heróis não obedecem: escolhem.">
+      {props.oldSave && (
+        <div class="notice">
+          <p>
+            <strong>O abismo mudou.</strong> A caverna agora liga a vila a outras dimensões, e esta versão começa uma campanha nova. O seu jogo antigo
+            ficou guardado neste navegador.
+          </p>
+          <button class="btn" onClick={exportOldSave}>
+            Baixar o save antigo
+          </button>
+        </div>
+      )}
       <p>A vila foi arrasada pelo que sobe do abismo, na caverna a leste. Só a taverna ficou de pé.</p>
       <p>
         Toque o <strong>berrante</strong> (na guarita do portão, ao norte) para chamar aventureiros. Eles formam grupos sozinhos no <strong>quadro</strong>, descem e voltam
@@ -425,41 +448,6 @@ export function WelcomePanel() {
       <button class="btn primary big" onClick={() => ui.close()}>
         Começar
       </button>
-    </PanelShell>
-  );
-}
-
-export function ActEndPanel(props: { act: number }) {
-  const { world, session, ui } = useGame();
-  const def = ACTS[props.act]!;
-  const next = ACTS[props.act + 1];
-  const deaths = world.heroes.filter((h) => h.status === 'dead').length;
-  const killer = world.heroes.find((h) => h.deeds.some((d) => d.kind === 'chefe' && d.text.includes(def.boss.name.replace(/^(O|A) /, ''))));
-  return (
-    <PanelShell title={`${def.boss.name} caiu`} subtitle={`Fim do Ato ${props.act + 1} · ${formatDate(world.tick)}`}>
-      {killer && (
-        <p>
-          O golpe final foi de <HeroLink id={killer.id} />.
-        </p>
-      )}
-      <p>
-        O caminho {def.of} está livre. {deaths === 0 ? 'Ninguém morreu até aqui.' : `${deaths} ${deaths === 1 ? 'herói ficou' : 'heróis ficaram'} pelo caminho.`}
-      </p>
-      {next && <p>Abaixo, um novo caminho se abriu: {next.name}. A corrupção de lá já começou a subir.</p>}
-      <div class="row">
-        <button
-          class="btn primary big"
-          onClick={() => {
-            session.setPaused(false);
-            ui.close();
-          }}
-        >
-          Continuar
-        </button>
-        <button class="btn" onClick={() => ui.open({ kind: 'chronicle' })}>
-          Ler a crônica
-        </button>
-      </div>
     </PanelShell>
   );
 }

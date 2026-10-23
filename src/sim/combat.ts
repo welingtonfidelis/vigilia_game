@@ -1,6 +1,7 @@
 // Combate automático em tempo real (1 tick = 0,1 s). Determinístico pela semente.
 
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
+import { lordOf } from '../data/lords.ts';
 import { CLASSES } from '../data/classes.ts';
 import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
@@ -54,8 +55,9 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     units: [],
     ticks: 0,
     enraged: false,
-    isBoss: room.kind === 'chefe',
-    bossMech: room.kind === 'chefe' ? ACTS[party.act]!.boss.mech : null,
+    // O guardião da passagem luta com o fôlego de chefe (fúria mais tardia), sem mecânica.
+    isBoss: room.kind === 'chefe' || room.kind === 'guardiao',
+    bossMech: room.kind === 'chefe' ? lordOf(party.lord ?? party.level).mech : null,
     mechCd: 60,
     echoesSpawned: false,
     nextUid: 1,
@@ -64,7 +66,12 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     const hero = world.heroes.find((h) => h.id === id);
     if (hero && hero.status === 'expedition') combat.units.push(heroUnit(world, combat, hero));
   }
-  combat.units.push(...spawnRoom(world, combat, room, party.act, party.floor));
+  // Regras da dimensão que pesam nos heróis: névoa corta o crítico, maré deixa todos lentos.
+  for (const u of combat.units) {
+    if (party.rules.includes('nevoa')) u.crit *= 0.5;
+    if (party.rules.includes('mare')) u.interval = Math.round(u.interval * 1.15);
+  }
+  combat.units.push(...spawnRoom(world, combat, room, party));
   return combat;
 }
 
@@ -99,6 +106,8 @@ export function combatTick(world: World, party: Party): CombatResult {
     if (!u.alive || u.fled) continue;
     if (--u.cd > 0) continue;
     u.cd = u.interval;
+    // Encantado pelo canto: perde a vez.
+    if (u.charmedUntil !== undefined && c.ticks < u.charmedUntil) continue;
     if (u.side === 'hero') heroAct(world, party, c, u);
     else enemyAct(world, party, c, u);
   }
@@ -141,7 +150,8 @@ function heroAct(world: World, party: Party, c: Combat, u: Unit): void {
         const beloved = hurt.find((a) => a.heroId !== null && a.hp / a.maxHp < 0.6 && getBond(world, hero.id, a.heroId) > 50);
         const target = beloved ?? hurt.reduce((lo, a) => (a.hp / a.maxHp < lo.hp / lo.maxHp ? a : lo));
         const silenced = c.silenceUntil !== undefined && c.ticks < c.silenceUntil;
-        const heal = atk * B.healMult * enrageHealFactor(c) * (silenced ? 0.5 : 1);
+        const quiet = party.rules.includes('silencio') ? 0.6 : 1;
+        const heal = atk * B.healMult * enrageHealFactor(c) * (silenced ? 0.5 : 1) * quiet;
         const before = target.hp;
         target.hp = Math.min(target.maxHp, target.hp + heal);
         target.poisonTicks = 0;
@@ -247,7 +257,8 @@ function strike(world: World, party: Party, c: Combat, attacker: Unit, target: U
   if (!target.alive) return 0;
   const crit = chance(world.rng, attacker.crit) ? B.critMult : 1;
   const pierce = Math.min(0.95, attacker.pierce + pierceBonus);
-  const dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - pierce));
+  let dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - pierce));
+  if (target.tags.includes('boss') && c.bossMech) dmg = lordGuard(c, attacker, dmg);
   target.hp -= dmg;
   // Sanguessuga: parte do golpe volta como vida para quem bateu. Na fúria, como a cura,
   // rende menos (senão a luta não acaba).
@@ -273,6 +284,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
   if (!unit.alive) return;
   unit.alive = false;
   unit.hp = 0;
+  if (unit.side === 'enemy' && c.bossMech === 'exercito') raiseFallen(world, party, c, unit);
   if (unit.side === 'enemy') {
     party.loot.gold += unit.gold;
     party.loot.xp += unit.xp;
@@ -334,12 +346,14 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
   hero.status = 'dead';
   hero.hp = 0;
   hero.activity = null;
-  hero.death = { tick: world.tick, where: floorLabel(party.act, party.floor), by };
+  hero.death = { tick: world.tick, where: floorLabel(party), by };
   party.memberIds = party.memberIds.filter((id) => id !== hero.id);
   party.dead.push(hero.id);
   world.metrics.deaths++;
-  // As peças ficam com o corpo: voltam com quem achar os restos.
-  world.remains.push({ heroId: hero.id, act: party.act, floor: party.floor, gold: hero.gold, items: takeItems(hero) });
+  // As peças ficam com o corpo: voltam com quem achar os restos. No covil do Senhor não há
+  // resgate: o que o herói levava fica lá embaixo.
+  const items = takeItems(hero);
+  if (!party.lord) world.remains.push({ heroId: hero.id, passageId: party.passageId, floor: party.floor, gold: hero.gold, items });
   hero.gold = 0;
   hero.injury = null;
   hero.epitaph = epitaph(world, hero);
@@ -349,7 +363,7 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
     world,
     'morte',
     [hero.id],
-    `${heroLabel(hero)} tombou no ${floorLabel(party.act, party.floor)}, ${g(hero, 'abatido', 'abatida')} ${byWhom(by)}. ${
+    `${heroLabel(hero)} tombou no ${floorLabel(party)}, ${g(hero, 'abatido', 'abatida')} ${byWhom(by)}. ${
       hero.stats.expeditions === 0
         ? 'Era sua primeira descida.'
         : `Tinha ${hero.stats.expeditions} ${hero.stats.expeditions === 1 ? 'expedição' : 'expedições'} nas costas.`
@@ -371,15 +385,16 @@ function checkFlee(world: World, party: Party, c: Combat): void {
     world.metrics.fled++;
     party.memberIds = party.memberIds.filter((id) => id !== hero.id);
     hero.hp = Math.max(1, u.hp);
-    maybeInjure(world, hero, u.hp / u.maxHp, `do ${floorLabel(party.act, party.floor)}`);
+    maybeInjure(world, hero, u.hp / u.maxHp, `do ${floorLabel(party)}`);
     for (const id of party.memberIds) {
       const mate = world.heroes.find((h) => h.id === id);
       if (mate) addBond(world, hero, mate, -8);
     }
     party.moments.push(`${hero.name} perdeu a coragem e fugiu.`);
-    record(world, 'fuga', [hero.id], `${heroLabel(hero)} perdeu a coragem e fugiu do ${floorLabel(party.act, party.floor)}.`);
+    record(world, 'fuga', [hero.id], `${heroLabel(hero)} perdeu a coragem e fugiu do ${floorLabel(party)}.`);
     revealTrait(world, hero, 'covarde', `${hero.name} foi ${g(hero, 'o primeiro', 'a primeira')} a correr.`);
-    world.pendingFugitives.push({ heroId: hero.id, act: party.act, floor: party.floor });
+    const { passageId, level, biome, rules, floor, lord } = party;
+    world.pendingFugitives.push({ heroId: hero.id, spot: { passageId, level, biome, rules: [...rules], floor, ...(lord ? { lord } : {}) } });
   }
 }
 
@@ -427,23 +442,38 @@ const PHASE2_TEXT: Record<BossMech, (name: string) => string> = {
   maldicao: (n) => `${n} começou a rezar ao contrário.`,
   retaguarda: (n) => `${n} passou a caçar os feridos.`,
   ecos: (n) => `${n} abriu o olho.`,
+  colmeia: (n) => `${n} subiu para o alto do ninho.`,
+  canto: (n) => `${n} cantou mais alto.`,
+  placas: (n) => `${n} superaqueceu e as placas caíram.`,
+  exercito: (n) => `${n} chamou o exército inteiro.`,
 };
 
 function enterPhase2(world: World, party: Party, c: Combat, boss: Unit): void {
   c.phase2 = true;
-  const actDef = ACTS[party.act]!;
+  const actDef = BIOMES[party.biome]!;
   if (c.bossMech === 'couraca') boss.def *= 1.5;
+  // O Colosso superaquece: sem placas e com a defesa pela metade, mas solta vapor.
+  if (c.bossMech === 'placas') {
+    c.plates = 0;
+    c.platesAt = undefined;
+    boss.def *= 0.5;
+  }
+  // O Rei dos Ossuários: cada golpe cura, e dois esqueletos levantam na hora.
+  if (c.bossMech === 'exercito') {
+    boss.lifesteal = B.lordArmyLifesteal;
+    for (let i = 0; i < 2; i++) c.units.push(risenSkeleton(world, party, c));
+  }
   if (c.bossMech === 'veneno') {
     const sprout = actDef.enemies.find((e) => e.id === 'brotado') ?? actDef.enemies[actDef.enemies.length - 1]!;
-    for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party.act, party.floor));
+    for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party));
   }
-  if (c.bossMech) party.moments.push(PHASE2_TEXT[c.bossMech](actDef.boss.name));
+  if (c.bossMech) party.moments.push(PHASE2_TEXT[c.bossMech](lordOf(party.lord ?? party.level).name));
 }
 
 function bossMechanics(world: World, party: Party, c: Combat): void {
   const boss = c.units.find((u) => u.tags.includes('boss'));
   if (!boss || !boss.alive) return;
-  const actDef = ACTS[party.act]!;
+  const actDef = BIOMES[party.biome]!;
   if (!c.phase2 && boss.hp < boss.maxHp / 2) enterPhase2(world, party, c, boss);
   // Fase 2 de Aquilo que Vigia: o olhar drena o ânimo de todos aos poucos.
   if (c.phase2 && c.bossMech === 'ecos' && c.ticks % TICKS_PER_SECOND === 0) {
@@ -456,13 +486,25 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
     if (boss.hp < boss.maxHp / 2) c.echoesSpawned = true;
     spawnEchoes(world, party, c);
   }
+  // As placas do Colosso: inteiras desde o começo; se o grupo não quebra a tempo, voltam
+  // inteiras; quebradas, voltam um tempo depois.
+  if (c.bossMech === 'placas' && !c.phase2) {
+    const full = boss.maxHp * B.lordPlates;
+    if (c.plates === undefined) {
+      c.plates = full;
+      c.platesAt = c.ticks + B.lordPlatesHold * TICKS_PER_SECOND;
+    } else if (c.platesAt !== undefined && c.ticks >= c.platesAt) {
+      c.plates = full;
+      c.platesAt = c.ticks + B.lordPlatesHold * TICKS_PER_SECOND;
+    }
+  }
   if (--c.mechCd > 0) return;
   switch (c.bossMech) {
     case 'invocar': {
       c.mechCd = c.phase2 ? 60 : 80;
       const count = c.phase2 ? B.phase2Summons : 2;
       if (aliveEnemies(c).length < (c.phase2 ? 9 : 7)) {
-        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor));
+        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party));
       }
       // Fase 2: as urnas estouram a cada invocação.
       if (c.phase2) for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * B.phase2UrnBlast);
@@ -493,9 +535,65 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
       for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * 0.5);
       break;
     }
+    case 'colmeia': {
+      c.mechCd = c.phase2 ? 60 : 90;
+      const count = c.phase2 ? 3 : 2;
+      if (aliveEnemies(c).length < (c.phase2 ? 9 : 7)) {
+        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party));
+      }
+      break;
+    }
+    case 'canto': {
+      c.mechCd = c.phase2 ? 90 : 120;
+      // Encanta quem mais bate (dois na fase 2); na fase 2 o canto também cura o Coro.
+      const charmed = [...activeHeroUnits(c)].sort((a, b) => b.atk - a.atk || a.uid - b.uid).slice(0, c.phase2 ? 2 : 1);
+      for (const h of charmed) h.charmedUntil = c.ticks + B.lordCharmSeconds * TICKS_PER_SECOND;
+      if (c.phase2) boss.hp = Math.min(boss.maxHp, boss.hp + boss.maxHp * B.lordSongHeal);
+      break;
+    }
+    case 'placas': {
+      c.mechCd = c.phase2 ? 80 : 9999;
+      // Fase 2: jatos de vapor em todos.
+      if (c.phase2) for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * B.lordSteam);
+      break;
+    }
     default:
       c.mechCd = 9999;
   }
+}
+
+/**
+ * O que protege o Senhor do golpe: os zangões da Rainha (e o alto do ninho, longe do corpo a
+ * corpo, na fase 2) e as placas do Colosso, que absorvem o dano antes da vida.
+ */
+function lordGuard(c: Combat, attacker: Unit, dmg: number): number {
+  if (c.bossMech === 'colmeia') {
+    const drone = BIOMES.find((b) => b.boss.mech === 'colmeia')!.enemies[0]!.name;
+    if (c.units.some((u) => u.alive && u.side === 'enemy' && u.name.startsWith(drone))) dmg *= 1 - B.lordHiveGuard;
+    if (c.phase2 && (attacker.role === 'melee' || attacker.role === 'bruiser' || attacker.role === 'tank')) dmg *= 0.5;
+  }
+  if (c.bossMech === 'placas' && c.plates && c.plates > 0) {
+    const absorbed = Math.min(c.plates, dmg);
+    c.plates -= absorbed;
+    dmg -= absorbed;
+    // Quebradas: voltam depois de um tempo, e o grupo tem a janela para bater na vida.
+    if (c.plates <= 0) c.platesAt = c.ticks + B.lordPlatesBroken * TICKS_PER_SECOND;
+  }
+  return dmg;
+}
+
+/** Esqueleto que o Rei dos Ossuários levanta: sem ouro, sem experiência e não levanta de novo. */
+function risenSkeleton(world: World, party: Party, c: Combat): Unit {
+  const unit = makeEnemy(world, c, BIOMES[0]!.enemies[0]!, party);
+  return { ...unit, tags: [...unit.tags, 'risen'], gold: 0, xp: 0, material: null };
+}
+
+/** Exército do Rei: quem cai do lado dele pode levantar como esqueleto (uma vez cada). */
+function raiseFallen(world: World, party: Party, c: Combat, unit: Unit): void {
+  if (unit.tags.includes('boss') || unit.tags.includes('risen')) return;
+  const king = c.units.find((u) => u.tags.includes('boss') && u.alive);
+  if (!king || !chance(world.rng, c.phase2 ? B.lordRaisePhase2 : B.lordRaise)) return;
+  c.units.push(risenSkeleton(world, party, c));
 }
 
 function spawnEchoes(world: World, party: Party, c: Combat): void {
@@ -503,17 +601,17 @@ function spawnEchoes(world: World, party: Party, c: Combat): void {
     .filter((h) => h.status === 'dead')
     .sort((a, b) => b.level - a.level || a.id - b.id)
     .slice(0, 6);
-  const actDef = ACTS[party.act]!;
+  const actDef = BIOMES[party.biome]!;
   for (let i = 0; i < 2; i++) {
     if (fallen.length === 0) {
-      c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor));
+      c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party));
       continue;
     }
     const lost = fallen.splice(int(world.rng, 0, fallen.length - 1), 1)[0]!;
     const s = heroStats(world, lost);
     const power = 1.2;
     c.units.push({
-      ...makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor, { nameOverride: `Eco de ${lost.name}` }),
+      ...makeEnemy(world, c, actDef.enemies[0]!, party, { nameOverride: `Eco de ${lost.name}` }),
       maxHp: s.maxHp * power * 2,
       hp: s.maxHp * power * 2,
       atk: s.atk * power,

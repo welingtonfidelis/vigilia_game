@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -98,7 +98,6 @@ export const BALANCE = {
   /** Quanto cada afixo vale na hora de comparar peças (em tiers). */
   affixValue: 0.8,
   arsenalMax: 24,
-  dropTierMax: 12,
   /** A lendária do chefe cai este tanto acima do teto da forja (ou do tier do ato). */
   legendaryDropEdge: 2,
   /** E nunca fica abaixo do teto da forja mais isto, quando o ferreiro sobe. */
@@ -176,17 +175,144 @@ export const BALANCE = {
   trainPrice: 4,
   donation: 2,
 
-  // Masmorra
-  floorsPerAct: 4,
-  floorPowerGrowth: 0.18,
+  // Escala sem fim (M5 F3): os três lados crescem perto do quadrado do nível do abismo.
+  /** O teto de nível de cada rank sobe isto por nível do abismo. */
+  levelCapPerAbyssLevel: 4,
+  /** Tier do saque por nível do abismo: 2 até o nível 6, 4 depois (casa com o quadrado da força). */
+  tierPerLevelEarly: 2,
+  tierPerLevelLate: 4,
+  tierEarlyLevels: 6,
+  /** A defesa extra dos monstros para de crescer aqui; a vida e o ataque seguem a força. */
+  defBonusMaxLevel: 6,
+  /** A defesa da armadura conta até este tier; acima, a armadura só dá vida. */
+  armorDefTierCap: 12,
+  /** Recrutas chegam com níveis a mais por nível do abismo e equipamento comum de uma fração do tier do nível. */
+  recruitLevelsPerAbyssLevel: 3,
+  recruitGearFraction: 0.5,
+
+  // Ritmo 5× (M5 F5): a campanha é 5× mais longa, e os heróis sobem no ritmo dela.
+  /** Multiplica toda a experiência dos heróis (abismo e treino). */
+  xpPace: 0.4,
+  /** Multiplica o ouro de todo monstro (o saque dos heróis e, por ele, o imposto e o que eles gastam na vila). */
+  goldPace: 0.5,
+  /** Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. */
+  fragmentPace: 0.52,
+  /** Fragmento comprado dos mercadores do abismo: tantas vezes o preço do amuleto, mais caro a cada compra no nível, até o limite. */
+  fragmentBuyMult: 6,
+  fragmentBuyGrowth: 1.5,
+  fragmentBuyMax: 3,
+  /** Monstros (menos o Senhor) com ataque × isto e vida ÷ isto: mesma ameaça, lutas mais letais. */
+  enemyLethality: 2.8,
+  /** Força do Senhor (vida e ataque) e afixos sorteados a cada desafio: 1 até este nível, 2 depois. */
+  lordPower: 0.95,
+  lordAffixOneUntil: 3,
+  /** Acerta a confiança contra o Senhor com a chance real de vitória (1 ≈ metade). */
+  lordConfidenceScale: 1.6,
+  /** A confiança contra o Senhor se o grupo não tem tanque (e de novo se não tem curandeiro). */
+  lordMissingRole: 0.85,
+  // Mecânicas dos Senhores das dimensões fundas (M5 F6).
+  /** Rainha dos Esporos: dano a menos enquanto houver zangão vivo. */
+  lordHiveGuard: 0.4,
+  /** Coro Submerso: segundos de encanto e a cura do canto na fase 2 (fração da vida). */
+  lordCharmSeconds: 4,
+  lordSongHeal: 0.03,
+  /** Colosso de Ferro-negro: placas (fração da vida), quanto tempo seguram inteiras, quanto demoram quebradas, e o vapor da fase 2 (× ataque). */
+  lordPlates: 0.3,
+  lordPlatesHold: 15,
+  lordPlatesBroken: 20,
+  lordSteam: 0.4,
+  /** Rei dos Ossuários: chance de levantar quem cai (fases 1 e 2) e a cura dos golpes na fase 2. */
+  lordRaise: 0.5,
+  lordRaisePhase2: 0.8,
+  lordArmyLifesteal: 0.3,
+
+  // Vila longa (M5 F4): prédios até o 10, efeitos em curva e conservação.
+  /** Teto dos prédios na campanha; no pós-jogo não há teto. */
+  buildingMaxLevel: 10,
+  /** Cada nível acima do 1 vale isto em efeito (o antigo nível 3 fica entre o 4 e o 5). */
+  buildingGradeStep: 0.55,
+  /** Do nível 4 em diante, o ouro de cada nível é o do 3 vezes isto a cada nível. */
+  buildingCostGrowth: 1.65,
+  /** Material dos níveis 4 em diante: base no 4, mais o passo a cada nível. */
+  buildingMaterialBase: 20,
+  buildingMaterialStep: 8,
+  /** A primeira especialização chega no nível 3; no 7 o prédio ganha também o outro caminho. */
+  specLevel: 3,
+  secondSpecLevel: 7,
+  /** A forja não passa do tier do nível do abismo mais isto: o resto vem lá de baixo. */
+  forgeAbyssEdge: 4,
+  /** A bancada do joalheiro abre com o ferreiro neste nível. */
+  benchSmithLevel: 5,
+  restHpMax: 0.9,
+  restEnergyMax: 80,
+  /** Conservação perdida por dia (cerca de 10 por ano). */
+  careDecayPerDay: 0.25,
+  /** Abaixo de careWorn o prédio rende careWornFactor; abaixo de careBroken, careBrokenFactor e não sobe de nível. */
+  careWorn: 50,
+  careBroken: 25,
+  careWornFactor: 0.8,
+  careBrokenFactor: 0.5,
+  /** Em conserto, o prédio rende isto e não se desgasta. */
+  careRepairFactor: 0.8,
+  /** Ao chegar a 0, o prédio perde um nível e volta a esta conservação. */
+  careAfterCollapse: 50,
+  /** Conserto: fração do ouro do nível atual por 100 de estrago; acima de repairMaterialFrom, também material. */
+  repairCostFraction: 0.5,
+  repairMaterialFrom: 40,
+  /** Um dia de obra mais um a cada repairDaysPer de estrago. */
+  repairDaysPer: 40,
+  /** Estrago por incursão: [mínimo, máximo] em cada prédio atingido. */
+  raidCareDamage: [10, 30] as [number, number],
+
+  // Abismo (M5): dimensões, passagens e pressão
+  /** Força dos monstros por nível do abismo (1 a 6); depois cresce com o quadrado do nível. */
+  levelPower: [1, 2, 3.4, 5.3, 7.6, 9.2] as readonly number[],
+  /** Defesa somada aos monstros por nível do abismo acima do 1. */
+  defBonusPerLevel: 10,
+  floorPowerGrowth: 0.25,
+  /** Andares de uma passagem: 3 no nível 1, um a mais a cada 3 níveis, até 6. */
+  passageFloorsBase: 3,
+  passageFloorsEvery: 3,
+  passageFloorsMax: 6,
+  /** Dias que uma passagem fica aberta (um ano de jogo), se ninguém a selar antes. */
+  passageDays: 40,
+  /** Um invasor de outro bioma pode aparecer nas matilhas a partir deste nível. */
+  invaderMinLevel: 4,
+  invaderChance: 0.25,
+  /** Guardião da passagem: elite grande no último andar, com acólitos. */
+  guardianHp: 5,
+  guardianAdds: 2,
+  /** Selar uma passagem: ouro extra do guardião (em matilhas) e material. */
+  sealGoldPacks: 12,
+  sealMaterial: 8,
+  /** Fragmentos de amuleto (M5 F2): chance por combate vencido e pela volta triunfal, no nível atual. */
+  fragmentMatilha: 0.001,
+  fragmentElite: 0.003,
+  fragmentGuardian: 0.012,
+  fragmentReturn: 0.009,
+  fragmentsPerAmulet: 5,
+  /** Montagem do amuleto pelo joalheiro: ouro (× força do nível ^ 0,8) e dias. */
+  amuletBaseCost: 300,
+  amuletDays: 2,
+  /** Fragmento de um nível já vencido: vira relíquia de museu e vale este ouro. */
+  oldFragmentGold: 40,
+  /** Salas de guarda (elites) antes do Senhor, no covil. */
+  lordGuards: 2,
+  /** A confiança num mundo desconhecido é menor: ninguém sabe o que há do outro lado. */
+  mysteryConfidence: 0.9,
   descendHours: 2,
   descendHoursPerFloor: 0.75,
+  /** Cada nível do abismo acima do 1 conta como este tanto de andares na descida. */
+  descendFloorsPerLevel: 4,
   roomWalkTicks: 30,
-  corruptionStart: 30,
-  corruptionPerDay: 2,
-  corruptionPerRoom: 1,
-  corruptionPerConquest: 10,
-  corruptionStatDivisor: 250,
+  /** Pressão de cada passagem: começa aqui, sobe por dia, cai por sala e por andar limpos. */
+  pressureStart: 30,
+  pressurePerDay: 2,
+  pressurePerRoom: 1,
+  pressurePerConquest: 10,
+  pressureStatDivisor: 250,
+  /** A partir daqui, salas limpas das passagens abertas voltam a ser ocupadas. */
+  pressureReoccupy: 70,
   goldPerEnemy: 2,
   xpPerEnemy: 10,
   materialChance: 0.3,

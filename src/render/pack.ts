@@ -1,5 +1,7 @@
 // Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores, crianças, monstros e bichos da vila + enfeites de transição do visual 2.5D). Não editar à mão.
 
+import { PACK_DIMENSOES } from './pack-dimensoes.ts';
+
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
   id: string;
@@ -14743,6 +14745,9 @@ export const PACK_TILES: Record<string, [number, number]> = {
   ]
 };
 
+// Dimensões fundas (M5 F6): as peças dos biomas VII a X saem de art32/dimensoes32.py.
+PACK_ASSETS.push(...PACK_DIMENSOES);
+
 export const PACK_TERRAIN_COLUMNS = 8;
 
 export const PACK_BASE = `${import.meta.env?.BASE_URL ?? '/'}assets/vigilia/`;
@@ -14751,8 +14756,16 @@ export const packUrl = (file: string): string => `${PACK_BASE}${file}`;
 
 export const packAsset = (id: string): PackAsset | undefined => PACK_ASSETS.find((a) => a.id === id);
 
-export const buildingTexture = (id: string, level: number): string =>
-  `building/${id}/${level <= 0 ? 'ruin' : `level-${level}`}`;
+/**
+ * A arte de cada faixa de nível (M5 F4): a de nível 1 vale do 1 ao 3, a de nível 2 do 4 ao 6 e a
+ * de nível 3 do 7 em diante; a ruína é o 0.
+ */
+export const artLevel = (level: number): number => (level <= 0 ? 0 : level <= 3 ? 1 : level <= 6 ? 2 : 3);
+
+export const buildingTexture = (id: string, level: number): string => {
+  const art = artLevel(level);
+  return `building/${id}/${art === 0 ? 'ruin' : `level-${art}`}`;
+};
 
 export const lightsTexture = (texture: string): string => `${texture}-lights`;
 

@@ -5,16 +5,20 @@ export interface BossDef extends EnemyUnitDef {
   adds: number;
 }
 
-export interface ActDef {
+// Biomas das dimensões do abismo (M5): cenário, monstros, material e o Senhor ligado a
+// cada um. A força vem do nível do abismo, não do bioma (src/sim/dungeon.ts). Os seis
+// primeiros eram os atos fixos de antes e mantêm toda a arte (o índice escolhe a arte); os
+// quatro últimos são as dimensões fundas dos Senhores 6 a 9 (M5 F6).
+
+export interface BiomeDef {
   name: string;
   /** Nome com preposição: "das Catacumbas". */
   of: string;
   material: MaterialId;
-  /** Multiplicador de vida e ataque dos inimigos. */
-  power: number;
-  /** Somado à defesa dos inimigos. */
-  defBonus: number;
+  /** Nível do abismo a partir do qual o bioma pode aparecer numa passagem nova. */
+  minLevel: number;
   enemies: EnemyUnitDef[];
+  /** O Senhor do bioma (contrato do amuleto, M5 F2). */
   boss: BossDef;
 }
 
@@ -27,13 +31,12 @@ export const MATERIAL_NAMES: Record<MaterialId, string> = {
   almas: 'Fragmentos de alma',
 };
 
-export const ACTS: ActDef[] = [
+export const BIOMES: BiomeDef[] = [
   {
     name: 'Catacumbas',
     of: 'das Catacumbas',
     material: 'ossos',
-    power: 1,
-    defBonus: 0,
+    minLevel: 1,
     enemies: [
       { id: 'esqueleto', name: 'Esqueleto Rangente', hp: 55, atk: 7, def: 10, interval: 14, tags: [] },
       { id: 'rato', name: 'Rato-de-ossuário', hp: 30, atk: 5, def: 0, interval: 9, tags: ['swarm'] },
@@ -55,8 +58,7 @@ export const ACTS: ActDef[] = [
     name: 'Minas Inundadas',
     of: 'das Minas Inundadas',
     material: 'ferroNegro',
-    power: 2,
-    defBonus: 10,
+    minLevel: 1,
     enemies: [
       { id: 'mineiro', name: 'Mineiro Afogado', hp: 60, atk: 8, def: 12, interval: 14, tags: [] },
       { id: 'enguia', name: 'Enguia de Breu', hp: 35, atk: 7, def: 2, interval: 8, tags: ['swarm'] },
@@ -78,8 +80,7 @@ export const ACTS: ActDef[] = [
     name: 'Jardim de Fungos',
     of: 'do Jardim de Fungos',
     material: 'esporos',
-    power: 3.4,
-    defBonus: 20,
+    minLevel: 2,
     enemies: [
       { id: 'esporento', name: 'Esporento', hp: 50, atk: 7, def: 8, interval: 13, tags: [] },
       { id: 'aranha', name: 'Aranha-de-micélio', hp: 40, atk: 9, def: 6, interval: 10, tags: ['backline'] },
@@ -101,8 +102,7 @@ export const ACTS: ActDef[] = [
     name: 'Cidade Afogada',
     of: 'da Cidade Afogada',
     material: 'perolas',
-    power: 5.3,
-    defBonus: 30,
+    minLevel: 3,
     enemies: [
       { id: 'sacerdote', name: 'Sacerdote Afogado', hp: 50, atk: 10, def: 10, interval: 15, tags: ['backline'] },
       { id: 'sereia', name: 'Sereia de Lodo', hp: 45, atk: 8, def: 6, interval: 11, tags: [] },
@@ -124,8 +124,7 @@ export const ACTS: ActDef[] = [
     name: 'Forja Abissal',
     of: 'da Forja Abissal',
     material: 'brasas',
-    power: 7.6,
-    defBonus: 40,
+    minLevel: 5,
     enemies: [
       { id: 'ferreiroCinzento', name: 'Ferreiro Cinzento', hp: 80, atk: 10, def: 25, interval: 15, tags: [] },
       { id: 'caoBrasa', name: 'Cão de Brasa', hp: 40, atk: 8, def: 5, interval: 8, tags: ['swarm'] },
@@ -147,8 +146,7 @@ export const ACTS: ActDef[] = [
     name: 'Coração do Abismo',
     of: 'do Coração do Abismo',
     material: 'almas',
-    power: 9.2,
-    defBonus: 50,
+    minLevel: 7,
     enemies: [
       { id: 'sombra', name: 'Sombra Faminta', hp: 55, atk: 10, def: 10, interval: 11, tags: [] },
       { id: 'lamento', name: 'Lamento', hp: 45, atk: 11, def: 5, interval: 14, tags: ['backline'] },
@@ -166,6 +164,94 @@ export const ACTS: ActDef[] = [
       adds: 1,
     },
   },
+  // Dimensões mais fundas (M5 F6): uma por Senhor dos níveis 6 a 9, cada uma de uma família
+  // de material de sempre. Arte própria (numerais VII a X no corredor).
+  {
+    name: 'Colmeia Pálida',
+    of: 'da Colmeia Pálida',
+    material: 'esporos',
+    minLevel: 6,
+    enemies: [
+      { id: 'zangao', name: 'Zangão de Quitina', hp: 55, atk: 9, def: 15, interval: 13, tags: [] },
+      { id: 'mariposa', name: 'Mariposa Pálida', hp: 35, atk: 8, def: 2, interval: 8, tags: ['swarm'] },
+      { id: 'casulo', name: 'Casulo Vivo', hp: 110, atk: 9, def: 35, interval: 18, tags: [] },
+    ],
+    boss: {
+      id: 'rainhaEsporos',
+      name: 'A Rainha dos Esporos',
+      hp: 1100,
+      atk: 15,
+      def: 30,
+      interval: 14,
+      tags: ['boss'],
+      mech: 'colmeia',
+      adds: 2,
+    },
+  },
+  {
+    name: 'Fossa Cantante',
+    of: 'da Fossa Cantante',
+    material: 'perolas',
+    minLevel: 7,
+    enemies: [
+      { id: 'peixeLanterna', name: 'Peixe-lanterna', hp: 45, atk: 10, def: 5, interval: 14, tags: ['backline'] },
+      { id: 'aguaViva', name: 'Água-viva Abissal', hp: 35, atk: 7, def: 0, interval: 9, tags: ['swarm'] },
+      { id: 'caranguejo', name: 'Caranguejo de Casco Negro', hp: 105, atk: 10, def: 40, interval: 18, tags: [] },
+    ],
+    boss: {
+      id: 'coroSubmerso',
+      name: 'O Coro Submerso',
+      hp: 1200,
+      atk: 15,
+      def: 25,
+      interval: 15,
+      tags: ['boss'],
+      mech: 'canto',
+      adds: 2,
+    },
+  },
+  {
+    name: 'Cidadela de Engrenagens',
+    of: 'da Cidadela de Engrenagens',
+    material: 'ferroNegro',
+    minLevel: 8,
+    enemies: [
+      { id: 'automato', name: 'Autômato Sentinela', hp: 70, atk: 10, def: 25, interval: 15, tags: [] },
+      { id: 'aranhaEngrenagem', name: 'Aranha de Engrenagem', hp: 35, atk: 8, def: 10, interval: 9, tags: ['swarm'] },
+      { id: 'fornalha', name: 'Fornalha Ambulante', hp: 110, atk: 11, def: 35, interval: 19, tags: [] },
+    ],
+    boss: {
+      id: 'colosso',
+      name: 'O Colosso de Ferro-negro',
+      hp: 1300,
+      atk: 17,
+      def: 45,
+      interval: 17,
+      tags: ['boss'],
+      mech: 'placas',
+      adds: 2,
+    },
+  },
+  {
+    name: 'Deserto de Ossos',
+    of: 'do Deserto de Ossos',
+    material: 'ossos',
+    minLevel: 9,
+    enemies: [
+      { id: 'mumia', name: 'Múmia Errante', hp: 60, atk: 10, def: 12, interval: 15, tags: [] },
+      { id: 'chacal', name: 'Chacal de Ossos', hp: 38, atk: 8, def: 4, interval: 8, tags: ['swarm'] },
+      { id: 'escorpiao', name: 'Escorpião Gigante', hp: 100, atk: 12, def: 30, interval: 16, tags: [] },
+    ],
+    boss: {
+      id: 'reiOssuarios',
+      name: 'O Rei dos Ossuários',
+      hp: 1250,
+      atk: 16,
+      def: 35,
+      interval: 15,
+      tags: ['boss'],
+      mech: 'exercito',
+      adds: 2,
+    },
+  },
 ];
-
-export const ACT_COUNT = ACTS.length;

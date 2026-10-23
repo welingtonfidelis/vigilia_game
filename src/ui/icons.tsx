@@ -144,6 +144,12 @@ const ROOM_PATHS: Record<RoomKind, preact.ComponentChildren> = {
     </>
   ),
   restos: <path d="M7 21V9a5 5 0 0110 0v12M4 21h16M12 10v6M9.5 12.5h5" />,
+  guardiao: (
+    <>
+      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
+      <path d="M9 11l2 2 4-4" />
+    </>
+  ),
   chefe: (
     <>
       <path d="M12 3c-4.4 0-7.5 3-7.5 7 0 2.4 1.1 4 2.5 5v3h10v-3c1.4-1 2.5-2.6 2.5-5 0-4-3.1-7-7.5-7z" />

@@ -1,7 +1,7 @@
 // Visualizador de dungeon do M4: várias expedições empilhadas (cada uma um corredor
 // lateral, em LaneCard) e o relatório ao fim.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { floorLabel, formatDate, itemName, MATERIAL_NAMES, TICKS_PER_DAY } from '../../sim/index.ts';
+import { floorLabel, formatDate, itemName, MATERIAL_NAMES, passageOf, TICKS_PER_DAY } from '../../sim/index.ts';
 import type { Hero, MaterialId, Party, Rarity } from '../../sim/index.ts';
 import { fmt, heroById } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
@@ -19,7 +19,9 @@ const OUTCOMES: Record<string, string> = {
 };
 
 interface PartySnapshot {
-  act: number;
+  passageId: number;
+  level: number;
+  biome: number;
   floor: number;
   startMemberIds: number[];
   memberIds: number[];
@@ -52,7 +54,8 @@ export interface DungeonReport {
   key: string;
   id: number;
   endTick: number;
-  act: number;
+  level: number;
+  biome: number;
   floor: number;
   outcome: Party['outcome'];
   cleared: boolean;
@@ -77,7 +80,9 @@ export interface DungeonReport {
 
 function snapshot(party: Party, endTick: number): PartySnapshot {
   return {
-    act: party.act,
+    passageId: party.passageId,
+    level: party.level,
+    biome: party.biome,
     floor: party.floor,
     startMemberIds: [...party.startMemberIds],
     memberIds: [...party.memberIds],
@@ -117,13 +122,14 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
     .map((id) => heroById(world, id)?.name ?? track.initial.get(id)?.name ?? 'Herói')
     .filter(Boolean);
   const contract = last.contractId === null ? null : world.town.contracts.find((c) => c.id === last.contractId)?.reward ?? null;
-  const cleared = last.outcome === 'conquista' || (!track.initialFloorCleared && world.acts[last.act]?.conquered[last.floor] === true);
+  const cleared = last.outcome === 'conquista' || (!track.initialFloorCleared && passageOf(world, last.passageId)?.conquered[last.floor] === true);
   const outcome = last.outcome ?? (cleared ? 'conquista' : 'retirada');
   return {
-    key: `${last.startMemberIds.join('-')}:${last.act}:${last.floor}:${last.endTick}`,
+    key: `${last.startMemberIds.join('-')}:${last.passageId}:${last.floor}:${last.endTick}`,
     id: last.startMemberIds[0] ?? 0,
     endTick: last.endTick,
-    act: last.act,
+    level: last.level,
+    biome: last.biome,
     floor: last.floor,
     outcome,
     cleared,
@@ -162,7 +168,7 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
         <header>
           <small>Relatório de expedição{total > 1 ? ' · 1 de ' + total : ''}</small>
           <h2>{outcome}</h2>
-          <p>Ato {report.act + 1} · {floorLabel(report.act, report.floor)} · {durationLabel(report.duration)}</p>
+          <p>Nível {report.level} · {floorLabel(report)} · {durationLabel(report.duration)}</p>
         </header>
         <div class="report-stats">
           <div><span>Experiência</span><strong>{fmt(report.xp)} XP</strong></div>
@@ -244,7 +250,7 @@ function ReportHistory(props: { reports: DungeonReport[]; onOpen: (r: DungeonRep
               <li key={r.key}>
                 <button onClick={() => props.onOpen(r)}>
                   <strong>{r.outcome ? OUTCOMES[r.outcome] ?? r.outcome : 'Retorno'}</strong>
-                  <span>Ato {r.act + 1} · {floorLabel(r.act, r.floor)}</span>
+                  <span>Nível {r.level} · {floorLabel(r)}</span>
                   <small>{formatDate(r.endTick)} · {fmt(r.xp)} XP · {fmt(r.gold)} ouro{r.cleared ? ' · vencida' : ''}</small>
                 </button>
               </li>
@@ -288,7 +294,7 @@ export function BattlePanel(props: { partyId: number }) {
         const h = heroById(world, id);
         if (h) initial.set(id, { name: h.name, level: h.level, xp: h.xp });
       }
-      tracked.current.set(p.id, { initial, initialFloorCleared: world.acts[p.act]?.conquered[p.floor] === true, last: snapshot(p, world.tick) });
+      tracked.current.set(p.id, { initial, initialFloorCleared: passageOf(world, p.passageId)?.conquered[p.floor] === true, last: snapshot(p, world.tick) });
     }
     const finished: DungeonReport[] = [];
     for (const [id, t] of [...tracked.current]) {

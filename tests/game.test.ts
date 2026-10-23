@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { openPassage } from '../src/sim/dungeon.ts';
 import { autoMayor, byWhom, checksum, commands, createWorld, runDays, runTicks, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { ActivityKind } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
 import { MAX_CATCH_UP_MS, MAX_FRAME_MS, MAX_STEPS_PER_FRAME, Session, type SessionEvent } from '../src/game/session.ts';
 import { clearSave, loadPrefs, loadWorld, readSaveMeta, saveWorld, type KeyValueStore } from '../src/game/storage.ts';
 import { heroDestination, LANDMARKS, door, workSpot } from '../src/render/layout.ts';
-import { activityText, midSentence, phaseText } from '../src/ui/format.ts';
+import { activityText, fmt, midSentence, phaseText } from '../src/ui/format.ts';
 import { objectives } from '../src/ui/objectives.ts';
 
 class MemoryStore implements KeyValueStore {
@@ -202,21 +203,31 @@ describe('planta da vila', () => {
 });
 
 describe('textos da tela', () => {
-  it('objetivos guiam o começo: berrante, reconstrução e o primeiro andar', () => {
+  it('objetivos guiam o começo: berrante, reconstrução e a primeira passagem', () => {
     const world = createWorld(3);
     const first = objectives(world);
     expect(first[0]!.text).toMatch(/berrante/);
     expect(first.some((o) => /Reconstrua a estalagem/.test(o.text))).toBe(true);
-    expect(first.some((o) => /andar 1 das Catacumbas/.test(o.text))).toBe(true);
+    expect(first.some((o) => /primeira passagem/.test(o.text))).toBe(true);
     commands.blowHorn(world);
     expect(objectives(world)[0]!.text).not.toMatch(/Ande até o berrante/);
   });
 
-  it('o chefe aparece no meio da frase com artigo minúsculo', () => {
+  it('com a passagem aberta até o fim, o objetivo é vencer o guardião', () => {
     const world = createWorld(3);
-    world.acts[0]!.conquered = [true, true, true, false];
-    expect(objectives(world).some((o) => o.text.includes('Derrote o Guardião das Urnas'))).toBe(true);
+    const passage = openPassage(world);
+    passage.discovered = true;
+    passage.conquered = passage.conquered.map((_, f) => f < passage.floors - 1);
+    expect(objectives(world).some((o) => o.text.startsWith('Vença o guardião e sele a passagem'))).toBe(true);
     expect(midSentence('A Mãe-Bolor')).toBe('a Mãe-Bolor');
+  });
+
+  it('números compactos a partir de 10 mil, para o pós-jogo sem teto', () => {
+    expect(fmt(9_999)).toBe('9.999');
+    expect(fmt(12_345)).toBe('12,3 mil');
+    expect(fmt(108_568)).toBe('109 mil');
+    expect(fmt(4_500_000)).toBe('4,5 mi');
+    expect(fmt(-25_000)).toBe('-25 mil');
   });
 
   it('"abatido por" contrai com o artigo', () => {

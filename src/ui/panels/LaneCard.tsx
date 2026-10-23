@@ -3,7 +3,7 @@
 // grupo por cima do corredor (embaixo no celular), as salas e o aviso de volta à vila.
 
 import { useEffect, useRef } from 'preact/hooks';
-import { ACTS, BALANCE, commands, fleeLimit, floorLabel, isBossFloor, maxLevel, partyRooms, xpToNext } from '../../sim/index.ts';
+import { BIOMES, commands, fleeLimit, floorLabel, isGuardianFloor, maxLevel, partyRooms, passageOf, rulesLabel, xpToNext } from '../../sim/index.ts';
 import type { Hero, Party } from '../../sim/index.ts';
 import { lanes } from '../../render/lane/lanes.ts';
 import { hiUrl } from '../../render/art32.ts';
@@ -29,7 +29,7 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
   const dead = party.dead.includes(hero.id) || hero.status === 'dead';
   const fled = !dead && !party.memberIds.includes(hero.id);
   const { hp, max } = liveHp(world, hero);
-  const capped = hero.level >= maxLevel(hero);
+  const capped = hero.level >= maxLevel(world, hero);
   const need = xpToNext(hero.level);
   const share = party.loot.xp / Math.max(1, party.memberIds.length);
   const before = capped ? 1 : hero.xp / need;
@@ -40,7 +40,7 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
   return (
     <li
       class={`party-frame${dead ? ' dead' : fled ? ' fled' : ''}`}
-      title={`${hero.name} · nível ${hero.level} · ${Math.ceil(hp)}/${max} de vida · ${capped ? 'nível máximo' : `${Math.floor(hero.xp)}+${Math.floor(share)} de ${need} XP`} · ânimo ${Math.round(hero.morale)}`}
+      title={`${hero.name} · nível ${hero.level} · ${fmt(Math.ceil(hp))}/${fmt(max)} de vida · ${capped ? 'nível máximo' : `${fmt(hero.xp)}+${fmt(share)} de ${fmt(need)} XP`} · ânimo ${Math.round(hero.morale)}`}
     >
       <HeroPortrait hero={hero} />
       <span class="pf-info">
@@ -54,9 +54,9 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
           <small class="pf-status warn">Fugiu</small>
         ) : (
           <>
-            <span class={`pf-bar hp${low ? ' low' : ''}`} aria-label={`Vida ${Math.ceil(hp)} de ${max}`}>
+            <span class={`pf-bar hp${low ? ' low' : ''}`} aria-label={`Vida ${fmt(Math.ceil(hp))} de ${fmt(max)}`}>
               <i style={{ width: pct(hp / Math.max(1, max)) }} />
-              <em>{Math.ceil(hp)}/{max}</em>
+              <em>{fmt(Math.ceil(hp))}/{fmt(max)}</em>
             </span>
             <span class="pf-bar xp" aria-label="Experiência">
               <i class="gain" style={{ width: pct(after) }} />
@@ -103,18 +103,26 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   const heroes = party.startMemberIds.map((id) => heroById(world, id)).filter((h): h is Hero => !!h);
   const canRecall = party.phase !== 'voltando' && !party.recallRequested;
   const returning = party.phase === 'voltando';
+  const passage = passageOf(world, party.passageId);
+  const floors = passage?.floors ?? party.floor + 1;
 
   return (
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
-        <strong title={`Cada ato tem ${BALANCE.floorsPerAct} andares; o chefe fica no último. Um andar só abre depois que o de cima for conquistado.`}>
-          Ato {party.act + 1} · andar {party.floor + 1} de {BALANCE.floorsPerAct} {ACTS[party.act]!.of}
-          {!isBossFloor(party.floor) && <small class="lane-boss-hint"> · chefe no andar {BALANCE.floorsPerAct}</small>}
+        <strong title={`Esta passagem tem ${floors} andares; o guardião fica no último e, vencido, sela a passagem. Um andar só abre depois que o de cima for conquistado. Regras: ${rulesLabel(party.rules)}.`}>
+          {party.lord ? (
+            <>Nível {party.level} · {floorLabel(party)}</>
+          ) : (
+            <>
+              Nível {party.level} · andar {party.floor + 1} de {floors} {BIOMES[party.biome]!.of}
+              {passage && !isGuardianFloor(passage, party.floor) && <small class="lane-boss-hint"> · guardião no andar {floors}</small>}
+            </>
+          )}
         </strong>
         <span>
           {phaseText(world, party)}
           {room && !returning ? ` · ${ROOM_LABELS[room.kind]}` : ''}
-          {combat?.isBoss ? ' · CHEFE' : ''}
+          {combat?.isBoss ? (combat.bossMech ? ' · SENHOR' : ' · GUARDIÃO') : ''}
           {bossPhase2 ? ' · FASE 2' : ''}
         </span>
         <span class="arena-card-loot">{fmt(party.loot.gold)} ouro · {fmt(party.loot.xp)} XP</span>
@@ -129,7 +137,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
       </header>
       <div class="lane-stage">
         <div class="lane-view" ref={stage}>
-          <canvas ref={canvas} class="lane-canvas" aria-label={`Corredor do ${floorLabel(party.act, party.floor)}`} />
+          <canvas ref={canvas} class="lane-canvas" aria-label={`Corredor do ${floorLabel(party)}`} />
           {rooms.length > 0 && (
             <div class="arena-room-progress lane-rooms">
               {rooms.map((r, i) => (

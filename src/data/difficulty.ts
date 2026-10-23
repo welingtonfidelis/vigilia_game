@@ -14,6 +14,8 @@ export interface DifficultyDef {
   gold: number;
   /** Chance de peça rara e épica nos baús e nos elites. */
   rarity: number;
+  /** Chance de fragmento de amuleto: o relógio dos Senhores (M5 F5). */
+  fragments: number;
   /** Custos do prefeito: prédios, berrante, festa, decretos, eventos, encomendas e lotes. */
   costs: number;
   /** Força dos monstros nos andares. */
@@ -34,6 +36,7 @@ export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
     xp: 1.4,
     gold: 1.3,
     rarity: 1.5,
+    fragments: 1.15,
     costs: 0.8,
     enemy: 0.9,
     corruption: 0.8,
@@ -46,6 +49,7 @@ export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
     xp: 1,
     gold: 1,
     rarity: 1,
+    fragments: 1,
     costs: 1,
     enemy: 1,
     corruption: 1,
@@ -54,10 +58,11 @@ export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
   dificil: {
     id: 'dificil',
     name: 'Difícil',
-    description: 'Heróis demoram mais a subir, o abismo paga menos e solta menos peças raras, tudo custa mais e a corrupção e as incursões apertam.',
-    xp: 0.85,
+    description: 'Heróis demoram mais a subir, o abismo paga menos e solta menos peças raras, tudo custa mais e a pressão do abismo e as incursões apertam.',
+    xp: 0.9,
     gold: 0.85,
-    rarity: 0.65,
+    rarity: 0.8,
+    fragments: 0.9,
     costs: 1.25,
     enemy: 1,
     corruption: 1.15,

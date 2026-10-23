@@ -6,8 +6,18 @@ import {
   activeHeroes,
   BALANCE,
   BUILDINGS,
+  BUILDING_IDS,
   buildingLevel,
   canAfford,
+  careFactor,
+  careOf,
+  effectiveLevel,
+  hasSpec,
+  maxBuildingLevel,
+  maxContracts,
+  repairCost,
+  repairOf,
+  upgradeBlocker,
   citizenTaxesPerDay,
   commands,
   commissionBlocker,
@@ -40,7 +50,6 @@ import {
   heroCapacity,
   hornCost,
   MATERIAL_NAMES,
-  MAX_BUILDING_LEVEL,
   maxParties,
   nextLevelCost,
   pensionPerDay,
@@ -49,11 +58,15 @@ import {
   totalBuildingLevels,
   townHeroes,
   TICKS_PER_DAY,
+  openPassages,
+  passageCapacity,
+  passageOf,
 } from '../../sim/index.ts';
-import type { ActivityKind, BuildingId, Doctrine, Item, ItemSlot, MaterialId, SpecId, World } from '../../sim/index.ts';
-import { HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
+import type { ActivityKind, BuildingId, Contract, Doctrine, Item, ItemSlot, LevelCost, MaterialId, SpecId, World } from '../../sim/index.ts';
+import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { ItemCard } from '../items.tsx';
-import { buildingEffects, DOCTRINES, fmt, pct, plural } from '../format.ts';
+import { AmuletSection } from './AmuletPanels.tsx';
+import { buildingEffects, cap, DOCTRINES, fmt, hoursText, knownMaterials, pct, plural } from '../format.ts';
 import { ROLE_PLACE } from '../../render/layout.ts';
 
 const BUILDING_ACTIVITY: Partial<Record<BuildingId, ActivityKind>> = {
@@ -79,10 +92,10 @@ function HeroList(props: { ids: number[]; empty: string }) {
   );
 }
 
-function Cost(props: { world: World; id: BuildingId }) {
-  const cost = nextLevelCost(props.world, props.id);
-  if (!cost) return null;
-  const town = props.world.town;
+/** Ouro e materiais de uma obra, com o que falta em vermelho. */
+function CostList(props: { world: World; cost: LevelCost }) {
+  const { world, cost } = props;
+  const town = world.town;
   const mats = Object.entries(cost.materials ?? {}) as [MaterialId, number][];
   return (
     <ul class="cost">
@@ -91,11 +104,59 @@ function Cost(props: { world: World; id: BuildingId }) {
       </li>
       {mats.map(([m, q]) => (
         <li key={m} class={town.materials[m] >= q ? '' : 'bad'}>
-          {q} de {MATERIAL_NAMES[m].toLowerCase()} <span class="sub">(tem {town.materials[m]})</span>
+          {fmt(q)} de {MATERIAL_NAMES[m].toLowerCase()} <span class="sub">(tem {fmt(town.materials[m])})</span>
         </li>
       ))}
     </ul>
   );
+}
+
+/** Conservação do prédio, o que ela faz no rendimento e o botão de mandar consertar (M5 F4). */
+function CareSection(props: { world: World; id: BuildingId }) {
+  const command = useCommand();
+  const { world, id } = props;
+  const care = careOf(world, id);
+  const ready = repairOf(world, id);
+  const cost = repairCost(world, id);
+  const kind = care >= BALANCE.careWorn ? 'care' : care >= BALANCE.careBroken ? 'care-worn' : 'care-broken';
+  const state =
+    ready !== undefined
+      ? `Em obra, com andaime: rende ${pct(BALANCE.careRepairFactor)} até o fim do conserto.`
+      : care >= BALANCE.careWorn
+        ? 'Inteiro: rende tudo. Perde cerca de 10 por ano; incursões, tempestades e geadas tiram mais.'
+        : care >= BALANCE.careBroken
+          ? `Gasto: rende ${pct(BALANCE.careWornFactor)}. Abaixo de 25 rende metade e não pode subir de nível.`
+          : `Quebrado: rende ${pct(BALANCE.careBrokenFactor)} e não sobe de nível. Em 0, perde um nível.`;
+  return (
+    <>
+      <h3>Conservação</h3>
+      <Bar kind={kind} value={care} max={100} text={`${Math.floor(care)} de 100`} slim />
+      <p class="sub">{state}</p>
+      {ready !== undefined && <p class="tag">O conserto termina em {hoursText(ready - world.tick)}.</p>}
+      {ready === undefined && cost && care < 95 && (
+        <>
+          <CostList world={world} cost={cost} />
+          <button class="btn" disabled={!canAfford(world, cost)} onClick={() => command(commands.repair, id)}>
+            Consertar ({plural(cost.days, 'dia', 'dias')} de obra)
+          </button>
+        </>
+      )}
+    </>
+  );
+}
+
+/** O que muda num nível além das curvas: o caminho do 3, a bancada do 5 e o segundo caminho do 7. */
+function milestoneText(world: World, id: BuildingId, next: number): string | null {
+  const def = BUILDINGS[id];
+  const the = `${def.gender === 'm' ? 'o' : 'a'} ${def.name.toLowerCase()}`;
+  if (next === BALANCE.specLevel) return `No nível ${next} ${the} escolhe um caminho: ${SPECS[id][0].name} ou ${SPECS[id][1].name}.`;
+  const spec = specOf(world, id);
+  if (next === BALANCE.secondSpecLevel && spec) {
+    const other = SPECS[id].find((s) => s.id !== spec)!;
+    return `No nível ${next} ${the} ganha também o caminho ${other.name}: ${other.effect}`;
+  }
+  if (id === 'ferreiro' && next === BALANCE.benchSmithLevel) return `No nível ${next} abre a bancada do joalheiro: encantar, reforjar e polir peças.`;
+  return null;
 }
 
 export function BuildingPanel(props: { id: BuildingId }) {
@@ -104,57 +165,79 @@ export function BuildingPanel(props: { id: BuildingId }) {
   const { id } = props;
   const def = BUILDINGS[id];
   const lvl = buildingLevel(world, id);
+  const eff = effectiveLevel(world, id);
+  const factor = careFactor(world, id);
+  const top = maxBuildingLevel(world);
   const cost = nextLevelCost(world, id);
+  const blocked = upgradeBlocker(world, id);
   const activity = BUILDING_ACTIVITY[id];
   const workers = world.heroes.filter((h) => h.status === 'retired' && h.retiredRole && ROLE_PLACE[h.retiredRole] === id).map((h) => h.id);
   const here = (h: ReturnType<typeof townHeroes>[number]) => h.activity?.kind === activity || (id === 'ferreiro' && h.activity?.kind === 'joias');
   const inside = [...(activity ? townHeroes(world).filter(here).map((h) => h.id) : []), ...workers];
   const affordable = cost ? canAfford(world, cost) : false;
   const spec = specOf(world, id);
+  const other = spec ? SPECS[id].find((s) => s.id !== spec)! : null;
   const [specDialog, setSpecDialog] = useState<'build' | 'choose' | null>(null);
-  const toSpec = lvl + 1 === MAX_BUILDING_LEVEL;
+  const toSpec = lvl + 1 === BALANCE.specLevel;
+  const milestone = cost ? milestoneText(world, id, lvl + 1) : null;
+  const subtitle = lvl === 0 ? 'Em ruínas' : `Nível ${lvl}${Number.isFinite(top) ? ` de ${top}` : ''}${spec ? ` · ${SPEC_DEFS[spec].name}` : ''}`;
   return (
-    <PanelShell title={def.name} subtitle={lvl === 0 ? 'Em ruínas' : `Nível ${lvl} de ${MAX_BUILDING_LEVEL}${spec ? ` · ${SPEC_DEFS[spec].name}` : ''}`}>
+    <PanelShell title={def.name} subtitle={subtitle}>
       <p>{def.blurb}</p>
       {specDialog && <SpecDialog id={id} mode={specDialog} onClose={() => setSpecDialog(null)} />}
       <h3>Agora</h3>
       <ul class="effects">
-        {buildingEffects(id, lvl).map((t) => (
+        {buildingEffects(world, id, lvl, factor).map((t) => (
           <li key={t}>{t}</li>
         ))}
       </ul>
+      {lvl > 0 && <CareSection world={world} id={id} />}
       {cost && (
         <>
           <h3>{lvl === 0 ? 'Reconstruir' : `Nível ${lvl + 1}`}</h3>
           <ul class="effects next">
-            {buildingEffects(id, lvl + 1).map((t) => (
+            {buildingEffects(world, id, lvl + 1).map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
-          {toSpec && (
-            <p class="sub">
-              No nível 3 {def.gender === 'm' ? 'o' : 'a'} {def.name.toLowerCase()} escolhe um caminho: {SPECS[id][0].name} ou {SPECS[id][1].name}.
-            </p>
-          )}
-          <Cost world={world} id={id} />
+          {milestone && <p class="sub">{milestone}</p>}
+          <CostList world={world} cost={cost} />
           <button
             class="btn primary"
-            disabled={!affordable}
+            disabled={!affordable || !!blocked}
             onClick={() => (toSpec ? setSpecDialog('build') : command(commands.build, id))}
           >
             {lvl === 0 ? `Reconstruir ${def.gender === 'm' ? 'o' : 'a'} ${def.name.toLowerCase()}` : `Melhorar para o nível ${lvl + 1}`}
           </button>
-          {!affordable && cost.materials && <p class="sub">Materiais vêm do abismo: os heróis trazem ao voltar.</p>}
+          {blocked && <p class="tag warn">{blocked}</p>}
+          {!blocked && !affordable && cost.materials && <p class="sub">Materiais vêm do abismo: os heróis trazem ao voltar.</p>}
         </>
       )}
-      {!cost && <p class="tag gold">Nível máximo.</p>}
-      {lvl >= MAX_BUILDING_LEVEL && (
+      {!cost && (
+        <p class="tag gold">
+          {world.endedTick === null ? 'Nível máximo da campanha. Depois do chefe máximo, os prédios seguem subindo.' : 'Nível máximo.'}
+        </p>
+      )}
+      {lvl >= BALANCE.specLevel && (
         <>
-          <h3>Especialização</h3>
-          {spec ? (
-            <p>
-              <strong>{SPEC_DEFS[spec].name}.</strong> {SPEC_DEFS[spec].effect}
-            </p>
+          <h3>Caminhos</h3>
+          {spec && other ? (
+            <>
+              <p>
+                <strong>{SPEC_DEFS[spec].name}.</strong> {SPEC_DEFS[spec].effect}
+              </p>
+              {hasSpec(world, other.id) ? (
+                <p>
+                  <strong>{other.name}.</strong> {other.effect}
+                </p>
+              ) : lvl >= BALANCE.secondSpecLevel ? (
+                <p class="tag warn">O caminho {other.name} está parado: com a conservação baixa, o prédio não rende o nível {BALANCE.secondSpecLevel}.</p>
+              ) : (
+                <p class="sub">
+                  No nível {BALANCE.secondSpecLevel}, também {other.name}: {other.effect}
+                </p>
+              )}
+            </>
           ) : (
             <>
               <p class="sub">Ainda sem caminho escolhido.</p>
@@ -165,8 +248,8 @@ export function BuildingPanel(props: { id: BuildingId }) {
           )}
         </>
       )}
-      {id === 'ferreiro' && lvl >= 2 && <ForgeOrders world={world} />}
-      {id === 'ferreiro' && lvl >= MAX_BUILDING_LEVEL && <JewelerBench world={world} />}
+      {id === 'ferreiro' && eff >= 2 && <ForgeOrders world={world} />}
+      {id === 'ferreiro' && eff >= BALANCE.benchSmithLevel && <JewelerBench world={world} />}
       {id === 'guilda' && lvl >= 1 && <DoctrinePicker world={world} />}
       {id === 'guilda' && (
         <button class="btn" onClick={() => ui.open({ kind: 'board' })}>
@@ -241,25 +324,44 @@ export function HornPanel() {
   );
 }
 
-function frontier(world: World): { act: number; floor: number }[] {
-  const out: { act: number; floor: number }[] = [];
-  world.acts.forEach((act, a) => {
-    if (!act.unlocked) return;
-    const f = act.conquered.findIndex((c) => !c);
-    if (f >= 0) out.push({ act: a, floor: f });
-  });
+interface BoardTarget {
+  /** null: abrir uma passagem nova. */
+  passageId: number | null;
+  floor: number;
+  level: number;
+  label: string;
+}
+
+/** Alvos de contrato: uma passagem nova (se a guilda tem vaga) e a fronteira de cada passagem conhecida. */
+function frontier(world: World): BoardTarget[] {
+  const out: BoardTarget[] = [];
+  if (openPassages(world).length < passageCapacity(world)) {
+    out.push({ passageId: null, floor: 0, level: world.abyss.level, label: 'abrir uma passagem nova' });
+  }
+  for (const p of openPassages(world)) {
+    if (!p.discovered) continue;
+    const f = p.conquered.findIndex((c) => !c);
+    if (f >= 0) out.push({ passageId: p.id, floor: f, level: p.level, label: `conquistar o ${floorLabel({ biome: p.biome, floor: f })}` });
+  }
   return out;
+}
+
+/** "conquistar o andar 2 das Catacumbas", "abrir uma passagem nova". */
+function contractGoal(world: World, c: Contract): string {
+  if (c.passageId === null) return 'abrir uma passagem nova';
+  const p = passageOf(world, c.passageId);
+  return p ? `conquistar o ${floorLabel({ biome: p.biome, floor: c.floor })}` : 'uma passagem que já se fechou';
 }
 
 export function BoardPanel() {
   const { world, ui } = useGame();
   const command = useCommand();
-  const guild = buildingLevel(world, 'guilda');
+  const guild = maxContracts(world);
   const town = world.town;
   const targets = frontier(world);
   const [choice, setChoice] = useState(0);
   const target = targets[Math.min(choice, targets.length - 1)];
-  const suggested = target ? commands.suggestedReward(target.act, target.floor) : 0;
+  const suggested = target ? commands.suggestedReward(target.level, target.floor) : 0;
   const [reward, setReward] = useState<number | null>(null);
   const value = reward ?? suggested;
   const waiting = townHeroes(world).filter((h) => h.activity?.kind === 'aguardar').map((h) => h.id);
@@ -288,7 +390,7 @@ export function BoardPanel() {
             {town.contracts.map((c) => (
               <li key={c.id}>
                 <span>
-                  Conquistar o {floorLabel(c.act, c.floor)} · <strong>{fmt(c.reward)} de ouro</strong>
+                  {cap(contractGoal(world, c))} · <strong>{fmt(c.reward)} de ouro</strong>
                   {c.takenBy !== null && <span class="tag gold">um grupo aceitou</span>}
                 </span>
                 {c.takenBy === null && (
@@ -307,13 +409,13 @@ export function BoardPanel() {
                 <div class="row">
                   {targets.map((t, i) => (
                     <button key={i} class={`tab${i === choice ? ' active' : ''}`} onClick={() => { setChoice(i); setReward(null); }}>
-                      {floorLabel(t.act, t.floor)}
+                      {t.label}
                     </button>
                   ))}
                 </div>
               )}
               <p>
-                Alvo: <strong>{floorLabel(target.act, target.floor)}</strong>
+                Alvo: <strong>{target.label}</strong>
               </p>
               <div class="row stepper">
                 <button class="btn" onClick={() => setReward(Math.max(10, value - 10))} aria-label="Menos 10">
@@ -333,9 +435,9 @@ export function BoardPanel() {
               </div>
               <button
                 class="btn primary"
-                disabled={value <= 0 || town.treasury < value || town.contracts.some((c) => c.act === target.act && c.floor === target.floor)}
+                disabled={value <= 0 || town.treasury < value || town.contracts.some((c) => c.passageId === target.passageId && c.floor === target.floor)}
                 onClick={() => {
-                  if (command(commands.postContract, target.act, target.floor, value)) setReward(null);
+                  if (command(commands.postContract, target.passageId, target.floor, value)) setReward(null);
                 }}
               >
                 Postar por {fmt(value)} de ouro
@@ -363,6 +465,29 @@ function Sparkline(props: { values: number[] }) {
   );
 }
 
+/** O aviso do tesouro: prédios abaixo de 50 de conservação ou em conserto, com o atalho para o painel. */
+function WornBuildings(props: { world: World }) {
+  const { ui } = useGame();
+  const { world } = props;
+  const worn = BUILDING_IDS.filter((id) => buildingLevel(world, id) > 0 && (careOf(world, id) < BALANCE.careWorn || repairOf(world, id) !== undefined));
+  if (worn.length === 0) return null;
+  return (
+    <>
+      <h3>Prédios gastos</h3>
+      <ul class="effects">
+        {worn.map((id) => (
+          <li key={id}>
+            <button class="link" onClick={() => ui.open({ kind: 'building', id })}>
+              {BUILDINGS[id].name}
+            </button>
+            {repairOf(world, id) !== undefined ? ': em conserto' : `: conservação ${Math.floor(careOf(world, id))}, rende ${pct(careFactor(world, id))}`}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 export function CofferPanel() {
   const { world } = useGame();
   const command = useCommand();
@@ -385,19 +510,22 @@ export function CofferPanel() {
         <Stat label="Tesouro" value={fmt(town.treasury)} />
         <Stat label="População" value={`${fmt(town.population)} / ${fmt(populationCap(world))}`} />
         <Stat label="Impostos/dia" value={`+${taxes.toFixed(1)}`} hint="Cidadãos pagam um pouco por dia" />
-        <Stat label="Manutenção/dia" value={`−${upkeep.toFixed(1)}`} hint="Cada nível de prédio custa manutenção" />
+        <Stat label="Manutenção/dia" value={`−${upkeep.toFixed(1)}`} hint="Cada nível de prédio custa manutenção; os consertos se pagam à parte" />
         <Stat label="Pensões/dia" value={`−${pensions.toFixed(1)}`} hint="Cada aposentado recebe uma pensão da vila" />
         <Stat label="Salários/dia" value={`−${payroll.toFixed(1)}`} hint={`${guards} guarda${guards === 1 ? '' : 's'} na milícia`} />
         <Stat label="Decretos/dia" value={`−${decreeCost.toFixed(1)}`} hint={`${activeDecrees} de ${BALANCE.maxActiveDecrees} decretos ativos`} />
         <Stat label="Saldo/dia" value={`${net >= 0 ? '+' : ''}${net.toFixed(1)}`} hint="Impostos menos manutenção, pensões, salários e decretos" />
         <Stat label="Reputação" value={Math.round(town.reputation)} hint="Atrai heróis de rank maior" />
       </div>
+      <WornBuildings world={world} />
       {daily.length > 1 && (
         <>
           <h3>Tesouro nos últimos {daily.length} dias</h3>
           <Sparkline values={daily.map((d) => d.treasury)} />
         </>
       )}
+      <h3>Amuleto do abismo</h3>
+      <AmuletSection />
       <h3>Imposto sobre o saque: {pct(town.lootTax)}</h3>
       <p class="sub">Parte do ouro que os heróis trazem vai para o tesouro. Acima de 25%, os gananciosos perdem a confiança no prefeito.</p>
       <div class="row">
@@ -449,9 +577,7 @@ export function CofferPanel() {
       <p class="sub">Os heróis que juntam fortuna também deixam ofertas no templo: o ouro deles volta para a vila.</p>
       <h3>Materiais</h3>
       <div class="stats">
-        {(Object.keys(town.materials) as MaterialId[])
-          .filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked)
-          .map((m) => (
+        {knownMaterials(world).map((m) => (
             <Stat key={m} label={MATERIAL_NAMES[m]} value={town.materials[m]} />
           ))}
       </div>
@@ -527,7 +653,7 @@ function ForgeOrders(props: { world: World }) {
   const command = useCommand();
   const town = world.town;
   const [slot, setSlot] = useState<ItemSlot>('weapon');
-  const materials = (Object.keys(town.materials) as MaterialId[]).filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked);
+  const materials = knownMaterials(world);
   const [material, setMaterial] = useState<MaterialId>(materials[0] ?? 'ossos');
   const epicBlocked = commissionBlocker(world, slot, 'epica');
   const [epic, setEpic] = useState(false);

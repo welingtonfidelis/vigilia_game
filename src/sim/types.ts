@@ -23,6 +23,8 @@ export type TraitId =
   | 'marcado';
 export type BuildingId = 'taverna' | 'estalagem' | 'ferreiro' | 'templo' | 'guilda' | 'campo' | 'casa';
 export type MaterialId = 'ossos' | 'ferroNegro' | 'esporos' | 'perolas' | 'brasas' | 'almas';
+/** Regra especial de uma dimensão (src/data/rules.ts). Sem regra nenhuma, é a Calmaria. */
+export type DimRuleId = 'nevoa' | 'mare' | 'esporos' | 'calor' | 'silencio' | 'ganancia' | 'luaSangue' | 'ecos';
 export type Doctrine = 'cautelosa' | 'equilibrada' | 'agressiva';
 export type HeroStatus = 'town' | 'expedition' | 'dead' | 'left' | 'retired';
 
@@ -63,7 +65,7 @@ export type CitizenJob = 'lavrador' | 'pedreiro' | 'copeiro' | 'ferreiro' | 'aco
 export type DecreeId = 'taxa-guerra' | 'toque-recolher' | 'funeral-honras';
 
 /** Eventos sazonais do M3. */
-export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador' | 'peste' | 'eclipse' | 'visita-lendaria';
+export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador' | 'peste' | 'eclipse' | 'visita-lendaria' | 'tempestade' | 'geada';
 
 export interface PendingEvent {
   id: SeasonalEventId;
@@ -86,14 +88,47 @@ export interface Citizen {
 export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
 
 /** Relatório de uma incursão noturna. */
+/** De onde vem o ouro do tesouro (métrica do balanceador). */
+export type EarnKind = 'saque' | 'imposto' | 'taverna' | 'descanso' | 'oferenda' | 'forja' | 'treino' | 'cura' | 'venda' | 'bancada' | 'provisao' | 'reliquia';
+
+/** Para onde vai o ouro do tesouro (métrica do balanceador). */
+export type SpendKind =
+  | 'predio'
+  | 'conserto'
+  | 'manutencao'
+  | 'pensao'
+  | 'guarda'
+  | 'decreto'
+  | 'berrante'
+  | 'forja'
+  | 'contrato'
+  | 'amuleto'
+  | 'fragmento'
+  | 'expansao'
+  | 'mecenato'
+  | 'presente'
+  | 'festa'
+  | 'funeral'
+  | 'evento';
+
+export interface RaidHit {
+  id: BuildingId;
+  damage: number;
+  collapsed: boolean;
+}
+
 export interface Raid {
   day: number;
-  act: number;
-  corruption: number;
+  /** Nível do abismo na noite da incursão. */
+  level: number;
+  pressure: number;
+  /** De que bioma vieram os monstros (o de uma passagem aberta). */
+  biome: number;
   power: number;
   defense: number;
   outcome: RaidOutcome;
-  building: BuildingId | null;
+  /** Prédios desgastados pela incursão (M5 F4); `collapsed` = perdeu um nível. */
+  hits: RaidHit[];
   citizenLoss: number;
   goldLost: number;
   injuries: number;
@@ -273,9 +308,9 @@ export interface EnemyUnitDef {
   tags: EnemyTag[];
 }
 
-export type EnemyTag = 'backline' | 'swarm' | 'boss';
+export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen';
 export type Affix = 'veloz' | 'vampirico' | 'explosivo' | 'couracado' | 'feroz';
-export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos';
+export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos' | 'colmeia' | 'canto' | 'placas' | 'exercito';
 
 export interface Unit {
   uid: number;
@@ -303,6 +338,8 @@ export interface Unit {
   material: MaterialId | null;
   /** Fração do dano causado que volta como vida (afixo sanguessuga). */
   lifesteal?: number;
+  /** Até este tick o herói fica parado, encantado pelo canto do Coro Submerso. */
+  charmedUntil?: number;
 }
 
 export interface Combat {
@@ -325,6 +362,10 @@ export interface Combat {
   phase2?: boolean;
   /** Até este tick as curas rendem metade (silêncio do Arcebispo). */
   silenceUntil?: number;
+  /** Placas do Colosso de Ferro-negro: blindagem que absorve o dano antes da vida. */
+  plates?: number;
+  /** Tick em que as placas voltam (inteiras ou depois de quebradas). */
+  platesAt?: number;
 }
 
 export interface CombatEvent {
@@ -349,6 +390,9 @@ export type RoomKind =
   | 'vazia'
   | 'prisioneiro'
   | 'restos'
+  /** Guardião da passagem, no último andar: vencê-lo sela a passagem. */
+  | 'guardiao'
+  /** Senhor do abismo (contrato do amuleto, M5 F2). */
   | 'chefe'
   /** Mercador errante: vende uma peça a quem pagar (ouro do herói). */
   | 'mercador'
@@ -364,12 +408,24 @@ export interface Room {
 export type PartyPhase = 'descendo' | 'explorando' | 'combate' | 'voltando';
 export type PartyOutcome = 'conquista' | 'retirada' | 'chamado' | 'massacre' | 'cansaco' | 'fuga';
 
-export interface Party {
+/**
+ * Onde um grupo está no abismo: a passagem, o nível e o bioma dela, as regras e o andar.
+ * O grupo leva uma cópia: a passagem pode fechar enquanto ele volta para a vila.
+ */
+export interface Spot {
+  passageId: number;
+  level: number;
+  biome: number;
+  rules: DimRuleId[];
+  floor: number;
+  /** Covil do Senhor deste nível (contrato do amuleto): não é uma passagem. */
+  lord?: number;
+}
+
+export interface Party extends Spot {
   id: number;
   memberIds: number[];
   startMemberIds: number[];
-  act: number;
-  floor: number;
   phase: PartyPhase;
   phaseEndsAt: number;
   /** true = usa o mapa persistente do andar; false = salas próprias (andar já conquistado). */
@@ -383,10 +439,14 @@ export interface Party {
     materials: Partial<Record<MaterialId, number>>;
     xp: number;
     items?: Item[];
+    /** Fragmentos de amuleto achados nesta descida (do nível da passagem). */
+    fragments?: number;
     /** Peças compradas do mercador nesta expedição (já equipadas). */
     bought?: { heroId: number; itemId: number; price: number }[];
   };
   contractId: number | null;
+  /** O grupo abriu a passagem nesta descida (conta para o contrato de passagem nova). */
+  opened?: boolean;
   rescued: number;
   dead: number[];
   recallRequested: boolean;
@@ -401,27 +461,62 @@ export interface Party {
   relics?: number[];
 }
 
-export interface ActState {
-  unlocked: boolean;
-  corruption: number;
+/** Uma passagem para outra dimensão: o mundo gerado por semente e o que já mudou nele. */
+export interface Passage {
+  id: number;
+  seed: number;
+  level: number;
+  biome: number;
+  rules: DimRuleId[];
+  floors: number;
+  /** Alguém já entrou: o bioma e as regras aparecem para a vila. */
+  discovered: boolean;
+  openedDay: number;
+  closesDay: number;
   conquered: boolean[];
   /** Mapa persistente de andares ainda não conquistados (salas limpas continuam limpas). */
   maps: (Room[] | null)[];
-  bossDefeated: boolean;
+  /** O guardião caiu: a passagem fecha assim que ninguém mais estiver nela. */
+  sealed: boolean;
+  /** 0 a 100: sobe todo dia e cai com as salas e os andares limpos nela (monstros mais fortes, salas reocupadas). */
+  pressure: number;
+}
+
+/** Amuleto montado com 5 fragmentos: abre o covil do Senhor do nível dele. */
+export interface Amulet {
+  level: number;
+  /** Pronto a partir daqui (o joalheiro leva uns dias). */
+  readyTick: number;
+  /** Um grupo desceu com ele: vitória ou derrota, ele se desfaz. */
+  inUse: boolean;
+}
+
+/** O abismo da vila: o nível, as passagens abertas (a pressão é de cada uma) e o amuleto. */
+export interface AbyssState {
+  level: number;
+  passages: Passage[];
+  /** Fragmentos do nível atual guardados no Cofre. */
+  fragments: number;
+  amulet: Amulet | null;
+  /** Fragmentos do nível atual comprados dos mercadores do abismo (no máximo fragmentBuyMax). */
+  bought: number;
 }
 
 export interface Remains {
   heroId: number;
-  act: number;
+  passageId: number;
   floor: number;
   gold: number;
   /** Peças que ficaram com o morto (voltam com quem achar os restos). */
   items?: Item[];
+  /** Fragmentos de amuleto que o grupo carregava quando ninguém voltou. */
+  fragments?: number;
 }
 
 export interface Contract {
   id: number;
-  act: number;
+  /** null: abrir uma passagem nova. */
+  passageId: number | null;
   floor: number;
   reward: number;
   postedTick: number;
@@ -490,6 +585,10 @@ export interface Town {
   forge: ForgeOrder[];
   /** Especialização escolhida ao chegar no nível 3. */
   specs: Partial<Record<BuildingId, SpecId>>;
+  /** Conservação de cada prédio, de 0 a 100 (M5 F4). */
+  care: Record<BuildingId, number>;
+  /** Consertos em andamento: o tick em que cada obra termina. */
+  repairs: Partial<Record<BuildingId, number>>;
   /** Últimas visitas à bancada do joalheiro (para o painel do ferreiro). */
   bench?: BenchVisit[];
   /** Obras pagas pelos heróis (mecenato). */
@@ -508,6 +607,10 @@ export type ChronicleKind =
   | 'fuga'
   | 'vinganca'
   | 'conquista'
+  /** Passagem aberta, selada ou fechada (M5). */
+  | 'passagem'
+  /** Fragmentos, montagem e destino do amuleto (M5). */
+  | 'amuleto'
   | 'chefe'
   | 'promocao'
   | 'nivel'
@@ -562,7 +665,19 @@ export interface Metrics {
   roomsCleared: number;
   floorsConquered: number;
   rankUps: number;
-  bossKills: { act: number; day: number }[];
+  /** Senhores vencidos (M5 F2). */
+  bossKills: { level: number; day: number }[];
+  /** Contratos do Senhor perdidos (o grupo caiu, fugiu ou recuou e o amuleto se desfez). */
+  lordFailures: number;
+  passagesOpened: number;
+  /** Ouro que entrou no tesouro, e o que saiu em manutenção diária e consertos (M5 F4). */
+  treasuryIn: number;
+  maintenance: number;
+  repairs: number;
+  /** Ouro gasto pelo tesouro, por destino, e o que entrou, por origem. */
+  spent: Partial<Record<SpendKind, number>>;
+  earned?: Partial<Record<EarnKind, number>>;
+  passagesSealed: number;
   idleDays: number;
   longestIdleStreak: number;
   idleStreak: number;
@@ -589,7 +704,11 @@ export interface DailySample {
   avgLevel: number;
   deepest: number;
   population: number;
-  corruption: number[];
+  pressure: number;
+  level: number;
+  /** Nível médio dos 7 prédios (o construído) e conservação média dos de pé (M5 F4). */
+  buildings: number;
+  care: number;
 }
 
 /** Dificuldade da campanha (multiplicadores em src/data/difficulty.ts). */
@@ -605,7 +724,7 @@ export interface World {
   heroes: Hero[];
   parties: Party[];
   town: Town;
-  acts: ActState[];
+  abyss: AbyssState;
   bonds: Record<string, number>;
   remains: Remains[];
   chronicle: ChronicleEntry[];
@@ -613,7 +732,7 @@ export interface World {
   citizens: Citizen[];
   raids: Raid[];
   /** Heróis que fugiram sozinhos neste tick e ainda precisam virar um retorno solo. */
-  pendingFugitives: { heroId: number; act: number; floor: number }[];
+  pendingFugitives: { heroId: number; spot: Spot }[];
   metrics: Metrics;
   endedTick: number | null;
 }

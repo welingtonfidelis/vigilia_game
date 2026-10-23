@@ -1,8 +1,8 @@
 // Painel da Vila: quem mora, o que sente, quem guarda e o que a última incursão levou.
 
 import {
-  ACTS,
   BALANCE,
+  BIOMES,
   BUILDINGS,
   commands,
   activeHeroes,
@@ -38,18 +38,18 @@ const outcomeTone: Record<Raid['outcome'], string> = {
 
 function RaidLine(props: { world: World; raid: Raid }) {
   const { world, raid } = props;
-  const building = raid.building ? BUILDINGS[raid.building] : null;
   const details: string[] = [`poder ${fmt(raid.power)} × defesa ${fmt(raid.defense)}`];
-  if (building) {
-    const level = world.town.buildings[raid.building!];
-    details.push(`${building.name.toLowerCase()} ${level === 0 ? 'em ruínas' : `ao nível ${level}`}`);
+  for (const hit of raid.hits ?? []) {
+    const name = BUILDINGS[hit.id].name.toLowerCase();
+    const level = world.town.buildings[hit.id];
+    details.push(hit.collapsed ? `${name} ${level === 0 ? 'em ruínas' : `caiu ao nível ${level}`}` : `${name} −${hit.damage} de conservação`);
   }
   if (raid.citizenLoss > 0) details.push(`${raid.citizenLoss} ${raid.citizenLoss === 1 ? 'morador' : 'moradores'}`);
   if (raid.goldLost > 0) details.push(`${fmt(raid.goldLost)} de ouro`);
   if (raid.injuries > 0) details.push(`${raid.injuries} ${raid.injuries === 1 ? 'ferido' : 'feridos'}`);
   return (
     <li>
-      <strong class={outcomeTone[raid.outcome]}>{OUTCOMES[raid.outcome]}</strong> · {formatDate(raid.day * TICKS_PER_DAY)}
+      <strong class={outcomeTone[raid.outcome]}>{OUTCOMES[raid.outcome]}</strong> · {formatDate(raid.day * TICKS_PER_DAY)} · {BIOMES[raid.biome]?.name ?? 'abismo'}, nível {raid.level}
       <small>{details.join(' · ')}</small>
     </li>
   );
@@ -68,7 +68,7 @@ export function VillagePanel() {
     (a, b) => (a.job === 'guarda' ? 0 : 1) - (b.job === 'guarda' ? 0 : 1) || a.happiness - b.happiness || a.name.localeCompare(b.name),
   );
   const raids = [...world.raids].reverse().slice(0, 3);
-  const dangerous = (threat?.corruption ?? 0) >= 55;
+  const dangerous = threat.pressure >= 55;
   return (
     <PanelShell title="Vila" subtitle="Quem mora aqui, quem guarda e o que o abismo já levou.">
       <div class="stats">
@@ -78,8 +78,8 @@ export function VillagePanel() {
         <Stat label="Guardas" value={guards} hint="A milícia de moradores que defende a vila" />
         <Stat
           label="Ameaça"
-          value={threat ? `${Math.round(threat.corruption)} · ${ACTS[threat.act]!.name}` : '—'}
-          hint="O ato mais corrompido é de onde a incursão sobe"
+          value={`${Math.round(threat.pressure)} · nível ${threat.level}`}
+          hint="A pressão do abismo: acima de 55, uma incursão pode subir à noite pelas passagens abertas"
         />
         <Stat label="Incursões" value={world.metrics.raids} />
       </div>
@@ -161,11 +161,11 @@ export function VillagePanel() {
 
       <h3>Incursões recentes</h3>
       {raids.length === 0 ? (
-        <p class="sub">Nenhuma incursão ainda. Enquanto os grupos contêm a corrupção lá embaixo, a vila dorme.</p>
+        <p class="sub">Nenhuma incursão ainda. Enquanto os grupos seguram a pressão lá embaixo, a vila dorme.</p>
       ) : (
         <ul class="raids">
           {raids.map((raid) => (
-            <RaidLine key={`${raid.day}-${raid.act}-${raid.outcome}`} world={world} raid={raid} />
+            <RaidLine key={`${raid.day}-${raid.biome}-${raid.outcome}`} world={world} raid={raid} />
           ))}
         </ul>
       )}

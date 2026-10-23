@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { CuePlanner, cuesFor, moodOf, MOURNING_TICKS, STAGGER_S } from '../src/audio/director.ts';
 import { AudioEngine } from '../src/audio/engine.ts';
+import { openPassage } from '../src/sim/dungeon.ts';
 import { ACTIVATION_EVENTS, installUnlock } from '../src/audio/index.ts';
 import { SFX, SFX_NAMES } from '../src/audio/sfx.ts';
 import { Session } from '../src/game/session.ts';
@@ -18,7 +19,7 @@ describe('diretor de som: eventos → efeitos', () => {
 
   it('moedas só quando o grupo volta com ouro', () => {
     const base = {
-      id: 1, act: 0, floor: 0, startedTick: 0, endedTick: 1, memberIds: [], startMemberIds: [], dead: [],
+      id: 1, level: 1, biome: 0, floor: 0, startedTick: 0, endedTick: 1, memberIds: [], startMemberIds: [], dead: [],
       materials: {}, rescued: 0, contract: false, moments: [],
     };
     expect(cuesFor({ type: 'expedition', summary: { ...base, outcome: 'conquista', gold: 40 } })).toEqual([{ sfx: 'coins', priority: 3 }]);
@@ -92,12 +93,13 @@ describe('clima da música', () => {
     expect(moodOf(world).mode).toBe('alvorada');
   });
 
-  it('a corrupção vem do ato mais corrompido, de 0 a 1', () => {
+  it('a corrupção vem da passagem mais pressionada, de 0 a 1', () => {
     const world = createWorld(3);
-    world.acts[0]!.corruption = 40;
-    world.acts[1]!.unlocked = true;
-    world.acts[1]!.corruption = 80;
-    world.acts[2]!.corruption = 100; // trancado: não conta
+    openPassage(world).pressure = 40;
+    openPassage(world).pressure = 80;
+    const sealed = openPassage(world);
+    sealed.pressure = 100;
+    sealed.sealed = true; // selada: não conta
     expect(moodOf(world).corruption).toBeCloseTo(0.8);
     expect(TICKS_PER_DAY).toBeGreaterThan(0);
   });

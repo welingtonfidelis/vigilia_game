@@ -15,13 +15,17 @@ export type Panel =
   | { kind: 'roster' }
   | { kind: 'memorial' }
   | { kind: 'menu' }
-  | { kind: 'welcome' }
+  /** `oldSave`: havia um save de antes do M5, guardado à parte (a campanha recomeça). */
+  | { kind: 'welcome'; oldSave?: boolean }
   | { kind: 'thermal' }
   | { kind: 'event' }
   | { kind: 'battle'; partyId: number }
   | { kind: 'village' }
   | { kind: 'campaignEnd' }
-  | { kind: 'actEnd'; act: number };
+  /** Fragmentos, amuleto e contrato do Senhor (M5). */
+  | { kind: 'amulet' }
+  /** Um Senhor caiu: o abismo desceu um nível. */
+  | { kind: 'lordEnd'; level: number };
 
 export type PanelKind = Panel['kind'];
 
@@ -38,6 +42,7 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'chronicle',
   'roster',
   'memorial',
+  'amulet',
   'menu',
 ]);
 

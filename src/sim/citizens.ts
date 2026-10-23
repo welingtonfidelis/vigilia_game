@@ -2,11 +2,13 @@
 // e são os primeiros a sentir uma incursão. A população total continua em Town.population;
 // os cidadãos são a parte visível e lembrada dela.
 
+import { abyssPressure } from './dungeon.ts';
 import { NAMES_F, NAMES_M } from '../data/names.ts';
 import { dayOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import { BALANCE as B } from './config.ts';
 import { decreeCitizenMoodPenalty } from './decrees.ts';
+import { grade } from './economy.ts';
 import { chance, int, pick } from './rng.ts';
 import type { BuildingId, Citizen, CitizenJob, Gender, World } from './types.ts';
 
@@ -125,17 +127,14 @@ export function seedCitizens(world: World, target: number = B.citizenStart): voi
   refreshJobs(world);
 }
 
-/** O ato mais corrompido é o que pesa no humor da vila. */
-const threatCorruption = (world: World): number =>
-  world.acts.reduce((worst, act) => (act.unlocked ? Math.max(worst, act.corruption) : worst), 0);
-
 export function dailyCitizens(world: World): void {
-  const corruption = threatCorruption(world);
+  // A pressão do abismo pesa no humor da vila.
+  const corruption = abyssPressure(world);
   const houses = world.town.expansion.houses.filter(Boolean).length;
   const base = clamp(
     B.citizenHappinessBase +
-      2 * world.town.buildings.estalagem +
-      2 * world.town.buildings.templo +
+      2 * grade(world, 'estalagem') +
+      2 * grade(world, 'templo') +
       2 * houses +
       Math.min(B.workEffectCap, world.town.works?.fonte?.level ?? 0) -
       corruption * 0.25,

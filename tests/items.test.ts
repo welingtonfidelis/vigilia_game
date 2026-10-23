@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { commands, createWorld, deserialize, heroCapacity, heroStats, maxGearTier, SAVE_VERSION, serialize, TICKS_PER_DAY } from '../src/sim/index.ts';
+import { commands, createWorld, heroCapacity, heroStats, maxGearTier, TICKS_PER_DAY } from '../src/sim/index.ts';
 import type { Hero, Party, World } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
 import { benchOffer, commissionBlocker, equip, itemName, legendaryTier, merchantVisit, newItem, offer, processForge, raiseLegendaries, rollDrop, shareLoot, stash, useBench } from '../src/sim/items.ts';
@@ -17,7 +17,10 @@ const fakeParty = (world: World, persistent: boolean, floor = 1): Party =>
     id: 999,
     memberIds: [],
     startMemberIds: [],
-    act: 0,
+    passageId: -1,
+    level: 1,
+    biome: 0,
+    rules: [],
     floor,
     phase: 'explorando',
     phaseEndsAt: 0,
@@ -78,13 +81,11 @@ describe('itens: nomes e números', () => {
 });
 
 describe('itens: abismo', () => {
-  it('só terreno novo dá peças; o primeiro chefe do ato deixa uma lendária', () => {
+  it('só terreno novo dá peças; o Senhor deixa uma lendária e o guardião, uma épica', () => {
     const { world } = townWith(0);
     expect(rollDrop(world, fakeParty(world, false), 'chefe')).toBeNull();
-    const boss = rollDrop(world, fakeParty(world, true, 3), 'chefe');
-    expect(boss?.rarity).toBe('lendaria');
-    world.acts[0]!.bossDefeated = true;
-    expect(rollDrop(world, fakeParty(world, true, 3), 'chefe')).toBeNull();
+    expect(rollDrop(world, fakeParty(world, true, 3), 'chefe')?.rarity).toBe('lendaria');
+    expect(rollDrop(world, fakeParty(world, true, 2), 'guardiao')?.rarity).toBe('epica');
   });
 
   it('na volta cada peça vai para quem mais ganha; o resto vai para o cofre', () => {
@@ -125,8 +126,8 @@ describe('forja e especializações', () => {
   it('lendária cai acima do teto da forja e acompanha o ferreiro quando ele sobe', () => {
     const { world } = townWith(0);
     world.town.buildings.ferreiro = 1;
-    // Ato I, primeiro andar: o tier do ato é baixo; vale o teto da forja + 2.
-    expect(legendaryTier(world, 0, 0, 'weapon')).toBe(maxGearTier(world, 'weapon') + 2);
+    // Nível 1, primeiro andar: o tier do nível é baixo; vale o teto da forja + 2.
+    expect(legendaryTier(world, { level: 1, floor: 0 }, 'weapon')).toBe(maxGearTier(world, 'weapon') + 2);
     const item = newItem(world, { slot: 'weapon', rarity: 'lendaria', tier: 3, origin: 'teste' });
     stash(world, item);
     world.town.buildings.ferreiro = 3;
@@ -146,12 +147,14 @@ describe('forja e especializações', () => {
     expect(commands.build(world, 'estalagem').ok).toBe(false);
     expect(commands.build(world, 'estalagem', 'laminas').ok).toBe(false);
     expect(commands.build(world, 'estalagem', 'dormitorio').ok).toBe(true);
-    expect(heroCapacity(world)).toBe(before + 4 + 4);
+    // Do nível 2 ao 3 a estalagem ganha 2 vagas na curva nova (M5 F4), e o dormitório dá mais 4.
+    expect(heroCapacity(world)).toBe(before + 2 + 4);
     world.town.buildings.ferreiro = 3;
+    world.abyss.level = 5; // a forja não passa do que o abismo já mostrou
     expect(commands.chooseSpecialization(world, 'ferreiro', 'laminas').ok).toBe(true);
     expect(commands.chooseSpecialization(world, 'ferreiro', 'couracas').ok).toBe(false);
-    expect(maxGearTier(world, 'weapon')).toBe(13);
-    expect(maxGearTier(world, 'armor')).toBe(12);
+    expect(maxGearTier(world, 'weapon')).toBe(11);
+    expect(maxGearTier(world, 'armor')).toBe(10);
   });
 
   it('presentear e vender peças do cofre', () => {
@@ -173,36 +176,16 @@ describe('forja e especializações', () => {
   });
 });
 
-describe('save v8 → v9', () => {
-  it('tiers viram peças comuns; a herança das crianças também', () => {
-    const { world, list } = townWith(1);
-    const v8 = JSON.parse(serialize(world));
-    v8.version = 8;
-    v8.heroes[0].gear = { weapon: 3, armor: 2 };
-    delete v8.heroes[0].items;
-    v8.children = [{ id: 1, name: 'Nina', gender: 'f', parents: [list[0]!.id, list[0]!.id], bornDay: 0, trait: 'leal', classId: 'arqueiro', heirloom: 2 }];
-    delete v8.town.arsenal;
-    delete v8.town.forge;
-    delete v8.town.specs;
-    const loaded = deserialize(JSON.stringify(v8));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.heroes[0]!.items.weapon).toMatchObject({ rarity: 'comum', tier: 3 });
-    expect(loaded.heroes[0]!.items.armor).toMatchObject({ rarity: 'comum', tier: 2 });
-    expect(loaded.children[0]!.heirloom).toMatchObject({ slot: 'weapon', tier: 2 });
-    expect(loaded.town.arsenal).toEqual([]);
-    expect(loaded.town.forge).toEqual([]);
-    expect(loaded.town.specs).toEqual({});
-  });
-});
 
 describe('bancada do joalheiro, salas novas e chefes em duas fases (9.3)', () => {
-  it('a bancada só abre com o ferreiro no nível 3 e cobra do herói', () => {
+  it('a bancada só abre com o ferreiro no nível 5 e cobra do herói', () => {
     const { world, list } = townWith(1);
     const hero = list[0]!;
     equip(world, hero, newItem(world, { slot: 'weapon', rarity: 'rara', tier: 4, affixes: ['afiado'], origin: 'teste' }));
     hero.gold = 50000;
+    world.town.buildings.ferreiro = 4;
     expect(benchOffer(world, hero)).toBeNull();
-    world.town.buildings.ferreiro = 3;
+    world.town.buildings.ferreiro = 5;
     const offer = benchOffer(world, hero)!;
     expect(offer.service).toBe('encantar');
     const treasury = world.town.treasury;
@@ -243,7 +226,10 @@ describe('bancada do joalheiro, salas novas e chefes em duas fases (9.3)', () =>
     const { world, list } = townWith(3);
     for (const h of list) h.status = 'expedition';
     const party = fakeParty(world, true, 3);
-    party.act = 1;
+    // O Senhor do nível 2 é a Couraça Submersa.
+    party.level = 2;
+    party.lord = 2;
+    party.biome = 1;
     party.memberIds = list.map((h) => h.id);
     party.startMemberIds = [...party.memberIds];
     party.phase = 'combate';

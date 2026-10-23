@@ -2,14 +2,15 @@
 
 import { CLASSES } from '../data/classes.ts';
 import { RANKS } from '../data/classes.ts';
-import { record, floorLabel, listNames } from './chronicle.ts';
-import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
-import { confidence, travelTicks } from './dungeon.ts';
+import { record, floorLabel, listNames, ofWhom } from './chronicle.ts';
+import { lordOf } from '../data/lords.ts';
+import { TICKS_PER_HOUR } from './config.ts';
+import { abyssPressure, confidence, lairRooms, lairSpot, lordConfidence, mysteryConfidence, openPassage, openPassages, passageCapacity, passageOf, spotOf, travelTicks } from './dungeon.ts';
 import { maxParties, maxPartySize } from './economy.ts';
 import { getBond, hasTrait, traitSum } from './hero.ts';
 import { townHeroes } from './town.ts';
 import { buyProvisions } from './patronage.ts';
-import type { Hero, Party, World } from './types.ts';
+import type { Hero, Party, Spot, World } from './types.ts';
 
 export const busyParties = (world: World): Party[] => world.parties.filter((p) => p.phase !== 'voltando');
 
@@ -73,71 +74,90 @@ export function formParties(world: World): void {
 }
 
 export interface Target {
-  act: number;
-  floor: number;
+  /** Andar de uma passagem conhecida, ou null para abrir uma passagem nova. */
+  spot: Spot | null;
   contractId: number | null;
   confidence: number;
 }
 
+/** Profundidade para comparar opções: nível, andar; a passagem nova fica logo acima do andar 1. */
+const depthOf = (world: World, t: Target): number => (t.spot ? t.spot.level * 10 + t.spot.floor : world.abyss.level * 10 + 0.5);
+
 export function chooseTarget(world: World, members: Hero[]): Target {
   const need = { cautelosa: 1.25, equilibrada: 1.0, agressiva: 0.8 }[world.town.doctrine] + members.reduce((s, h) => s + traitSum(h, 'daring'), 0);
-  const taken = new Set(world.parties.filter((p) => p.persistent && p.phase !== 'voltando').map((p) => `${p.act}:${p.floor}`));
+  const taken = new Set(world.parties.filter((p) => p.persistent && p.phase !== 'voltando').map((p) => `${p.passageId}:${p.floor}`));
   const options: Target[] = [];
-  world.acts.forEach((act, a) => {
-    if (!act.unlocked) return;
-    for (let f = 0; f < B.floorsPerAct; f++) {
-      if (f > 0 && !act.conquered[f - 1]) break;
-      if (!act.conquered[f] && taken.has(`${a}:${f}`)) continue;
-      options.push({ act: a, floor: f, contractId: null, confidence: confidence(world, members, a, f) });
+  for (const passage of openPassages(world)) {
+    for (let f = 0; f < passage.floors; f++) {
+      if (f > 0 && !passage.conquered[f - 1]) break;
+      if (!passage.conquered[f] && taken.has(`${passage.id}:${f}`)) continue;
+      const spot = spotOf(passage, f);
+      options.push({ spot, contractId: null, confidence: confidence(world, members, spot, passage) });
     }
-  });
-  if (options.length === 0) return { act: 0, floor: 0, contractId: null, confidence: 0 };
+  }
+  if (openPassages(world).length < passageCapacity(world)) {
+    options.push({ spot: null, contractId: null, confidence: mysteryConfidence(world, members) });
+  }
+  if (options.length === 0) return { spot: null, contractId: null, confidence: mysteryConfidence(world, members) };
   for (const contract of world.town.contracts) {
     if (contract.takenBy !== null) continue;
-    const opt = options.find((o) => o.act === contract.act && o.floor === contract.floor);
+    const opt = options.find((o) =>
+      contract.passageId === null ? o.spot === null : o.spot?.passageId === contract.passageId && o.spot.floor === contract.floor,
+    );
     if (opt && opt.confidence >= need - 0.25) return { ...opt, contractId: contract.id };
   }
-  const depth = (t: Target) => t.act * B.floorsPerAct + t.floor;
   const bold = options.filter((o) => o.confidence >= need);
-  // Um ato muito corrompido ameaça a vila: quem pode, desce para conter.
-  const corruption = (t: Target) => world.acts[t.act]!.corruption;
-  const urgent = bold.filter((o) => corruption(o) >= 60);
-  if (urgent.length > 0) {
-    return urgent.reduce((a, b) => (corruption(b) > corruption(a) || (corruption(b) === corruption(a) && depth(b) > depth(a)) ? b : a));
+  // Uma passagem muito pressionada ameaça a vila: quem pode, desce nela para conter.
+  if (abyssPressure(world) >= 60) {
+    const pressure = (t: Target) => (t.spot ? (passageOf(world, t.spot.passageId)?.pressure ?? 0) : 0);
+    const urgent = bold.filter((o) => pressure(o) >= 60);
+    if (urgent.length > 0) return urgent.reduce((a, b) => (pressure(b) > pressure(a) || (pressure(b) === pressure(a) && depthOf(world, b) > depthOf(world, a)) ? b : a));
   }
-  if (bold.length > 0) return bold.reduce((a, b) => (depth(b) > depth(a) ? b : a));
+  if (bold.length > 0) return bold.reduce((a, b) => (depthOf(world, b) > depthOf(world, a) ? b : a));
   return options.reduce((a, b) => (b.confidence > a.confidence ? b : a));
 }
 
 function depart(world: World, members: Hero[]): void {
   const target = chooseTarget(world, members);
+  // Passagem nova: o mundo já existe na semente, mas só se revela quando o grupo entra.
+  const opened = target.spot === null;
+  const spot = target.spot ?? spotOf(openPassage(world), 0);
+  const party = launch(world, members, spot, target.confidence, target.contractId);
+  party.opened = opened;
+  if (target.contractId !== null) {
+    const contract = world.town.contracts.find((c) => c.id === target.contractId)!;
+    contract.takenBy = party.id;
+  }
+  const why = target.contractId !== null ? ' atrás do contrato do prefeito' : '';
+  const where = opened ? 'uma passagem que ninguém conhece' : `o ${floorLabel(spot)}`;
+  record(world, 'partida', party.memberIds, `${listNames(members)} desceram rumo a ${where}${why}.`);
+}
+
+/** Monta o grupo e manda descer (passagem ou covil). */
+function launch(world: World, members: Hero[], spot: Spot, confidence: number, contractId: number | null): Party {
   const party: Party = {
     id: world.nextId++,
     memberIds: members.map((h) => h.id),
     startMemberIds: members.map((h) => h.id),
-    act: target.act,
-    floor: target.floor,
+    ...spot,
+    rules: [...spot.rules],
     phase: 'descendo',
-    phaseEndsAt: world.tick + travelTicks(target.act, target.floor),
+    phaseEndsAt: world.tick + travelTicks(spot),
     persistent: false,
     rooms: [],
     roomIndex: 0,
     retreating: false,
     combat: null,
     loot: { gold: 0, materials: {}, xp: 0 },
-    contractId: target.contractId,
+    contractId,
     rescued: 0,
     dead: [],
     recallRequested: false,
     outcome: null,
     startedTick: world.tick,
-    confidence: target.confidence,
+    confidence,
     moments: [],
   };
-  if (target.contractId !== null) {
-    const contract = world.town.contracts.find((c) => c.id === target.contractId)!;
-    contract.takenBy = party.id;
-  }
   const veterans = members.filter((h) => hasTrait(h, 'veterano')).length;
   for (const h of members) {
     h.status = 'expedition';
@@ -150,6 +170,14 @@ function depart(world: World, members: Hero[]): void {
   buyProvisions(world, party, members);
   world.parties.push(party);
   world.metrics.expeditions++;
-  const why = target.contractId !== null ? ' atrás do contrato do prefeito' : '';
-  record(world, 'partida', party.memberIds, `${listNames(members)} desceram rumo ao ${floorLabel(target.act, target.floor)}${why}.`);
+  return party;
+}
+
+/** Contrato do Senhor: o grupo escolhido desce direto ao covil com o amuleto. */
+export function departLord(world: World, members: Hero[], level: number): Party {
+  const party = launch(world, members, lairSpot(level), lordConfidence(world, members, level), null);
+  party.rooms = lairRooms();
+  const lord = lordOf(level);
+  record(world, 'partida', party.memberIds, `${listNames(members)} desceram com o amuleto ao covil ${ofWhom(lord.name)}.`);
+  return party;
 }
