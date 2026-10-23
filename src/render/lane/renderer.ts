@@ -880,6 +880,10 @@ export class LaneRenderer {
         case 'armadilha':
           this.drawSpikes(tx, room.cleared);
           break;
+        case 'encontro':
+          // Encontro (M6 F3): um braseiro aceso marca o lugar; a arte de cada um vem na F6.
+          this.drawProp('prop/arena/brazier', tx, ROW_Y[0], t);
+          break;
         case 'guardiao':
         case 'chefe': {
           this.drawProp(`prop/arena/${roman}/boss-gate`, tx + 40, ROW_Y[0] - 2, t);

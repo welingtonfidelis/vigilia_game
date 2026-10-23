@@ -286,6 +286,26 @@ export function MenuPanel() {
         <input type="checkbox" checked={prefs.runInBackground} onChange={(e) => ui.setPrefs({ runInBackground: (e.target as HTMLInputElement).checked })} /> Continuar o jogo com a aba em segundo plano (sempre em 1×)
       </label>
 
+      <h3>Chamadas do abismo</h3>
+      <p class="sub">Um aviso com o botão Assistir quando algo vai acontecer lá embaixo.</p>
+      {(
+        [
+          ['senhor', 'Começa a luta contra o Senhor'],
+          ['guardiao', 'Um grupo chega ao guardião da passagem'],
+          ['nemesis', 'Uma nêmesis aparece'],
+          ['encontro', 'Um grupo acha um encontro e pede conselho'],
+        ] as const
+      ).map(([kind, label]) => (
+        <label key={kind} class="check">
+          <input
+            type="checkbox"
+            checked={prefs.calls[kind]}
+            onChange={(e) => ui.setPrefs({ calls: { ...prefs.calls, [kind]: (e.target as HTMLInputElement).checked } })}
+          />{' '}
+          {label}
+        </label>
+      ))}
+
       <h3>Dificuldade</h3>
       <div class="seg" role="radiogroup" aria-label="Dificuldade da campanha">
         {DIFFICULTY_IDS.map((d) => (

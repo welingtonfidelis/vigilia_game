@@ -67,6 +67,13 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     const hero = world.heroes.find((h) => h.id === id);
     if (hero && hero.status === 'expedition') combat.units.push(heroUnit(world, combat, hero));
   }
+  // Bênçãos e maldições dos encontros (M6 F3) até o fim da descida.
+  if (party.boons) {
+    for (const u of combat.units) {
+      u.atk *= party.boons.atk;
+      u.def *= party.boons.def;
+    }
+  }
   // Regras da dimensão que pesam nos heróis: névoa corta o crítico, maré deixa todos lentos.
   for (const u of combat.units) {
     if (party.rules.includes('nevoa')) u.crit *= 0.5;

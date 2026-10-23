@@ -18,6 +18,7 @@ import {
 } from '../../sim/index.ts';
 import type { Hero, Petition, World } from '../../sim/index.ts';
 import { HeroLink, PanelShell, useCommand, useGame } from '../components.tsx';
+import { CrowCard } from './CrowCard.tsx';
 import { fmt } from '../format.ts';
 
 /** Quem pede, com o ofício ou a classe. */
@@ -101,8 +102,17 @@ export function AudiencesPanel() {
   const petitions = world.town.petitions ?? [];
   const wishes = world.heroes.filter((h) => h.wish && (h.status === 'town' || h.status === 'expedition'));
   const log = world.town.petitionLog ?? [];
+  const crows = world.parties.filter((p) => p.encounter && p.phase !== 'voltando');
   return (
     <PanelShell title="Audiências" subtitle={`Os pedidos da manhã e os desejos dos heróis. O jogo não para: quem não for ouvido em ${BALANCE.petitionDays} dias desiste.`}>
+      {crows.length > 0 && (
+        <>
+          <h3>Corvos do abismo</h3>
+          {crows.map((p) => (
+            <CrowCard key={p.id} party={p} where />
+          ))}
+        </>
+      )}
       <h3>Na mesa</h3>
       {petitions.length === 0 ? (
         <p class="sub">Ninguém esperando agora. Às 8h da manhã chega gente nova à mesa da praça.</p>

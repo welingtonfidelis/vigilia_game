@@ -1,12 +1,13 @@
 // Raízes da UI: o HUD (acima do mapa) e a camada sobre o mapa (painéis, avisos, objetivos).
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { abyssPressure, activeHeroes, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText } from '../sim/index.ts';
+import { abyssPressure, activeHeroes, BIOMES, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText } from '../sim/index.ts';
+import type { MaterialId } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt, knownMaterials } from './format.ts';
-import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconScroll, IconShield, IconSound, IconSun, PackIcon } from './icons.tsx';
+import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconScroll, IconShield, IconSound, IconSun, MaterialIcon, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { EventPanel } from './panels/EventPanel.tsx';
@@ -95,9 +96,7 @@ function Hud() {
         <EnergyCandles energy={town.mayorEnergy} />
       </span>
       {mats.map((m) => (
-        <span key={m} class="hud-item mat" title={MATERIAL_NAMES[m]}>
-          <PackIcon name="resource-materials" /> {town.materials[m]}
-        </span>
+        <MaterialCount key={m} id={m} count={town.materials[m]} />
       ))}
       <button
         class={`hud-mute${muted ? ' off' : ''}`}
@@ -118,6 +117,28 @@ function Hud() {
         ))}
       </span>
     </div>
+  );
+}
+
+/** Biomas de onde sai cada material (o mesmo material pode vir de mais de um). */
+const MATERIAL_SOURCES = (id: MaterialId): string => {
+  const names = BIOMES.filter((b) => b.material === id).map((b) => b.name);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} e ${names.at(-1)}` : (names[0] ?? 'o abismo');
+};
+
+/** Contador de um material no topo, com ícone próprio e dica ao passar o mouse ou tocar. */
+function MaterialCount(props: { id: MaterialId; count: number }) {
+  const name = MATERIAL_NAMES[props.id];
+  return (
+    <button type="button" class="hud-item mat" aria-label={`${name}: ${props.count}`}>
+      <MaterialIcon id={props.id} /> {props.count}
+      <span class="hud-tip" role="tooltip">
+        <strong>{name}</strong>
+        <span>{props.count} no Cofre.</span>
+        <span>Vem do abismo: {MATERIAL_SOURCES(props.id)}.</span>
+        <span>Serve para subir os prédios e para encomendar peças na forja.</span>
+      </span>
+    </button>
   );
 }
 
@@ -149,7 +170,8 @@ function Toasts() {
   useEffect(() => {
     if (ui.toasts.length === 0) return;
     const oldest = ui.toasts[ui.toasts.length - 1]!;
-    const wait = Math.max(200, oldest.at + 6000 - Date.now());
+    // Chamadas do abismo (com "Assistir") ficam mais tempo na tela.
+    const wait = Math.max(200, oldest.at + (oldest.partyId !== undefined ? 12000 : 6000) - Date.now());
     const t = window.setTimeout(() => ui.dismissToast(oldest.id), wait);
     return () => window.clearTimeout(t);
   }, [ui.toasts]);
@@ -158,6 +180,18 @@ function Toasts() {
       {ui.toasts.map((t) => (
         <div key={t.id} class={`toast ${t.tone}`} onClick={() => ui.dismissToast(t.id)}>
           <LinkedText text={t.text} heroIds={t.heroIds} />
+          {t.partyId !== undefined && (
+            <button
+              class="btn small toast-watch"
+              onClick={(e) => {
+                e.stopPropagation();
+                ui.dismissToast(t.id);
+                ui.open({ kind: 'battle', partyId: t.partyId! });
+              }}
+            >
+              Assistir
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -198,8 +232,9 @@ function Nav() {
   const parties = world.parties.length;
   const fighting = world.parties.some((p) => p.phase === 'combate');
   const threat = abyssPressure(world);
-  const petitions = world.town.petitions?.length ?? 0;
-  const urgent = (world.town.petitions ?? []).some((p) => p.untilDay <= dayOf(world.tick));
+  const crows = world.parties.filter((p) => p.encounter && !p.encounter.advice).length;
+  const petitions = (world.town.petitions?.length ?? 0) + crows;
+  const urgent = crows > 0 || (world.town.petitions ?? []).some((p) => p.untilDay <= dayOf(world.tick));
   // Petição nova na mesa: um aviso curto (não no carregamento do save).
   const seenSeq = useRef<number | null>(null);
   useEffect(() => {

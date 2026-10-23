@@ -9,7 +9,7 @@ type Filter = 'tudo' | 'mortes' | 'gloria' | 'herois' | 'vila';
 const FILTERS: Record<Filter, { label: string; kinds: ChronicleKind[] | null }> = {
   tudo: { label: 'Tudo', kinds: null },
   mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco', 'lesao', 'cicatriz', 'nemesis'] },
-  gloria: { label: 'Glória', kinds: ['conquista', 'passagem', 'chefe', 'promocao', 'traco', 'nivel', 'fim'] },
+  gloria: { label: 'Glória', kinds: ['conquista', 'passagem', 'chefe', 'promocao', 'traco', 'nivel', 'fim', 'encontro'] },
   herois: {
     label: 'Heróis',
     kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao', 'desejo'],

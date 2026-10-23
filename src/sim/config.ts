@@ -195,8 +195,11 @@ export const BALANCE = {
   xpPace: 0.4,
   /** Multiplica o ouro de todo monstro (o saque dos heróis e, por ele, o imposto e o que eles gastam na vila). */
   goldPace: 0.5,
-  /** Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. */
-  fragmentPace: 0.52,
+  /**
+   * Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. Foi de 0,52 para
+   * 0,54 no M6 F3, para compensar o material das obras, que passou a segurar a vila.
+   */
+  fragmentPace: 0.54,
   /** Fragmento comprado dos mercadores do abismo: tantas vezes o preço do amuleto, mais caro a cada compra no nível, até o limite. */
   fragmentBuyMult: 6,
   fragmentBuyGrowth: 1.5,
@@ -236,6 +239,11 @@ export const BALANCE = {
   /** Material dos níveis 4 em diante: base no 4, mais o passo a cada nível. */
   buildingMaterialBase: 20,
   buildingMaterialStep: 8,
+  /**
+   * Multiplica o material dos níveis 2 e 3, 4 e 5, e 6 em diante (pedido de 2026-10-23). Com 1, o
+   * Cofre guardava de 15 a 100 vezes o que a próxima obra pedia e só o ouro segurava a vila.
+   */
+  buildingMaterialMult: [8, 6, 4] as [number, number, number],
   /** A primeira especialização chega no nível 3; no 7 o prédio ganha também o outro caminho. */
   specLevel: 3,
   secondSpecLevel: 7,
@@ -339,7 +347,11 @@ export const BALANCE = {
   critMult: 1.8,
 
   // Pessoas (M2)
-  mayorEnergy: 4,
+  /**
+   * Velas do prefeito por dia. Eram 4; o M6 trouxe usos novos (petições e o corvo dos encontros),
+   * e com 4 o conselho comia o discurso da manhã e a campanha atrasava (M6 F3).
+   */
+  mayorEnergy: 5,
   talkLoyalty: 6,
   speechMorale: 12,
   consoleGrief: 35,
@@ -407,4 +419,15 @@ export const BALANCE = {
   nemesisHuntSlack: 0.25,
   /** Rumores que a guilda traz para cada vaga de passagem nova. */
   rumorCount: 3,
+
+  // Encontros nas salas (M6 F3)
+  /** Peso das salas vazias e dos encontros no sorteio das salas (antes, vazia era 7). */
+  emptyRoomWeight: 4,
+  encounterRoomWeight: 3,
+  /** Quanto o grupo espera o corvo voltar: 150 ticks = 15 s em 1× (7,5 horas do jogo). */
+  encounterWaitTicks: 150,
+  /** Chance de seguir o conselho: base mais a lealdade média do grupo / 150. */
+  encounterFollowBase: 0.35,
+  /** Energia do prefeito que o conselho pelo corvo custa. */
+  encounterAdviceEnergy: 1,
 } as const;

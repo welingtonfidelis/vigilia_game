@@ -454,7 +454,9 @@ export type RoomKind =
   /** Mercador errante: vende uma peça a quem pagar (ouro do herói). */
   | 'mercador'
   /** Dardos ou espinhos: ferem o grupo se ninguém perceber antes. */
-  | 'armadilha';
+  | 'armadilha'
+  /** Encontro (M6 F3): o grupo acha algo, manda um corvo e decide. */
+  | 'encontro';
 
 export interface Room {
   kind: RoomKind;
@@ -514,6 +516,10 @@ export interface Party extends Spot {
   moments: string[];
   /** Nêmesis que este grupo já encontrou nesta descida (aparece uma vez por descida). */
   nemesisMet?: number[];
+  /** Encontro em andamento (M6 F3): o grupo espera o conselho do prefeito até `untilTick`. */
+  encounter?: { defId: string; untilTick: number; advice: string | null } | null;
+  /** Bênçãos e maldições dos encontros até o fim da descida (multiplicam ataque e defesa). */
+  boons?: { atk: number; def: number };
   /** Quem levou ração e tochas nesta descida (gasta metade da energia entre as salas). */
   provisioned?: number[];
   /** Quem levou relíquia do templo (foge menos nesta descida). */
@@ -756,6 +762,8 @@ export type ChronicleKind =
   | 'desejo'
   /** Nêmesis que nasce, aparece e cai (M6 F2). */
   | 'nemesis'
+  /** Encontros nas salas e o corvo do grupo (M6 F3). */
+  | 'encontro'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -813,6 +821,11 @@ export interface Metrics {
   wishes?: { made: number; done: number; failed: number };
   /** Nêmesis (M6 F2): nascidas, encontros, heróis que mataram e caídas. */
   nemeses?: { born: number; met: number; kills: number; fallen: number };
+  /** Encontros nas salas (M6 F3): achados, com conselho do prefeito e conselhos seguidos. */
+  encounters?: { met: number; advised: number; followed: number };
+  /** Material do abismo que entrou no Cofre e o que saiu em obras, consertos e encomendas. */
+  materialsIn?: Partial<Record<MaterialId, number>>;
+  materialsOut?: Partial<Record<MaterialId, number>>;
 }
 
 export interface DailySample {

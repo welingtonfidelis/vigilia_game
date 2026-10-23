@@ -57,6 +57,8 @@ export interface Toast {
   tone: Tone;
   heroIds: number[];
   at: number;
+  /** Chamada do abismo (M6 F3): o aviso ganha o botão "Assistir" para este grupo. */
+  partyId?: number;
 }
 
 export interface Prompt {
@@ -110,8 +112,8 @@ export class UiStore {
     this.changed();
   }
 
-  toast(text: string, tone: Tone = 'info', heroIds: number[] = []): void {
-    this.toasts = [{ id: this.nextToast++, text, tone, heroIds, at: Date.now() }, ...this.toasts].slice(0, 3);
+  toast(text: string, tone: Tone = 'info', heroIds: number[] = [], partyId?: number): void {
+    this.toasts = [{ id: this.nextToast++, text, tone, heroIds, at: Date.now(), ...(partyId !== undefined ? { partyId } : {}) }, ...this.toasts].slice(0, 3);
     this.changed();
   }
 

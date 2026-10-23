@@ -545,6 +545,8 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phas
   lamp(43 * TILE, 18 * TILE);
   // Ponta oeste da rua de cima, na frente do templo.
   lamp(7.6 * TILE, 17 * TILE);
+  // Portão da vila: um poste ao lado da passagem, para quem chega à noite.
+  lamp(23.1 * TILE, 7.8 * TILE);
   // Rua de baixo: estalagem, casa de cura, caminho da fonte, campo de treino e ferreiro.
   lamp(14.6 * TILE, 26.2 * TILE);
   lamp(22.6 * TILE, 26.2 * TILE);

@@ -279,7 +279,9 @@ function rollRoomKind(r: RngState, passage: Passage, floor: number): RoomKind {
     ['elite', (floor >= 1 ? 15 : 5) * greed],
     ['bau', 10 * greed],
     ['santuario', 8],
-    ['vazia', 7],
+    // Parte das salas vazias virou encontro (M6 F3): o número de salas não muda.
+    ['vazia', B.emptyRoomWeight],
+    ['encontro', B.encounterRoomWeight],
     ['prisioneiro', 3],
     ['mercador', floor >= 1 ? 3 : 0],
     ['armadilha', floor >= 1 ? 6 : 0],

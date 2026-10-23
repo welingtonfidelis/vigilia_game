@@ -4,6 +4,7 @@
 
 import type { World } from '../../sim/index.ts';
 import { LaneRenderer, type LaneHost } from './renderer.ts';
+import { recordFights } from './replay.ts';
 
 export class LaneDirector {
   private readonly lanes = new Map<number, LaneRenderer>();
@@ -32,6 +33,8 @@ export class LaneDirector {
     for (const p of world.parties) if (!this.lanes.has(p.id)) this.lanes.set(p.id, new LaneRenderer(host, p.id));
     for (const id of [...this.lanes.keys()]) if (!world.parties.some((p) => p.id === id)) this.lanes.delete(id);
     for (const lane of this.lanes.values()) lane.frame(now);
+    // Melhores momentos (M6 F3): grava as lutas para o relatório.
+    recordFights(world);
   }
 
   /** O corredor do grupo (cria na hora se o grupo acabou de sair). */

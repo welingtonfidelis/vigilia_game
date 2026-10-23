@@ -70,9 +70,8 @@ export function bringNemesis(world: World, party: Party, combat: Combat, room: R
   (party.nemesisMet ??= []).push(n.id);
   n.seenDay = dayOf(world.tick);
   metrics(world).met++;
-  const text = `${n.name}, ${n.enemyName.toLowerCase()} que levou ${victimNames(world, n)}, apareceu no ${floorLabel(party)}.`;
-  party.moments.push(text);
-  record(world, 'nemesis', party.memberIds, text);
+  // O encontro fica nos momentos da expedição; o aviso na tela é a chamada do abismo (M6 F3).
+  party.moments.push(`${n.name}, ${n.enemyName.toLowerCase()} que levou ${victimNames(world, n)}, apareceu no ${floorLabel(party)}.`);
 }
 
 /** Abaixo de um quarto da vida, o monstro que matou alguém nesta luta pode sumir na névoa. */

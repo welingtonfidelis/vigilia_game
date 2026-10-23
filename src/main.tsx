@@ -4,6 +4,7 @@ import type { ChronicleEntry } from './sim/index.ts';
 import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
 import { startAudio } from './audio/index.ts';
+import { startCalls } from './ui/calls.ts';
 import { lanes } from './render/lane/lanes.ts';
 import { startRenderer, switchArt } from './render/game.ts';
 import { setArtMode } from './render/art32.ts';
@@ -63,6 +64,7 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   incursao: 'bad',
   desejo: 'info',
   nemesis: 'bad',
+  encontro: 'info',
 };
 
 // Um Senhor caiu: pausa e mostra a tela (o último fecha a campanha).
@@ -207,6 +209,7 @@ render(<OverlayRoot session={session} ui={ui} />, document.getElementById('overl
 const renderer = startRenderer(document.getElementById('game')!, session, ui);
 const audio = startAudio(session, ui);
 lanes.start({ world: () => session.world, speed: () => session.speed, paused: () => session.paused, sound: (name) => audio.combat(name) });
+startCalls(session, ui);
 
 // Atalhos de depuração para testar sem esperar (só em desenvolvimento).
 if (import.meta.env.DEV) {

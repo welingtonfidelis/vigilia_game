@@ -11,6 +11,7 @@ import { packUrl } from '../../render/pack.ts';
 import { useCommand, useGame } from '../components.tsx';
 import { fmt, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
+import { CrowCard } from './CrowCard.tsx';
 
 function RoomNode(props: { state: 'normal' | 'current' | 'cleared' }) {
   return <span class={`arena-room-node ${props.state}`} style={{ backgroundImage: `url(${hiUrl(packUrl('export/ui/ui-room-node.png'))})` }} aria-hidden="true" />;
@@ -151,6 +152,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
               ))}
             </div>
           )}
+          {party.encounter && !returning && <CrowCard party={party} />}
           {returning && (
             <div class="lane-exit" role="status">
               <strong>{party.outcome ? OUTCOME_LABELS[party.outcome] : 'Volta'}</strong>

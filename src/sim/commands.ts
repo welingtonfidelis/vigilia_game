@@ -45,6 +45,7 @@ import { noteWish } from './wishes.ts';
 import { answerPetition as answerPetitionImpl } from './audiences.ts';
 import { markRumor as markRumorImpl } from './rumors.ts';
 import { livingNemeses } from './nemesis.ts';
+import { adviseEncounter as adviseEncounterImpl } from './encounters.ts';
 import { chance, int } from './rng.ts';
 import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
 
@@ -146,6 +147,8 @@ export function commission(world: World, slot: ItemSlot, material: MaterialId, r
   if (world.town.materials[material] < cost.material) return fail(`Faltam ${cost.material - world.town.materials[material]} de ${MATERIAL_NAMES[material].toLowerCase()}.`);
   spend(world, 'forja', cost.gold);
   world.town.materials[material] -= cost.material;
+  const out = (world.metrics.materialsOut ??= {});
+  out[material] = (out[material] ?? 0) + cost.material;
   (world.town.forge ??= []).push({ id: world.nextId++, slot, material, rarity, tier: cost.tier, readyTick: commissionReadyTick(world, cost.days) });
   const what = slot === 'weapon' ? 'uma arma' : slot === 'armor' ? 'uma armadura' : 'um amuleto';
   record(world, 'prefeito', [], `O prefeito encomendou ${what} ${rarity === 'epica' ? 'épica' : 'rara'} de ${MATERIAL_NAMES[material].toLowerCase()} ao ferreiro.`);
@@ -556,6 +559,9 @@ export function holdFestival(world: World): CommandResult {
   noteWish(world, { kind: 'festa' });
   return OK;
 }
+
+/** O conselho do prefeito a um grupo que achou um encontro e mandou um corvo (M6 F3). */
+export const adviseEncounter = (world: World, partyId: number, optionId: string): CommandResult => adviseEncounterImpl(world, partyId, optionId);
 
 /** O prefeito marca no mapa da guilda o rumor que a próxima passagem segue (M6 F2). */
 export const markRumor = (world: World, index: number): CommandResult => markRumorImpl(world, index);

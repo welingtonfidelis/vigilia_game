@@ -120,6 +120,10 @@ export interface Prefs {
   musicVolume: number;
   ambientVolume: number;
   sfxVolume: number;
+  /** Chamadas do abismo (M6 F3): avisos com "Assistir" quando algo vai acontecer. */
+  calls: { guardiao: boolean; senhor: boolean; nemesis: boolean; encontro: boolean };
+  /** Modo destaque do Acompanhar: um corredor só, que troca sozinho para onde algo acontece. */
+  highlight: boolean;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -133,6 +137,8 @@ export const DEFAULT_PREFS: Prefs = {
   musicVolume: 0.4,
   ambientVolume: 0.5,
   sfxVolume: 0.9,
+  calls: { guardiao: true, senhor: true, nemesis: true, encontro: true },
+  highlight: false,
 };
 
 export function loadPrefs(store: KeyValueStore | null): Prefs {

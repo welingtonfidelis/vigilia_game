@@ -1179,6 +1179,7 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
 - **Níveis:**
   - Os 7 prédios vão até o **nível 10** na campanha e seguem subindo no pós-jogo.
   - O custo dos níveis 1 a 3 é o de hoje. Do 4 em diante, o ouro é o do nível 3 vezes **1,75 a cada nível**, com o material do bioma da faixa: pérolas negras (4 e 5), brasas (6 e 7), fragmentos de alma (8 e 9) e alma com brasas do 10 em diante, de 20 unidades no nível 4 a mais 8 por nível.
+  - **Desde o M6 (2026-10-23), todo material de obra vale 8 vezes isso** (`buildingMaterialMult`): o nível 2 pede de 160 a 200 ossos, o 3 de 200 a 240 de ferro-negro ou esporos, e o 4 já pede 160 pérolas. Com a conta antiga, o Cofre guardava de 15 a 100 vezes o que a próxima obra pedia, e só o ouro segurava a vila.
   - Os efeitos de hoje viram curvas: o nível 1 vale 1 e cada nível acima vale 0,55. O efeito atual do nível 3 fica entre o 4 e o 5.
   - **Marcos:** a especialização no nível 3 (como hoje), a **bancada do joalheiro no 5** (era no 3) e, no **7**, o prédio ganha também o outro caminho do par.
 - **Arte por faixa:** a de nível 1 para os níveis 1 a 3, a de nível 2 para os níveis 4 a 6 e a de nível 3 do 7 em diante; a ruína continua no nível 0. Peças novas: **andaime** (durante o conserto) e **desgaste** (quando a conservação está baixa).
@@ -1584,7 +1585,7 @@ O M6 traz onze sistemas para o jogador ter o que decidir, acompanhar e coleciona
 - Sala nova, o **encontro**, no lugar de parte das salas vazias. O número de salas por andar não muda.
 - O grupo acha algo e decide. O prefeito pode **aconselhar pelo corvo**:
   - o encontro aparece num cartão do Acompanhar e num aviso, sem pausar o jogo;
-  - o prefeito tem 1 hora do jogo para mandar o conselho, que custa 1 de energia;
+  - o prefeito tem uns 15 segundos (em 1×; 7,5 horas do jogo) para mandar o conselho, que custa 1 de energia;
   - o grupo segue o conselho conforme a lealdade média;
   - sem conselho, decide pelos traços: o Curioso abre, o Supersticioso e o Covarde passam longe.
 - **Conteúdo inicial:** 24 encontros, 2 por bioma e 4 gerais. Exemplos: sarcófago selado, peregrino perdido, altar que pede sangue, espelho que mostra um herói morto, poço que canta.
@@ -1670,7 +1671,7 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
 - 1 petição a cada 4 dias em média, válida por 5 dias, até 3 na mesa; desejo em cerca de 10% dos heróis, com 30 a 60 dias de prazo.
 - 3 cargos, revistos na primavera; torneio de 8 no último dia da estação.
 - Nêmesis: 5% de chance de nascer, até 3 vivas, degrau até 3, 50% de chance de fuga abaixo de 25% da vida, 35% de chance de se mudar para cada passagem nova, corpo de elite (vida ×2,5 e ataque ×1,3).
-- 3 rumores por vaga; encontros no lugar de parte das salas vazias; 1 hora para o conselho do corvo.
+- 3 rumores por vaga; encontros no lugar de parte das salas vazias (peso 3 dos 7 da sala vazia); 15 segundos em 1× para o conselho do corvo.
 - Enfeites liberados por feitos, com ouro simbólico de até 50.
 
 ##### 16. Como ficou a F1
@@ -1750,6 +1751,59 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
   - O chefe máximo chega 2,5 anos depois do `main`, acima da margem de 1,5 do item 13. O ruído da média é de uns 2 anos, mas desde a F1 ele vem um pouco depois em toda rodada (76,8, 76,3 e 77,5).
   - A nêmesis não aumenta as mortes: com nascimento de 15%, 34 por campanha e o corpo de elite, ficaram em 4,5 por ano.
 - **Pedido durante a F2 (2026-10-23): mais postes de luz.** A rua de baixo não tinha nenhum. Entraram quatro: entre a estalagem e a casa de cura, no pé da escada da fonte termal, antes do campo de treino e entre o campo e o ferreiro. Entrou também um na ponta oeste da rua de cima, na frente do templo. Cada um acende à noite com o halo dos outros.
+
+
+##### 18. Como ficou a F3
+
+- **Encontros** (`src/sim/encounters.ts`, 24 encontros em `src/data/encounters.ts`: 2 por bioma e 4 gerais):
+  - A sala de encontro entra com peso 3 dos 7 da sala vazia: o número de salas do andar não muda.
+  - O grupo espera o corvo por 150 ticks (uns 15 segundos em 1×, 7,5 horas do jogo). A spec falava em 1 hora do jogo, que dá 2 segundos.
+  - O conselho custa 1 de energia. O grupo segue com chance de 0,35 mais a lealdade média dividida por 150.
+  - Sem conselho, o Curioso escolhe a opção ousada; o Supersticioso e o Covarde, a prudente; os outros sorteiam.
+  - Resultados: bênção ou maldição de 10% no ataque ou na defesa até o fim da descida, cura ou ferida, ânimo, resgate, traço revelado ou ganho, uma peça comum ou o ouro de um baú do andar. Nenhum dá fragmento.
+- **Telas dos encontros:**
+  - O cartão do corvo aparece embaixo, no corredor do grupo, e no painel Audiências ("Corvos do abismo"). O botão Audiências conta os corvos.
+  - A sala mostra um braseiro aceso; a arte de cada encontro fica para a F6.
+  - A crônica guarda o desfecho, em "Glória".
+- **Chamadas do abismo** (`src/ui/calls.ts`): um aviso com "Assistir", que fica 12 segundos na tela.
+  - Avisa quando começa a luta contra o Senhor, quando um grupo chega ao guardião, quando aparece uma nêmesis e quando um grupo pede conselho. O menu liga e desliga cada chamada.
+  - Para não repetir o aviso, a crônica deixou de registrar a nêmesis que aparece (fica nos momentos da expedição) e a chegada do corvo.
+- **Modo destaque:** o botão "Destaques" do Acompanhar mostra um corredor só, que troca para o grupo mais interessante e fica pelo menos 8 segundos em cada. A ordem: Senhor, guardião, nêmesis, herói abaixo de 20% da vida, encontro, elite, luta.
+- **Melhores momentos** (`src/render/lane/replay.ts`):
+  - Um gravador ao lado dos corredores guarda cada luta: os bonecos do começo e os golpes do registro do combate.
+  - Ao fim da expedição, as 3 lutas mais marcantes (morte, nêmesis, Senhor, guardião, herói abaixo de 10% da vida) aparecem no relatório com ▶.
+  - O replay roda no mesmo corredor, com até 220 golpes (de 20 a 30 segundos).
+  - Vale só na sessão: o histórico salvo não guarda os replays (ficaria pesado), e a gravação só acontece com a tela do jogo visível.
+- **Conserto:** o desenho do monstro passou a sair do id dele. A nêmesis, que tem nome próprio, aparecia como esqueleto.
+- **Energia do prefeito: de 4 para 5 velas por dia.**
+  - Com 4, o conselho do prefeito automático comia a energia do discurso da manhã, e a campanha atrasava 1,5 ano.
+  - Testes de 40 sementes confirmaram: sem encontros, o ritmo era o da F2; com o conselho de graça, também. Guardar a energia da manhã não ajudou, porque o encontro antes das 10h ficava sem conselho.
+  - A quinta vela devolve o que o discurso e as conversas tinham antes do M6.
+- **Pedidos durante a F3 (2026-10-23):**
+  - **Poste no portão:** um poste ao lado da passagem, logo abaixo do portão.
+  - **Materiais no topo:** cada material ganhou ícone próprio (osso, lingote, cogumelo, pérola, brasa e alma), na cor dele. A dica mostra o nome, quanto há no Cofre, de quais biomas vem e para que serve.
+  - **Material como desafio nas obras:** antes, o Cofre guardava de 15 a 100 vezes o que a próxima obra pedia, e em 40 anos nenhuma obra esperou só por material.
+    - O material de obra agora vale 8 vezes nos níveis 2 e 3, 6 vezes no 4 e no 5, e 4 vezes do 6 em diante (`buildingMaterialMult`). O nível 2 pede de 160 a 200 ossos, e o 4, 120 pérolas.
+    - Com 8 vezes em todos os níveis, as faixas do fim (brasas e alma) seguravam demais a vila (7,0 no ano 75) e a campanha (chefe máximo no ano 79). Por isso o multiplicador cai com o nível.
+    - O prefeito automático passou a guardar o material da próxima obra antes de encomendar na forja.
+    - Com um prefeito "humano" simulado, a obra espera material nas horas certas: a casa espera 160 ossos no ano 3, e o templo espera 200 esporos do ano 5 ao 8, até o Jardim de Fungos aparecer.
+- **Relógio dos Senhores:** a chance de fragmento (`fragmentPace`) foi de 0,52 para 0,54. Ela compensa o 1,4 ano que o material das obras somou ao chefe máximo.
+- **Testes:** 7 novos (`tests/encounters.test.ts`), 241 no total.
+- **Retrato (Normal, 40 sementes × 100 anos de cada lado):**
+
+  | | `main` | F2 | F3 |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 6,8 | ano 6,0 | ano 6,6 |
+  | Senhor do nível 5 | ano 31,9 | ano 32,5 | ano 31,9 |
+  | Chefe máximo | ano 75,0 | ano 77,5 | ano 76,3 |
+  | Ouro dos heróis no fim | 90,8 mil | 87,3 mil | 89,0 mil |
+  | Tesouro médio no fim | 12,1 mil | 11,9 mil | 12,1 mil |
+  | Mortes por ano | 4,8 | 4,6 | 4,7 |
+  | Contratos do Senhor perdidos | 19% | 18% | 20% |
+  | Nível médio dos prédios (anos 10, 40 e 75) | 2,6 · 5,9 · 7,3 | — | 2,9 · 5,9 · 7,2 |
+
+  - Por campanha: 15 encontros por ano (quase todos com o conselho prudente do prefeito automático) e 12 nêmesis.
+  - O caminho até aqui, em 40 sementes: a F3 como saiu atrasava o chefe máximo para o ano 79,0. Com 5 velas, foi para 76,5. O material 8 vezes em todos os níveis levou a 79,2; o material escalonado, a 77,9; e o relógio em 0,54, a 76,3.
 
 ### 10. Decisões em aberto
 

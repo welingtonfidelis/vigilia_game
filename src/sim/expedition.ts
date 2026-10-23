@@ -27,6 +27,7 @@ import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
 import { noteWish } from './wishes.ts';
 import { nemesisAfterCombat, nemesisById } from './nemesis.ts';
+import { resolveEncounter, startEncounter, waitingAdvice } from './encounters.ts';
 import { chance, int, pick, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, Spot, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
@@ -54,6 +55,12 @@ function stepParty(world: World, party: Party): void {
     }
     case 'explorando': {
       if (party.recallRequested) return startReturn(world, party, 'chamado');
+      // Encontro (M6 F3): espera o corvo voltar ou o tempo acabar, e decide.
+      if (party.encounter) {
+        if (waitingAdvice(world, party)) return;
+        resolveEncounter(world, party, members(world, party));
+        return afterRoom(world, party, true);
+      }
       if (world.tick < party.phaseEndsAt) return;
       const rooms = partyRooms(world, party);
       const room = rooms[party.roomIndex];
@@ -177,6 +184,9 @@ function enterRoom(world: World, party: Party, room: Room): void {
       break;
     case 'vazia':
       break;
+    case 'encontro':
+      startEncounter(world, party, heroes);
+      return;
   }
   afterRoom(world, party, true);
 }
@@ -407,6 +417,7 @@ function lordDefeat(world: World, party: Party): void {
 // ── Retorno ───────────────────────────────────────────────────────────────
 
 function startReturn(world: World, party: Party, outcome: PartyOutcome): void {
+  party.encounter = null;
   if (party.memberIds.length === 0) return finish(world, party, 'massacre');
   party.outcome = outcome;
   party.phase = 'voltando';
@@ -514,7 +525,11 @@ function arrive(world: World, party: Party): void {
   const shares = heroes.map((h) => 1 + (traitSum(h, 'lootShares') > 0 ? traitSum(h, 'lootShares') - 1 : 0));
   const totalShares = shares.reduce((a, b) => a + b, 0);
   heroes.forEach((h, i) => (h.gold += ((party.loot.gold - tax) * shares[i]!) / Math.max(1, totalShares)));
-  for (const [mat, qty] of Object.entries(party.loot.materials) as [MaterialId, number][]) town.materials[mat] += qty;
+  const gained = (world.metrics.materialsIn ??= {});
+  for (const [mat, qty] of Object.entries(party.loot.materials) as [MaterialId, number][]) {
+    town.materials[mat] += qty;
+    gained[mat] = (gained[mat] ?? 0) + qty;
+  }
   for (const h of heroes) gainXp(world, h, party.loot.xp / Math.max(1, heroes.length));
   shareLoot(world, party, heroes);
   // Volta triunfal (todos inteiros, tendo feito o que foram fazer): mais uma chance de fragmento.

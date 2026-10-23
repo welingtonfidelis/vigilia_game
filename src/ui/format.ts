@@ -61,6 +61,7 @@ export const ROOM_LABELS: Record<RoomKind, string> = {
   chefe: 'Senhor do abismo',
   mercador: 'Mercador errante',
   armadilha: 'Armadilha',
+  encontro: 'Encontro',
 };
 
 export const OUTCOME_LABELS: Record<PartyOutcome, string> = {

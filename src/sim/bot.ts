@@ -7,6 +7,7 @@ import { heroStrength, maxLevel } from './hero.ts';
 import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, graveCost, honorGrave, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
 import { autoAnswer } from './audiences.ts';
 import { livingNemeses } from './nemesis.ts';
+import { adviseEncounter, encounterOf } from './encounters.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
@@ -53,6 +54,14 @@ export function autoMayor(world: World): void {
   const town = world.town;
   if (hourOf(world.tick) === 9 && dayOf(world.tick) % 10 === 0) makeRoom(world);
   if (hourOf(world.tick) === 9) tendAudiences(world);
+  // Encontros (M6 F3): o corvo volta com o conselho prudente. Antes das 10h, só se ainda sobrar
+  // energia para o consolo e o discurso da manhã (é o que segura o ânimo da vila).
+  const spare = hourOf(world.tick) < 10 ? B.mayorEnergy : B.encounterAdviceEnergy;
+  for (const party of world.parties) {
+    const def = encounterOf(party);
+    const prudent = def?.options.find((o) => o.kind === 'prudente');
+    if (prudent && !party.encounter!.advice && world.town.mayorEnergy >= spare) adviseEncounter(world, party.id, prudent.id);
+  }
   if (hourOf(world.tick) === 10) tendPeople(world);
   const roster = activeHeroes(world).length + town.arrivals.length;
   const wanted = Math.min(heroCapacity(world), 4 * maxParties(world) + 2);
@@ -175,7 +184,10 @@ function orderFromForge(world: World, reserve: number): void {
   if (commissionBlocker(world, slot, rarity)) return;
   const cost = commissionCost(world, slot, rarity);
   if (world.town.treasury < reserve + cost.gold * 2) return;
-  const mats = (Object.keys(MATERIAL_AFFIX) as MaterialId[]).filter((m) => world.town.materials[m] >= cost.material + 20);
+  // Guarda o material que a próxima obra pede: com o material das obras pesando, a forja não pode levar tudo.
+  const keep = (m: MaterialId): number =>
+    Math.max(0, ...BUILDING_IDS.map((id) => nextLevelCost(world, id)?.materials?.[m] ?? 0));
+  const mats = (Object.keys(MATERIAL_AFFIX) as MaterialId[]).filter((m) => world.town.materials[m] >= cost.material + keep(m) + 20);
   if (mats.length === 0) return;
   const material = mats.reduce((best, m) => (world.town.materials[m] > world.town.materials[best] ? m : best));
   commission(world, slot, material, rarity);
