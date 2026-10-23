@@ -434,6 +434,21 @@ export function MenuPanel() {
       <label class="check">
         <input type="checkbox" checked={prefs.fabLeft} onChange={(e) => ui.setPrefs({ fabLeft: (e.target as HTMLInputElement).checked })} /> No celular, botão dos painéis no canto esquerdo (para canhotos)
       </label>
+      <h3>Clima</h3>
+      <div class="seg" role="radiogroup" aria-label="Clima das estações">
+        {(
+          [
+            ['completo', 'Completo'],
+            ['leve', 'Leve'],
+            ['desligado', 'Desligado'],
+          ] as const
+        ).map(([id, label]) => (
+          <button key={id} class={`btn small${prefs.weather === id ? ' active' : ''}`} role="radio" aria-checked={prefs.weather === id} onClick={() => ui.setPrefs({ weather: id })}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <p class="sub">Chuva, neve, folhas e relâmpagos na vila. O leve corta as partículas pela metade e tira os relâmpagos; desligado deixa só as cores da estação.</p>
 
       <h3>Controles</h3>
       <ul class="effects">

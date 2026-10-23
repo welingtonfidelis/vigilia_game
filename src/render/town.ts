@@ -239,6 +239,8 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
     PACO_PATH,
     // Pontos de enfeite, mastros e o busto (M6 F6): sem árvore solta por cima.
     ...[...DECOR_SPOTS, ...FLAG_POLES, BUST_SPOT].map((d) => ({ tx: Math.floor(d.x) - 1, ty: Math.floor(d.y) - 2, tw: 3, th: 3 })),
+    // Cofre e mesa de audiências na frente do Paço.
+    ...[LANDMARKS.cofre, AUDIENCE_TABLE].map((p) => ({ tx: Math.floor(p.x / TILE) - 1, ty: Math.floor(p.y / TILE) - 2, tw: 3, th: 3 })),
     ...HOME_LOTS,
     ...DECOR.map((d) => ({ tx: Math.floor(d.x / TILE) - 1, ty: Math.floor(d.y / TILE) - 1, tw: 3, th: 2 })),
     { tx: 0, ty: 0, tw: 21, th: 10 }, // platô do cemitério e a fileira de pinheiros

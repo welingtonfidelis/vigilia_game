@@ -32,6 +32,8 @@ function pickEncounter(world: World, party: Party): EncounterDef {
 export function startEncounter(world: World, party: Party, heroes: Hero[]): void {
   const def = pickEncounter(world, party);
   party.encounter = { defId: def.id, untilTick: world.tick + B.encounterWaitTicks, advice: null };
+  const room = party.rooms[party.roomIndex];
+  if (room) room.encounter = def.id;
   metrics(world).met++;
   // A chegada do corvo é a chamada do abismo na tela; a crônica guarda o desfecho.
   party.moments.push(`${heroes[0]?.name ?? 'O grupo'} achou ${def.title.toLowerCase()} no ${floorLabel(party)} e mandou um corvo à vila.`);

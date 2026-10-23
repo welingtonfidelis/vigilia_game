@@ -90,6 +90,11 @@ export function heroSource(hero: Hero): SpriteSource | null {
 
 /** Monstro com a variante de profundidade do andar, a do guardião e a fase 2 dos Senhores. */
 export function enemySource(world: World, party: Party, unit: Unit): SpriteSource | null {
+  // Duelo do torneio (M6 F6): o adversário é um herói, com a folha dele (sem o tom de eco).
+  if (unit.tags.includes('duelo')) {
+    const rival = world.heroes.find((h) => h.id === unit.heroId);
+    if (rival) return heroSource(rival);
+  }
   const look = monsterBase(world, unit, party.biome);
   if (look.ghost) {
     // Eco de herói morto: a folha do próprio herói, em tom fantasma.

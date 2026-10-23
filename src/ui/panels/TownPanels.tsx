@@ -133,7 +133,7 @@ function CareSection(props: { world: World; id: BuildingId }) {
   return (
     <>
       <h3>Conservação</h3>
-      <Bar kind={kind} value={care} max={100} text={`${Math.floor(care)} de 100`} slim />
+      <Bar kind={kind} value={care} max={100} text={`${Math.floor(care)} de 100`} />
       <p class="sub">{state}</p>
       {ready !== undefined && <p class="tag">O conserto termina em {hoursText(ready - world.tick)}.</p>}
       {ready === undefined && cost && care < 95 && (

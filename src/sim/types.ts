@@ -399,7 +399,8 @@ export interface EnemyUnitDef {
   tags: EnemyTag[];
 }
 
-export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen' | 'nemesis';
+/** `duelo`: o outro herói no duelo do torneio (M6 F6), desenhado como herói do lado de lá. */
+export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen' | 'nemesis' | 'duelo';
 export type Affix = 'veloz' | 'vampirico' | 'explosivo' | 'couracado' | 'feroz';
 export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos' | 'colmeia' | 'canto' | 'placas' | 'exercito';
 
@@ -504,6 +505,8 @@ export interface Room {
   kind: RoomKind;
   cleared: boolean;
   remainsOf: number | null;
+  /** Sala de encontro (M6 F6): qual foi, para o corredor desenhar o objeto dele. */
+  encounter?: string;
 }
 
 export type PartyPhase = 'descendo' | 'explorando' | 'combate' | 'voltando';

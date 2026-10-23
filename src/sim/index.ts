@@ -107,6 +107,7 @@ export { fullName, generations, houseAge, houseById, houseMembers, houseOfHero, 
 export { hallLevel, hallStatues, legendsOf, lordSlayers, pedestalsOf } from './hall.ts';
 export { allItems } from './items.ts';
 export { decorBlocker, decorOf, streetName, villageBanner } from './cosmetics.ts';
+export { BARD_HOURS, bardNight, MARKET_HOURS, marketDay, snowCover, WEATHER_NAMES, weatherOn, type WeatherKind } from './weather.ts';
 export { crestReadable } from './houses.ts';
 export { DECOR, DECOR_BY_ID, DECOR_POINTS, STREETS, type DecorDef } from '../data/decor.ts';
 export { LEGENDARY_TITLES } from '../data/items.ts';

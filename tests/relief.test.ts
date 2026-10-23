@@ -37,6 +37,7 @@ describe('relevo da vila', () => {
       ['termas', LANDMARKS.termas],
       ['salao', LANDMARKS.salao],
       ['paco', LANDMARKS.paco],
+      ['cofre', { x: LANDMARKS.cofre.x, y: LANDMARKS.cofre.y + 44 }],
       ...DECOR_SPOTS.map((d, i): [string, Point] => [`enfeite ${i}`, { x: d.x * 32, y: d.y * 32 + 12 }]),
       ['abismo', LANDMARKS.abismo],
       ['fogueira', { x: LANDMARKS.fogueira.x, y: LANDMARKS.fogueira.y + 30 }],

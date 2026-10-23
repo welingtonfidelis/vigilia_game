@@ -42,10 +42,17 @@ export function Bar(props: {
   const frac = props.max > 0 ? Math.max(0, Math.min(1, props.value / props.max)) : 0;
   const mark = props.marker !== undefined && props.marker !== null && Number.isFinite(props.marker) ? Math.max(0, Math.min(1, props.marker / props.max)) : null;
   return (
-    <div class={`bar bar-${props.kind}${props.slim ? ' slim' : ''}`} role="meter" aria-valuenow={Math.round(props.value)} aria-valuemax={Math.round(props.max)}>
+    <div
+      class={`bar bar-${props.kind}${props.slim ? ' slim' : ''}`}
+      role="meter"
+      aria-valuenow={Math.round(props.value)}
+      aria-valuemax={Math.round(props.max)}
+      title={props.slim ? props.text : undefined}
+    >
       <div class="fill" style={{ width: `${frac * 100}%` }} />
       {mark !== null && <div class="mark" style={{ left: `${mark * 100}%` }} title={props.markerTitle} />}
-      {props.text && <span class="bar-text">{props.text}</span>}
+      {/* A barra fina não tem altura para texto (saía cortado embaixo): o texto vira a dica. */}
+      {props.text && !props.slim && <span class="bar-text">{props.text}</span>}
     </div>
   );
 }

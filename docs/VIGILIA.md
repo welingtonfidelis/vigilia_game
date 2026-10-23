@@ -1997,6 +1997,94 @@ A F6 ficou em duas partes, cada uma com seu commit: **F6a** (Paço, estandarte, 
 - **Testes:** 5 novos (`tests/cosmetics.test.ts`). `relief.test.ts` agora alcança o Salão, o Paço e os 12 pontos de enfeite. São 264 no total.
 - **Retrato:** o balanço de 40 sementes deu igual ao da F5, porque o prefeito automático não compra enfeite e nada da F6a usa o sorteio do mundo.
 
+##### 23. Spec da F6, parte b: clima das estações e o corredor
+
+- **Clima do dia** (`src/sim/weather.ts`, só leitura): sai da semente e do dia, sem estado no save. Não muda nada no jogo.
+  - Primavera: limpo, com garoa em 1 de cada 4 dias.
+  - Verão: sol, com chuva forte em 1 de cada 3 dias. O dia do evento da tempestade é sempre tempestade, com relâmpagos.
+  - Outono: vento com folhas todos os dias, e chuva em 1 de cada 4.
+  - Inverno: neve em metade dos dias e nevasca em 1 de cada 6. O dia da geada é nevasca.
+  - **Neve no chão:** cresce com os dias de neve do inverno e derrete nos três primeiros dias da primavera.
+- **Na vila:**
+  - **Chão:** a grama troca de cor com a estação. Primavera mais verde e com flores; outono em ocre e laranja; inverno branco onde a neve cobre (em manchas, conforme o acúmulo). As estradas ficam em lama clara.
+  - **Árvores:** os pinheiros não mudam, mas ganham neve no inverno. As de folha florescem na primavera, ficam laranja no outono (a árvore de outono do pack) e ficam nuas no inverno (a árvore seca do pack, com neve).
+  - **Partículas** que seguem a câmera: chuva em diagonal com respingos no chão, neve, folhas voando e pétalas.
+  - Nos dias de chuva o céu escurece um pouco; na tempestade, relâmpagos de vez em quando.
+  - **Neve nos telhados:** a borda de cima de cada prédio ganha uma camada branca, desenhada sobre a arte (o mesmo truque do desgaste). Se ficar feio, sai.
+  - **Som:** chuva e vento no ambiente; trovão no relâmpago.
+  - A data no topo diz o clima do dia ("chuva", "neve").
+  - **Menu → Clima:** completo, leve (metade das partículas, sem relâmpago) ou desligado.
+- **No corredor:**
+  - **Encontros:** cada um ganha o seu objeto no lugar do braseiro. Os que já têm arte no pack ou nos enfeites a reaproveitam (urna, vagonete, cogumelo, sino, bigorna, favo, concha, engrenagem, carroça, pedra, um morador). Arte nova para sarcófago, altar, espelho, poço, cova, casulo, ampulheta, velas, olho na parede e correntes.
+  - **Nêmesis:** além da aura vermelha e do nome, uma cicatriz de três riscos sobre o corpo.
+  - **Arena do torneio:** os duelos passam num corredor do campo de treino, com paliçada, bonecos de palha e cerca, com os dois heróis frente a frente, no lugar dos retratos. O painel do Torneio mantém a chave, os nomes e a vida.
+- **Arte nova** (`art32/historias32.py`, 16 e 32-bit):
+  - árvores: o pinheiro com neve, a árvore seca com neve e a árvore de folha em flor;
+  - os 10 objetos de encontro;
+  - as peças de corredor do campo de treino (parede, porta, entrada, chão e primeiro plano).
+- **A praça como lugar de encontro** (pedido de 2026-10-23, durante a F6b):
+  - O cofre e a mesa de audiências saem do centro e vão para a frente do Paço: quem tem pedido sobe até lá. O baú do tesouro fica à direita da porta e a mesa à esquerda.
+  - No centro ficam a fogueira e o palanque do prefeito (onde ele discursa), com arte nova para o palanque.
+  - **Feira ao ar livre:** em dois dias de cada estação (o 3º e o 8º), das 8h às 17h, barracas na praça (verduras, panos, cerâmica, ferramentas), cada uma com um vendedor. Os moradores à toa vão até lá.
+  - **Bardo:** em uma de cada quatro noites sem chuva, das 19h às 23h, um bardo toca alaúde ao lado da fogueira. Quem está à toa forma uma roda em volta, e a música entra no ambiente quando a câmera está perto.
+  - O dia da feira e a noite do bardo saem do dia e da semente, como o clima. É só aparência: ninguém ganha nem gasta nada.
+  - Arte nova: o palanque, três barracas e o bardo (folha com o alaúde e o tocar).
+- **Pronto quando:** testes do clima (o mesmo dia dá o mesmo clima, os dias dos eventos, a neve acumula e derrete) e da agenda da praça; a vila nas quatro estações nos dois modos de arte; o duelo no corredor; balanço igual.
+
+##### 24. Como ficou a F6b
+
+- **Clima do dia** (`src/sim/weather.ts`): é uma função da semente e do dia, sem nada no save.
+  - Os dias dos eventos saem da ordem fixa de cada estação: a tempestade de verão cai no 1º dia do verão dos anos 3, 6, 9…, e a geada no 1º dia do inverno dos mesmos anos.
+  - A neve acumula com os dias de neve do inverno (+0,25 por dia de neve, +0,5 por nevasca, −0,08 por dia limpo) e derrete nos três primeiros dias da primavera.
+- **Chão** (`src/render/terrain.ts`): a pintura de sempre fica guardada com um mapa do que cada pixel é (grama, terra ou rocha), e a estação repinta só a grama.
+  - Primavera: verde mais vivo e flores miúdas.
+  - Verão: um pouco mais seco.
+  - Outono: ocre e laranja. Na primeira tentativa a grama ficou marrom demais e se confundia com as estradas; o ocre clareou.
+  - Inverno: neve em manchas (um ruído suave decide onde cobre primeiro) e lama clara nas estradas.
+  - A troca de estação esmaece em 2,5 segundos.
+- **Árvores:** todas as que balançam ao vento ficam registradas com a arte de origem, e a estação troca a textura no lugar.
+  - O pinheiro ganha neve.
+  - A de folha floresce na primavera, fica de outono no outono e fica nua no inverno.
+  - As de outono do pack também ficam nuas no inverno. Com neve no chão, as nuas também ganham neve.
+- **Partículas** (`src/render/fx/weather.ts`): acompanham a vista da câmera.
+  - Chuva em diagonal com respingos: garoa, chuva e tempestade em três quantidades.
+  - Neve e nevasca, folhas no outono (mais no dia de vento) e pétalas na primavera.
+  - Elas param com o jogo pausado, como a fumaça.
+- **Céu fechado:** a chuva e a neve escurecem a vila como um começo de noite, e as janelas acendem; a tempestade escurece mais. Na tempestade há relâmpagos (dois clarões seguidos, a cada 6 a 18 segundos).
+- **Neve nos telhados** (`snowTexture` em `src/render/scaffold.ts`): onde a arte tem céu logo acima, a borda ganha 2 ou 3 pixels de neve. Vale para os prédios, o Salão e o Paço, com a transparência pela neve do dia. Ficou bom e entrou.
+- **Som:** chuva (um chiado agudo) na garoa, na chuva e na tempestade; o vento sobe no vento, na nevasca e na tempestade; trovão na tempestade. Grilos e pássaros calam com a chuva.
+- **Topo e Menu:** a data diz o clima do dia ("tempestade", "neve"; o tempo limpo não aparece). Menu → Clima: completo, leve (metade das partículas, sem relâmpago) ou desligado (só as cores da estação, sem partículas, céu fechado nem som de chuva).
+- **Corredor:**
+  - **Encontros:** a sala guarda qual foi o encontro (`room.encounter`), e cada um desenha o seu objeto.
+    - Dez objetos têm arte nova: sarcófago, altar, espelho, poço, cova, casulo, ampulheta, velas, olho e correntes.
+    - Outros reaproveitam enfeites da vila (urna, vagonete, cogumelo, sino, bigorna, favo, concha e engrenagem), a carroça e a pedra.
+    - O peregrino e o jardineiro são moradores.
+    - Sala de save antigo, sem o encontro guardado, continua com o braseiro.
+  - **Nêmesis:** ganhou a cicatriz de três riscos claros sobre o peito, além da aura e do nome.
+  - **Arena do torneio:** o painel do Torneio passa o duelo num corredor do campo de treino (o bioma XI: paliçada, bonecos de palha, armeiro, alvo, feno e cerca), com os golpes guardados e no mesmo compasso.
+    - O rival entra do lado de lá com a marca `duelo` e é desenhado como o herói que é, com o projétil da classe.
+    - Os retratos e a vida continuam embaixo. Os efeitos de golpe são os das Catacumbas.
+- **A praça como lugar de encontro** (pedidos de 2026-10-23, durante a fase):
+  - O cofre e a mesa de audiências foram para a frente do Paço (o baú à direita da porta, a mesa à esquerda), e a trilha do Paço foi até eles.
+  - Com o cofre fora, o centro da praça ficou com o palanque do prefeito, que é onde ele discursa agora, e com a fogueira ao lado.
+  - Os monstros da incursão passaram a se juntar no meio da praça, e o prefeito começa ao lado da fogueira.
+  - **Feira:** no 3º e no 8º dia de cada estação, das 8h às 17h, três barracas (verduras, panos e cerâmica) com um vendedor atrás de cada balcão.
+    - Dois de cada três moradores (menos os guardas) vão às barracas, e os heróis à toa também.
+    - As barracas ocupam chão enquanto estão lá.
+  - **Bardo:** em uma de cada quatro noites de tempo limpo ou de vento, das 19h às 23h, ele toca ao lado da fogueira, com notas subindo.
+    - Os notívagos e metade dos outros moradores fazem roda, e os heróis à toa também.
+    - O alaúde entra no som (uma frase em lá menor, uma nota a cada 0,3 s).
+  - A agenda sai do dia e da semente (`marketDay` e `bardNight`, em `src/sim/weather.ts`), sem nada no save e sem mexer no jogo.
+  - **Arte nova:**
+    - o palanque, com degraus, grade e estante;
+    - as três barracas, que ficaram com 34×40 em vez de 34×30 para o toldo não esconder o rosto do vendedor;
+    - o bardo, com 6 quadros: parado e tocando.
+- **Testes:** 4 novos (`tests/weather.test.ts`: o clima do mesmo dia, os dias dos eventos, a neve que acumula e derrete, a agenda da praça). `relief.test.ts` alcança o cofre na nova posição. São 268 no total.
+- **Retrato:** o balanço de 40 sementes deu igual ao da F6a, porque nada da F6b mexe no jogo.
+- **Conserto pedido no meio da fase (2026-10-23):** no celular, a barra de fragmentos do amuleto mostrava "0/5" cortado embaixo, porque a barra fina não tem altura para texto.
+  - A barra fina não desenha mais texto; ele vira a dica do mouse.
+  - Nos fragmentos o número fica no rótulo de cima. A conservação dos prédios voltou à barra de altura normal.
+
 ### 10. Decisões em aberto
 
 1. **Stack:** web/TypeScript (recomendado) ou Godot 4?

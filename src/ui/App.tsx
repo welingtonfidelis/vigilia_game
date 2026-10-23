@@ -1,7 +1,7 @@
 // Raízes da UI: o HUD (acima do mapa) e a camada sobre o mapa (painéis, avisos, objetivos).
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { abyssPressure, activeHeroes, BALANCE, BIOMES, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText } from '../sim/index.ts';
+import { abyssPressure, activeHeroes, BALANCE, BIOMES, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText, WEATHER_NAMES, weatherOn } from '../sim/index.ts';
 import type { MaterialId } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
@@ -67,6 +67,7 @@ export function OverlayRoot(props: { session: Session; ui: UiStore }) {
 
 function Hud() {
   const { world, session, ui } = useGame();
+  const weather = weatherOn(world, dayOf(world.tick));
   const muted = ui.prefs.muted;
   const town = world.town;
   const mats = knownMaterials(world);
@@ -83,10 +84,11 @@ function Hud() {
       <span class="hud-item gold" title="Tesouro da vila">
         <PackIcon name="resource-gold" /> {fmt(town.treasury)}
       </span>
-      <span class="hud-item date" title={formatDate(world.tick)}>
+      <span class="hud-item date" title={`${formatDate(world.tick)} · ${WEATHER_NAMES[weather]}`}>
         {isNight(world.tick) ? <IconMoon /> : <IconSun />}
         <span class="date-long">{formatDate(world.tick)}</span>
         <span class="date-short">{formatDate(world.tick).replace(/^Ano (\d+) · .+, dia (\d+)$/, 'A$1 · dia $2')}</span> · {clockOf(world.tick)}
+        {weather !== 'limpo' && <span class="date-long"> · {WEATHER_NAMES[weather]}</span>}
       </span>
       <span class="hud-item pop" title="População">
         <PackIcon name="resource-population" /> {fmt(town.population)}

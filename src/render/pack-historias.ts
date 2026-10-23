@@ -345,5 +345,377 @@ export const PACK_HISTORIAS: PackAsset[] = [
       22,
       14
     ]
+  },
+  {
+    "id": "prop/tree/pine-snow",
+    "type": "prop",
+    "file": "export/png/prop-tree-pine-snow.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      48
+    ]
+  },
+  {
+    "id": "prop/tree/dead-snow",
+    "type": "prop",
+    "file": "export/png/prop-tree-dead-snow.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "id": "prop/tree/01-flor",
+    "type": "prop",
+    "file": "export/png/prop-tree-01-flor.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/sarcofago",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-sarcofago.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      24
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/altar",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-altar.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      24
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/espelho",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-espelho.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      20,
+      32
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/poco",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-poco.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      28,
+      24
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/cova",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-cova.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      32,
+      20
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/casulo",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-casulo.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/ampulheta",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-ampulheta.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      16,
+      24
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/velas",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-velas.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      16
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/olho",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-olho.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      28,
+      28
+    ]
+  },
+  {
+    "id": "prop/arena/encontro/corrente",
+    "type": "prop",
+    "file": "export/arena/props/prop-arena-encontro-corrente.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ]
+  },
+  {
+    "id": "corridor/XI/wall-a",
+    "type": "arena-layer",
+    "file": "export/corridor/corridor-xi-wall-a.png",
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      320,
+      192
+    ],
+    "layer": "wall-a",
+    "act": "XI",
+    "actName": "Campo de treino",
+    "opaque": true,
+    "tileX": true
+  },
+  {
+    "id": "corridor/XI/wall-b",
+    "type": "arena-layer",
+    "file": "export/corridor/corridor-xi-wall-b.png",
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      320,
+      192
+    ],
+    "layer": "wall-b",
+    "act": "XI",
+    "actName": "Campo de treino",
+    "opaque": true,
+    "tileX": true
+  },
+  {
+    "id": "corridor/XI/floor",
+    "type": "arena-layer",
+    "file": "export/corridor/corridor-xi-floor.png",
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      320,
+      64
+    ],
+    "layer": "floor",
+    "act": "XI",
+    "actName": "Campo de treino",
+    "opaque": true,
+    "stageY": 128,
+    "tileX": true
+  },
+  {
+    "id": "corridor/XI/fore",
+    "type": "arena-layer",
+    "file": "export/corridor/corridor-xi-fore.png",
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      320,
+      32
+    ],
+    "layer": "fore",
+    "act": "XI",
+    "actName": "Campo de treino",
+    "opaque": false,
+    "stageY": 160,
+    "tileX": true
+  },
+  {
+    "id": "corridor/XI/door",
+    "type": "arena-layer",
+    "file": "export/corridor/corridor-xi-door.png",
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      48,
+      192
+    ],
+    "layer": "door",
+    "act": "XI",
+    "actName": "Campo de treino",
+    "opaque": false
+  },
+  {
+    "id": "corridor/XI/entry",
+    "type": "arena-layer",
+    "file": "export/corridor/corridor-xi-entry.png",
+    "anchor": [
+      0,
+      0
+    ],
+    "size": [
+      72,
+      192
+    ],
+    "layer": "entry",
+    "act": "XI",
+    "actName": "Campo de treino",
+    "opaque": true
+  },
+  {
+    "id": "prop/praca/palanque",
+    "type": "prop",
+    "file": "export/png/prop-praca-palanque.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      36,
+      26
+    ]
+  },
+  {
+    "id": "prop/feira/barraca-1",
+    "type": "prop",
+    "file": "export/png/prop-feira-barraca-1.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      34,
+      40
+    ]
+  },
+  {
+    "id": "prop/feira/barraca-2",
+    "type": "prop",
+    "file": "export/png/prop-feira-barraca-2.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      34,
+      40
+    ]
+  },
+  {
+    "id": "prop/feira/barraca-3",
+    "type": "prop",
+    "file": "export/png/prop-feira-barraca-3.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      34,
+      40
+    ]
+  },
+  {
+    "id": "char/villager/bardo",
+    "type": "character",
+    "file": "export/png/char-villager-bardo.png",
+    "meta": "export/png/char-villager-bardo.json",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      24,
+      32
+    ],
+    "frameSize": [
+      24,
+      32
+    ],
+    "sheetSize": [
+      144,
+      32
+    ],
+    "frames": 6,
+    "animations": {
+      "idle": {
+        "frames": [
+          0,
+          1
+        ],
+        "fps": 2
+      },
+      "play": {
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fps": 6
+      }
+    },
+    "columns": 6,
+    "rows": 1
   }
 ];

@@ -36,7 +36,36 @@ import {
 } from './model.ts';
 import { enemySource, heroSource, image, type Anim, type SpriteSource } from './sprites.ts';
 
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'] as const;
+/** O que fica na sala de cada encontro (M6 F6): arte nova, um enfeite da vila ou um morador. */
+const ENCOUNTER_LOOKS: Record<string, { prop?: string; villager?: string }> = {
+  sarcofago: { prop: 'prop/arena/encontro/sarcofago' },
+  peregrino: { villager: 'char/villager/acolito/m' },
+  'altar-sangue': { prop: 'prop/arena/encontro/altar' },
+  espelho: { prop: 'prop/arena/encontro/espelho' },
+  urnas: { prop: 'prop/enfeite/urna' },
+  coveiro: { prop: 'prop/arena/encontro/cova' },
+  vagonete: { prop: 'prop/enfeite/vagonete' },
+  'mineiro-preso': { prop: 'prop/boulder/01' },
+  cogumelos: { prop: 'prop/enfeite/cogumelo' },
+  jardineiro: { villager: 'char/villager/lavrador/f' },
+  'sino-submerso': { prop: 'prop/enfeite/sino' },
+  'velas-afogadas': { prop: 'prop/arena/encontro/velas' },
+  bigorna: { prop: 'prop/enfeite/bigorna' },
+  acorrentado: { prop: 'prop/arena/encontro/corrente' },
+  olho: { prop: 'prop/arena/encontro/olho' },
+  voz: { prop: 'prop/arena/encontro/espelho' },
+  favo: { prop: 'prop/enfeite/favo' },
+  casulo: { prop: 'prop/arena/encontro/casulo' },
+  poco: { prop: 'prop/arena/encontro/poco' },
+  concha: { prop: 'prop/enfeite/concha' },
+  engrenagem: { prop: 'prop/enfeite/engrenagem' },
+  automato: { prop: 'prop/enfeite/engrenagem' },
+  ampulheta: { prop: 'prop/arena/encontro/ampulheta' },
+  caravana: { prop: 'prop/cart' },
+};
+
+/** XI é a arena do torneio (o campo de treino, M6 F6), que só aparece nos duelos. */
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'] as const;
 
 /** Peça do pack pronta para desenhar no modo de arte atual. */
 interface Art {
@@ -491,6 +520,12 @@ export class LaneRenderer {
         actor.boss = boss;
         actor.ranged = unit.tags.includes('backline');
         actor.projectile = 'dark';
+        // O rival no duelo do torneio luta como o herói que é.
+        const rival = unit.tags.includes('duelo') ? world.heroes.find((h) => h.id === unit.heroId) : undefined;
+        if (rival) {
+          actor.ranged = RANGED_ROLES.has(CLASSES[rival.classId].role);
+          actor.projectile = rival.classId === 'piromante' ? 'fire' : rival.classId === 'clerigo' ? 'bolt' : 'arrow';
+        }
         this.enemies.set(unit.uid, actor);
       }
       // A fase 2 do chefe troca o desenho e sacode a câmera.
@@ -629,7 +664,8 @@ export class LaneRenderer {
     this.floatText(to, `${Math.max(1, Math.round(ev.amount))}${crit ? '!' : ''}`, crit ? '#ffd24a' : '#ffffff', crit);
     const palette = to.side === 'hero' ? HERO_BLOOD : BLOOD[this.roman()] ?? HERO_BLOOD;
     this.burst(to.x, to.y - (to.sprite?.height ?? 20) * 0.5, palette, crit ? 9 : 5, to.y);
-    const roman = this.roman();
+    // A arena do torneio não tem efeito próprio: usa o das Catacumbas.
+    const roman = packAsset(`fx/${this.roman()}/slash`) ? this.roman() : 'I';
     this.sparks.push({ id: `fx/${roman}/${to.side === 'enemy' ? 'slash' : 'impact'}`, x: to.x, y: to.y - (to.sprite?.height ?? 20) * 0.5, start: this.fx });
     if (ev.kill) {
       if (to.dying === null) to.dying = this.fx;
@@ -880,10 +916,14 @@ export class LaneRenderer {
         case 'armadilha':
           this.drawSpikes(tx, room.cleared);
           break;
-        case 'encontro':
-          // Encontro (M6 F3): um braseiro aceso marca o lugar; a arte de cada um vem na F6.
-          this.drawProp('prop/arena/brazier', tx, ROW_Y[0], t);
+        case 'encontro': {
+          // Encontro (M6 F3/F6): o objeto de cada um; sem arte (ou sala antiga), o braseiro aceso.
+          const look = room.encounter ? ENCOUNTER_LOOKS[room.encounter] : undefined;
+          if (look?.villager) this.drawVillager(look.villager, tx + 6, ROW_Y[0]);
+          else if (look?.prop && art(look.prop)) this.drawProp(look.prop, tx, ROW_Y[0], t);
+          else this.drawProp('prop/arena/brazier', tx, ROW_Y[0], t);
           break;
+        }
         case 'guardiao':
         case 'chefe': {
           this.drawProp(`prop/arena/${roman}/boss-gate`, tx + 40, ROW_Y[0] - 2, t);
@@ -997,6 +1037,18 @@ export class LaneRenderer {
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = Math.min(1, a.flash * 10) * 0.9;
       ctx.drawImage(img, sx * d, sy * d, sw * d, sh * d, -Math.floor(sw / 2), -sh, sw, sh);
+    }
+    if (a.nemesis && a.dying === null) {
+      // Cicatriz da nêmesis (M6 F6): três riscos claros em diagonal sobre o peito, de quem já levou herói.
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.fillStyle = '#f0c8b4';
+      const cy = -Math.round(sh * 0.62);
+      for (let i = 0; i < 3; i++) {
+        for (let k = 0; k < 4; k++) ctx.fillRect(-3 + i * 2 + k, cy + k - i, 1, 1);
+      }
+      ctx.fillStyle = '#8a2a22';
+      for (let i = 0; i < 3; i++) ctx.fillRect(-3 + i * 2 + 3, cy + 4 - i, 1, 1);
     }
     ctx.restore();
   }

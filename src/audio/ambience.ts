@@ -3,36 +3,47 @@
 // Na masmorra (acompanhando um grupo) a vila some: gotas, correntes e um ronco de pedra.
 
 import type { Mood } from './director.ts';
-import { clank, noise, noiseBuffer, rand, tone } from './instruments.ts';
+import { clank, noise, noiseBuffer, pluck, rand, tone } from './instruments.ts';
 
-type Timer = 'cricket' | 'bird' | 'fire' | 'clank' | 'breath' | 'drip' | 'chain' | 'rumble';
+type Timer = 'cricket' | 'bird' | 'fire' | 'clank' | 'breath' | 'drip' | 'chain' | 'rumble' | 'thunder' | 'lute';
+
+/** Dedilhado do bardo (M6 F6): uma frase em lá menor que se repete, com uma nota de cada vez. */
+const LUTE = [220, 262, 330, 294, 262, 247, 220, 196, 220, 262, 330, 392, 330, 294, 262, 220];
 
 export class AmbiencePlayer {
   private readonly ctx: BaseAudioContext;
   private readonly out: AudioNode;
   private readonly windGain: GainNode;
   private readonly droneGain: GainNode;
+  /** Chuva (M6 F6): ruído alto e chiado, com volume pelo clima do dia. */
+  private readonly rainGain: GainNode;
   private mood: Mood = { mode: 'dia', night: false, hour: 8, corruption: 0, fighting: 0 };
-  private next: Record<Timer, number> = { cricket: 0, bird: 0, fire: 0, clank: 0, breath: 0, drip: 0, chain: 0, rumble: 0 };
+  private next: Record<Timer, number> = { cricket: 0, bird: 0, fire: 0, clank: 0, breath: 0, drip: 0, chain: 0, rumble: 0, thunder: 0, lute: 0 };
+  private luteStep = 0;
 
   constructor(ctx: BaseAudioContext, out: AudioNode) {
     this.ctx = ctx;
     this.out = out;
     this.windGain = this.wind();
     this.droneGain = this.drone();
+    this.rainGain = this.rain();
     this.setMood(this.mood);
   }
 
   setMood(mood: Mood): void {
     this.mood = mood;
     const now = this.ctx.currentTime;
+    const rain = mood.scene === 'masmorra' ? 0 : ({ garoa: 0.012, chuva: 0.032, tempestade: 0.05 } as Record<string, number>)[mood.weather ?? 'limpo'] ?? 0;
+    this.rainGain.gain.setTargetAtTime(rain, now, 2);
     if (mood.scene === 'masmorra') {
       // Corrente de ar fraca e o zumbido de pedra mais presente.
       this.windGain.gain.setTargetAtTime(0.018, now, 1);
       this.droneGain.gain.setTargetAtTime(0.05 + mood.corruption * 0.05, now, 1);
       return;
     }
-    this.windGain.gain.setTargetAtTime((mood.night ? 0.05 : 0.035) + mood.corruption * 0.025, now, 1.5);
+    // Vento, nevasca e tempestade sopram mais forte.
+    const gust = ({ vento: 0.03, nevasca: 0.04, tempestade: 0.035 } as Record<string, number>)[mood.weather ?? 'limpo'] ?? 0;
+    this.windGain.gain.setTargetAtTime((mood.night ? 0.05 : 0.035) + mood.corruption * 0.025 + gust, now, 1.5);
     this.droneGain.gain.setTargetAtTime((0.01 + mood.corruption * 0.07) * (mood.night ? 1.2 : 1), now, 2);
   }
 
@@ -50,9 +61,15 @@ export class AmbiencePlayer {
       if (due('rumble', 14, 30)) noise(this.ctx, this.out, now + 0.1, { dur: 3, gain: 0.05, filter: 'lowpass', freq: 110, attack: 1.2 });
       return;
     }
-    if (mood.night && due('cricket', 0.5, 2.2)) this.cricket(now + 0.05);
+    const wet = mood.weather === 'chuva' || mood.weather === 'tempestade' || mood.weather === 'nevasca';
+    if (mood.weather === 'tempestade' && due('thunder', 7, 18)) this.thunder(now + rand(0.4, 1.6));
+    if (mood.bard && due('lute', 0.26, 0.34)) {
+      const freq = LUTE[this.luteStep++ % LUTE.length]!;
+      pluck(this.ctx, this.panned(-0.15), now + 0.03, freq, 0.035, 1.6, 5);
+    }
+    if (mood.night && !wet && due('cricket', 0.5, 2.2)) this.cricket(now + 0.05);
     const daylight = mood.hour >= 5 && mood.hour < 19;
-    if (daylight && due('bird', 3, 9)) this.bird(now + 0.05);
+    if (daylight && !wet && due('bird', 3, 9)) this.bird(now + 0.05);
     if (due('fire', 0.08, 0.7)) {
       noise(this.ctx, this.panned(rand(-0.2, 0.2)), now + 0.02, {
         dur: rand(0.01, 0.03),
@@ -108,6 +125,27 @@ export class AmbiencePlayer {
       const from = rand(2400, 3400);
       tone(this.ctx, out, t + i * rand(0.1, 0.16), { freq: from, glide: { to: from * rand(1.2, 1.6), time: 0.07 }, dur: 0.09, gain: 0.018 });
     }
+  }
+
+  /** Trovão: um estalo seco e o ronco grave que rola depois. */
+  private thunder(t: number): void {
+    noise(this.ctx, this.out, t, { dur: 0.25, gain: 0.08, filter: 'bandpass', freq: 900, attack: 0.005 });
+    noise(this.ctx, this.out, t + 0.05, { dur: rand(2.5, 4), gain: 0.16, filter: 'lowpass', freq: 140, attack: 0.15 });
+  }
+
+  private rain(): GainNode {
+    const { ctx } = this;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(ctx);
+    src.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 1600;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    src.connect(filter).connect(gain).connect(this.out);
+    src.start();
+    return gain;
   }
 
   private wind(): GainNode {

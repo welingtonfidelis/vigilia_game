@@ -140,6 +140,8 @@ export interface Prefs {
   highlight: boolean;
   /** No celular, o botão flutuante dos painéis fica no canto esquerdo (para canhotos). */
   fabLeft: boolean;
+  /** Clima das estações (M6 F6): chuva, neve, folhas e relâmpagos; leve corta pela metade. */
+  weather: 'completo' | 'leve' | 'desligado';
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -156,6 +158,7 @@ export const DEFAULT_PREFS: Prefs = {
   calls: { guardiao: true, senhor: true, nemesis: true, encontro: true, torneio: true },
   highlight: false,
   fabLeft: false,
+  weather: 'completo',
 };
 
 export function loadPrefs(store: KeyValueStore | null): Prefs {

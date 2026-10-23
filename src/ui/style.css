@@ -3511,3 +3511,12 @@ button.hud-item.hud-tipped:focus .hud-tip {
   color: var(--gold);
   background: #33291c;
 }
+
+/* Duelo do torneio no corredor do campo de treino (M6 F6). */
+.lane-view.duel-stage {
+  flex: none;
+  height: 11rem;
+  margin: 0.4rem 0;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.5rem;
+}

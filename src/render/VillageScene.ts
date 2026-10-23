@@ -13,6 +13,9 @@ import {
   commands,
   repairOf,
   dayOf,
+  seasonOf,
+  snowCover,
+  weatherOn,
   hourOf,
   TICKS_PER_HOUR,
   hallLevel,
@@ -26,13 +29,13 @@ import {
 } from '../sim/index.ts';
 import { CREST_TINCTURES } from '../data/houses.ts';
 import { statueTexture } from './statue.ts';
-import type { BuildingId, ChronicleEntry, Crest, Hero, StreetId, World } from '../sim/index.ts';
+import type { BuildingId, ChronicleEntry, Crest, Hero, StreetId, WeatherKind, World } from '../sim/index.ts';
 import type { Session, SessionEvent } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { makeTextures } from './art.ts';
 import { ART_SCALE, MONSTERS, type MonsterLook } from './assets.ts';
 import { PACK_ASSETS, artLevel, buildingTexture, heroSpriteId, lightsTexture, packUrl } from './pack.ts';
-import { scaffoldTexture, wearTexture } from './scaffold.ts';
+import { scaffoldTexture, snowTexture, wearTexture } from './scaffold.ts';
 import { moveAxis } from './keys.ts';
 import { CELL, NavGrid, type AlphaMask, type Route } from './nav.ts';
 import {
@@ -42,6 +45,12 @@ import {
   EXPANSION_LOTS,
   HALL,
   HALL_TILES,
+  PLAZA,
+  PALANQUE,
+  MARKET_STALLS,
+  BARD_SPOT,
+  marketHours,
+  bardHours,
   PACO,
   PACO_TILES,
   FLAG_POLES,
@@ -72,12 +81,13 @@ import { alphaOf, blobs } from './fx/alpha.ts';
 import { LightingSystem, type LightSpec } from './fx/lighting.ts';
 import { ParticleSystem, type EmitterSpec } from './fx/particles.ts';
 import { ShadowLayer, type Caster } from './fx/shadows.ts';
-import { registerWind } from './fx/wind.ts';
+import { registerWind, TREES } from './fx/wind.ts';
 import type { FogSystem } from './fx/fog.ts';
 import type { ParallaxLayer } from './fx/parallax.ts';
 import { faceCells } from './relief.ts';
 import { playArt, preload32, registerAnims32, showArt } from './art32.ts';
-import { buildGround } from './terrain.ts';
+import { buildGround, type GroundSeasons } from './terrain.ts';
+import { WeatherSystem } from './fx/weather.ts';
 import {
   buildAbyss,
   buildBoard,
@@ -181,6 +191,29 @@ interface HallView {
   statueIds: number[];
   level: number;
   state: string;
+}
+
+/** Céu fechado de cada clima (somado ao anoitecer): a chuva e a neve escurecem a vila. */
+const GLOOM: Record<WeatherKind, number> = { limpo: 0, vento: 0.05, garoa: 0.12, neve: 0.12, chuva: 0.3, nevasca: 0.32, tempestade: 0.5 };
+
+/**
+ * A árvore da estação: o pinheiro só ganha neve; a de folha floresce na primavera, fica de
+ * outono e perde as folhas no inverno; as de outono do pack também ficam nuas no inverno.
+ */
+function seasonTree(base: string, season: number, snowy: boolean): string {
+  const bare = snowy ? 'prop/tree/dead-snow' : 'prop/tree/dead';
+  switch (base) {
+    case 'prop/tree/pine':
+      return season === 3 && snowy ? 'prop/tree/pine-snow' : base;
+    case 'prop/tree/01':
+      return season === 0 ? 'prop/tree/01-flor' : season === 2 ? 'prop/tree/autumn-small' : season === 3 ? bare : base;
+    case 'prop/tree/autumn':
+    case 'prop/tree/autumn-small':
+    case 'prop/tree/dead':
+      return season === 3 ? bare : base;
+    default:
+      return base;
+  }
 }
 
 /** Arte do Salão (16-bit): 112 × 96, com o pé no meio de baixo. */
@@ -331,6 +364,15 @@ export class VillageScene extends Phaser.Scene {
   private hall: HallView | null = null;
   /** Cosmética da vila (M6 F6): Paço, mastros, enfeites, placas e busto. */
   private cosmetics: CosmeticsView | null = null;
+  /** Clima das estações (M6 F6): o chão por estação, as partículas e o que já foi aplicado. */
+  private groundSeasons: GroundSeasons | null = null;
+  private weather: WeatherSystem | null = null;
+  /** Praça de encontro (M6 F6): barracas da feira com os vendedores e o bardo, que aparecem na hora. */
+  private plaza: { stalls: Phaser.GameObjects.GameObject[]; bard: Phaser.GameObjects.GameObject[]; notes: Phaser.GameObjects.Particles.ParticleEmitter | null; market: boolean; music: boolean } | null = null;
+  private seasonState = '';
+  /** Neve dos telhados, por prédio (a mesma origem da arte 16-bit), e a transparência de agora. */
+  private roofs = new Map<string, Phaser.GameObjects.Image>();
+  private roofSnowAlpha = 0;
   private houseLights: Phaser.GameObjects.Image[] = [];
   private propLights: Phaser.GameObjects.Image[] = [];
   /** Fogo da fornalha do ferreiro (arte nova não traz a brasa acesa). */
@@ -410,7 +452,9 @@ export class VillageScene extends Phaser.Scene {
     this.shadows = new ShadowLayer(this, WORLD_W, WORLD_H, DEPTH.shadow);
     this.lighting = new LightingSystem(this, { x: -400, y: -400, width: WORLD_W + 800, height: WORLD_H + 800, depth: DEPTH.night, haloDepth: DEPTH.lights });
     this.particles = new ParticleSystem(this);
-    const mask = buildGround(this);
+    this.weather = new WeatherSystem(this, DEPTH.floating - 1);
+    const { mask, seasons: groundSeasons } = buildGround(this);
+    this.groundSeasons = groundSeasons;
     this.abyss = buildAbyss(this);
     const solids: Solid[] = [];
     scatterTrees(this, mask, solids);
@@ -435,10 +479,11 @@ export class VillageScene extends Phaser.Scene {
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createHall();
     this.createCosmetics();
+    this.createPlaza();
     this.createInteractables();
     this.layoutSigns();
 
-    this.mayor = new Mayor(this, LANDMARKS.cofre.x - 40, LANDMARKS.cofre.y + 70);
+    this.mayor = new Mayor(this, LANDMARKS.fogueira.x + 50, LANDMARKS.fogueira.y + 30);
     // Lanterna do prefeito: anda com ele, do lado da mão.
     this.lighting.add({
       x: this.mayor.x,
@@ -573,6 +618,7 @@ export class VillageScene extends Phaser.Scene {
       return;
     }
     showArt(view.base, texture);
+    this.roofSnow(`predio:${id}`, texture, lot.x, lot.y + lot.h / 2, lot.y + lot.h / 2 - 1.2);
     if (this.textures.exists(lightsTexture(texture))) {
       showArt(view.lights, lightsTexture(texture));
       view.lights.setVisible(true);
@@ -592,6 +638,119 @@ export class VillageScene extends Phaser.Scene {
     this.layoutSigns();
   }
 
+  // ── Praça de encontro (M6 F6) ─────────────────────────────────────────
+
+  private createPlaza(): void {
+    const solids: Solid[] = [];
+    if (this.textures.exists('prop/praca/palanque')) {
+      showArt(this.add.image(PALANQUE.x, PALANQUE.y, 'prop/praca/palanque'), 'prop/praca/palanque').setOrigin(0.5, 1).setDepth(PALANQUE.y);
+      solids.push({ key: 'prop/praca/palanque', x: PALANQUE.x, y: PALANQUE.y, opts: { fromBottom: 6, minCover: 0.2 } });
+    }
+    this.nav.setLayer('palanque', this.cellsOf(solids));
+    const stalls: Phaser.GameObjects.GameObject[] = [];
+    const vendors = ['char/villager/lavrador/f', 'char/villager/artesa/f', 'char/villager/artesa/m'];
+    MARKET_STALLS.forEach((p, i) => {
+      const key = `prop/feira/barraca-${i + 1}`;
+      if (!this.textures.exists(key)) return;
+      // O vendedor fica atrás do balcão: um pouco acima do pé da barraca.
+      const vendor = vendors[i % vendors.length]!;
+      if (this.textures.exists(vendor)) stalls.push(showArt(this.add.sprite(p.x, p.y - 10, vendor, 0), vendor, ART_SCALE, 0).setOrigin(0.5, 1).setDepth(p.y - 1));
+      stalls.push(showArt(this.add.image(p.x, p.y, key), key).setOrigin(0.5, 1).setDepth(p.y));
+    });
+    const bard: Phaser.GameObjects.GameObject[] = [];
+    let notes: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+    if (this.textures.exists('char/villager/bardo')) {
+      const sprite = showArt(this.add.sprite(BARD_SPOT.x, BARD_SPOT.y, 'char/villager/bardo', 0), 'char/villager/bardo', ART_SCALE, 0).setOrigin(0.5, 1).setDepth(BARD_SPOT.y);
+      if (this.anims.exists('char/villager/bardo:play') || this.anims.exists(`p32/char/villager/bardo:play`)) playArt(sprite, 'char/villager/bardo', 'play');
+      bard.push(sprite);
+      if (!this.textures.exists('fx/nota')) {
+        const g = this.make.graphics({ x: 0, y: 0 }, false);
+        g.fillStyle(0xffffff, 1).fillRect(1, 4, 2, 2).fillRect(2, 0, 1, 5).fillRect(3, 0, 2, 1);
+        g.generateTexture('fx/nota', 5, 6);
+        g.destroy();
+      }
+      notes = this.add.particles(BARD_SPOT.x + 8, BARD_SPOT.y - 50, 'fx/nota', {
+        lifespan: 2200,
+        speedY: { min: -26, max: -14 },
+        speedX: { min: -10, max: 14 },
+        scale: 2,
+        alpha: { start: 1, end: 0 },
+        tint: [0xffe08a, 0xf4f0e0, 0xd8b0f0],
+        frequency: 700,
+        emitting: false,
+      }).setDepth(DEPTH.floating - 2);
+    }
+    for (const o of [...stalls, ...bard]) (o as Phaser.GameObjects.Image).setVisible(false);
+    this.plaza = { stalls, bard, notes, market: false, music: false };
+  }
+
+  /** Feira de dia e bardo à noite, nas horas certas. */
+  private syncPlaza(): void {
+    const plaza = this.plaza;
+    if (!plaza) return;
+    const day = dayOf(this.world.tick);
+    const hour = hourOf(this.world.tick);
+    const market = marketHours(day, hour);
+    const music = bardHours(this.world, day, hour);
+    if (market !== plaza.market) {
+      plaza.market = market;
+      for (const o of plaza.stalls) (o as Phaser.GameObjects.Image).setVisible(market);
+      const solids = market
+        ? MARKET_STALLS.map((p, i) => ({ key: `prop/feira/barraca-${i + 1}`, x: p.x, y: p.y, opts: { fromBottom: 6, minCover: 0.2 } })).filter((sol) => this.textures.exists(sol.key))
+        : [];
+      this.nav.setLayer('feira', this.cellsOf(solids));
+    }
+    if (music !== plaza.music) {
+      plaza.music = music;
+      for (const o of plaza.bard) (o as Phaser.GameObjects.Image).setVisible(music);
+      if (music) plaza.notes?.start();
+      else plaza.notes?.stop();
+    }
+  }
+
+  // ── Clima das estações (M6 F6) ────────────────────────────────────────
+
+  /** Estação e clima do dia: chão, árvores, neve nos telhados e partículas. Devolve o céu fechado (0 a 1). */
+  private syncSeason(now: number): number {
+    const day = dayOf(this.world.tick);
+    const season = seasonOf(day);
+    const kind = weatherOn(this.world, day);
+    const snow = Math.round(snowCover(this.world, day) * 10) / 10;
+    const state = `${season}|${snow}`;
+    if (state !== this.seasonState) {
+      const first = this.seasonState === '';
+      this.seasonState = state;
+      this.groundSeasons?.paint(season, snow, first ? 0 : 2500);
+      this.seasonTrees(season, snow >= 0.3);
+      this.roofSnowAlpha = season === 3 ? Math.min(1, snow * 1.4) : 0;
+      for (const img of this.roofs.values()) img.setAlpha(this.roofSnowAlpha).setVisible(this.roofSnowAlpha > 0);
+    }
+    const quality = this.ui.prefs.weather ?? 'completo';
+    const cam = this.cameras.main;
+    this.weather?.update(cam, kind, season, quality, this.session.paused);
+    if (kind === 'tempestade' && !this.session.paused) this.weather?.lightning(now, cam, quality);
+    if (quality === 'desligado') return 0;
+    return GLOOM[kind];
+  }
+
+  private seasonTrees(season: number, snowy: boolean): void {
+    for (const [img, base] of TREES) {
+      if (img.scene !== this) continue;
+      const key = seasonTree(base, season, snowy);
+      showArt(img, this.textures.exists(key) ? key : base);
+    }
+  }
+
+  /** Camada de neve sobre o telhado de um prédio (refeita quando a arte muda de nível). */
+  private roofSnow(id: string, artKey: string, x: number, bottom: number, depth: number): void {
+    let img = this.roofs.get(id);
+    if (!img) {
+      img = this.add.image(x, bottom, '__DEFAULT').setOrigin(0.5, 1).setScale(ART_SCALE);
+      this.roofs.set(id, img);
+    }
+    img.setTexture(snowTexture(this, artKey)).setDepth(depth).setAlpha(this.roofSnowAlpha).setVisible(this.roofSnowAlpha > 0);
+  }
+
   // ── Cosmética da vila (M6 F6) ─────────────────────────────────────────
 
   private createCosmetics(): void {
@@ -601,6 +760,7 @@ export class VillageScene extends Phaser.Scene {
       const lit = lightsTexture('building/paco');
       const lights = showArt(this.add.image(PACO.x, PACO.bottom, lit), lit).setOrigin(0.5, 1).setDepth(DEPTH.lights).setAlpha(0);
       const sign = label(this, PACO.x, this.roofTop('building/paco', PACO.bottom) - 4, 'Paço do prefeito', 14).setOrigin(0.5, 1);
+      this.roofSnow('paco', 'building/paco', PACO.x, PACO.bottom, PACO.bottom - 1.5);
       this.nav.setLayer('predio:paco', this.cellsOf([{ key: 'building/paco', x: PACO.x, y: PACO.bottom }]));
       this.shadows.set('predio:paco', [this.caster({ key: 'building/paco', x: PACO.x, y: PACO.bottom }, true)]);
       this.lighting.setGroup('janelas:paco', this.windowLights(lit, PACO.x, PACO.bottom));
@@ -741,6 +901,7 @@ export class VillageScene extends Phaser.Scene {
     if (level !== hall.level) {
       const texture = `building/salao/level-${level}`;
       showArt(hall.base, texture);
+      this.roofSnow('salao', texture, x, bottom, bottom - 1.5);
       const lit = lightsTexture(texture);
       hall.lights.setVisible(this.textures.exists(lit));
       if (this.textures.exists(lit)) showArt(hall.lights, lit);
@@ -1093,8 +1254,9 @@ export class VillageScene extends Phaser.Scene {
       },
       {
         id: 'discurso',
-        point: { x: LANDMARKS.fogueira.x, y: LANDMARKS.fogueira.y + 30 },
-        hit: { x: LANDMARKS.fogueira.x - 40, y: LANDMARKS.fogueira.y - 36, w: 80, h: 50 },
+        // O palanque do prefeito, no centro da praça (M6 F6).
+        point: { x: PALANQUE.x, y: PALANQUE.y + 24 },
+        hit: { x: PALANQUE.x - 40, y: PALANQUE.y - 50, w: 80, h: 60 },
         label: (world) => {
           if (world.town.speechDay === dayOf(world.tick)) return 'Já discursou hoje';
           if (world.town.mayorEnergy < 2) return 'Discursar (falta energia)';
@@ -1450,6 +1612,7 @@ export class VillageScene extends Phaser.Scene {
     for (const id of BUILDING_IDS) this.syncBuilding(id, !initial);
     this.syncHall(!initial);
     this.syncCosmetics();
+    this.syncPlaza();
     this.syncGraves(initial);
     this.syncHeroes(initial, dt);
     this.syncChildren(dt);
@@ -1457,7 +1620,9 @@ export class VillageScene extends Phaser.Scene {
     this.syncPets(dt);
     this.syncExpansion();
 
-    const night = nightFactor(world.tick);
+    // Estação e clima do dia (M6 F6): o céu fechado de chuva e neve escurece como o anoitecer.
+    const gloom = this.syncSeason(this.time.now);
+    const night = Math.max(nightFactor(world.tick), gloom);
     // De dia, uma névoa fria; à noite a floresta afunda e só a vila acesa aparece.
     this.lighting.update(this.time.now, night);
     this.shadows.flush();
@@ -1660,8 +1825,8 @@ export class VillageScene extends Phaser.Scene {
       playArt(shade, look.asset, 'run');
       this.tweens.add({
         targets: shade,
-        x: LANDMARKS.cofre.x + (i - 2.5) * 60,
-        y: LANDMARKS.cofre.y + 40 + (i % 3) * 24,
+        x: PLAZA.x + (i - 2.5) * 60,
+        y: PLAZA.y + 40 + (i % 3) * 24,
         alpha: 0,
         duration: 2200 + i * 120,
         delay: i * 90,
@@ -1669,7 +1834,7 @@ export class VillageScene extends Phaser.Scene {
         onComplete: () => shade.destroy(),
       });
     }
-    this.floatText(LANDMARKS.cofre.x, LANDMARKS.cofre.y - 120, 'Incursão!', '#ff8a7a');
+    this.floatText(PLAZA.x, PLAZA.y - 120, 'Incursão!', '#ff8a7a');
   }
 
   /** Os monstros comuns do bioma de onde a incursão subiu. */

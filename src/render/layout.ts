@@ -1,6 +1,6 @@
 // Planta da vila e para onde cada herói anda. Puro (sem Phaser) para dar para testar.
 
-import { buildingLevel } from '../sim/index.ts';
+import { BARD_HOURS, bardNight, buildingLevel, dayOf, hourOf, MARKET_HOURS, marketDay } from '../sim/index.ts';
 import { JOB_BUILDING } from '../sim/citizens.ts';
 import type { BuildingId, Citizen, Hero, Pet, PetSpecies, RetiredRole, StreetId, World } from '../sim/index.ts';
 
@@ -52,7 +52,8 @@ export const PLAZA_TILES: TileRect = { tx: 20, ty: 15, tw: 10, th: 6 };
 export const PLAZA = { x: 25 * TILE, y: 18 * TILE, r: 150 };
 
 /** Mesa das audiências da manhã (M6 F1), no canto leste da praça: o pé da arte. */
-export const AUDIENCE_TABLE: Point = { x: 27.5 * TILE, y: 20 * TILE };
+/** Mesa de audiências: na frente do Paço, à esquerda da porta (M6 F6; antes ficava na praça). */
+export const AUDIENCE_TABLE: Point = { x: 34.3 * TILE, y: 7.9 * TILE };
 
 /** Lavradores se espalham pelo movimento da vila; o campo de treino é dos heróis. */
 const LAVOR_ROUNDS: Point[] = [
@@ -110,8 +111,20 @@ export const HALL = { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, bottom: (HA
  * o sul. A trilha sai da rua do portão e passa por baixo do berrante.
  */
 export const PACO_TILES: TileRect = { tx: 33, ty: 2, tw: 6, th: 5 };
-export const PACO_PATH: TileRect = { tx: 26, ty: 7, tw: 11, th: 2 };
+export const PACO_PATH: TileRect = { tx: 26, ty: 7, tw: 14, th: 2 };
 export const PACO = { x: (PACO_TILES.tx + PACO_TILES.tw / 2) * TILE, bottom: (PACO_TILES.ty + PACO_TILES.th) * TILE };
+
+/**
+ * Praça de encontro (M6 F6): o palanque do prefeito no centro (onde ficava o cofre), as barracas
+ * da feira e o lugar do bardo, ao lado da fogueira.
+ */
+export const PALANQUE: Point = { x: 25 * TILE, y: 18.6 * TILE };
+export const MARKET_STALLS: Point[] = [
+  { x: 22.7 * TILE, y: 17.4 * TILE },
+  { x: 27.3 * TILE, y: 17.4 * TILE },
+  { x: 28.4 * TILE, y: 20.1 * TILE },
+];
+export const BARD_SPOT: Point = { x: 23.4 * TILE, y: 20.5 * TILE };
 
 /** Mastros com o estandarte da vila (M6 F6): dois ao lado do portão e um no canto da praça (pé, em tiles). */
 export const FLAG_POLES: Point[] = [
@@ -214,7 +227,8 @@ export const LANDMARKS: Record<Landmark, Point> = {
   // Ao pé da torrinha (é onde o prefeito para para tocar).
   berrante: { x: (HORN_STAND.tx + HORN_STAND.tw / 2) * TILE, y: (HORN_STAND.ty + HORN_STAND.th) * TILE + 14 },
   quadro: { x: 28.5 * TILE, y: 16 * TILE },
-  cofre: { x: 25 * TILE, y: 18.5 * TILE },
+  // O baú do tesouro, à direita da porta do Paço (M6 F6; antes ficava no meio da praça).
+  cofre: { x: 37.9 * TILE, y: 8 * TILE },
   abismo: { x: 45 * TILE, y: 14.5 * TILE },
   // Logo depois do portãozinho, já dentro da cerca (o cemitério fica num platô acima da vila).
   cemiterio: { x: 5.5 * TILE, y: 5.4 * TILE },
@@ -323,8 +337,11 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
   switch (activity.kind) {
     case 'chegando':
       return at(`chegada:${hero.id}`, 'praca', wanderPoint(hero.id, activity.startedAt));
-    case 'vagar':
-      return at(`vagar:${hero.id}`, 'praca', wanderPoint(hero.id, activity.startedAt));
+    case 'vagar': {
+      // Feira ou bardo na praça (M6 F6): quem está à toa vai junto.
+      const crowd = gatheringPoint(world, hero.id + 1000, dayOf(world.tick), hourOf(world.tick));
+      return at(crowd ? `roda:${hero.id}` : `vagar:${hero.id}`, 'praca', crowd ?? wanderPoint(hero.id, activity.startedAt));
+    }
     case 'descansar':
       return buildingLevel(world, 'estalagem') >= 1
         ? at('estalagem', 'estalagem', door('estalagem'))
@@ -355,15 +372,42 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
     }
     case 'socializar': {
       const point = wanderPoint(hero.id, activity.startedAt);
-      return activity.targetId !== undefined
-        ? { ...at(`conversa:${hero.id}`, 'heroi', point), followHeroId: activity.targetId }
-        : at(`vagar:${hero.id}`, 'praca', point);
+      if (activity.targetId !== undefined) return { ...at(`conversa:${hero.id}`, 'heroi', point), followHeroId: activity.targetId };
+      const crowd = gatheringPoint(world, hero.id + 1000, dayOf(world.tick), hourOf(world.tick));
+      return at(crowd ? `roda:${hero.id}` : `vagar:${hero.id}`, 'praca', crowd ?? point);
     }
   }
 }
 
 /** Onde um morador passa o dia ou a noite (visual; o núcleo não guarda posição). */
+export const marketHours = (day: number, hour: number): boolean => marketDay(day) && hour >= MARKET_HOURS[0] && hour < MARKET_HOURS[1];
+export const bardHours = (world: World, day: number, hour: number): boolean => bardNight(world, day) && hour >= BARD_HOURS[0] && hour < BARD_HOURS[1];
+
+/** Ponto numa roda em volta de um centro (a gente da feira e quem escuta o bardo). */
+function crowdPoint(seed: number, center: Point, rMin: number, rMax: number): Point {
+  const h = hash(seed, 77);
+  const angle = ((h & 0xffff) / 0x10000) * Math.PI * 2;
+  const r = rMin + ((h >>> 16) / 0x10000) * (rMax - rMin);
+  return { x: Math.round(center.x + Math.cos(angle) * r), y: Math.round(center.y + Math.sin(angle) * r * 0.6) };
+}
+
+/** Onde quem está à toa vai quando a praça tem feira ou bardo (null = nada na praça agora). */
+export function gatheringPoint(world: World, seed: number, day: number, hour: number): Point | null {
+  if (marketHours(day, hour)) {
+    const stall = MARKET_STALLS[Math.abs(seed + hour) % MARKET_STALLS.length]!;
+    return crowdPoint(seed * 31 + hour, { x: stall.x, y: stall.y + 20 }, 16, 44);
+  }
+  if (bardHours(world, day, hour)) return crowdPoint(seed, BARD_SPOT, 38, 72);
+  return null;
+}
+
 export function citizenSpot(world: World, citizen: Citizen, hour: number, day: number): Point {
+  // Feira e bardo (M6 F6): dois de cada três moradores vão às barracas; os notívagos e metade dos outros, ao bardo.
+  if (citizen.job !== 'guarda') {
+    const goes = marketHours(day, hour) ? citizen.id % 3 !== 0 : bardHours(world, day, hour) ? isNightOwl(citizen) || citizen.id % 2 === 0 : false;
+    const crowd = goes ? gatheringPoint(world, citizen.id, day, hour) : null;
+    if (crowd) return crowd;
+  }
   const h = hash(citizen.id, day * 24 + hour);
   const ox = ((h & 0xff) / 255 - 0.5) * 90;
   const oy = (((h >>> 8) & 0xff) / 255 - 0.5) * 46;

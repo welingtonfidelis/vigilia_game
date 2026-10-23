@@ -1,9 +1,11 @@
 // Torneio da estação (M6 F4): a chave por rodada e os duelos revistos golpe a golpe, no compasso
 // em que aconteceram. Os golpes vêm guardados do mundo (src/sim/tournament.ts).
 
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { TICKS_PER_SECOND } from '../../sim/index.ts';
-import type { Duel, Hero } from '../../sim/index.ts';
+import type { Duel, Hero, Room, Unit, World } from '../../sim/index.ts';
+import { playHighlight, type Highlight } from '../../render/lane/replay.ts';
+import { packAsset } from '../../render/pack.ts';
 import { HeroLink, PanelShell, useGame } from '../components.tsx';
 import { fmt, heroById } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
@@ -45,6 +47,44 @@ function Fighter(props: { hero: Hero | undefined; hp: number; max: number; side:
           {fmt(Math.ceil(hp))}/{fmt(max)}
         </em>
       </span>
+    </div>
+  );
+}
+
+/**
+ * O duelo como um melhor momento (M6 F6): os dois heróis frente a frente no corredor do campo de
+ * treino (a arena XI; sem a arte, o corredor das Catacumbas), com os golpes guardados.
+ */
+function duelHighlight(world: World, d: Duel): Highlight | null {
+  const a = heroById(world, d.a);
+  const b = heroById(world, d.b);
+  if (!a || !b) return null;
+  const unit = (h: Hero, uid: number, side: 'hero' | 'enemy', max: number): Unit =>
+    ({ uid, side, heroId: h.id, name: h.name, maxHp: max, hp: max, atk: 0, def: 0, interval: 10, cd: 0, pierce: 0, crit: 0, role: null, tags: side === 'enemy' ? ['duelo'] : [], affixes: [], elite: false, alive: true, fled: false, gold: 0, xp: 0, material: null }) as unknown as Unit;
+  return {
+    title: `${a.name} × ${b.name}`,
+    score: 0,
+    party: { passageId: -1, level: 1, biome: packAsset('corridor/XI/wall-a') ? 10 : 0, rules: [], floor: 0, lord: undefined, roomIndex: 0, startMemberIds: [a.id] },
+    rooms: [{ kind: 'matilha', cleared: false, remainsOf: null } as Room],
+    heroes: [structuredClone(a), structuredClone(b)],
+    units: [unit(a, 1, 'hero', d.maxA), unit(b, 2, 'enemy', d.maxB)],
+    start: 0,
+    events: d.events,
+    complete: true,
+  };
+}
+
+function DuelLane(props: { duel: Duel }) {
+  const { world } = useGame();
+  const canvas = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const h = duelHighlight(world, props.duel);
+    if (!h || !canvas.current) return;
+    return playHighlight(h, canvas.current, () => {});
+  }, [props.duel]);
+  return (
+    <div class="lane-view duel-stage">
+      <canvas ref={canvas} class="lane-canvas" aria-label="Duelo no campo de treino" />
     </div>
   );
 }
@@ -121,6 +161,7 @@ export function TournamentPanel() {
           <p class="sub">
             {roundName(current.round, rounds)} · duelo {index + 1} de {t.duels.length}
           </p>
+          <DuelLane duel={current} />
           <DuelPlayer duel={current} onDone={() => setIndex((i) => i + 1)} />
           <div class="report-actions">
             <button class="btn small" onClick={() => setIndex((i) => i + 1)}>

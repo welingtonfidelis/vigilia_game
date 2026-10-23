@@ -72,9 +72,14 @@ export function registerWind(game: Phaser.Game): boolean {
   return true;
 }
 
+/** Árvores que balançam, com a arte de origem (M6 F6: a estação troca a textura delas). */
+export const TREES = new Map<Phaser.GameObjects.Image, string>();
+
 /** Faz a imagem balançar com o vento (se o pipeline existe). */
 export function sway<T extends Phaser.GameObjects.Image>(image: T): T {
   const renderer = image.scene.game.renderer;
   if (renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer && renderer.pipelines.has(WIND_PIPELINE)) image.setPipeline(WIND_PIPELINE);
+  TREES.set(image, image.texture.key.replace(/^p32\//, ''));
+  image.once(Phaser.GameObjects.Events.DESTROY, () => TREES.delete(image));
   return image;
 }
