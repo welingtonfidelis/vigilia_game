@@ -36,7 +36,7 @@ import {
 } from './model.ts';
 import { enemySource, heroSource, image, type Anim, type SpriteSource } from './sprites.ts';
 
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'] as const;
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'] as const;
 
 /** Peça do pack pronta para desenhar no modo de arte atual. */
 interface Art {
@@ -94,6 +94,27 @@ const ROOM_PROPS: Record<string, { id: string; x: number; y: number }[]> = {
     { id: 'prop/arena/VI/eye', x: 272, y: 128 },
     { id: 'prop/arena/VI/floating-shard', x: 70, y: 120 },
   ],
+  // Dimensões fundas (M5 F6): só o corredor, então todos os objetos ficam no chão.
+  VII: [
+    { id: 'prop/arena/VII/eggs', x: 52, y: 152 },
+    { id: 'prop/arena/VII/stalk', x: 272, y: 150 },
+    { id: 'prop/arena/VII/lump', x: 70, y: 152 },
+  ],
+  VIII: [
+    { id: 'prop/arena/VIII/clam', x: 52, y: 152 },
+    { id: 'prop/arena/VIII/tubes', x: 272, y: 150 },
+    { id: 'prop/arena/VIII/rock', x: 70, y: 152 },
+  ],
+  IX: [
+    { id: 'prop/arena/IX/valve', x: 52, y: 152 },
+    { id: 'prop/arena/IX/boiler', x: 272, y: 150 },
+    { id: 'prop/arena/IX/gears', x: 70, y: 152 },
+  ],
+  X: [
+    { id: 'prop/arena/X/skull', x: 52, y: 152 },
+    { id: 'prop/arena/X/tusk', x: 272, y: 150 },
+    { id: 'prop/arena/X/bones', x: 70, y: 152 },
+  ],
 };
 
 /** Cor do sangue de cada ato (ossos dão pó; fungos, esporos; a forja, brasa…). */
@@ -104,6 +125,10 @@ const BLOOD: Record<string, string[]> = {
   IV: ['#3a8070', '#205448', '#60a890'],
   V: ['#d86a2a', '#a03a18', '#f0a040'],
   VI: ['#7a3aa0', '#4a1a6a', '#b070d0'],
+  VII: ['#c8c890', '#8a8a40', '#e8e8a0'],
+  VIII: ['#3a7890', '#1c4a60', '#60c8d8'],
+  IX: ['#6a6460', '#3a3634', '#d86a2a'],
+  X: ['#c8b088', '#8a7058', '#b070d0'],
 };
 const HERO_BLOOD = ['#9a1e1e', '#6e1414', '#c03030'];
 
@@ -1051,6 +1076,10 @@ export class LaneRenderer {
       IV: 'rgba(28, 92, 72, 0.11)',
       V: 'rgba(126, 54, 24, 0.12)',
       VI: 'rgba(74, 34, 110, 0.15)',
+      VII: 'rgba(120, 112, 60, 0.11)',
+      VIII: 'rgba(20, 70, 110, 0.15)',
+      IX: 'rgba(110, 70, 30, 0.12)',
+      X: 'rgba(120, 60, 110, 0.12)',
     };
 
     // A parede recebe uma sombra vertical discreta; a faixa do chão ganha peso
@@ -1092,7 +1121,7 @@ export class LaneRenderer {
       const x = Math.floor(left + (((i * 73 + drift) % Math.max(1, right - left)) + Math.max(1, right - left)) % Math.max(1, right - left));
       const y = 34 + ((i * 29 + Math.floor(this.real * (2 + i % 2))) % 102);
       ctx.globalAlpha = 0.16 + (Math.sin(this.real * 1.8 + i * 2.1) + 1) * 0.10;
-      ctx.fillStyle = roman === 'VI' ? '#c4a0ff' : roman === 'II' ? '#8bdce8' : '#ffdca0';
+      ctx.fillStyle = roman === 'VI' || roman === 'X' ? '#c4a0ff' : roman === 'II' || roman === 'VIII' ? '#8bdce8' : '#ffdca0';
       ctx.fillRect(x, y, i % 4 === 0 ? 2 : 1, 1);
     }
     ctx.globalAlpha = 1;

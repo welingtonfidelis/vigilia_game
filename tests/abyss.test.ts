@@ -47,7 +47,8 @@ describe('abismo das dimensões: gerador', () => {
 
   it('os biomas se abrem com o nível, e a passagem nova só sorteia os liberados', () => {
     expect(availableBiomes(1)).toEqual([0, 1]);
-    expect(availableBiomes(7)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(availableBiomes(7)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(availableBiomes(9)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     for (let seed = 1; seed < 60; seed++) expect(availableBiomes(1)).toContain(generatePassage(seed, seed * 7919, 1, 0).biome);
   });
 

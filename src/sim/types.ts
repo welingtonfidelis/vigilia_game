@@ -304,9 +304,9 @@ export interface EnemyUnitDef {
   tags: EnemyTag[];
 }
 
-export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian';
+export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen';
 export type Affix = 'veloz' | 'vampirico' | 'explosivo' | 'couracado' | 'feroz';
-export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos';
+export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos' | 'colmeia' | 'canto' | 'placas' | 'exercito';
 
 export interface Unit {
   uid: number;
@@ -334,6 +334,8 @@ export interface Unit {
   material: MaterialId | null;
   /** Fração do dano causado que volta como vida (afixo sanguessuga). */
   lifesteal?: number;
+  /** Até este tick o herói fica parado, encantado pelo canto do Coro Submerso. */
+  charmedUntil?: number;
 }
 
 export interface Combat {
@@ -356,6 +358,10 @@ export interface Combat {
   phase2?: boolean;
   /** Até este tick as curas rendem metade (silêncio do Arcebispo). */
   silenceUntil?: number;
+  /** Placas do Colosso de Ferro-negro: blindagem que absorve o dano antes da vida. */
+  plates?: number;
+  /** Tick em que as placas voltam (inteiras ou depois de quebradas). */
+  platesAt?: number;
 }
 
 export interface CombatEvent {

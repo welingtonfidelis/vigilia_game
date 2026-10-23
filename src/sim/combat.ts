@@ -106,6 +106,8 @@ export function combatTick(world: World, party: Party): CombatResult {
     if (!u.alive || u.fled) continue;
     if (--u.cd > 0) continue;
     u.cd = u.interval;
+    // Encantado pelo canto: perde a vez.
+    if (u.charmedUntil !== undefined && c.ticks < u.charmedUntil) continue;
     if (u.side === 'hero') heroAct(world, party, c, u);
     else enemyAct(world, party, c, u);
   }
@@ -255,7 +257,8 @@ function strike(world: World, party: Party, c: Combat, attacker: Unit, target: U
   if (!target.alive) return 0;
   const crit = chance(world.rng, attacker.crit) ? B.critMult : 1;
   const pierce = Math.min(0.95, attacker.pierce + pierceBonus);
-  const dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - pierce));
+  let dmg = (base * range(world.rng, 0.85, 1.15) * crit * 100) / (100 + target.def * (1 - pierce));
+  if (target.tags.includes('boss') && c.bossMech) dmg = lordGuard(c, attacker, dmg);
   target.hp -= dmg;
   // Sanguessuga: parte do golpe volta como vida para quem bateu. Na fúria, como a cura,
   // rende menos (senão a luta não acaba).
@@ -281,6 +284,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
   if (!unit.alive) return;
   unit.alive = false;
   unit.hp = 0;
+  if (unit.side === 'enemy' && c.bossMech === 'exercito') raiseFallen(world, party, c, unit);
   if (unit.side === 'enemy') {
     party.loot.gold += unit.gold;
     party.loot.xp += unit.xp;
@@ -438,12 +442,27 @@ const PHASE2_TEXT: Record<BossMech, (name: string) => string> = {
   maldicao: (n) => `${n} começou a rezar ao contrário.`,
   retaguarda: (n) => `${n} passou a caçar os feridos.`,
   ecos: (n) => `${n} abriu o olho.`,
+  colmeia: (n) => `${n} subiu para o alto do ninho.`,
+  canto: (n) => `${n} cantou mais alto.`,
+  placas: (n) => `${n} superaqueceu e as placas caíram.`,
+  exercito: (n) => `${n} chamou o exército inteiro.`,
 };
 
 function enterPhase2(world: World, party: Party, c: Combat, boss: Unit): void {
   c.phase2 = true;
   const actDef = BIOMES[party.biome]!;
   if (c.bossMech === 'couraca') boss.def *= 1.5;
+  // O Colosso superaquece: sem placas e com a defesa pela metade, mas solta vapor.
+  if (c.bossMech === 'placas') {
+    c.plates = 0;
+    c.platesAt = undefined;
+    boss.def *= 0.5;
+  }
+  // O Rei dos Ossuários: cada golpe cura, e dois esqueletos levantam na hora.
+  if (c.bossMech === 'exercito') {
+    boss.lifesteal = B.lordArmyLifesteal;
+    for (let i = 0; i < 2; i++) c.units.push(risenSkeleton(world, party, c));
+  }
   if (c.bossMech === 'veneno') {
     const sprout = actDef.enemies.find((e) => e.id === 'brotado') ?? actDef.enemies[actDef.enemies.length - 1]!;
     for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party));
@@ -466,6 +485,18 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
   if (c.bossMech === 'ecos' && !c.echoesSpawned && (c.ticks === 1 || boss.hp < boss.maxHp / 2)) {
     if (boss.hp < boss.maxHp / 2) c.echoesSpawned = true;
     spawnEchoes(world, party, c);
+  }
+  // As placas do Colosso: inteiras desde o começo; se o grupo não quebra a tempo, voltam
+  // inteiras; quebradas, voltam um tempo depois.
+  if (c.bossMech === 'placas' && !c.phase2) {
+    const full = boss.maxHp * B.lordPlates;
+    if (c.plates === undefined) {
+      c.plates = full;
+      c.platesAt = c.ticks + B.lordPlatesHold * TICKS_PER_SECOND;
+    } else if (c.platesAt !== undefined && c.ticks >= c.platesAt) {
+      c.plates = full;
+      c.platesAt = c.ticks + B.lordPlatesHold * TICKS_PER_SECOND;
+    }
   }
   if (--c.mechCd > 0) return;
   switch (c.bossMech) {
@@ -504,9 +535,65 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
       for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * 0.5);
       break;
     }
+    case 'colmeia': {
+      c.mechCd = c.phase2 ? 60 : 90;
+      const count = c.phase2 ? 3 : 2;
+      if (aliveEnemies(c).length < (c.phase2 ? 9 : 7)) {
+        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party));
+      }
+      break;
+    }
+    case 'canto': {
+      c.mechCd = c.phase2 ? 90 : 120;
+      // Encanta quem mais bate (dois na fase 2); na fase 2 o canto também cura o Coro.
+      const charmed = [...activeHeroUnits(c)].sort((a, b) => b.atk - a.atk || a.uid - b.uid).slice(0, c.phase2 ? 2 : 1);
+      for (const h of charmed) h.charmedUntil = c.ticks + B.lordCharmSeconds * TICKS_PER_SECOND;
+      if (c.phase2) boss.hp = Math.min(boss.maxHp, boss.hp + boss.maxHp * B.lordSongHeal);
+      break;
+    }
+    case 'placas': {
+      c.mechCd = c.phase2 ? 80 : 9999;
+      // Fase 2: jatos de vapor em todos.
+      if (c.phase2) for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * B.lordSteam);
+      break;
+    }
     default:
       c.mechCd = 9999;
   }
+}
+
+/**
+ * O que protege o Senhor do golpe: os zangões da Rainha (e o alto do ninho, longe do corpo a
+ * corpo, na fase 2) e as placas do Colosso, que absorvem o dano antes da vida.
+ */
+function lordGuard(c: Combat, attacker: Unit, dmg: number): number {
+  if (c.bossMech === 'colmeia') {
+    const drone = BIOMES.find((b) => b.boss.mech === 'colmeia')!.enemies[0]!.name;
+    if (c.units.some((u) => u.alive && u.side === 'enemy' && u.name.startsWith(drone))) dmg *= 1 - B.lordHiveGuard;
+    if (c.phase2 && (attacker.role === 'melee' || attacker.role === 'bruiser' || attacker.role === 'tank')) dmg *= 0.5;
+  }
+  if (c.bossMech === 'placas' && c.plates && c.plates > 0) {
+    const absorbed = Math.min(c.plates, dmg);
+    c.plates -= absorbed;
+    dmg -= absorbed;
+    // Quebradas: voltam depois de um tempo, e o grupo tem a janela para bater na vida.
+    if (c.plates <= 0) c.platesAt = c.ticks + B.lordPlatesBroken * TICKS_PER_SECOND;
+  }
+  return dmg;
+}
+
+/** Esqueleto que o Rei dos Ossuários levanta: sem ouro, sem experiência e não levanta de novo. */
+function risenSkeleton(world: World, party: Party, c: Combat): Unit {
+  const unit = makeEnemy(world, c, BIOMES[0]!.enemies[0]!, party);
+  return { ...unit, tags: [...unit.tags, 'risen'], gold: 0, xp: 0, material: null };
+}
+
+/** Exército do Rei: quem cai do lado dele pode levantar como esqueleto (uma vez cada). */
+function raiseFallen(world: World, party: Party, c: Combat, unit: Unit): void {
+  if (unit.tags.includes('boss') || unit.tags.includes('risen')) return;
+  const king = c.units.find((u) => u.tags.includes('boss') && u.alive);
+  if (!king || !chance(world.rng, c.phase2 ? B.lordRaisePhase2 : B.lordRaise)) return;
+  c.units.push(risenSkeleton(world, party, c));
 }
 
 function spawnEchoes(world: World, party: Party, c: Combat): void {

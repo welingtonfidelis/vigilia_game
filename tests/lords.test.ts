@@ -35,7 +35,9 @@ describe('Senhores do abismo', () => {
   it('um Senhor por nível, o Vigia no 10 e o ciclo do pós-jogo', () => {
     expect(lordOf(1).name).toBe('O Guardião das Urnas');
     expect(lordOf(5).name).toBe('O Martelo Que Não Dorme');
-    expect(lordOf(6)).toMatchObject({ name: 'A Rainha dos Esporos', provisional: true, final: false });
+    // Os Senhores 6 a 9 são os chefes das dimensões fundas (M5 F6), cada um no seu bioma.
+    expect(lordOf(6)).toMatchObject({ name: 'A Rainha dos Esporos', mech: 'colmeia', biome: 6, final: false });
+    expect(lordOf(9)).toMatchObject({ name: 'O Rei dos Ossuários', mech: 'exercito', biome: 9 });
     expect(lordOf(10)).toMatchObject({ name: 'Aquilo que Vigia', final: true, biome: 5 });
     expect(lordOf(11).name).toBe('O Guardião das Urnas (1º retorno)');
     expect(lordOf(20)).toMatchObject({ name: 'Aquilo que Vigia (1º retorno)', final: true });

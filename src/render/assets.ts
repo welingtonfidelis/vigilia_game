@@ -56,6 +56,23 @@ export const MONSTERS: Record<string, MonsterLook> = {
   lamento: { asset: 'char/monster/lamento', frameSize: [24, 32] },
   arauto: { asset: 'char/monster/arauto', frameSize: [32, 40] },
   aquiloQueVigia: { asset: 'char/boss/aquiloQueVigia', frameSize: [64, 64] },
+  // Dimensões fundas (M5 F6)
+  zangao: { asset: 'char/monster/zangao', frameSize: [24, 32] },
+  mariposa: { asset: 'char/monster/mariposa', frameSize: [24, 24] },
+  casulo: { asset: 'char/monster/casulo', frameSize: [32, 40] },
+  rainhaEsporos: { asset: 'char/boss/rainhaEsporos', frameSize: [56, 56] },
+  peixeLanterna: { asset: 'char/monster/peixeLanterna', frameSize: [24, 24] },
+  aguaViva: { asset: 'char/monster/aguaViva', frameSize: [24, 28] },
+  caranguejo: { asset: 'char/monster/caranguejo', frameSize: [40, 32] },
+  coroSubmerso: { asset: 'char/boss/coroSubmerso', frameSize: [56, 60] },
+  automato: { asset: 'char/monster/automato', frameSize: [24, 32] },
+  aranhaEngrenagem: { asset: 'char/monster/aranhaEngrenagem', frameSize: [32, 24] },
+  fornalha: { asset: 'char/monster/fornalha', frameSize: [32, 40] },
+  colosso: { asset: 'char/boss/colosso', frameSize: [64, 64] },
+  mumia: { asset: 'char/monster/mumia', frameSize: [24, 32] },
+  chacal: { asset: 'char/monster/chacal', frameSize: [32, 24] },
+  escorpiao: { asset: 'char/monster/escorpiao', frameSize: [40, 32] },
+  reiOssuarios: { asset: 'char/boss/reiOssuarios', frameSize: [48, 60] },
 };
 
 /** Monstros de todos os biomas, do nome mais longo ao mais curto (o invasor também acha a dele). */

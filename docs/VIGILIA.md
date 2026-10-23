@@ -262,7 +262,7 @@ Especificação na seção 9.1 do GDD (neste documento).
 
 ### Próximo: playtest guiado e M5
 
-O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`. As fases F1 a F5 estão prontas no branch; falta a F6 (biomas e Senhores novos).
+O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`. As fases F1 a F6 estão prontas no branch; o M5 espera o teste do jogador antes de ir para o `main`.
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -1035,6 +1035,10 @@ Uma dimensão é um **bioma** (cenário, monstros e material) com **regras** sor
 | Cidade Afogada | 3 | pérolas negras | sacerdote, sereia, cavaleiro salobro | Arcebispo Sem Fôlego |
 | Forja Abissal | 5 | brasas | ferreiro cinzento, cão de brasa, escravo da forja | O Martelo Que Não Dorme |
 | Coração do Abismo | 7 | fragmentos de alma | sombra faminta, lamento, arauto do fundo | Aquilo que Vigia (chefe máximo) |
+| Colmeia Pálida (F6) | 6 | esporos | zangão de quitina, mariposa pálida, casulo vivo | A Rainha dos Esporos |
+| Fossa Cantante (F6) | 7 | pérolas negras | peixe-lanterna, água-viva abissal, caranguejo de casco negro | O Coro Submerso |
+| Cidadela de Engrenagens (F6) | 8 | ferro-negro | autômato sentinela, aranha de engrenagem, fornalha ambulante | O Colosso de Ferro-negro |
+| Deserto de Ossos (F6) | 9 | ossos | múmia errante, chacal de ossos, escorpião gigante | O Rei dos Ossuários |
 
 **Biomas novos:** quatro, um por Senhor dos níveis 6 a 9 (seção 7). Entram na tabela a partir do nível 6, com arte própria em 16 e 32-bit (cenário, três monstros com variantes, o Senhor com as duas fases e os retratos).
 
@@ -1125,14 +1129,17 @@ Na implementação (F1), uma pressão única para o abismo inteiro caía rápido
 | 3 | A Mãe-Bolor | a de hoje |
 | 4 | O Arcebispo Sem Fôlego | a de hoje |
 | 5 | O Martelo Que Não Dorme | a de hoje |
-| 6–9 | **Senhores novos**, um por bioma novo, cada um com uma mecânica própria | arte nova (fase F6) |
+| 6 | A Rainha dos Esporos (Colmeia Pálida, mecânica colmeia) | nova (F6) |
+| 7 | O Coro Submerso (Fossa Cantante, canto) | nova (F6) |
+| 8 | O Colosso de Ferro-negro (Cidadela de Engrenagens, placas) | nova (F6) |
+| 9 | O Rei dos Ossuários (Deserto de Ossos, exército) | nova (F6) |
 | 10 (chefe máximo) | **Aquilo que Vigia**, no Coração do Abismo | a de hoje (fase 2 incluída) |
 
 Decisão do usuário (2026-10-22): os níveis acima do 5 têm Senhores inéditos, e não os cinco primeiros de volta.
 
 Correção na F2: pela regra do usuário, o amuleto do nível 10 leva ao chefe máximo. Então o Senhor do nível 10 é o próprio Vigia, e os Senhores novos ficam nos níveis 6 a 9 (quatro, não cinco).
 
-Enquanto a arte deles não chega (F6), o jogo usa nomes novos com a arte e a mecânica de um dos cinco primeiros, só para a campanha poder ser jogada e balanceada de ponta a ponta:
+Até a F6, o jogo usou nomes novos com a arte e a mecânica de um dos cinco primeiros, só para a campanha poder ser jogada e balanceada de ponta a ponta (na F6 eles viraram os chefes dos biomas novos, com os mesmos nomes):
 - 6: A Rainha dos Esporos (Mãe-Bolor);
 - 7: O Coro Submerso (Arcebispo);
 - 8: O Colosso de Ferro-negro (Couraça);
@@ -1252,7 +1259,7 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 | **F3** Escala sem fim ✅ | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
 | **F4** Vila longa ✅ | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
 | **F5** Balanceamento 5× ✅ | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
-| **F6** Biomas e Senhores novos | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
+| **F6** Biomas e Senhores novos ✅ | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
 
 ##### 15.1 Como ficou a F1
 
@@ -1382,7 +1389,38 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 - **Em tempo de jogo:** o Vigia cai por volta de 39 horas em 1× no Normal (cerca de 29 no Fácil e 48 no Difícil).
 - **Para a F6:** os Senhores novos dos níveis 6 a 9 saem com `power` e `threat` medidos por `npm run lords`. Depois, uma rodada do balanceador confere as faixas.
 
-##### 15.6 Fila de ajustes pedidos durante o M5
+##### 15.6 Spec da F6: biomas e Senhores novos
+
+Quatro dimensões mais fundas, uma por Senhor dos níveis 6 a 9. Os Senhores mantêm os nomes provisórios, e cada bioma é de uma das famílias de material de sempre. Assim a vila não ganha recursos novos, e a faixa de material dos prédios continua valendo.
+
+| Nível | Bioma | Material | Monstros | Senhor | Mecânica do Senhor |
+|---|---|---|---|---|---|
+| 6 | **Colmeia Pálida**: floresta de árvores-esporo brancas e câmaras de quitina | esporos | Mariposa Pálida (voa, rápida), Zangão de Quitina (soldado), Casulo Vivo (tanque) | A Rainha dos Esporos | **Colmeia:** solta zangões a cada tanto; enquanto houver zangão vivo, ela leva 40% menos dano. Na fase 2, sobe para o alto do ninho (fica na retaguarda) e solta mais. |
+| 7 | **Fossa Cantante**: fenda do fundo do mar, escura, com luz viva | pérolas negras | Peixe-lanterna (retaguarda), Água-viva Abissal (enxame), Caranguejo de Casco Negro (tanque) | O Coro Submerso | **Canto:** a cada tanto, encanta o herói que mais bate, que fica parado por 4 s. Na fase 2, encanta dois e se cura um pouco a cada canto. |
+| 8 | **Cidadela de Engrenagens**: fortaleza de ferro preto, vapor e latão | ferro-negro | Aranha de Engrenagem (enxame), Autômato Sentinela (soldado), Fornalha Ambulante (tanque) | O Colosso de Ferro-negro | **Placas:** uma blindagem de 30% da vida absorve o dano e volta se não for quebrada a tempo. Na fase 2, superaquece: jatos de vapor em todos, e a defesa cai pela metade. |
+| 9 | **Deserto de Ossos**: dunas de ossos gigantes sob um sol preto | ossos | Chacal de Ossos (enxame), Múmia Errante (soldado), Escorpião Gigante (tanque) | O Rei dos Ossuários | **Exército:** quem cai do lado dele pode levantar de novo como esqueleto (uma vez cada). Na fase 2, cada golpe dele cura e ele levanta dois de uma vez. |
+
+- **Biomas:** entram no sorteio a partir do nível de cada um (6, 7, 8 e 9) e seguem a normalização de sempre (mesma ameaça média; o bioma muda o jeito da luta).
+- **Senhores:** os níveis 6 a 9 passam a ser os chefes desses biomas, com covil, guardas e arte próprios, e perdem a marca de provisório. `power` e `threat` saem de `npm run lords`, e uma rodada do balanceador confere as faixas da seção 11.
+- **Arte (16 e 32-bit, nos geradores de `art32/`):**
+  - Por bioma: os três monstros com as variantes do fundo (`-deep` e `-core`) e retrato; o Senhor com a fase 2 e o retrato; o corredor (entrada, duas paredes, arco, chão e primeiro plano); o portão do covil e três objetos; os efeitos de golpe e impacto.
+  - O corredor substitui a arena (é o que o jogo desenha quando ele existe), então os biomas novos não precisam das camadas de arena.
+  - O gerador desenha as duas resoluções do mesmo desenho, com o mesmo enquadramento: a 16-bit é nativa, sem redução da 32-bit. O pack original não tem mais o gerador dele aqui, por isso tudo sai de `art32/`.
+  - O índice das peças novas é gerado junto (`src/render/pack-dimensoes.ts`) e somado ao do pack; `npm run pack32` registra as 32-bit.
+- **Corredor e telas:** o corredor ganha os numerais VII a X para os biomas novos, com luz ambiente e objetos de cada um. O retrato aparece onde os outros aparecem.
+
+##### 15.7 Como ficou a F6
+
+- **Arte:**
+  - Tudo sai de `art32/dimensoes32.py`, que desenha as duas resoluções do mesmo desenho, com coordenadas em unidades da 16-bit multiplicadas pela escala. A 16-bit é nativa e o enquadramento das duas bate por construção. A base (`dimensoes32_base.py`) traz formas orgânicas (oval inclinado, membro que afina, asa com veios, ventre em segmentos), a folha de 19 quadros com as variantes, o retrato, o kit do corredor e o índice `src/render/pack-dimensoes.ts`, que o `pack.ts` soma ao do pack.
+  - São 108 peças em cada resolução: 16 personagens com variantes e retratos, os 4 corredores, 16 objetos e 8 efeitos (recoloridos dos do ato V).
+  - O corredor dos biomas novos vai do VII ao X, com objetos, sangue, poeira e luz ambiente próprios.
+- **Senhores:**
+  - Mecânicas novas no combate (`src/sim/combat.ts`, constantes `lord*` no config): colmeia, canto, placas e exército, como na seção 15.6. Os esqueletos que o Rei levanta não dão ouro nem experiência e não levantam de novo.
+  - `power` e `threat` dos quatro saíram de três rodadas de `npm run lords`: metade de chance entre 0,93 e 1,00 de confiança contra o grupo sintético. As mecânicas pesam muito: o Colosso começou com metade de chance só perto de 2,2 e o Coro perto de 1,4, e o Rei cedia já com 0,58.
+- **Retrato (10 sementes × 100 anos):** no Normal, todas as metas da seção 11 seguem verdes, com os biomas novos no sorteio. Senhor do nível 6 no ano 38,6, do 9 no 58,6 e o Vigia no 72,1, em todas as sementes; 21% dos contratos do Senhor perdidos, 4,4 mortes por ano e save idêntico em 200 de 200. O Vigia cai no ano 55,5 no Fácil e no 86,8 no Difícil (em 70%, em 130 anos).
+
+##### 15.8 Fila de ajustes pedidos durante o M5
 
 - **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que hoje estão pequenos demais para ler. Pedido em 2026-10-23.
 

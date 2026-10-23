@@ -204,6 +204,21 @@ export const BALANCE = {
   lordConfidenceScale: 1.6,
   /** A confiança contra o Senhor se o grupo não tem tanque (e de novo se não tem curandeiro). */
   lordMissingRole: 0.85,
+  // Mecânicas dos Senhores das dimensões fundas (M5 F6).
+  /** Rainha dos Esporos: dano a menos enquanto houver zangão vivo. */
+  lordHiveGuard: 0.4,
+  /** Coro Submerso: segundos de encanto e a cura do canto na fase 2 (fração da vida). */
+  lordCharmSeconds: 4,
+  lordSongHeal: 0.03,
+  /** Colosso de Ferro-negro: placas (fração da vida), quanto tempo seguram inteiras, quanto demoram quebradas, e o vapor da fase 2 (× ataque). */
+  lordPlates: 0.3,
+  lordPlatesHold: 15,
+  lordPlatesBroken: 20,
+  lordSteam: 0.4,
+  /** Rei dos Ossuários: chance de levantar quem cai (fases 1 e 2) e a cura dos golpes na fase 2. */
+  lordRaise: 0.5,
+  lordRaisePhase2: 0.8,
+  lordArmyLifesteal: 0.3,
 
   // Vila longa (M5 F4): prédios até o 10, efeitos em curva e conservação.
   /** Teto dos prédios na campanha; no pós-jogo não há teto. */

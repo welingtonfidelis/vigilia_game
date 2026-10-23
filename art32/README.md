@@ -41,6 +41,7 @@ Um gerador por categoria (os arquivos `<categoria>32_*.py` são as partes dele):
 | `monstros32_b.py` | monstros e chefes dos atos IV–VI, com variantes e retratos |
 | `abismo32.py` | corredor e arena dos 6 atos, objetos, efeitos de combate e molduras |
 | `interface32.py` | ícones de equipamento e de rank; moeda, baú e flecha (estes também em 16-bit) |
+| `dimensoes32.py` | os quatro biomas das dimensões fundas (M5 F6) **em 16 e 32-bit**: monstros e Senhores com variantes e retratos, corredor VII a X, objetos, efeitos e o índice `src/render/pack-dimensoes.ts` (`--dry` só gera prévias) |
 
 ```bash
 python3 -I art32/vila32.py [pasta-de-prévias]
