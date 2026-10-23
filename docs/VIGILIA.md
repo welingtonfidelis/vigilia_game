@@ -486,6 +486,14 @@ flowchart LR
 | 3 | **A vila cresce e sangra** | …ter custo, manutenção ou risco, e não ser só um "+10%" |
 | 4 | **O abismo tem forma** | …criar uma escolha de composição, rota ou timing |
 | 5 | **Lenda longa** | …continuar valendo após 20 h (sem upgrades "mortos") |
+| 6 | **Abrigo no escuro** | …respeitar o contraste: o abismo é cruel e opressivo, a vila é o abrigo quente onde a vida continua (ver o tom, abaixo) |
+
+**Tom: abrigo no escuro** (decidido em 2026-10-23). O jogo vive do contraste entre os dois lados:
+
+- **O abismo** é duro: heróis morrem (de 3 a 6 por ano no Normal, meta do balanceador), nêmesis voltam, a corrupção pesa. O corredor é escuro, frio e silencioso, e os textos dele (encontros, códex, Senhores) não suavizam.
+- **A vila** é o abrigo: à noite ela acende (lampiões, janelas, fogueira, bardo), tem feira, festa, casamentos, crianças e bichos, e lembra os mortos com carinho (Salão, busto, ruas com nome, visitas ao túmulo). O texto da vila tem calor e algum humor seco, nunca deboche.
+- **Luto, sim; crueldade gratuita, não.** A perda dói e fica (crônica, epitáfio, laços), mas o jogo não pune o jogador com tortura, gore ou dilemas sádicos.
+- **Na prática:** feature nova da vila puxa para o quente (luz, gente reunida, música); feature nova do abismo puxa para o opressivo. A taxa de mortes fica na faixa de hoje. Arte e som seguem o mesmo contraste: paleta quente e tons maiores na vila, roxo e verde doentios, drones e silêncio no abismo.
 
 #### 3.2 Loops em três escalas
 
@@ -2095,7 +2103,7 @@ A F6 ficou em duas partes, cada uma com seu commit: **F6a** (Paço, estandarte, 
    - **B. Folclore brasileiro:** vila mineradora colonial cuja mina rompeu num mundo inferior. Inimigos como Corpo-seco, Mula-sem-cabeça, Boitatá e Mapinguari, com o **ouro** como recurso temático. É o diferencial mais forte, mas exige pesquisa cultural cuidadosa.
 3. **Objetivo:** projeto pessoal ou publicar (itch/Steam)? Isso muda o investimento em arte e o cuidado legal.
 4. **Arte:** asset packs licenciados ou artista dedicado?
-5. **Tom:** mais aconchegante (*cozy*) ou mais sombrio (*dark*)?
+5. **Tom:** decidido em 2026-10-23: **abrigo no escuro**, com o abismo cruel e a vila como abrigo quente (pilar 6, seção 3.1).
 
 ---
 
@@ -2158,6 +2166,7 @@ Este documento é o contrato visual para uma pessoa ou IA criar/substituir a art
 - **Sombreamento:** 2–3 tons por material; luz consistente vinda de cima/esquerda; dithering só se necessário.
 - **Paleta:** 32–48 cores, escura e terrosa, com dourado/teal como acentos. Comece pela [`palette/vigilia.gpl`](../../public/assets/vigilia/palette/vigilia.gpl).
 - **Clima:** vila à beira de um abismo; madeira velha, pedra, ferrugem, tecido desbotado. O abismo usa roxo/verde doentio.
+- **Tom (abrigo no escuro):** a vila é quente (luz de lampião e de janela, laranja e dourado, gente reunida) e o abismo é frio e opressivo (roxo, verde doentio, pouca luz). Na dúvida entre deixar uma peça da vila mais acolhedora ou mais sombria, vai a acolhedora; no abismo, ao contrário.
 - **Referência:** a imagem do Tristram enviada pelo autor serve como **clima e composição** (portão de madeira + berrante grande em cima). Não copiar silhueta, textura ou layout da referência.
 - **Pós-processamento:** o jogo escurece e dessatura a cena. Entregue a arte um pouco **mais clara e saturada** que o resultado final; valide com uma captura no jogo, não só no editor.
 
