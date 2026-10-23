@@ -228,6 +228,8 @@ export interface Child {
   heirloom: Item | null;
   /** Treinou no campo por decisão do prefeito (audiência): chega à maioridade com um nível a mais. */
   apprentice?: boolean;
+  /** Casa (M6 F5) em que nasceu: leva o nome dela quando pega em armas. */
+  houseId?: number;
 }
 
 export interface Activity {
@@ -299,6 +301,8 @@ export interface Hero {
   partnerId: number | null;
   /** Pais, quando o herói nasceu na vila. */
   parents: number[];
+  /** Casa da família (M6 F5): quem casa e tem filho funda uma, e os filhos herdam o nome. */
+  houseId?: number | null;
   retiredRole: RetiredRole | null;
   /** Último dia em que conversou com o prefeito (uma conversa por dia). */
   lastTalkDay: number;
@@ -545,6 +549,8 @@ export interface Party extends Spot {
   rescued: number;
   dead: number[];
   recallRequested: boolean;
+  /** Quem deu o golpe final no Senhor nesta descida (M6 F5, para a estátua do Salão). */
+  lordSlayerId?: number;
   outcome: PartyOutcome | null;
   startedTick: number;
   /** O quanto o grupo se achava capaz ao descer (1 = no limite). */
@@ -807,6 +813,8 @@ export type ChronicleKind =
   /** Cargos da vila e torneio da estação (M6 F4). */
   | 'cargo'
   | 'torneio'
+  /** Casas das famílias (M6 F5): fundação, nome novo e feitos. */
+  | 'casa'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -830,7 +838,8 @@ export interface Metrics {
   floorsConquered: number;
   rankUps: number;
   /** Senhores vencidos (M5 F2). */
-  bossKills: { level: number; day: number }[];
+  /** Senhores vencidos; quem deu o golpe final e se o grupo voltou inteiro (M6 F5, para as estátuas e o códex). */
+  bossKills: { level: number; day: number; slayerId?: number; flawless?: boolean }[];
   /** Contratos do Senhor perdidos (o grupo caiu, fugiu ou recuou e o amuleto se desfez). */
   lordFailures: number;
   passagesOpened: number;
@@ -912,4 +921,41 @@ export interface World {
   pendingFugitives: { heroId: number; spot: Spot }[];
   metrics: Metrics;
   endedTick: number | null;
+  /** O que a guilda já viu e abateu, para o bestiário do Salão das Lendas (M6 F5). */
+  codex?: Codex;
+  /** As casas das famílias de heróis (M6 F5) e o contador próprio. */
+  houses?: House[];
+  houseSeq?: number;
+  /** Estátuas do Salão que o prefeito fixou (ids de herói). */
+  pinnedStatues?: number[];
+}
+
+/** Mistérios do códex: o que não é monstro nem lugar (src/data/codex.ts tem os textos). */
+export type MysteryId = 'ecos' | 'nemesis' | 'elites' | 'calmaria' | 'passagens' | 'fragmentos' | 'contrato' | 'retorno';
+
+export interface Codex {
+  /** Monstros pelo id: presente = visto; o número é quantos a guilda abateu. */
+  monsters: Record<string, number>;
+  /** Senhores pelo id do chefe: 1 visto, 2 vencido, 3 vencido sem baixas. */
+  lords: Record<string, number>;
+  /** Biomas (índice de BIOMES) por onde a guilda já desceu. */
+  biomes: number[];
+  rules: DimRuleId[];
+  /** Nomes próprios das lendárias que já existiram na vila. */
+  legendaries: string[];
+  mysteries: MysteryId[];
+}
+
+export type HouseDeedId = 'tresGeracoes' | 'senhorPorGeracao' | 'vinteAnos';
+
+export interface House {
+  id: number;
+  /** Sobrenome da família ("Valente"); o prefeito pode trocar. */
+  name: string;
+  foundedTick: number;
+  /** O casal que fundou a casa. */
+  founders: [number, number];
+  /** Brasão: índices das cores e do símbolo em src/data/houses.ts. */
+  crest: { field: number; charge: number; symbol: number };
+  deeds: { id: HouseDeedId; tick: number }[];
 }

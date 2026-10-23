@@ -10,6 +10,7 @@ import { dayOf, hourOf } from './calendar.ts';
 import { dailyWishes, weeklyWishes } from './wishes.ts';
 import { dailyNemeses } from './nemesis.ts';
 import { dailyPosts } from './posts.ts';
+import { dailyHouses } from './houses.ts';
 import { hourlyTournament } from './tournament.ts';
 import { formParties } from './party.ts';
 import { processForge, raiseLegendaries } from './items.ts';
@@ -67,6 +68,7 @@ function daily(world: World): void {
   dailyPatronage(world);
   dailyPets(world);
   dailyPeople(world);
+  dailyHouses(world);
   dailyCitizens(world);
   dailyWishes(world);
   weeklyWishes(world);

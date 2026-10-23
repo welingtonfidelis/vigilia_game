@@ -93,7 +93,17 @@ export const EXPANSION_LOTS: TileRect[] = [
   { tx: 15, ty: 35, tw: 4, th: 3 },
   { tx: 29, ty: 35, tw: 4, th: 3 },
 ];
-export const EXPANSION_TILES: TileRect = { tx: 6, ty: 32, tw: 38, th: 7 };
+export const EXPANSION_TILES: TileRect = { tx: 6, ty: 32, tw: 28, th: 7 };
+
+/**
+ * Salão das Lendas (M6 F5): no canto leste do distrito sul, ao lado da expansão. Na frente,
+ * o pátio dos pedestais; a trilha desce da estrada de baixo pelo lado leste do prédio.
+ */
+export const HALL_TILES: TileRect = { tx: 35, ty: 31, tw: 7, th: 6 };
+export const HALL_YARD: TileRect = { tx: 34, ty: 37, tw: 10, th: 2 };
+export const HALL_PATH: TileRect = { tx: 42, ty: 28, tw: 2, th: 9 };
+/** Centro do prédio em x e o pé dele (a porta), em px do mundo. */
+export const HALL = { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, bottom: (HALL_TILES.ty + HALL_TILES.th) * TILE };
 export const EXPANSION_ROADS: TileRect[] = [
   { tx: 24, ty: 27, tw: 2, th: 9 },
   { tx: 8, ty: 33, tw: 23, th: 2 },
@@ -150,7 +160,7 @@ export const THERMAL_PATH: TileRect = { tx: 24, ty: 25, tw: 2, th: 2 };
 /** Terreiro e trilha da caverna no canto direito, no pé do paredão. */
 export const CAVE_PATH: TileRect = { tx: 43, ty: 15, tw: 2, th: 3 };
 
-export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
+export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas' | 'salao';
 
 /** Portão de paliçada: é a entrada da vila, no alto do mapa (norte), ao centro. */
 export const HORN_TOWER: TileRect = { tx: 22, ty: 1, tw: 5, th: 6 };
@@ -168,6 +178,8 @@ export const LANDMARKS: Record<Landmark, Point> = {
   portao: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 10 },
   fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
   termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },
+  // Na frente da porta do Salão das Lendas, entre os pedestais.
+  salao: { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, y: (HALL_TILES.ty + HALL_TILES.th) * TILE + 16 },
 };
 
 export const door = (id: BuildingId): Point => {

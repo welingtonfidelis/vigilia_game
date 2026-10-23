@@ -42,5 +42,60 @@ export const PACK_HISTORIAS: PackAsset[] = [
       14,
       8
     ]
+  },
+  {
+    "id": "building/salao/level-1",
+    "type": "building",
+    "file": "export/png/building-salao-level-1.png",
+    "lights": "export/png/building-salao-level-1-lights.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      112,
+      96
+    ]
+  },
+  {
+    "id": "building/salao/level-2",
+    "type": "building",
+    "file": "export/png/building-salao-level-2.png",
+    "lights": "export/png/building-salao-level-2-lights.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      112,
+      96
+    ]
+  },
+  {
+    "id": "building/salao/level-3",
+    "type": "building",
+    "file": "export/png/building-salao-level-3.png",
+    "lights": "export/png/building-salao-level-3-lights.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      112,
+      96
+    ]
+  },
+  {
+    "id": "prop/salao/pedestal",
+    "type": "prop",
+    "file": "export/png/prop-salao-pedestal.png",
+    "anchor": [
+      0.5,
+      1
+    ],
+    "size": [
+      14,
+      10
+    ]
   }
 ];

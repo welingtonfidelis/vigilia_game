@@ -19,6 +19,7 @@ import { CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel }
 import { AmuletPanel, LordEndPanel } from './panels/AmuletPanels.tsx';
 import { AudiencesPanel } from './panels/AudiencesPanel.tsx';
 import { TournamentPanel } from './panels/TournamentPanel.tsx';
+import { HallPanel } from './panels/HallPanel.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
@@ -422,5 +423,7 @@ function PanelContent(props: { panel: Panel }) {
       return <AudiencesPanel />;
     case 'tournament':
       return <TournamentPanel />;
+    case 'hall':
+      return <HallPanel tab={p.tab} houseId={p.houseId} />;
   }
 }

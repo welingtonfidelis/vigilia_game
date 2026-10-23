@@ -28,6 +28,7 @@ export type Panel =
   | { kind: 'lordEnd'; level: number }
   /** O torneio da estação: a chave e os duelos para rever (M6 F4). */
   | { kind: 'tournament' }
+  | { kind: 'hall'; tab?: HallTab; houseId?: number }
   /** Pedidos da manhã e desejos dos heróis (M6 F1). */
   | { kind: 'audiences' };
 
@@ -49,8 +50,12 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'amulet',
   'audiences',
   'tournament',
+  'hall',
   'menu',
 ]);
+
+/** Abas do Salão das Lendas (M6 F5). */
+export type HallTab = 'codex' | 'houses' | 'trophies' | 'statues';
 
 export type Tone = 'info' | 'good' | 'gold' | 'bad' | 'grief' | 'warn';
 

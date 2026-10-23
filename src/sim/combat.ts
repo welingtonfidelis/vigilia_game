@@ -5,6 +5,7 @@ import { lordOf } from '../data/lords.ts';
 import { CLASSES } from '../data/classes.ts';
 import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
+import { noteCombat, noteKill } from './codex.ts';
 import { makeEnemy, spawnRoom } from './dungeon.ts';
 import { epitaph, maybeInjure, widow } from './people.ts';
 import { addBond, fleeLimit, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
@@ -82,6 +83,7 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
   combat.units.push(...spawnRoom(world, combat, room, party));
   // A nêmesis do andar entra no lugar de um monstro do bando (M6 F2).
   bringNemesis(world, party, combat, room);
+  noteCombat(world, party, combat);
   return combat;
 }
 
@@ -305,6 +307,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
       party.loot.materials[unit.material] = (party.loot.materials[unit.material] ?? 0) + qty;
     }
     const slayer = killer ? heroOf(world, killer) : undefined;
+    noteKill(world, unit);
     if (unit.nemesisId !== undefined) nemesisFalls(world, party, unit, slayer);
     if (slayer) {
       slayer.stats.kills++;
@@ -319,6 +322,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
     }
     if (unit.tags.includes('boss') && slayer) {
       slayer.stats.bossKills++;
+      party.lordSlayerId = slayer.id;
       const text = `deu o golpe final n${unit.name.startsWith('A ') ? 'a' : 'o'} ${unit.name.replace(/^(O|A) /, '')}`;
       slayer.deeds.push({ tick: world.tick, kind: 'chefe', text });
       party.moments.push(`${slayer.name} ${text}.`);
@@ -635,4 +639,5 @@ function spawnEchoes(world: World, party: Party, c: Combat): void {
     party.moments.push(`Aquilo que Vigia ergueu o eco de ${lost.name}.`);
     record(world, 'eco', [lost.id, ...party.memberIds], `No fundo do abismo, o eco de ${lost.name} se ergueu contra os próprios amigos.`);
   }
+  noteCombat(world, party, c);
 }

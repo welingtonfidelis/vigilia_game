@@ -12,6 +12,7 @@ import { resolveSeasonalEvent as resolveSeasonalEventImpl } from './events.ts';
 import { levelPower, passageOf } from './dungeon.ts';
 import { scaledCost } from './difficulty.ts';
 import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
+import { noteMystery } from './codex.ts';
 import { lordOf } from '../data/lords.ts';
 import { departLord } from './party.ts';
 import {
@@ -48,6 +49,8 @@ import { livingNemeses } from './nemesis.ts';
 import { adviseEncounter as adviseEncounterImpl } from './encounters.ts';
 import { appoint as appointImpl } from './posts.ts';
 import { guessTournament as guessTournamentImpl } from './tournament.ts';
+import { renameHouse as renameHouseImpl } from './houses.ts';
+import { togglePinStatue as togglePinStatueImpl } from './hall.ts';
 import { chance, int } from './rng.ts';
 import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, PostId, RetiredRole, SpecId, World } from './types.ts';
 
@@ -236,6 +239,7 @@ export function buyFragment(world: World): CommandResult {
   spend(world, 'fragmento', price);
   abyss.fragments++;
   abyss.bought++;
+  noteMystery(world, 'fragmentos');
   record(world, 'amuleto', [], `O joalheiro comprou um fragmento do nível ${abyss.level} de mercadores do abismo por ${price} de ouro (${abyss.fragments}/${B.fragmentsPerAmulet} no Cofre).`);
   return OK;
 }
@@ -567,6 +571,10 @@ export const appoint = (world: World, post: PostId, heroId: number): CommandResu
 
 /** O palpite do prefeito no torneio da estação (M6 F4). */
 export const guessTournament = (world: World, heroId: number): CommandResult => guessTournamentImpl(world, heroId);
+
+/** Salão das Lendas (M6 F5): o prefeito dá nome a uma casa e fixa as estátuas da frente. */
+export const renameHouse = (world: World, houseId: number, name: string): CommandResult => renameHouseImpl(world, houseId, name);
+export const togglePinStatue = (world: World, heroId: number): CommandResult => togglePinStatueImpl(world, heroId);
 
 /** O conselho do prefeito a um grupo que achou um encontro e mandou um corvo (M6 F3). */
 export const adviseEncounter = (world: World, partyId: number, optionId: string): CommandResult => adviseEncounterImpl(world, partyId, optionId);

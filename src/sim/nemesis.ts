@@ -8,6 +8,7 @@ import { NEMESIS_NAMES } from '../data/nemesis.ts';
 import { dayOf } from './calendar.ts';
 import { floorLabel, listNames, record } from './chronicle.ts';
 import { BALANCE as B } from './config.ts';
+import { noteMystery } from './codex.ts';
 import { makeEnemy, openPassages, passageOf, spotOf } from './dungeon.ts';
 import { getBond } from './hero.ts';
 import { stableRoll } from './rng.ts';
@@ -135,6 +136,7 @@ function born(world: World, u: Unit): void {
   const free = NEMESIS_NAMES.filter((name) => !taken.has(name));
   const seq = (world.abyss.nemesisSeq ?? 0) + 1;
   world.abyss.nemesisSeq = seq;
+  noteMystery(world, 'nemesis');
   const name = free[Math.floor(stableRoll(world.seed, seq, 650) * free.length)] ?? `${NEMESIS_NAMES[0]} ${seq}`;
   const nemesis: Nemesis = {
     id: seq,

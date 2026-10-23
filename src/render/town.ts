@@ -16,6 +16,8 @@ import {
   CEMETERY_TILES,
   COLS,
   EXPANSION_TILES,
+  HALL_PATH,
+  HALL_TILES,
   HOME_LOTS,
   HORN_STAND,
   HORN_TOWER,
@@ -224,6 +226,9 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
     { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia
     THERMAL_YARD,
     EXPANSION_TILES,
+    // Salão das Lendas (M6 F5): o prédio, o pátio e a trilha, com folga em volta.
+    { tx: HALL_TILES.tx - 1, ty: HALL_TILES.ty - 1, tw: HALL_TILES.tw + 2, th: HALL_TILES.th + 3 },
+    HALL_PATH,
     ...HOME_LOTS,
     ...DECOR.map((d) => ({ tx: Math.floor(d.x / TILE) - 1, ty: Math.floor(d.y / TILE) - 1, tw: 3, th: 2 })),
     { tx: 0, ty: 0, tw: 21, th: 10 }, // platô do cemitério e a fileira de pinheiros
@@ -239,6 +244,8 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
       THERMAL_YARD,
       PLAZA_TILES,
       CEMETERY_TILES,
+      { tx: HALL_TILES.tx - 1, ty: HALL_TILES.ty - 1, tw: HALL_TILES.tw + 2, th: HALL_TILES.th + 3 },
+      HALL_PATH,
       { tx: 21, ty: 0, tw: 12, th: 8 }, // portão e torrinha do berrante no topo central
       { tx: 16, ty: 0, tw: 5, th: 10 }, // fileira de pinheiros do cemitério
       { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia

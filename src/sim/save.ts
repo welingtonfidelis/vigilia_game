@@ -1,4 +1,7 @@
+import { backfillCodex } from './codex.ts';
+import { backfillHouses } from './houses.ts';
 import { SAVE_VERSION } from './config.ts';
+import { allItems } from './items.ts';
 import type { World } from './types.ts';
 
 export function serialize(world: World): string {
@@ -45,6 +48,9 @@ function fillDefaults(world: World): void {
   m.maintenance ??= 0;
   m.repairs ??= 0;
   m.spent ??= {};
+  // M6 F5: o códex nasce com o que a campanha já sabe, e as famílias viram casas.
+  backfillCodex(world, allItems(world));
+  backfillHouses(world);
 }
 
 /** Hash curto (FNV-1a) do estado, útil para comparar mundos em testes. */

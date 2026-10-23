@@ -99,8 +99,8 @@ export function dailyPosts(world: World): void {
 export function heroTitles(hero: Hero): string[] {
   const out: string[] = [];
   const has = (kind: Hero['deeds'][number]['kind']) => hero.deeds.some((d) => d.kind === kind);
-  // O feito 'chefe' também vale o golpe final num guardião; o Senhor vencido é o "derrotou …".
-  if (hero.deeds.some((d) => d.kind === 'chefe' && d.text.startsWith('derrotou '))) out.push('Mata-Senhor');
+  // O feito 'chefe' só existe contra Senhor: o golpe final nele ou estar no grupo que o venceu.
+  if (has('chefe')) out.push('Mata-Senhor');
   if (has('nemesis')) out.push(g(hero, 'Vingador', 'Vingadora'));
   if (has('ultimoDePe')) out.push(g(hero, 'Último de Pé', 'Última de Pé'));
   const wins = hero.stats.tournaments ?? 0;

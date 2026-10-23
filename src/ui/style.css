@@ -3284,3 +3284,185 @@ button.hud-item.hud-tipped:focus .hud-tip {
 .bracket-duel span.win {
   color: var(--gold);
 }
+
+/* ── Salão das Lendas (M6 F5): bestiário, casas, troféus e estátuas ─────── */
+
+.codex-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0;
+}
+
+.codex-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.codex-list li p {
+  margin: 0.2rem 0 0;
+}
+
+.codex-list li.locked,
+.codex-biome.locked summary {
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.codex-biome {
+  border: 1px solid var(--line-soft);
+  border-radius: 0.55rem;
+  margin: 0.4rem 0;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.codex-biome summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+}
+
+.codex-biome summary .tag {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.codex-biome[open] summary {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.codex-biome > p {
+  margin: 0.5rem 0.65rem;
+}
+
+.codex-lore {
+  font-family: var(--serif);
+  font-style: italic;
+  color: #d9ccb4;
+}
+
+.codex-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0 0.5rem 0.55rem;
+}
+
+.codex-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.4rem 0.45rem;
+  border-radius: 0.45rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.codex-card p {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+}
+
+.codex-card.lord {
+  border-left: 3px solid var(--gold);
+}
+
+.codex-art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.9rem;
+  overflow: hidden;
+  border-radius: 0.35rem;
+  background: radial-gradient(ellipse at 50% 80%, #2c241a, #120f0b 75%);
+  border: 1px solid var(--line-soft);
+  color: var(--muted);
+}
+
+.codex-art img,
+.codex-art .monster-sprite {
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+}
+
+/* Só visto: a silhueta e o nome. */
+.codex-card.stage-1 .codex-art img,
+.codex-card.stage-1 .codex-art .monster-sprite {
+  filter: brightness(0) drop-shadow(0 0 1px rgba(233, 196, 106, 0.55));
+}
+
+.codex-card.stage-0 {
+  opacity: 0.6;
+}
+
+.house-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0;
+}
+
+.house-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0.25rem 0;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.house-row:hover {
+  border-color: var(--gold);
+}
+
+.house-deeds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+}
+
+.house-deeds .tag {
+  margin: 0;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.house-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin: 0.6rem 0;
+}
+
+.house-head h3 {
+  margin-top: 0;
+}
+
+.house-name {
+  flex: 1 1 10rem;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font: inherit;
+}
+
+.house-gen {
+  margin: 0.4rem 0;
+}
+
+.crest {
+  flex: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}

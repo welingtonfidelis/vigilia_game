@@ -1654,7 +1654,7 @@ O M6 traz onze sistemas para o jogador ter o que decidir, acompanhar e coleciona
     - A estátua é o desenho do próprio herói (classe e gênero) pintado de pedra, então cada uma é aquele herói, sem arte nova por estátua.
     - Com os pedestais cheios, a mais nova entra no lugar da mais antiga. O painel guarda a galeria completa, e o prefeito pode fixar uma estátua para ela não sair.
     - Não concorre com a estátua da praça (mecenato) nem com o busto do memorial (item 11).
-  - Arte nova: o prédio nos 3 níveis e o pedestal, pelo gerador do pack (16 e 32-bit).
+  - Arte nova: o prédio nos 3 níveis e o pedestal, por `art32/historias32.py` (16 e 32-bit). Como ficou: item 20.
 - **Paço do prefeito** é marco, como a fonte termal: sem nível, sem preço e sem manutenção, para não mexer na economia.
 - **Como se chega lá:** a barra de baixo guarda só o que se usa a toda hora. Os lugares da vila abrem tocando neles no mapa, como já fazem o cemitério, o cofre, o quadro e a fonte termal.
   - O Salão das Lendas abre pelo prédio no mapa, por um botão no topo da Crônica (as duas são a memória da vila), pela casa na ficha do herói e pela tecla L. Não ganha botão na barra.
@@ -1846,7 +1846,7 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
   - Efeitos: o capitão soma 15% na defesa das incursões e dá +1 de humor aos guardas por dia. Com o mestre, os recrutas chegam com +10 de lealdade. O campeão é um cargo de honra: a coroação dá +15 de ânimo a quem venceu.
   - O prefeito automático preenche o capitão e o mestre quando estão vagos, primeiro com aposentados (que não descem) e depois pelo nível.
 - **Títulos** (sem efeito no jogo, na ficha e no epitáfio):
-  - Mata-Senhor: estava no grupo que derrotou um Senhor. O golpe final num guardião não conta.
+  - Mata-Senhor: deu o golpe final num Senhor ou estava no grupo que o derrotou. Os guardiões das passagens não contam: o feito "chefe" só sai contra Senhor.
   - Vingador ou Vingadora: derrubou uma nêmesis.
   - Último ou Última de Pé: único sobrevivente do grupo.
   - Campeão ou Campeã do torneio, com "×n" a partir da segunda vitória.
@@ -1873,7 +1873,6 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
     - Chance de 5% por dia, com intervalo de 60 dias entre as visitas. A visita dá +6 de ânimo.
     - A crônica registra: "Fulano levou flores ao túmulo de Beltrano, que caiu há N anos."
   - **Clima das estações:** chuva no verão, neve no inverno, folhas no outono e flores na primavera. Ficou para a F6 (item 11).
-- **Conserto:** o feito do golpe final num guardião também é do tipo "chefe". O título Mata-Senhor passou a olhar só o Senhor vencido.
 - **Balanço:** a F4 como saiu adiantava o Senhor do nível 5 para o ano 30,3, 2 anos antes do retrato de 15.9 e fora da margem de 1,5 ano.
   - Rodadas de 40 sementes, desligando uma peça por vez: sem o capitão, 30,3; sem a lembrança, 30,6; sem o torneio inteiro, 32,4; sem o mestre, 31,7.
   - Dentro do torneio: a reputação do palpite e o ânimo do campeão não mudaram nada. Este último porque o herói na vila volta à linha de base em poucas horas. Os laços dos duelos deram 30,8, e o humor dos moradores na coroação, 31,6.
@@ -1895,6 +1894,67 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
   | Nível médio dos prédios (anos 10, 40 e 75) | 2,6 · 5,9 · 7,3 | 2,9 · 5,9 · 7,2 | 2,8 · 5,9 · 7,3 | 2,8 · 5,9 · 7,3 |
 
   - Por campanha: 15 encontros por ano e 12 nêmesis, como na F3.
+
+##### 20. Como ficou a F5
+
+- **Códex** (`src/sim/codex.ts`; textos em `src/data/codex.ts`): 78 entradas, perto das 80 da spec.
+  - 10 lugares, 30 monstros, 10 Senhores, 8 regras das dimensões, 12 lendárias e 8 mistérios (ecos, nêmesis, elites, calmaria, passagens, fragmentos, contrato e retorno).
+  - **Monstro:** o visto mostra a silhueta e o nome. Com 10 abates abrem a vida, o ataque, a defesa e o hábito; com 50, a história. O eco de um herói não conta como o monstro que ele imita; a nêmesis conta como o tipo dela.
+  - **Senhor:** visto ao entrar no covil, depois vencido, e o segredo só sem baixas. O retorno do pós-jogo é o mesmo Senhor e abre o mistério "retorno".
+  - Os lugares e as regras abrem na primeira descida; as lendárias, quando a peça nasce ("Maré Negra II" é a mesma entrada de "Maré Negra"); os mistérios, na primeira vez.
+  - **Página do bioma completa:** os três monstros com a história aberta e o Senhor vencido. O enfeite que ela libera fica para a F6, junto com o catálogo.
+  - Os textos (uns 130 trechos, de 1 a 3 frases) saíram dos dados do jogo, e o "vencido" de cada Senhor descreve a luta como o combate a faz.
+- **Casas** (`src/sim/houses.ts`; sobrenomes, cores e símbolos em `src/data/houses.ts`):
+  - O primeiro filho de um casal sem casa funda uma, com um de 48 sobrenomes. Se um dos pais já é de uma casa, a criança entra nela, e quem casou de fora também. Com duas casas, fica a mais antiga.
+  - Os filhos levam a casa na maioridade. A ficha mostra "Heitor Valente" e o brasão, que leva à casa no Salão; o epitáfio diz "da casa Valente".
+  - **Brasão:** escudo com campo e figura (metal sobre cor ou cor sobre metal), um de 12 símbolos e uma estrela por feito.
+  - **Feitos:**
+    - três gerações no abismo;
+    - um Senhor por geração: toda geração que já desceu (pelo menos duas) tem alguém que estava no grupo que venceu um Senhor;
+    - vinte anos sem baixas, com alguém da casa ainda na ativa (sem isso, casa só de aposentados ganhava fácil: 8,7 por campanha).
+    - Cada feito dá +3 de reputação, e o primeiro ergue o estandarte da casa na fachada do Salão.
+  - O prefeito troca o nome da casa (de 2 a 24 letras).
+- **Salão das Lendas:**
+  - Painel com quatro abas:
+    - Bestiário;
+    - Casas: lista, árvore por geração, feitos, peças de família e troca de nome;
+    - Troféus: Senhores vencidos com quem deu o golpe final, e nêmesis caídas;
+    - Estátuas: a galeria e o fixar.
+  - Abre pelo prédio no mapa, pelo link na Crônica, pela casa na ficha e pela tecla L. Não ganhou botão na barra.
+  - **Lendas:** Senhores vencidos, páginas completas e feitos de casa. O nível 2 vem com 6 lendas (por volta do ano 21) e o 3 com 16 (por volta do ano 47).
+  - **Estátuas:** de quem deu o golpe final em cada Senhor. O save agora guarda quem foi e se o grupo voltou inteiro. São 2, 4 ou 6 pedestais, e a estátua é o sprite do herói refeito em tons de pedra. Tocar na estátua abre a ficha.
+- **Prédio no mapa:** no canto leste do distrito sul (colunas 35 a 41, linhas 31 a 36), com o pátio dos pedestais na frente e uma trilha que desce da estrada de baixo pelo lado leste.
+  - A expansão sul encolheu para as colunas 6 a 33. Os três lotes dela continuam onde estavam, e nada mais mudou na planta.
+  - `relief.test.ts` confere que a porta do Salão é alcançável.
+- **Arte** (`art32/historias32.py`, em 16 e 32-bit, com a camada de luzes): um salão de pedra com a empena virada para a frente, que se distingue do templo (telhado de quatro águas e torre).
+  - Nível 1: cantaria grossa, óculo pequeno, porta dupla com cintas de ferro sob um lintel com placa, duas janelas estreitas e musgo no pé.
+  - Nível 2: mais largo, com pórtico de duas colunas, frontão com coroa de louros, dois braseiros acesos (com fagulhas) e dois suportes de estandarte.
+  - Nível 3: mais largo de novo, com quatro colunas, frontão com filete e coroa de ouro, cúpula de cobre sobre um tambor de janelinhas, rosácea de vitral, portas abertas com luz dentro e quatro suportes.
+  - O pano dos estandartes é desenhado pelo jogo, nas cores do brasão de cada casa com feito (as de mais feitos ficam nos suportes de dentro).
+  - Pedestal de calcário claro, para a estátua cinza se destacar.
+  - **Estátuas:** 85% do tamanho do herói. O primeiro par fica ao lado da escada, por fora dos braseiros; o segundo, nos cantos do pátio; o terceiro, à frente da escada, ladeando a passagem como uma avenida. Em fila, as seis cobriam os braseiros e o pórtico.
+- **Save antigo:**
+  - O códex nasce com os Senhores vencidos, os biomas das passagens abertas e as lendárias que existem. Os abates por tipo contam daqui em diante.
+  - As famílias viram casas na ordem dos nascimentos, fundadas no dia do primeiro filho.
+  - Quem deu o golpe final sai do feito do herói.
+- **Proteção do save:** num recarregamento do Vite no meio de uma edição, o save de teste não abriu, o jogo começou uma vila nova e o salvar sozinho gravou por cima.
+  - Agora, o save que não abre por erro (não por versão) vai para `vigilia:save:quebrado` antes, e o jogo avisa.
+  - O backup em disco recuperou o save de teste.
+- **Correção da F4:** o título Mata-Senhor voltou a valer para qualquer feito "chefe". O guardião de passagem nunca gerou esse feito: "O Guardião das Urnas" é o Senhor do nível 1, e o conserto da F4 tinha partido desse engano.
+- **Testes:** 9 novos (`tests/hall.test.ts`) e o do save quebrado em `tests/game.test.ts`; 259 no total.
+- **Retrato (Normal, 40 sementes × 100 anos de cada lado):** idêntico ao da F4. Nada da F5 usa o sorteio do mundo, e a reputação dos feitos de casa chega com a vila já no teto.
+
+  | | `main` | F4 | F5 |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 6,8 | ano 6,5 | ano 6,5 |
+  | Senhor do nível 5 | ano 31,9 | ano 31,6 | ano 31,6 |
+  | Chefe máximo | ano 75,0 | ano 75,3 | ano 75,3 |
+  | Ouro dos heróis no fim | 90,8 mil | 86,7 mil | 86,7 mil |
+  | Tesouro médio no fim | 12,1 mil | 12,2 mil | 12,2 mil |
+  | Mortes por ano | 4,8 | 4,9 | 4,9 |
+  | Contratos do Senhor perdidos | 19% | 21% | 21% |
+
+  - Por campanha: 32 casas; feitos de três gerações 2,2, de um Senhor por geração 1,7 e de vinte anos 5,3. O códex fecha com 74 de 78 entradas e quase todas as páginas de bioma; o Salão termina no nível 3.
 
 ### 10. Decisões em aberto
 

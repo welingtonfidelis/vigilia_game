@@ -15,6 +15,8 @@ export const META_KEY = 'vigilia:save:meta';
 export const PREFS_KEY = 'vigilia:prefs';
 /** Save de antes do M5, guardado para exportar quando a campanha nova começa. */
 export const OLD_SAVE_KEY = 'vigilia:save:antigo';
+/** Save que não abriu por erro (não por versão): fica guardado aqui antes que a vila nova grave por cima. */
+export const BROKEN_SAVE_KEY = 'vigilia:save:quebrado';
 
 export interface SaveMeta {
   savedAt: number;
@@ -25,7 +27,7 @@ export interface SaveMeta {
 }
 
 export type StoreResult = { ok: true } | { ok: false; reason: string };
-export type LoadResult = { ok: true; world: World } | { ok: false; reason: string; old?: boolean };
+export type LoadResult = { ok: true; world: World } | { ok: false; reason: string; old?: boolean; broken?: boolean };
 
 export function browserStore(): KeyValueStore | null {
   try {
@@ -72,7 +74,19 @@ export function loadWorld(store: KeyValueStore | null): LoadResult {
       return { ok: false, reason: err.message, old: true };
     }
   } catch (err) {
-    return { ok: false, reason: `O save não abriu: ${errorText(err)}` };
+    // Não abriu por erro: o save vai para o lado antes que o salvar sozinho da vila nova grave por cima.
+    console.error('O save não abriu', err);
+    let kept = false;
+    try {
+      const json = store.getItem(SAVE_KEY);
+      if (json) {
+        store.setItem(BROKEN_SAVE_KEY, json);
+        kept = true;
+      }
+    } catch {
+      // Sem espaço para a cópia: o aviso conta.
+    }
+    return { ok: false, reason: `O save não abriu: ${errorText(err)}.${kept ? ' Uma cópia ficou guardada à parte no navegador.' : ''}`, broken: kept };
   }
 }
 

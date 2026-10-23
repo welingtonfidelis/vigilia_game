@@ -7,6 +7,7 @@ import { festivalCitizens } from './citizens.ts';
 import { record, floorLabel, g, heroLabel, listNames } from './chronicle.ts';
 import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
+import { noteLordDefeat, noteMystery } from './codex.ts';
 import { enterFloor, isGuardianFloor, levelPower, partyRooms, passageOf, reducePressure, travelTicks } from './dungeon.ts';
 import { earn, hasSpec, heroCapacity } from './economy.ts';
 import { affixCount, merchantVisit, rollDrop, shareLoot } from './items.ts';
@@ -334,6 +335,7 @@ export function rollFragment(world: World, party: Party, source: FragmentSource)
   const p = { matilha: B.fragmentMatilha, elite: B.fragmentElite, guardiao: B.fragmentGuardian, volta: B.fragmentReturn }[source];
   if (!chance(world.rng, p * B.fragmentPace * difficultyOf(world).fragments)) return;
   party.loot.fragments = (party.loot.fragments ?? 0) + 1;
+  noteMystery(world, 'fragmentos');
   const heroes = members(world, party);
   const finder = heroes.length > 0 ? pick(world.rng, heroes) : null;
   party.moments.push(finder ? `${finder.name} achou um fragmento de amuleto.` : 'Acharam um fragmento de amuleto.');
@@ -368,7 +370,9 @@ function lordVictory(world: World, party: Party): void {
   const lord = lordOf(level);
   const heroes = members(world, party);
   if (abyss.amulet?.level === level) abyss.amulet = null;
-  world.metrics.bossKills.push({ level, day: dayOf(world.tick) });
+  const flawless = party.dead.length === 0;
+  world.metrics.bossKills.push({ level, day: dayOf(world.tick), slayerId: party.lordSlayerId, flawless });
+  noteLordDefeat(world, level, flawless);
   world.town.reputation = Math.min(100, world.town.reputation + 10);
   for (const h of heroes) {
     h.deeds.push({ tick: world.tick, kind: 'chefe', text: `derrotou ${midName(lord.name)}` });

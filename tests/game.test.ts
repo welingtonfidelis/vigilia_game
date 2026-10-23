@@ -4,7 +4,7 @@ import { autoMayor, byWhom, checksum, commands, createWorld, runDays, runTicks, 
 import type { ActivityKind } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
 import { MAX_CATCH_UP_MS, MAX_FRAME_MS, MAX_STEPS_PER_FRAME, Session, type SessionEvent } from '../src/game/session.ts';
-import { clearSave, loadPrefs, loadWorld, readSaveMeta, saveWorld, type KeyValueStore } from '../src/game/storage.ts';
+import { BROKEN_SAVE_KEY, clearSave, loadPrefs, loadWorld, readSaveMeta, saveWorld, type KeyValueStore } from '../src/game/storage.ts';
 import { heroDestination, LANDMARKS, door, workSpot } from '../src/render/layout.ts';
 import { activityText, fmt, midSentence, phaseText } from '../src/ui/format.ts';
 import { objectives } from '../src/ui/objectives.ts';
@@ -129,11 +129,18 @@ describe('salvar e carregar', () => {
     expect(saveWorld(null, world).ok).toBe(false);
   });
 
-  it('save corrompido não derruba o jogo', () => {
+  it('save corrompido não derruba o jogo e fica guardado à parte', () => {
     const store = new MemoryStore();
-    store.setItem('vigilia:save', '{"isso não é um mundo"');
+    const bad = '{"isso não é um mundo"';
+    store.setItem('vigilia:save', bad);
+    const errors = console.error;
+    console.error = () => {};
     const result = loadWorld(store);
+    console.error = errors;
     expect(result.ok).toBe(false);
+    // A vila nova pode gravar por cima: a cópia do que não abriu continua lá.
+    expect(store.getItem(BROKEN_SAVE_KEY)).toBe(bad);
+    if (!result.ok) expect(result.broken).toBe(true);
   });
 });
 

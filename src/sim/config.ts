@@ -454,6 +454,16 @@ export const BALANCE = {
   /** Laço de quem perde com quem venceu: respeito, ou raiva se já eram rivais. */
   tournamentRespect: 5,
   tournamentGrudge: 8,
+  /** Códex do Salão (M6 F5): abates para abrir o hábito do monstro e a história dele. */
+  codexHabitKills: 10,
+  codexStoryKills: 50,
+  /** Casas (M6 F5): reputação de cada feito de casa e os anos do feito "sem baixas". */
+  houseDeedReputation: 3,
+  houseQuietYears: 20,
+  /** Salão das Lendas (M6 F5): lendas para o nível 2 e o 3 (só aparência) e os pedestais de cada nível. */
+  hallLevel2Legends: 6,
+  hallLevel3Legends: 16,
+  hallPedestals: [2, 4, 6],
   /** Visita por lembrança: o intervalo mínimo, a chance por dia depois dele e o ânimo que dá. */
   memoryVisitCooldownDays: 60,
   memoryVisitChance: 0.05,

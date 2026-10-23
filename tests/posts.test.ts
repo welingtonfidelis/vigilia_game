@@ -86,10 +86,9 @@ describe('cargos da vila (M6 F4)', () => {
     const world = createWorld(65);
     const h = townHero(world);
     h.gender = 'f';
-    // O golpe final num guardião não faz Mata-Senhor.
-    h.deeds.push({ tick: 0, kind: 'chefe', text: 'deu o golpe final no Guardião das Urnas' });
     expect(heroTitles(h)).toEqual([]);
-    h.deeds.push({ tick: 0, kind: 'chefe', text: 'derrotou o Senhor das Cinzas' }, { tick: 0, kind: 'nemesis', text: 'vingou Bram' });
+    // O Guardião das Urnas é o Senhor do nível 1 (não um guardião de passagem).
+    h.deeds.push({ tick: 0, kind: 'chefe', text: 'deu o golpe final no Guardião das Urnas' }, { tick: 0, kind: 'nemesis', text: 'vingou Bram' });
     h.stats.defended = 3;
     expect(heroTitles(h)).toEqual(['Mata-Senhor', 'Vingadora', 'Escudo da Vila']);
     h.status = 'dead';

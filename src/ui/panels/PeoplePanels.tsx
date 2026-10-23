@@ -412,7 +412,7 @@ export function MenuPanel() {
         <li>WASD ou setas: andar com o prefeito. Clique ou toque no chão para andar até lá.</li>
         <li>Clique num prédio, no berrante, no quadro ou no cofre: o prefeito vai até lá e interage. Perto de algo, E interage.</li>
         <li>Clique num herói para ver a ficha.</li>
-        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · G: acompanhar as masmorras · M: abismo · H: heróis · C: crônica · N: som · Esc: fechar.</li>
+        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · G: acompanhar as masmorras · M: abismo · H: heróis · C: crônica · L: Salão das Lendas · N: som · Esc: fechar.</li>
       </ul>
 
       <h3>As velas do prefeito</h3>

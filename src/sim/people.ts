@@ -13,6 +13,7 @@ import { equip, heirloomFor, stash, takeItems } from './items.ts';
 import { addBond, addTrait, ageYears, createHero, getBond, heroStats, rollRank, WOUNDS } from './hero.ts';
 import { chance, int, pick } from './rng.ts';
 import { heroTitles } from './posts.ts';
+import { birthIntoHouse, houseOfHero } from './houses.ts';
 import type { Child, Hero, InjuryKind, RetiredRole, World } from './types.ts';
 
 const alive = (h: Hero) => h.status === 'town' || h.status === 'expedition';
@@ -172,6 +173,8 @@ function births(world: World): void {
     world.metrics.births++;
     const verb = a.gender === b.gender ? 'adotaram' : 'tiveram';
     record(world, 'nascimento', [a.id, b.id], `${a.name} e ${b.name} ${verb} ${gender === 'm' ? 'um menino' : 'uma menina'}: ${child.name}.`);
+    // A criança entra na casa da família, ou o casal funda uma (M6 F5).
+    birthIntoHouse(world, child, a, b);
   }
 }
 
@@ -195,6 +198,7 @@ function comingOfAge(world: World): void {
     hero.classId = child.classId;
     hero.bornDay = child.bornDay;
     hero.parents = [...child.parents];
+    hero.houseId = child.houseId ?? null;
     // Quem treinou no campo com a bênção do prefeito (audiência) chega um nível à frente.
     hero.level = child.apprentice ? 2 : 1;
     hero.xp = 0;
@@ -293,7 +297,9 @@ const TRAIT_EPITAPH: Partial<Record<string, string>> = {
 const DEED_PRIORITY = ['chefe', 'nemesis', 'ultimoDePe', 'desejo', 'conquista', 'matador'] as const;
 
 export function epitaph(world: World, hero: Hero): string {
-  const parts = [`Aqui jaz ${hero.name}, ${className(hero)} de rank ${hero.rank}.`];
+  // A casa (M6 F5) entra no nome: "Aqui jaz Heitor, da casa Valente, …".
+  const house = houseOfHero(world, hero);
+  const parts = [`Aqui jaz ${hero.name}${house ? `, da casa ${house.name},` : ','} ${className(hero)} de rank ${hero.rank}.`];
   const deed = DEED_PRIORITY.map((k) => hero.deeds.findLast((d) => d.kind === k)).find((d) => d);
   const pronoun = g(hero, 'Ele', 'Ela');
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
