@@ -29,7 +29,7 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
   const dead = party.dead.includes(hero.id) || hero.status === 'dead';
   const fled = !dead && !party.memberIds.includes(hero.id);
   const { hp, max } = liveHp(world, hero);
-  const capped = hero.level >= maxLevel(hero);
+  const capped = hero.level >= maxLevel(world, hero);
   const need = xpToNext(hero.level);
   const share = party.loot.xp / Math.max(1, party.memberIds.length);
   const before = capped ? 1 : hero.xp / need;
@@ -40,7 +40,7 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
   return (
     <li
       class={`party-frame${dead ? ' dead' : fled ? ' fled' : ''}`}
-      title={`${hero.name} · nível ${hero.level} · ${Math.ceil(hp)}/${max} de vida · ${capped ? 'nível máximo' : `${Math.floor(hero.xp)}+${Math.floor(share)} de ${need} XP`} · ânimo ${Math.round(hero.morale)}`}
+      title={`${hero.name} · nível ${hero.level} · ${fmt(Math.ceil(hp))}/${fmt(max)} de vida · ${capped ? 'nível máximo' : `${fmt(hero.xp)}+${fmt(share)} de ${fmt(need)} XP`} · ânimo ${Math.round(hero.morale)}`}
     >
       <HeroPortrait hero={hero} />
       <span class="pf-info">
@@ -54,9 +54,9 @@ function PartyFrame(props: { hero: Hero; party: Party }) {
           <small class="pf-status warn">Fugiu</small>
         ) : (
           <>
-            <span class={`pf-bar hp${low ? ' low' : ''}`} aria-label={`Vida ${Math.ceil(hp)} de ${max}`}>
+            <span class={`pf-bar hp${low ? ' low' : ''}`} aria-label={`Vida ${fmt(Math.ceil(hp))} de ${fmt(max)}`}>
               <i style={{ width: pct(hp / Math.max(1, max)) }} />
-              <em>{Math.ceil(hp)}/{max}</em>
+              <em>{fmt(Math.ceil(hp))}/{fmt(max)}</em>
             </span>
             <span class="pf-bar xp" aria-label="Experiência">
               <i class="gain" style={{ width: pct(after) }} />

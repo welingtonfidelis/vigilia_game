@@ -1156,9 +1156,12 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
 - **Heróis:** o teto de nível de cada rank sobe **+4 por nível do abismo** (rank E: 10 no nível 1; rank S: 30 no nível 1 e 66 no nível 10). O resto da progressão de ranks segue igual.
 - **Equipamento:**
   - Tier sem teto (sai o `dropTierMax`).
-  - Saque no tier **3N + andar**.
-  - O ferreiro de nível n forja até o tier **3n + 1**.
+  - Saque no tier do nível + andar: **2 por nível até o 6, depois 4 por nível** (nível 6: 10; nível 10: 26; nível 30: 106). Era 3N na proposta; 4 por nível é o que casa com o quadrado da força (seção 15.3).
+  - O saque não fica mais preso ao teto da forja: acima do que a vila forja, o equipamento vem do abismo.
+  - O ferreiro de nível n forja até o tier **3n + 1** (na F4, com os prédios até o nível 10).
   - A regra das lendárias (acima do teto da forja) continua.
+- **Defesa:** a defesa extra dos monstros para de crescer no nível 6, e a da armadura conta só até o tier 12 (acima, a armadura dá vida). O dano é ataque × 100/(100 + defesa); com a defesa crescendo sem teto dos dois lados, as lutas ficariam cada vez mais longas e a fúria decidiria tudo. Assim vida e ataque crescem juntos dos dois lados, e a duração das lutas se mantém.
+- **Recrutas:** chegam com 3 níveis a mais por nível do abismo e com arma e armadura comuns de metade do tier do nível. Quem chega a uma vila do nível 8 vem de um mundo mais duro.
 - **Interface:** números compactos a partir de 10 mil ("12,3 mil", "4,5 mi").
 - **Coeficientes:** saem do balanceador. A regra é que um grupo bem cuidado no nível N tenha a mesma chance que no nível 1.
 
@@ -1242,7 +1245,7 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 |---|---|---|
 | **F1** Motor de dimensões ✅ | Nível do abismo, gerador por semente (bioma, regras, andares, salas, monstros), passagens com mistério e mapa da guilda, restos por passagem, pressão e incursões, quadro com contratos novos, corredor e arena por bioma, save 11 e aviso de campanha nova | Testes do gerador (mesma semente, mesmo mundo; cada regra com efeito), balanceador sem impasse; jogável do nível 1 ao 2 sem amuleto, com o nível subindo por um atalho de teste |
 | **F2** Amuletos e Senhores ✅ | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–9 e o Vigia no 10, fim e pós-jogo com os retornos | Os Senhores caem em ordem pelo prefeito automático. A campanha inteira até o Vigia depende da escala da F3 |
-| **F3** Escala sem fim | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
+| **F3** Escala sem fim ✅ | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
 | **F4** Vila longa | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
 | **F5** Balanceamento 5× | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
 | **F6** Biomas e Senhores novos | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
@@ -1287,6 +1290,34 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 - **Fim da campanha:** vencer o Vigia no nível 10 fecha a campanha (tela de fim). O jogo segue no 11 com os retornos: "O Guardião das Urnas (1º retorno)", e a cada 10 níveis o Vigia volta.
 - **Prefeito automático:** monta o amuleto quando tem os fragmentos e o ouro. Desafia com o grupo mais forte quando a confiança passa de 1,1, ou de 0,85 depois de 60 dias esperando.
 - **Retrato (6 sementes × 40 anos):** os Senhores do nível 1 caem no ano 3,4 em média, e os do nível 5 no ano 27,9. Todas as sementes param no nível 6 ou 7, porque os heróis batem no teto de nível 30 e de tier 12, e os monstros seguem crescendo. Isso é a F3. Só 3% dos contratos se perdem, porque o prefeito automático só vai quando se acha capaz; a meta de 20% a 35% é da F5.
+
+##### 15.3 Como ficou a F3
+
+- **Calibragem:** um grupo "bem cuidado" (rank A, no teto de nível, com o equipamento do nível) tem a mesma confiança do nível 6 ao 50:
+
+  | Nível | Força dos monstros | Teto do rank A | Tier | Vida do guardião herói | Confiança |
+  |---|---|---|---|---|---|
+  | 6 | 9,2 | 46 | 11 | 2,5 mil | 4,5 |
+  | 10 | 25,6 | 62 | 27 | 6,0 mil | 4,1 |
+  | 20 | 102 | 102 | 67 | 20 mil | 3,7 |
+  | 30 | 230 | 142 | 107 | 42 mil | 3,6 |
+  | 50 | 639 | 222 | 187 | 109 mil | 3,7 |
+
+  Os testes conferem a confiança e lutas de verdade contra elites: a taxa de vitória no nível 30 fica a até 35 pontos da do nível 6.
+- **Interface:** números a partir de 10 mil aparecem compactos ("12,3 mil", "4,5 mi", "1,2 bi").
+- **Retrato (4 sementes × 100 anos, salvando e carregando a cada 5 anos):**
+  - **O que deu certo:** os Senhores caem em ordem até o nível 15 ou 16, sem impasse, e o save volta idêntico (80/80).
+  - **Ritmo:** Senhor do nível 1 no ano 3,2; do 5 no ano 25,9; o Vigia (nível 10) no ano 55,4, em todas as sementes. O pós-jogo segue a cerca de 7 anos por nível.
+  - **Ainda fora das metas (F4 e F5):**
+    - Mortalidade de 0,9 por ano (meta: 3 a 6).
+    - Ouro dos heróis no fim em 119 mil.
+    - Tesouro de até 223 mil, sem a manutenção da vila longa.
+    - O Vigia cai cedo (meta: anos 70 a 90).
+    - Só 7% dos contratos do Senhor se perdem (meta: 20% a 35%).
+
+##### 15.4 Fila de ajustes pedidos durante o M5
+
+- **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que hoje estão pequenos demais para ler. Pedido em 2026-10-23.
 
 ##### 16. Escolhas feitas por padrão (fáceis de trocar)
 

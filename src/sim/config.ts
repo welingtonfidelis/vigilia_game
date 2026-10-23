@@ -98,7 +98,6 @@ export const BALANCE = {
   /** Quanto cada afixo vale na hora de comparar peças (em tiers). */
   affixValue: 0.8,
   arsenalMax: 24,
-  dropTierMax: 12,
   /** A lendária do chefe cai este tanto acima do teto da forja (ou do tier do ato). */
   legendaryDropEdge: 2,
   /** E nunca fica abaixo do teto da forja mais isto, quando o ferreiro sobe. */
@@ -175,6 +174,21 @@ export const BALANCE = {
   drinkPrice: 3,
   trainPrice: 4,
   donation: 2,
+
+  // Escala sem fim (M5 F3): os três lados crescem perto do quadrado do nível do abismo.
+  /** O teto de nível de cada rank sobe isto por nível do abismo. */
+  levelCapPerAbyssLevel: 4,
+  /** Tier do saque por nível do abismo: 2 até o nível 6, 4 depois (casa com o quadrado da força). */
+  tierPerLevelEarly: 2,
+  tierPerLevelLate: 4,
+  tierEarlyLevels: 6,
+  /** A defesa extra dos monstros para de crescer aqui; a vida e o ataque seguem a força. */
+  defBonusMaxLevel: 6,
+  /** A defesa da armadura conta até este tier; acima, a armadura só dá vida. */
+  armorDefTierCap: 12,
+  /** Recrutas chegam com níveis a mais por nível do abismo e equipamento comum de uma fração do tier do nível. */
+  recruitLevelsPerAbyssLevel: 3,
+  recruitGearFraction: 0.5,
 
   // Abismo (M5): dimensões, passagens e pressão
   /** Força dos monstros por nível do abismo (1 a 6); depois cresce com o quadrado do nível. */

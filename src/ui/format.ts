@@ -17,7 +17,19 @@ import {
 } from '../sim/index.ts';
 import type { Doctrine, Hero, MaterialId, Party, PartyOutcome, Passage, RoomKind, World } from '../sim/index.ts';
 
-export const fmt = (n: number): string => Math.floor(n).toLocaleString('pt-BR');
+/**
+ * Número para a tela: inteiro com separador até 9.999; a partir de 10 mil, compacto
+ * ("12,3 mil", "4,5 mi", "1,2 bi"), para o pós-jogo sem teto caber nos cartões.
+ */
+export function fmt(n: number): string {
+  const v = Math.floor(n);
+  const abs = Math.abs(v);
+  if (!Number.isFinite(v)) return '∞';
+  if (abs < 10_000) return v.toLocaleString('pt-BR');
+  const [div, unit] = abs >= 1e12 ? [1e12, 'tri'] : abs >= 1e9 ? [1e9, 'bi'] : abs >= 1e6 ? [1e6, 'mi'] : [1e3, 'mil'];
+  const x = v / div;
+  return `${x.toLocaleString('pt-BR', { maximumFractionDigits: Math.abs(x) < 100 ? 1 : 0 })} ${unit}`;
+}
 export const pct = (x: number): string => `${Math.round(x * 100)}%`;
 export const clockOf = (tick: number): string => `${String(hourOf(tick)).padStart(2, '0')}h`;
 export const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;

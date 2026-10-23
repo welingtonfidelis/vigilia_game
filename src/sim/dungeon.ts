@@ -24,8 +24,18 @@ export function levelPower(level: number): number {
   return table[table.length - 1]! * (level / table.length) ** 2;
 }
 
-/** Defesa somada aos monstros do nível. */
-export const levelDefBonus = (level: number): number => B.defBonusPerLevel * (Math.max(1, level) - 1);
+/**
+ * Defesa somada aos monstros do nível. Para de crescer no nível 6: com a vida e o ataque
+ * crescendo no quadrado, uma defesa sem teto alongaria as lutas até a fúria decidir tudo.
+ */
+export const levelDefBonus = (level: number): number => B.defBonusPerLevel * (Math.min(Math.max(1, level), B.defBonusMaxLevel) - 1);
+
+/** Tier do saque de um nível do abismo (no andar 0): 2 por nível até o 6, depois 4. */
+export function levelTier(level: number): number {
+  const n = Math.max(1, level);
+  const early = Math.min(n, B.tierEarlyLevels) - 1;
+  return early * B.tierPerLevelEarly + Math.max(0, n - B.tierEarlyLevels) * B.tierPerLevelLate;
+}
 
 const threatOf = (def: EnemyUnitDef): number => def.hp * (1 + def.def / 100) * ((def.atk * 10) / def.interval);
 

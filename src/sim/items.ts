@@ -19,6 +19,7 @@ import { floorLabel, ofWhom, record } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_DAY } from './config.ts';
 import { hasSpec, level, maxGearTier } from './economy.ts';
 import { heroStats } from './hero.ts';
+import { levelTier } from './dungeon.ts';
 import { chance, pick } from './rng.ts';
 import type { BenchService, ClassId, Hero, Item, ItemAffix, ItemSlot, MaterialId, Party, Rarity, Spot, World } from './types.ts';
 import { difficultyOf, scaledCost } from './difficulty.ts';
@@ -210,21 +211,21 @@ export function nextTierWorth(world: World, hero: Hero, slot: 'weapon' | 'armor'
 // ── Abismo ───────────────────────────────────────────────────────────────
 
 /** Tier do saque de um andar: cresce com o nível do abismo e a profundidade. */
-const spotTier = (spot: Pick<Spot, 'level' | 'floor'>): number => (Math.max(1, spot.level) - 1) * 2 + spot.floor;
+const spotTier = (spot: Pick<Spot, 'level' | 'floor'>): number => levelTier(spot.level) + spot.floor;
 
 /**
- * Tier das peças que caem num andar: cresce com o nível e a profundidade, mas nunca passa
- * do que a forja da vila já faz (o abismo devolve peças da época; o ganho está nos afixos).
+ * Tier das peças que caem num andar: cresce com o nível e a profundidade, sem teto (M5 F3).
+ * O abismo devolve peças da época dele; acima do que a forja da vila faz, é dele que vem o
+ * equipamento.
  */
-export const dropTier = (world: World, spot: Pick<Spot, 'level' | 'floor'>, slot: ItemSlot): number =>
-  Math.max(1, Math.min(B.dropTierMax, spotTier(spot), Math.max(1, maxGearTier(world, slot === 'amulet' ? undefined : slot))));
+export const dropTier = (_world: World, spot: Pick<Spot, 'level' | 'floor'>, _slot: ItemSlot): number => Math.max(1, spotTier(spot));
 
 /**
  * Tier da lendária que o Senhor deixa: acima do que a forja faz na hora (ou do tier do
  * nível, o que for maior), para a peça valer o nome por bastante tempo.
  */
 export const legendaryTier = (world: World, spot: Pick<Spot, 'level' | 'floor'>, slot: ItemSlot): number =>
-  Math.min(B.dropTierMax + B.legendaryDropEdge + 1, Math.max(spotTier(spot), maxGearTier(world, slot === 'amulet' ? undefined : slot)) + B.legendaryDropEdge);
+  Math.max(spotTier(spot), maxGearTier(world, slot === 'amulet' ? undefined : slot)) + B.legendaryDropEdge;
 
 /**
  * Lendárias acompanham a vila: quando o ferreiro sobe ou se especializa, toda lendária

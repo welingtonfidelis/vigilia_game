@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BALANCE, commands, createWorld, lordOf, runTicks, TICKS_PER_DAY } from '../src/sim/index.ts';
+import { BALANCE, commands, createWorld, lordOf, maxLevel, runTicks, TICKS_PER_DAY } from '../src/sim/index.ts';
 import type { Hero, Party, World } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
 import { rollFragment } from '../src/sim/expedition.ts';
@@ -10,8 +10,8 @@ function strongHeroes(world: World, n: number, gear = 20): Hero[] {
     h.status = 'town';
     h.activity = null;
     h.injury = null;
-    h.level = 30;
     h.rank = 'S';
+    h.level = maxLevel(world, h);
     h.gear = { weapon: gear, armor: gear };
     if (h.items?.weapon) h.items.weapon.tier = gear;
     if (h.items?.armor) h.items.armor.tier = gear;
@@ -119,7 +119,7 @@ describe('Senhores do abismo', () => {
     const world = createWorld(8);
     world.abyss.level = 10;
     readyAmulet(world);
-    const team = strongHeroes(world, 4, 120);
+    const team = strongHeroes(world, 4, 60);
     expect(commands.challengeLord(world, team.map((h) => h.id))).toEqual({ ok: true });
     runLair(world);
     expect(world.endedTick).not.toBeNull();

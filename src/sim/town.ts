@@ -184,7 +184,7 @@ export function scoreActivities(world: World, hero: Hero): [ActivityKind, number
   if (upgrade) scores.push(['comprar', 1.1]);
   // Com o tier comum em dia e ouro sobrando, o herói leva a peça ao joalheiro.
   else if (benchOffer(world, hero)) scores.push(['joias', 0.9]);
-  if (!hero.injury && level(world, 'campo') >= 1 && hero.gold >= trainPrice(world) && hero.level < maxLevel(hero)) {
+  if (!hero.injury && level(world, 'campo') >= 1 && hero.gold >= trainPrice(world) && hero.level < maxLevel(world, hero)) {
     scores.push(['treinar', 0.35]);
   }
   if (hero.grief > 10 && hero.griefFor !== null) scores.push(['tumulo', (hero.grief / 100) * 1.4]);

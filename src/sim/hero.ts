@@ -6,7 +6,8 @@ import { record, g, heroLabel, className } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_YEAR } from './config.ts';
 import { chance, int, next, pick, range, weighted } from './rng.ts';
 import { hasSpec } from './economy.ts';
-import { affixCount, emptyItems } from './items.ts';
+import { affixCount, commonItem, emptyItems, equip } from './items.ts';
+import { levelTier } from './dungeon.ts';
 import type { Doctrine, Hero, InjuryKind, Rank, TraitId, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
 
@@ -56,7 +57,8 @@ export function heroStats(world: World, hero: Hero): HeroStats {
       c.hp * (1 + B.levelHpGrowth * lv) * rm * (1 + B.armorHpPerTier * hero.gear.armor) * decline * hurt.hp * (1 + B.affixHp * fx('robusto')),
     ),
     atk: c.atk * (1 + B.levelAtkGrowth * lv) * rm * (1 + B.weaponAtkPerTier * hero.gear.weapon) * decline * hurt.atk,
-    def: c.def * (1 + B.levelDefGrowth * lv) * rm + B.armorDefPerTier * hero.gear.armor + B.affixDef * fx('guardiao'),
+    // A defesa da armadura conta até o tier armorDefTierCap; acima, a armadura só dá vida.
+    def: c.def * (1 + B.levelDefGrowth * lv) * rm + B.armorDefPerTier * Math.min(hero.gear.armor, B.armorDefTierCap) + B.affixDef * fx('guardiao'),
     interval: Math.max(3, Math.round(c.interval * hurt.interval * Math.pow(B.affixInterval, fx('agil')))),
     pierce: Math.min(0.9, c.pierce + B.affixPierce * fx('perfurante')),
     crit: c.crit * hurt.crit + B.affixCrit * fx('afiado'),
@@ -88,7 +90,8 @@ export function woundEffects(hero: Hero): WoundMults {
   return out;
 }
 
-export const maxLevel = (hero: Hero): number => RANK_MAX_LEVEL[hero.rank];
+/** Teto de nível do herói: o do rank, mais o que o nível do abismo abriu (M5 F3). */
+export const maxLevel = (world: World, hero: Hero): number => RANK_MAX_LEVEL[hero.rank] + B.levelCapPerAbyssLevel * (Math.max(1, world.abyss.level) - 1);
 
 export const xpToNext = (level: number): number => Math.round(B.xpBase * Math.pow(level, B.xpExp));
 
@@ -202,9 +205,16 @@ export function createHero(world: World, opts: { rankCap?: Rank } = {}): Hero {
   hero.hp = heroStats(world, hero).maxHp;
   hero.morale = moraleBaseline(hero);
   hero.loyalty = Math.min(100, B.startLoyalty + traitSum(hero, 'loyalty'));
-  // Começa experiente quando a vila já é renomada (heróis mais fortes chegam).
-  const startLevel = Math.min(maxLevel(hero), 1 + Math.floor((world.town.reputation / 100) * 6 * next(world.rng)));
+  // Começa experiente quando a vila já é renomada (heróis mais fortes chegam), e mais ainda
+  // quando o abismo já desceu: quem chega a uma vila do nível 8 vem de um mundo mais duro.
+  const deeper = B.recruitLevelsPerAbyssLevel * (Math.max(1, world.abyss.level) - 1);
+  const startLevel = Math.min(maxLevel(world, hero), 1 + deeper + Math.floor((world.town.reputation / 100) * 6 * next(world.rng)));
   for (let l = 1; l < startLevel; l++) levelUp(world, hero, false);
+  const gearTier = Math.floor(levelTier(world.abyss.level) * B.recruitGearFraction);
+  if (gearTier > 0) {
+    equip(world, hero, commonItem(world, 'weapon', gearTier, 'trazido de longe'));
+    equip(world, hero, commonItem(world, 'armor', gearTier, 'trazido de longe'));
+  }
   hero.hp = heroStats(world, hero).maxHp;
   world.heroes.push(hero);
   return hero;
@@ -218,16 +228,16 @@ function levelUp(world: World, hero: Hero, announce: boolean): void {
 }
 
 export function gainXp(world: World, hero: Hero, amount: number): void {
-  if (hero.level >= maxLevel(hero)) return;
+  if (hero.level >= maxLevel(world, hero)) return;
   // A dificuldade acelera ou atrasa a subida de nível (abismo e treino).
   hero.xp += amount * difficultyOf(world).xp;
-  while (hero.level < maxLevel(hero) && hero.xp >= xpToNext(hero.level)) {
+  while (hero.level < maxLevel(world, hero) && hero.xp >= xpToNext(hero.level)) {
     hero.xp -= xpToNext(hero.level);
     const before = heroStats(world, hero).maxHp;
     levelUp(world, hero, true);
     hero.hp += heroStats(world, hero).maxHp - before;
   }
-  if (hero.level >= maxLevel(hero)) hero.xp = 0;
+  if (hero.level >= maxLevel(world, hero)) hero.xp = 0;
 }
 
 export function promote(world: World, hero: Hero, reason: string): boolean {

@@ -148,7 +148,7 @@ function frontierFloors(world: World): { passageId: number; level: number; floor
 function makeRoom(world: World): void {
   if (activeHeroes(world).length < heroCapacity(world) - 1 || world.town.reputation < 30) return;
   const typical = world.town.reputation >= 70 ? 3 : 2;
-  const capped = townHeroes(world).filter((h) => h.level >= maxLevel(h) && RANKS.indexOf(h.rank) < typical);
+  const capped = townHeroes(world).filter((h) => h.level >= maxLevel(world, h) && RANKS.indexOf(h.rank) < typical);
   if (capped.length === 0) return;
   const power = (h: (typeof capped)[number]) => {
     const s = heroStrength(world, h);

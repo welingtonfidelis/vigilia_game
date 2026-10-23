@@ -6,7 +6,7 @@ import { createHero } from '../src/sim/hero.ts';
 import { MAX_CATCH_UP_MS, MAX_FRAME_MS, MAX_STEPS_PER_FRAME, Session, type SessionEvent } from '../src/game/session.ts';
 import { clearSave, loadPrefs, loadWorld, readSaveMeta, saveWorld, type KeyValueStore } from '../src/game/storage.ts';
 import { heroDestination, LANDMARKS, door, workSpot } from '../src/render/layout.ts';
-import { activityText, midSentence, phaseText } from '../src/ui/format.ts';
+import { activityText, fmt, midSentence, phaseText } from '../src/ui/format.ts';
 import { objectives } from '../src/ui/objectives.ts';
 
 class MemoryStore implements KeyValueStore {
@@ -220,6 +220,14 @@ describe('textos da tela', () => {
     passage.conquered = passage.conquered.map((_, f) => f < passage.floors - 1);
     expect(objectives(world).some((o) => o.text.startsWith('Vença o guardião e sele a passagem'))).toBe(true);
     expect(midSentence('A Mãe-Bolor')).toBe('a Mãe-Bolor');
+  });
+
+  it('números compactos a partir de 10 mil, para o pós-jogo sem teto', () => {
+    expect(fmt(9_999)).toBe('9.999');
+    expect(fmt(12_345)).toBe('12,3 mil');
+    expect(fmt(108_568)).toBe('109 mil');
+    expect(fmt(4_500_000)).toBe('4,5 mi');
+    expect(fmt(-25_000)).toBe('-25 mil');
   });
 
   it('"abatido por" contrai com o artigo', () => {
