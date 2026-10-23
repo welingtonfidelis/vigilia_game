@@ -1,4 +1,5 @@
 import { BIOMES } from '../data/biomes.ts';
+import { lordOf } from '../data/lords.ts';
 import { CLASSES } from '../data/classes.ts';
 import type { ChronicleKind, Hero, Spot, World } from './types.ts';
 
@@ -13,8 +14,9 @@ export const className = (hero: Hero): string => CLASSES[hero.classId].name[hero
 
 export const heroLabel = (hero: Hero): string => `${hero.name} (${className(hero)} ${hero.rank})`;
 
-/** "andar 2 das Catacumbas". */
-export const floorLabel = (spot: Pick<Spot, 'biome' | 'floor'>): string => `andar ${spot.floor + 1} ${BIOMES[spot.biome]!.of}`;
+/** "andar 2 das Catacumbas", ou "covil do Guardião das Urnas" no contrato do Senhor. */
+export const floorLabel = (spot: Pick<Spot, 'biome' | 'floor' | 'lord'>): string =>
+  spot.lord ? `covil ${ofWhom(lordOf(spot.lord).name)}` : `andar ${spot.floor + 1} ${BIOMES[spot.biome]!.of}`;
 
 /** Agente da passiva com contração: "pelo Guardião das Urnas", "pela explosão de…", "por veneno". */
 export function byWhom(by: string): string {

@@ -1,6 +1,9 @@
 // Ciclo de uma expedição: descer, atravessar salas, lutar, voltar e dividir o saque.
 
 import { BIOMES, MATERIAL_NAMES } from '../data/biomes.ts';
+import { lordOf } from '../data/lords.ts';
+import { dayOf } from './calendar.ts';
+import { festivalCitizens } from './citizens.ts';
 import { record, floorLabel, g, heroLabel, listNames } from './chronicle.ts';
 import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
@@ -22,7 +25,7 @@ import {
 } from './hero.ts';
 import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
-import { chance, int, range } from './rng.ts';
+import { chance, int, pick, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, Spot, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
 
@@ -71,6 +74,7 @@ function stepParty(world: World, party: Party): void {
         // Elite, guardião e chefe deixam peças (antes de o andar contar como conquistado).
         const kind = partyRooms(world, party)[party.roomIndex]?.kind;
         if (kind === 'elite' || kind === 'guardiao' || kind === 'chefe') rollDrop(world, party, kind);
+        if (kind === 'matilha' || kind === 'elite' || kind === 'guardiao') rollFragment(world, party, kind);
       }
       if (result === 'vitoria' && !party.retreating) {
         lastStandCheck(world, party);
@@ -139,8 +143,12 @@ function enterRoom(world: World, party: Party, room: Room): void {
       if (idx >= 0 && lost) {
         const rem = world.remains.splice(idx, 1)[0]!;
         party.loot.gold += rem.gold;
-        // As peças do morto voltam com o grupo.
+        // As peças do morto voltam com o grupo, e os fragmentos de amuleto que ele carregava.
         if (rem.items?.length) (party.loot.items ??= []).push(...rem.items);
+        if (rem.fragments) {
+          party.loot.fragments = (party.loot.fragments ?? 0) + rem.fragments;
+          party.moments.push(`Com os restos de ${lost.name} estava ${rem.fragments === 1 ? 'um fragmento' : `${rem.fragments} fragmentos`} de amuleto.`);
+        }
         const mourners = heroes.filter((h) => getBond(world, h.id, lost.id) > 30);
         for (const h of mourners) {
           h.grief = Math.max(0, h.grief - 30);
@@ -274,6 +282,7 @@ function lastStandCheck(world: World, party: Party): void {
 // ── Conquista ─────────────────────────────────────────────────────────────
 
 function conquer(world: World, party: Party): void {
+  if (party.lord) return lordVictory(world, party);
   const passage = passageOf(world, party.passageId);
   if (!passage || passage.conquered[party.floor]) return;
   passage.conquered[party.floor] = true;
@@ -298,6 +307,93 @@ function conquer(world: World, party: Party): void {
   world.town.reputation = Math.min(100, world.town.reputation + 5);
   addMaterial(party, BIOMES[party.biome]!.material, B.sealMaterial);
   record(world, 'passagem', party.memberIds, `${listNames(heroes)} venceram o guardião e selaram a passagem para ${BIOMES[party.biome]!.name}.`);
+}
+
+// ── Fragmentos e Senhores (M5 F2) ────────────────────────────────────────
+
+export type FragmentSource = 'matilha' | 'elite' | 'guardiao' | 'volta';
+
+/** Talvez um fragmento de amuleto: só em passagens do nível atual (o covil não dá). Exportado para os testes. */
+export function rollFragment(world: World, party: Party, source: FragmentSource): void {
+  if (party.lord || party.level !== world.abyss.level) return;
+  const p = { matilha: B.fragmentMatilha, elite: B.fragmentElite, guardiao: B.fragmentGuardian, volta: B.fragmentReturn }[source];
+  if (!chance(world.rng, p * difficultyOf(world).rarity)) return;
+  party.loot.fragments = (party.loot.fragments ?? 0) + 1;
+  const heroes = members(world, party);
+  const finder = heroes.length > 0 ? pick(world.rng, heroes) : null;
+  party.moments.push(finder ? `${finder.name} achou um fragmento de amuleto.` : 'Acharam um fragmento de amuleto.');
+}
+
+/** Na volta, os fragmentos vão para o Cofre (ou viram relíquia, se o nível já foi vencido). */
+function deliverFragments(world: World, party: Party, heroes: Hero[]): void {
+  const n = party.loot.fragments ?? 0;
+  party.loot.fragments = 0;
+  if (n <= 0 || heroes.length === 0) return;
+  const abyss = world.abyss;
+  const what = n === 1 ? 'um fragmento' : `${n} fragmentos`;
+  if (party.level === abyss.level) {
+    abyss.fragments += n;
+    for (const h of heroes) h.loyalty = Math.min(100, h.loyalty + 2);
+    record(world, 'amuleto', party.memberIds, `${listNames(heroes)} trouxeram ${what} de amuleto do nível ${party.level} (${abyss.fragments}/${B.fragmentsPerAmulet} no Cofre).`);
+  } else {
+    const gold = n * B.oldFragmentGold;
+    world.town.treasury += gold;
+    record(world, 'amuleto', party.memberIds, `${cap(what)} de um nível já vencido virou relíquia de museu e rendeu ${gold} de ouro.`);
+  }
+}
+
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+/** "O Guardião das Urnas" no meio da frase vira "o Guardião das Urnas". */
+const midName = (name: string): string => name.replace(/^(O|A) /, (m) => m.toLowerCase());
+
+/** O Senhor caiu: o nível do abismo sobe, o amuleto se cumpre e a vila festeja. */
+function lordVictory(world: World, party: Party): void {
+  const abyss = world.abyss;
+  const level = party.lord!;
+  const lord = lordOf(level);
+  const heroes = members(world, party);
+  if (abyss.amulet?.level === level) abyss.amulet = null;
+  world.metrics.bossKills.push({ level, day: dayOf(world.tick) });
+  world.town.reputation = Math.min(100, world.town.reputation + 10);
+  for (const h of heroes) {
+    h.deeds.push({ tick: world.tick, kind: 'chefe', text: `derrotou ${midName(lord.name)}` });
+    if (chance(world.rng, 0.3)) promote(world, h, `por derrotar ${midName(lord.name)}`);
+  }
+  // Os fragmentos que sobraram do nível vencido viram relíquia de museu.
+  if (abyss.fragments > 0) {
+    const gold = abyss.fragments * B.oldFragmentGold;
+    world.town.treasury += gold;
+    record(world, 'amuleto', [], `Os ${abyss.fragments} fragmentos que sobraram do nível ${level} viraram relíquia de museu: ${gold} de ouro.`);
+    abyss.fragments = 0;
+  }
+  if (abyss.level <= level) abyss.level = level + 1;
+  record(world, 'chefe', party.memberIds, `${listNames(heroes)} derrotaram ${midName(lord.name)}. O abismo desce ao nível ${abyss.level}.`);
+  // A vila festeja por conta da vitória (sem custo para o tesouro).
+  for (const h of activeHeroes(world)) {
+    if (h.status !== 'town') continue;
+    h.morale = Math.min(100, h.morale + B.festivalMorale);
+    h.loyalty = Math.min(100, h.loyalty + B.festivalLoyalty);
+  }
+  festivalCitizens(world, B.festivalMorale);
+  if (lord.final && world.endedTick === null) {
+    world.endedTick = world.tick;
+    record(world, 'fim', party.memberIds, 'Aquilo que Vigia foi silenciado. Pela primeira vez em séculos, a vila dorme sem medo. Mas o abismo continua lá embaixo.');
+  }
+}
+
+/** O grupo voltou (ou não voltou) sem vencer o Senhor: o amuleto se desfaz. */
+function lordDefeat(world: World, party: Party): void {
+  const amulet = world.abyss.amulet;
+  if (!party.lord || !amulet?.inUse || amulet.level !== party.lord) return;
+  world.abyss.amulet = null;
+  world.metrics.lordFailures++;
+  const lord = lordOf(party.lord);
+  record(
+    world,
+    'amuleto',
+    party.startMemberIds,
+    `O amuleto do nível ${party.lord} se desfez: ${midName(lord.name)} continua de pé. Serão precisos ${B.fragmentsPerAmulet} fragmentos novos.`,
+  );
 }
 
 // ── Retorno ───────────────────────────────────────────────────────────────
@@ -351,13 +447,17 @@ function finish(world: World, party: Party, outcome: PartyOutcome): void {
     if (outcome === 'conquista') b.conquests++;
   }
   releaseContract(world, party, false);
+  lordDefeat(world, party);
   mourn(world, party);
-  // Ninguém voltou: as peças achadas ficam com os restos de quem caiu por último.
+  // Ninguém voltou: as peças e os fragmentos achados ficam com os restos de quem caiu por último.
   const lostItems = party.loot.items ?? [];
-  if (lostItems.length > 0) {
+  const lostFragments = party.loot.fragments ?? 0;
+  if (lostItems.length > 0 || lostFragments > 0) {
     const rem = world.remains.findLast((r) => party.dead.includes(r.heroId));
-    if (rem) (rem.items ??= []).push(...lostItems);
+    if (rem && lostItems.length > 0) (rem.items ??= []).push(...lostItems);
+    if (rem && lostFragments > 0) rem.fragments = (rem.fragments ?? 0) + lostFragments;
     party.loot.items = [];
+    party.loot.fragments = 0;
   }
   if (outcome === 'massacre' && party.dead.length > 0) {
     const fallen = party.dead.map((id) => world.heroes.find((h) => h.id === id)!);
@@ -409,6 +509,9 @@ function arrive(world: World, party: Party): void {
   for (const [mat, qty] of Object.entries(party.loot.materials) as [MaterialId, number][]) town.materials[mat] += qty;
   for (const h of heroes) gainXp(world, h, party.loot.xp / Math.max(1, heroes.length));
   shareLoot(world, party, heroes);
+  // Volta triunfal (todos inteiros, tendo feito o que foram fazer): mais uma chance de fragmento.
+  if (outcome === 'conquista' && party.dead.length === 0) rollFragment(world, party, 'volta');
+  deliverFragments(world, party, heroes);
 
   // Contrato
   const contract = town.contracts.find((c) => c.id === party.contractId);

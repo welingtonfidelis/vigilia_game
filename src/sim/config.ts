@@ -197,6 +197,19 @@ export const BALANCE = {
   /** Selar uma passagem: ouro extra do guardião (em matilhas) e material. */
   sealGoldPacks: 12,
   sealMaterial: 8,
+  /** Fragmentos de amuleto (M5 F2): chance por combate vencido e pela volta triunfal, no nível atual. */
+  fragmentMatilha: 0.001,
+  fragmentElite: 0.003,
+  fragmentGuardian: 0.012,
+  fragmentReturn: 0.009,
+  fragmentsPerAmulet: 5,
+  /** Montagem do amuleto pelo joalheiro: ouro (× força do nível ^ 0,8) e dias. */
+  amuletBaseCost: 300,
+  amuletDays: 2,
+  /** Fragmento de um nível já vencido: vira relíquia de museu e vale este ouro. */
+  oldFragmentGold: 40,
+  /** Salas de guarda (elites) antes do Senhor, no covil. */
+  lordGuards: 2,
   /** A confiança num mundo desconhecido é menor: ninguém sabe o que há do outro lado. */
   mysteryConfidence: 0.9,
   descendHours: 2,

@@ -66,7 +66,10 @@ export {
   availableBiomes,
   floorPower,
   isGuardianFloor,
+  lairSpot,
   levelPower,
+  lordCandidates,
+  lordConfidence,
   openPassages,
   partyRooms,
   passageCapacity,
@@ -84,6 +87,7 @@ export { WOUNDS, woundEffects } from './hero.ts';
 // Dados do jogo (nomes, custos, descrições).
 export { BIOMES, MATERIAL_NAMES, type BiomeDef } from '../data/biomes.ts';
 export { DIM_RULES, DIM_RULE_IDS, rulesLabel, type DimRuleDef } from '../data/rules.ts';
+export { LORD_LEVELS, lordOf, type LordDef } from '../data/lords.ts';
 export { BUILDINGS, BUILDING_IDS, MAX_BUILDING_LEVEL, type BuildingDef, type LevelCost } from '../data/buildings.ts';
 export { CLASSES, CLASS_IDS, RANKS, RANK_MAX_LEVEL, type ClassDef } from '../data/classes.ts';
 export { TRAITS, type TraitDef } from '../data/traits.ts';

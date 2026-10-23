@@ -1035,7 +1035,7 @@ Uma dimensão é um **bioma** (cenário, monstros e material) com **regras** sor
 | Forja Abissal | 5 | brasas | ferreiro cinzento, cão de brasa, escravo da forja | O Martelo Que Não Dorme |
 | Coração do Abismo | 7 | fragmentos de alma | sombra faminta, lamento, arauto do fundo | Aquilo que Vigia (chefe máximo) |
 
-**Biomas novos:** cinco, um por Senhor dos níveis 6 a 10 (seção 7). Entram na tabela a partir do nível 6, com arte própria em 16 e 32-bit (cenário, três monstros com variantes, o Senhor com as duas fases e os retratos).
+**Biomas novos:** quatro, um por Senhor dos níveis 6 a 9 (seção 7). Entram na tabela a partir do nível 6, com arte própria em 16 e 32-bit (cenário, três monstros com variantes, o Senhor com as duas fases e os retratos).
 
 **Gerador.** Usa uma semente própria da passagem: o mesmo mundo sai sempre igual, e o save guarda só a semente e o que já mudou.
 
@@ -1124,10 +1124,20 @@ Na implementação (F1), uma pressão única para o abismo inteiro caía rápido
 | 3 | A Mãe-Bolor | a de hoje |
 | 4 | O Arcebispo Sem Fôlego | a de hoje |
 | 5 | O Martelo Que Não Dorme | a de hoje |
-| 6–10 | **Cinco Senhores novos**, um por bioma novo, cada um com uma mecânica própria | arte nova (fase F6) |
-| Chefe máximo | **Aquilo que Vigia**, no Coração do Abismo | a de hoje (fase 2 incluída) |
+| 6–9 | **Senhores novos**, um por bioma novo, cada um com uma mecânica própria | arte nova (fase F6) |
+| 10 (chefe máximo) | **Aquilo que Vigia**, no Coração do Abismo | a de hoje (fase 2 incluída) |
 
-Decisão do usuário (2026-10-22): os níveis 6 a 10 têm Senhores inéditos, e não os cinco primeiros de volta. Enquanto a arte deles não chega, o jogo usa um Senhor provisório (um dos cinco primeiros, mais forte e com o nome do novo), só para a campanha poder ser jogada e balanceada de ponta a ponta.
+Decisão do usuário (2026-10-22): os níveis acima do 5 têm Senhores inéditos, e não os cinco primeiros de volta.
+
+Correção na F2: pela regra do usuário, o amuleto do nível 10 leva ao chefe máximo. Então o Senhor do nível 10 é o próprio Vigia, e os Senhores novos ficam nos níveis 6 a 9 (quatro, não cinco).
+
+Enquanto a arte deles não chega (F6), o jogo usa nomes novos com a arte e a mecânica de um dos cinco primeiros, só para a campanha poder ser jogada e balanceada de ponta a ponta:
+- 6: A Rainha dos Esporos (Mãe-Bolor);
+- 7: O Coro Submerso (Arcebispo);
+- 8: O Colosso de Ferro-negro (Couraça);
+- 9: O Rei dos Ossuários (Guardião).
+
+Ficam em `src/data/lords.ts`.
 
 ##### 8. Fim e pós-jogo
 
@@ -1231,11 +1241,11 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 | Fase | Entrega | Pronto quando |
 |---|---|---|
 | **F1** Motor de dimensões ✅ | Nível do abismo, gerador por semente (bioma, regras, andares, salas, monstros), passagens com mistério e mapa da guilda, restos por passagem, pressão e incursões, quadro com contratos novos, corredor e arena por bioma, save 11 e aviso de campanha nova | Testes do gerador (mesma semente, mesmo mundo; cada regra com efeito), balanceador sem impasse; jogável do nível 1 ao 2 sem amuleto, com o nível subindo por um atalho de teste |
-| **F2** Amuletos e Senhores | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–10 e o Vigia, fim e pós-jogo com Ecos | Campanha inteira jogável pelo prefeito automático do começo ao Vigia |
+| **F2** Amuletos e Senhores ✅ | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–9 e o Vigia no 10, fim e pós-jogo com os retornos | Os Senhores caem em ordem pelo prefeito automático. A campanha inteira até o Vigia depende da escala da F3 |
 | **F3** Escala sem fim | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
 | **F4** Vila longa | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
 | **F5** Balanceamento 5× | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
-| **F6** Biomas e Senhores novos | Os cinco biomas dos níveis 6 a 10, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
+| **F6** Biomas e Senhores novos | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
 
 ##### 15.1 Como ficou a F1
 
@@ -1260,6 +1270,23 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
   - Pressão entre 8 e 29.
   - Quase ninguém morre: sem Senhores, o nível não sobe, e os heróis sobram.
 - **Retrato com o atalho (nível subindo a cada 2 anos, até o 13):** roda sem erro, mas as mortes disparam (≈40 por ano). É o esperado: a escala dos heróis e do equipamento é a F3, e o ritmo real vem dos amuletos (F2) e do balanceamento (F5).
+
+##### 15.2 Como ficou a F2
+
+- **Fragmentos:** a chance é de 0,1% por matilha vencida, 0,3% por elite, 1,2% pelo guardião e 0,9% pela volta triunfal (todos voltam, depois de uma conquista), vezes a sorte da dificuldade. Só cai em passagens do nível atual, e nunca no covil.
+  - O grupo carrega o fragmento. Se ninguém voltar, ele fica com os restos de quem caiu por último.
+  - Na volta, o fragmento vai para o Cofre.
+  - Fragmento de um nível já vencido vira relíquia de museu (40 de ouro). Os que sobram no Cofre quando o Senhor cai também.
+- **Amuleto:** o joalheiro monta com 5 fragmentos e 300 × força do nível^0,8 de ouro, ajustado pela dificuldade. Fica pronto em 2 dias. Só existe um por vez.
+- **Contrato do Senhor:** fica no Cofre e no painel do amuleto (botão "Amuleto e contrato" no Abismo).
+  - A guilda propõe os mais fortes na vila, sem lesão, até o tamanho do grupo. O prefeito marca e desmarca quem vai, e a tela mostra a confiança estimada.
+  - O covil tem duas salas de guarda (elites) e o Senhor. Fica no fundo do nível e não é uma passagem.
+  - Quem morre lá não deixa restos.
+- **Vitória:** o nível sobe 1, o amuleto se cumpre, a vila festeja sem custo, cai uma lendária e o jogo pausa na tela "o Senhor caiu".
+- **Derrota:** se o grupo cai, foge ou recua, o amuleto se desfaz.
+- **Fim da campanha:** vencer o Vigia no nível 10 fecha a campanha (tela de fim). O jogo segue no 11 com os retornos: "O Guardião das Urnas (1º retorno)", e a cada 10 níveis o Vigia volta.
+- **Prefeito automático:** monta o amuleto quando tem os fragmentos e o ouro. Desafia com o grupo mais forte quando a confiança passa de 1,1, ou de 0,85 depois de 60 dias esperando.
+- **Retrato (6 sementes × 40 anos):** os Senhores do nível 1 caem no ano 3,4 em média, e os do nível 5 no ano 27,9. Todas as sementes param no nível 6 ou 7, porque os heróis batem no teto de nível 30 e de tier 12, e os monstros seguem crescendo. Isso é a F3. Só 3% dos contratos se perdem, porque o prefeito automático só vai quando se acha capaz; a meta de 20% a 35% é da F5.
 
 ##### 16. Escolhas feitas por padrão (fáceis de trocar)
 

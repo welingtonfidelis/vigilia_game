@@ -1,5 +1,5 @@
 import { render } from 'preact';
-import { createWorld, runTicks, autoMayor, TICKS_PER_DAY, BIOMES } from './sim/index.ts';
+import { createWorld, runTicks, autoMayor, TICKS_PER_DAY, BIOMES, LORD_LEVELS } from './sim/index.ts';
 import type { ChronicleEntry } from './sim/index.ts';
 import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
@@ -32,6 +32,7 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   restos: 'grief',
   conquista: 'gold',
   passagem: 'gold',
+  amuleto: 'gold',
   chefe: 'gold',
   eco: 'bad',
   fim: 'gold',
@@ -62,8 +63,14 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   incursao: 'bad',
 };
 
+// Um Senhor caiu: pausa e mostra a tela (o último fecha a campanha).
+let lordsSeen = session.world.metrics.bossKills.length;
+
 session.subscribe((event) => {
-  if (event.type === 'reset') return;
+  if (event.type === 'reset') {
+    lordsSeen = session.world.metrics.bossKills.length;
+    return;
+  }
   if (event.type === 'day' && ui.prefs.autosave) {
     saveWorld(store, session.world);
     return;
@@ -73,6 +80,13 @@ session.subscribe((event) => {
     const tone = TOAST_TONES[entry.kind];
     if (tone) ui.toast(entry.text, tone, entry.heroIds);
     if (entry.kind === 'morte' && ui.prefs.pauseOnDeath) session.setPaused(true);
+  }
+  const kills = session.world.metrics.bossKills;
+  if (kills.length > lordsSeen) {
+    lordsSeen = kills.length;
+    const last = kills[kills.length - 1]!;
+    session.setPaused(true);
+    ui.open(last.level % LORD_LEVELS === 0 && session.world.endedTick !== null && last.level === LORD_LEVELS ? { kind: 'campaignEnd' } : { kind: 'lordEnd', level: last.level });
   }
 });
 

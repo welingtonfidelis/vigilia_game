@@ -110,8 +110,14 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
         <strong title={`Esta passagem tem ${floors} andares; o guardião fica no último e, vencido, sela a passagem. Um andar só abre depois que o de cima for conquistado. Regras: ${rulesLabel(party.rules)}.`}>
-          Nível {party.level} · andar {party.floor + 1} de {floors} {BIOMES[party.biome]!.of}
-          {passage && !isGuardianFloor(passage, party.floor) && <small class="lane-boss-hint"> · guardião no andar {floors}</small>}
+          {party.lord ? (
+            <>Nível {party.level} · {floorLabel(party)}</>
+          ) : (
+            <>
+              Nível {party.level} · andar {party.floor + 1} de {floors} {BIOMES[party.biome]!.of}
+              {passage && !isGuardianFloor(passage, party.floor) && <small class="lane-boss-hint"> · guardião no andar {floors}</small>}
+            </>
+          )}
         </strong>
         <span>
           {phaseText(world, party)}

@@ -260,7 +260,8 @@ export type DropSource = 'bau' | 'elite' | 'guardiao' | 'chefe';
  * peças da campanha cabe no mapa e não cresce com a repetição.
  */
 export function rollDrop(world: World, party: Party, source: DropSource): Item | null {
-  if (!party.persistent) return null;
+  // Só terreno novo dá peças; o covil do Senhor também conta (luta única).
+  if (!party.persistent && !party.lord) return null;
   const f = party.floor;
   let rarity: Rarity | null = null;
   // O Senhor deixa uma lendária; o guardião da passagem, uma épica.

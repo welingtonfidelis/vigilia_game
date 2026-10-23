@@ -1,6 +1,8 @@
 import {
   abyssPressure,
+  BALANCE,
   BIOMES,
+  lordOf,
   commands,
   dayOf,
   DIM_RULES,
@@ -26,7 +28,16 @@ import { loadReportHistory } from '../report-history.ts';
 /** O abismo: nível, pressão e as passagens que a guilda acompanha. */
 function AbyssOverview(props: { world: World }) {
   const { world } = props;
+  const { ui } = useGame();
   const abyss = world.abyss;
+  const lord = lordOf(abyss.amulet?.level ?? abyss.level);
+  const amuletText = !abyss.amulet
+    ? `Fragmentos: ${abyss.fragments} de ${BALANCE.fragmentsPerAmulet}`
+    : abyss.amulet.inUse
+      ? 'O amuleto desceu com o grupo ao covil'
+      : world.tick < abyss.amulet.readyTick
+        ? 'O joalheiro está montando o amuleto'
+        : 'Amuleto pronto: o contrato do Senhor espera um grupo';
   const free = passageCapacity(world) - openPassages(world).length;
   return (
     <div class="acts">
@@ -37,6 +48,12 @@ function AbyssOverview(props: { world: World }) {
             {openPassages(world).length} de {passageCapacity(world)} passagens
           </span>
         </div>
+        <p class="sub">
+          Senhor do nível: <strong>{lord.name}</strong> · {amuletText}{' '}
+          <button class="link" onClick={() => ui.open({ kind: 'amulet' })}>
+            Amuleto e contrato
+          </button>
+        </p>
         <label>Pressão do abismo (a da passagem mais pressionada)</label>
         <Bar
           kind="corruption"

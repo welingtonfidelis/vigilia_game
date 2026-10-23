@@ -2,6 +2,7 @@
 // cada sala, a pressão do abismo e a estimativa de dificuldade que os grupos fazem.
 
 import { BIOMES } from '../data/biomes.ts';
+import { lordOf } from '../data/lords.ts';
 import { DIM_RULE_IDS, rulesLabel } from '../data/rules.ts';
 import { dayOf } from './calendar.ts';
 import { listNames, record } from './chronicle.ts';
@@ -141,8 +142,9 @@ export function spawnRoom(world: World, combat: Combat, room: Room, spot: Spot):
   const biome = BIOMES[spot.biome]!;
   const units: Unit[] = [];
   if (room.kind === 'chefe') {
-    units.push(makeEnemy(world, combat, biome.boss, spot, { boss: true }));
-    for (let i = 0; i < biome.boss.adds; i++) units.push(makeEnemy(world, combat, biome.enemies[0]!, spot));
+    const lord = lordOf(spot.lord ?? spot.level);
+    units.push(makeEnemy(world, combat, lord, spot, { boss: true }));
+    for (let i = 0; i < lord.adds; i++) units.push(makeEnemy(world, combat, BIOMES[lord.biome]!.enemies[0]!, spot));
     return units;
   }
   if (room.kind === 'guardiao') {
@@ -272,6 +274,20 @@ export function generateRooms(r: RngState, passage: Passage, floor: number): Roo
 /** Semente do mapa de um andar: a mesma passagem dá sempre o mesmo andar. */
 export const floorRng = (passage: Passage, floor: number): RngState => seedRng((passage.seed ^ Math.imul(floor + 1, 0x9e3779b1)) >>> 0);
 
+/** Id de passagem do covil de um Senhor (não existe na lista de passagens). */
+export const LAIR_ID = -1;
+
+/** O covil do Senhor do nível: o bioma dele, no fundo do abismo (o andar mais fundo do nível). */
+export function lairSpot(level: number): Spot {
+  return { passageId: LAIR_ID, level, biome: lordOf(level).biome, rules: [], floor: passageFloors(level) - 1, lord: level };
+}
+
+/** Salas do covil: as guardas (elites) e o Senhor no fim. */
+export const lairRooms = (): Room[] => [
+  ...Array.from({ length: B.lordGuards }, (): Room => ({ kind: 'elite', cleared: false, remainsOf: null })),
+  { kind: 'chefe', cleared: false, remainsOf: null },
+];
+
 export function partyRooms(world: World, party: Party): Room[] {
   if (!party.persistent) return party.rooms;
   return passageOf(world, party.passageId)?.maps[party.floor] ?? party.rooms;
@@ -279,6 +295,12 @@ export function partyRooms(world: World, party: Party): Room[] {
 
 /** Prepara as salas ao chegar no andar: mapa persistente ou salas novas, mais restos de heróis caídos. */
 export function enterFloor(world: World, party: Party, heroes: Hero[]): Room[] {
+  // Covil do Senhor: as salas vieram prontas no contrato.
+  if (party.lord) {
+    party.persistent = false;
+    party.roomIndex = Math.max(0, party.rooms.findIndex((r) => !r.cleared));
+    return party.rooms;
+  }
   const passage = passageOf(world, party.passageId);
   if (!passage) {
     party.persistent = false;
@@ -421,4 +443,43 @@ export function mysteryConfidence(world: World, heroes: Hero[]): number {
   const biomes = availableBiomes(level);
   const total = biomes.reduce((s, biome) => s + confidence(world, heroes, { passageId: -1, level, biome, rules: [], floor: 0 }), 0);
   return (total / biomes.length) * B.mysteryConfidence;
+}
+
+/**
+ * Confiança de um grupo contra o Senhor do nível: as guardas e a luta com o Senhor e os
+ * acólitos dele. A guilda usa para propor o grupo; o prefeito automático, para decidir.
+ */
+export function lordConfidence(world: World, heroes: Hero[], level: number): number {
+  if (heroes.length === 0) return 0;
+  let ehp = 0;
+  let dps = 0;
+  const solo: number[] = [];
+  for (const h of heroes) {
+    const s = heroStrength(world, h);
+    ehp += s.ehp;
+    dps += s.dps;
+    solo.push(Math.sqrt(s.ehp * s.dps));
+  }
+  const party = ehp * dps;
+  const weakest = Math.min(...solo) / (solo.reduce((a, b) => a + b, 0) / solo.length);
+  const spot = lairSpot(level);
+  const lord = lordOf(level);
+  const biome = BIOMES[lord.biome]!;
+  const power = floorPower(world, spot);
+  const defBonus = levelDefBonus(level);
+  const boss = enemyStrength(lord, power, 0);
+  const add = enemyStrength(biome.enemies[0]!, power * BIOME_NORM[lord.biome]!, defBonus);
+  const fight = (boss.ehp + add.ehp * lord.adds) * (boss.dps + add.dps * lord.adds) * 2;
+  // As guardas cansam o grupo antes: a confiança cai um pouco por sala.
+  const guards = 1 + 0.1 * B.lordGuards;
+  return (Math.sqrt(party / fight) / guards) * Math.sqrt(weakest) * B.confidenceBias;
+}
+
+/** Quem a guilda propõe para o contrato do Senhor: os mais fortes disponíveis, até o tamanho do grupo. */
+export function lordCandidates(world: World): Hero[] {
+  return world.heroes
+    .filter((h) => h.status === 'town' && !h.injury && h.activity?.kind !== 'chegando')
+    .map((h) => ({ h, s: heroStrength(world, h) }))
+    .sort((a, b) => Math.sqrt(b.s.ehp * b.s.dps) - Math.sqrt(a.s.ehp * a.s.dps) || a.h.id - b.h.id)
+    .map((x) => x.h);
 }

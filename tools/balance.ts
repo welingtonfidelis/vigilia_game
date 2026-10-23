@@ -87,6 +87,9 @@ console.log('\n── Ritmo do abismo ──');
 const perYear = (f: (w: World) => number) => fmt(all.reduce((s, w) => s + f(w), 0) / all.length / years);
 console.log(`  passagens abertas por ano: ${perYear((w) => w.metrics.passagesOpened)} · seladas por ano: ${perYear((w) => w.metrics.passagesSealed)}`);
 console.log(`  nível do abismo no fim: ${fmt(mean(all.map((w) => w.abyss.level)))} · pressão no fim: ${fmt(mean(all.map((w) => abyssPressure(w))), 0)}`);
+const kills = all.reduce((s, w) => s + w.metrics.bossKills.length, 0);
+const fails = all.reduce((s, w) => s + w.metrics.lordFailures, 0);
+console.log(`  contratos do Senhor: ${kills + fails} · perdidos ${pct(fails / Math.max(1, kills + fails))} (meta da F5: 20% a 35%)`);
 // Ano em que cada nível de Senhor caiu (M5 F2), média · faixa · % das sementes.
 const lordLevels = [...new Set(all.flatMap((w) => w.metrics.bossKills.map((b) => b.level)))].sort((a, b) => a - b);
 for (const level of lordLevels) {

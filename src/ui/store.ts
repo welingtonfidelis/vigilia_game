@@ -21,7 +21,11 @@ export type Panel =
   | { kind: 'event' }
   | { kind: 'battle'; partyId: number }
   | { kind: 'village' }
-  | { kind: 'campaignEnd' };
+  | { kind: 'campaignEnd' }
+  /** Fragmentos, amuleto e contrato do Senhor (M5). */
+  | { kind: 'amulet' }
+  /** Um Senhor caiu: o abismo desceu um nível. */
+  | { kind: 'lordEnd'; level: number };
 
 export type PanelKind = Panel['kind'];
 
@@ -38,6 +42,7 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'chronicle',
   'roster',
   'memorial',
+  'amulet',
   'menu',
 ]);
 

@@ -1,6 +1,7 @@
 // Combate automático em tempo real (1 tick = 0,1 s). Determinístico pela semente.
 
 import { BIOMES } from '../data/biomes.ts';
+import { lordOf } from '../data/lords.ts';
 import { CLASSES } from '../data/classes.ts';
 import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
@@ -56,7 +57,7 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     enraged: false,
     // O guardião da passagem luta com o fôlego de chefe (fúria mais tardia), sem mecânica.
     isBoss: room.kind === 'chefe' || room.kind === 'guardiao',
-    bossMech: room.kind === 'chefe' ? BIOMES[party.biome]!.boss.mech : null,
+    bossMech: room.kind === 'chefe' ? lordOf(party.lord ?? party.level).mech : null,
     mechCd: 60,
     echoesSpawned: false,
     nextUid: 1,
@@ -345,8 +346,10 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
   party.memberIds = party.memberIds.filter((id) => id !== hero.id);
   party.dead.push(hero.id);
   world.metrics.deaths++;
-  // As peças ficam com o corpo: voltam com quem achar os restos.
-  world.remains.push({ heroId: hero.id, passageId: party.passageId, floor: party.floor, gold: hero.gold, items: takeItems(hero) });
+  // As peças ficam com o corpo: voltam com quem achar os restos. No covil do Senhor não há
+  // resgate: o que o herói levava fica lá embaixo.
+  const items = takeItems(hero);
+  if (!party.lord) world.remains.push({ heroId: hero.id, passageId: party.passageId, floor: party.floor, gold: hero.gold, items });
   hero.gold = 0;
   hero.injury = null;
   hero.epitaph = epitaph(world, hero);
@@ -386,8 +389,8 @@ function checkFlee(world: World, party: Party, c: Combat): void {
     party.moments.push(`${hero.name} perdeu a coragem e fugiu.`);
     record(world, 'fuga', [hero.id], `${heroLabel(hero)} perdeu a coragem e fugiu do ${floorLabel(party)}.`);
     revealTrait(world, hero, 'covarde', `${hero.name} foi ${g(hero, 'o primeiro', 'a primeira')} a correr.`);
-    const { passageId, level, biome, rules, floor } = party;
-    world.pendingFugitives.push({ heroId: hero.id, spot: { passageId, level, biome, rules: [...rules], floor } });
+    const { passageId, level, biome, rules, floor, lord } = party;
+    world.pendingFugitives.push({ heroId: hero.id, spot: { passageId, level, biome, rules: [...rules], floor, ...(lord ? { lord } : {}) } });
   }
 }
 
@@ -445,7 +448,7 @@ function enterPhase2(world: World, party: Party, c: Combat, boss: Unit): void {
     const sprout = actDef.enemies.find((e) => e.id === 'brotado') ?? actDef.enemies[actDef.enemies.length - 1]!;
     for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party));
   }
-  if (c.bossMech) party.moments.push(PHASE2_TEXT[c.bossMech](actDef.boss.name));
+  if (c.bossMech) party.moments.push(PHASE2_TEXT[c.bossMech](lordOf(party.lord ?? party.level).name));
 }
 
 function bossMechanics(world: World, party: Party, c: Combat): void {

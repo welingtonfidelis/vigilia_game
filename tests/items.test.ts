@@ -223,6 +223,9 @@ describe('bancada do joalheiro, salas novas e chefes em duas fases (9.3)', () =>
     const { world, list } = townWith(3);
     for (const h of list) h.status = 'expedition';
     const party = fakeParty(world, true, 3);
+    // O Senhor do nível 2 é a Couraça Submersa.
+    party.level = 2;
+    party.lord = 2;
     party.biome = 1;
     party.memberIds = list.map((h) => h.id);
     party.startMemberIds = [...party.memberIds];

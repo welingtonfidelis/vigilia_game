@@ -9,7 +9,10 @@ import { decreeEnactCost, DECREES, DECREE_IDS } from './decrees.ts';
 import { DIFFICULTIES } from '../data/difficulty.ts';
 import { resolveSeasonalEvent as resolveSeasonalEventImpl } from './events.ts';
 import { levelPower, passageOf } from './dungeon.ts';
-import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
+import { scaledCost } from './difficulty.ts';
+import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
+import { lordOf } from '../data/lords.ts';
+import { departLord } from './party.ts';
 import {
   canAfford,
   expansionClearCost,
@@ -19,6 +22,7 @@ import {
   hornCost,
   level,
   maxGearTier,
+  maxPartySize,
   nextLevelCost,
   pay,
   populationCap,
@@ -161,6 +165,48 @@ export function postContract(world: World, passageId: number | null, floor: numb
   record(world, 'contrato', [], `Novo contrato no quadro: ${goal} por ${reward} de ouro.`);
   return OK;
 }
+
+// ── Amuleto e contrato do Senhor (M5 F2) ─────────────────────────────────
+
+/** Monta o amuleto com 5 fragmentos do nível atual. Fica pronto em alguns dias. */
+export function forgeAmulet(world: World): CommandResult {
+  const abyss = world.abyss;
+  if (abyss.amulet) return fail(abyss.amulet.inUse ? 'O amuleto está com o grupo no covil.' : 'Já há um amuleto montado.');
+  if (abyss.fragments < B.fragmentsPerAmulet) return fail(`Faltam ${B.fragmentsPerAmulet - abyss.fragments} fragmentos do nível ${abyss.level}.`);
+  const cost = amuletCostFor(world, abyss.level);
+  if (world.town.treasury < cost) return fail(`O joalheiro cobra ${cost} de ouro.`);
+  world.town.treasury -= cost;
+  abyss.fragments -= B.fragmentsPerAmulet;
+  abyss.amulet = { level: abyss.level, readyTick: world.tick + B.amuletDays * TICKS_PER_DAY, inUse: false };
+  record(world, 'amuleto', [], `O joalheiro começou a montar o amuleto do nível ${abyss.level} com ${B.fragmentsPerAmulet} fragmentos. Fica pronto em ${B.amuletDays} dias.`);
+  return OK;
+}
+
+/** O preço do amuleto com a dificuldade da campanha. */
+export const amuletCostFor = (world: World, lvl: number): number => scaledCost(world, Math.round(B.amuletBaseCost * Math.pow(levelPower(lvl), 0.8)));
+
+/**
+ * Contrato do Senhor: o grupo escolhido (a guilda propõe os mais fortes, o prefeito troca
+ * quem quiser) desce com o amuleto ao covil do Senhor do nível dele.
+ */
+export function challengeLord(world: World, heroIds: number[]): CommandResult {
+  const amulet = world.abyss.amulet;
+  if (!amulet) return fail('Não há amuleto montado.');
+  if (amulet.inUse) return fail('Um grupo já desceu com o amuleto.');
+  if (world.tick < amulet.readyTick) return fail('O joalheiro ainda não terminou o amuleto.');
+  const ids = [...new Set(heroIds)];
+  if (ids.length === 0) return fail('Escolha quem vai.');
+  if (ids.length > maxPartySize(world)) return fail(`A guilda forma grupos de até ${maxPartySize(world)}.`);
+  const heroes = ids.map((id) => world.heroes.find((h) => h.id === id));
+  if (heroes.some((h) => !h || h.status !== 'town')) return fail('Só vai quem está na vila.');
+  if (heroes.some((h) => h!.injury)) return fail('Ninguém desce ferido ao covil.');
+  amulet.inUse = true;
+  departLord(world, heroes as Hero[], amulet.level);
+  return OK;
+}
+
+/** Nome do Senhor que o amuleto do nível chama. */
+export const lordName = (lvl: number): string => lordOf(lvl).name;
 
 export function cancelContract(world: World, id: number): CommandResult {
   const contract = world.town.contracts.find((c) => c.id === id);

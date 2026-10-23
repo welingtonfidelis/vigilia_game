@@ -2,9 +2,10 @@
 
 import { CLASSES } from '../data/classes.ts';
 import { RANKS } from '../data/classes.ts';
-import { record, floorLabel, listNames } from './chronicle.ts';
+import { record, floorLabel, listNames, ofWhom } from './chronicle.ts';
+import { lordOf } from '../data/lords.ts';
 import { TICKS_PER_HOUR } from './config.ts';
-import { abyssPressure, confidence, mysteryConfidence, openPassage, openPassages, passageCapacity, passageOf, spotOf, travelTicks } from './dungeon.ts';
+import { abyssPressure, confidence, lairRooms, lairSpot, lordConfidence, mysteryConfidence, openPassage, openPassages, passageCapacity, passageOf, spotOf, travelTicks } from './dungeon.ts';
 import { maxParties, maxPartySize } from './economy.ts';
 import { getBond, hasTrait, traitSum } from './hero.ts';
 import { townHeroes } from './town.ts';
@@ -121,11 +122,25 @@ function depart(world: World, members: Hero[]): void {
   // Passagem nova: o mundo já existe na semente, mas só se revela quando o grupo entra.
   const opened = target.spot === null;
   const spot = target.spot ?? spotOf(openPassage(world), 0);
+  const party = launch(world, members, spot, target.confidence, target.contractId);
+  party.opened = opened;
+  if (target.contractId !== null) {
+    const contract = world.town.contracts.find((c) => c.id === target.contractId)!;
+    contract.takenBy = party.id;
+  }
+  const why = target.contractId !== null ? ' atrás do contrato do prefeito' : '';
+  const where = opened ? 'uma passagem que ninguém conhece' : `o ${floorLabel(spot)}`;
+  record(world, 'partida', party.memberIds, `${listNames(members)} desceram rumo a ${where}${why}.`);
+}
+
+/** Monta o grupo e manda descer (passagem ou covil). */
+function launch(world: World, members: Hero[], spot: Spot, confidence: number, contractId: number | null): Party {
   const party: Party = {
     id: world.nextId++,
     memberIds: members.map((h) => h.id),
     startMemberIds: members.map((h) => h.id),
     ...spot,
+    rules: [...spot.rules],
     phase: 'descendo',
     phaseEndsAt: world.tick + travelTicks(spot),
     persistent: false,
@@ -134,20 +149,15 @@ function depart(world: World, members: Hero[]): void {
     retreating: false,
     combat: null,
     loot: { gold: 0, materials: {}, xp: 0 },
-    contractId: target.contractId,
-    opened,
+    contractId,
     rescued: 0,
     dead: [],
     recallRequested: false,
     outcome: null,
     startedTick: world.tick,
-    confidence: target.confidence,
+    confidence,
     moments: [],
   };
-  if (target.contractId !== null) {
-    const contract = world.town.contracts.find((c) => c.id === target.contractId)!;
-    contract.takenBy = party.id;
-  }
   const veterans = members.filter((h) => hasTrait(h, 'veterano')).length;
   for (const h of members) {
     h.status = 'expedition';
@@ -160,7 +170,14 @@ function depart(world: World, members: Hero[]): void {
   buyProvisions(world, party, members);
   world.parties.push(party);
   world.metrics.expeditions++;
-  const why = target.contractId !== null ? ' atrás do contrato do prefeito' : '';
-  const where = opened ? 'uma passagem que ninguém conhece' : `o ${floorLabel(spot)}`;
-  record(world, 'partida', party.memberIds, `${listNames(members)} desceram rumo a ${where}${why}.`);
+  return party;
+}
+
+/** Contrato do Senhor: o grupo escolhido desce direto ao covil com o amuleto. */
+export function departLord(world: World, members: Hero[], level: number): Party {
+  const party = launch(world, members, lairSpot(level), lordConfidence(world, members, level), null);
+  party.rooms = lairRooms();
+  const lord = lordOf(level);
+  record(world, 'partida', party.memberIds, `${listNames(members)} desceram com o amuleto ao covil ${ofWhom(lord.name)}.`);
+  return party;
 }

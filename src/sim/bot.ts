@@ -4,11 +4,12 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { blowHorn, build, comfort, commission, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { amuletCostFor, blowHorn, build, challengeLord, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
-import { canAfford, festivalCost, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
-import { openPassages } from './dungeon.ts';
+import { canAfford, festivalCost, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, maxPartySize, nextLevelCost } from './economy.ts';
+import { lordCandidates, lordConfidence, openPassages } from './dungeon.ts';
+import { BALANCE as B } from './config.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import type { BuildingId, ItemSlot, MaterialId, SpecId, World } from './types.ts';
 
@@ -56,6 +57,7 @@ export function autoMayor(world: World): void {
   if (roster < wanted) blowHorn(world);
 
   const reserve = hornCost(world);
+  if (hourOf(world.tick) === 15) tendAmulet(world, reserve);
   for (const [id, lvl] of BUILD_ORDER) {
     if (level(world, id) >= lvl) continue;
     const cost = nextLevelCost(world, id);
@@ -163,4 +165,23 @@ function tendPeople(world: World): void {
   if (heroes.length >= 4) speech(world);
   const doubtful = heroes.filter((h) => h.loyalty < 60).sort((a, b) => a.loyalty - b.loyalty);
   for (const h of doubtful) if (world.town.mayorEnergy > 0) talk(world, h.id);
+}
+
+/**
+ * Amuleto (M5 F2): monta quando tem os fragmentos e o ouro; desafia o Senhor quando o
+ * grupo mais forte se acha capaz, ou, depois de esperar muito, se acha quase capaz.
+ */
+function tendAmulet(world: World, reserve: number): void {
+  const abyss = world.abyss;
+  if (!abyss.amulet) {
+    if (abyss.fragments >= B.fragmentsPerAmulet && world.town.treasury >= amuletCostFor(world, abyss.level) + reserve) forgeAmulet(world);
+    return;
+  }
+  const amulet = abyss.amulet;
+  if (amulet.inUse || world.tick < amulet.readyTick) return;
+  const team = lordCandidates(world).slice(0, maxPartySize(world));
+  if (team.length < Math.min(3, maxPartySize(world))) return;
+  const conf = lordConfidence(world, team, amulet.level);
+  const waited = dayOf(world.tick - amulet.readyTick);
+  if (conf >= 1.1 || (waited >= 60 && conf >= 0.85)) challengeLord(world, team.map((h) => h.id));
 }

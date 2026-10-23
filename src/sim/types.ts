@@ -382,6 +382,8 @@ export interface Spot {
   biome: number;
   rules: DimRuleId[];
   floor: number;
+  /** Covil do Senhor deste nível (contrato do amuleto): não é uma passagem. */
+  lord?: number;
 }
 
 export interface Party extends Spot {
@@ -401,6 +403,8 @@ export interface Party extends Spot {
     materials: Partial<Record<MaterialId, number>>;
     xp: number;
     items?: Item[];
+    /** Fragmentos de amuleto achados nesta descida (do nível da passagem). */
+    fragments?: number;
     /** Peças compradas do mercador nesta expedição (já equipadas). */
     bought?: { heroId: number; itemId: number; price: number }[];
   };
@@ -442,10 +446,22 @@ export interface Passage {
   pressure: number;
 }
 
-/** O abismo da vila: o nível e as passagens abertas (a pressão é de cada passagem). */
+/** Amuleto montado com 5 fragmentos: abre o covil do Senhor do nível dele. */
+export interface Amulet {
+  level: number;
+  /** Pronto a partir daqui (o joalheiro leva uns dias). */
+  readyTick: number;
+  /** Um grupo desceu com ele: vitória ou derrota, ele se desfaz. */
+  inUse: boolean;
+}
+
+/** O abismo da vila: o nível, as passagens abertas (a pressão é de cada uma) e o amuleto. */
 export interface AbyssState {
   level: number;
   passages: Passage[];
+  /** Fragmentos do nível atual guardados no Cofre. */
+  fragments: number;
+  amulet: Amulet | null;
 }
 
 export interface Remains {
@@ -455,6 +471,8 @@ export interface Remains {
   gold: number;
   /** Peças que ficaram com o morto (voltam com quem achar os restos). */
   items?: Item[];
+  /** Fragmentos de amuleto que o grupo carregava quando ninguém voltou. */
+  fragments?: number;
 }
 
 export interface Contract {
@@ -549,6 +567,8 @@ export type ChronicleKind =
   | 'conquista'
   /** Passagem aberta, selada ou fechada (M5). */
   | 'passagem'
+  /** Fragmentos, montagem e destino do amuleto (M5). */
+  | 'amuleto'
   | 'chefe'
   | 'promocao'
   | 'nivel'
@@ -605,6 +625,8 @@ export interface Metrics {
   rankUps: number;
   /** Senhores vencidos (M5 F2). */
   bossKills: { level: number; day: number }[];
+  /** Contratos do Senhor perdidos (o grupo caiu, fugiu ou recuou e o amuleto se desfez). */
+  lordFailures: number;
   passagesOpened: number;
   passagesSealed: number;
   idleDays: number;

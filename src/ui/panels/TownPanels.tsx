@@ -56,6 +56,7 @@ import {
 import type { ActivityKind, BuildingId, Contract, Doctrine, Item, ItemSlot, MaterialId, SpecId, World } from '../../sim/index.ts';
 import { HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { ItemCard } from '../items.tsx';
+import { AmuletSection } from './AmuletPanels.tsx';
 import { buildingEffects, cap, DOCTRINES, fmt, knownMaterials, pct, plural } from '../format.ts';
 import { ROLE_PLACE } from '../../render/layout.ts';
 
@@ -420,6 +421,8 @@ export function CofferPanel() {
           <Sparkline values={daily.map((d) => d.treasury)} />
         </>
       )}
+      <h3>Amuleto do abismo</h3>
+      <AmuletSection />
       <h3>Imposto sobre o saque: {pct(town.lootTax)}</h3>
       <p class="sub">Parte do ouro que os heróis trazem vai para o tesouro. Acima de 25%, os gananciosos perdem a confiança no prefeito.</p>
       <div class="row">

@@ -2,7 +2,10 @@
 
 import {
   activeHeroes,
+  BALANCE,
   BIOMES,
+  commands,
+  lordOf,
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
@@ -14,7 +17,7 @@ import {
   openPassages,
 } from '../sim/index.ts';
 import type { MaterialId, World } from '../sim/index.ts';
-import { fmt } from './format.ts';
+import { fmt, midSentence } from './format.ts';
 
 export type Horizon = 'agora' | 'logo' | 'depois';
 
@@ -49,6 +52,16 @@ export function objectives(world: World): Objective[] {
   const upgrade = cheapestUpgrade(world);
   if (upgrade) out.push({ horizon: 'logo', text: upgrade });
 
+  // O amuleto: juntar fragmentos, montar e mandar o grupo ao Senhor.
+  const abyss = world.abyss;
+  const lord = lordOf(abyss.amulet?.level ?? abyss.level);
+  if (abyss.amulet && !abyss.amulet.inUse && world.tick >= abyss.amulet.readyTick) {
+    out.push({ horizon: 'logo', text: `O amuleto está pronto: mande um grupo enfrentar ${midSentence(lord.name)} (no Cofre ou no Abismo).` });
+  } else if (!abyss.amulet && abyss.fragments >= BALANCE.fragmentsPerAmulet) {
+    out.push({ horizon: 'logo', text: `Monte o amuleto do nível ${abyss.level} no Cofre (${fmt(commands.amuletCostFor(world, abyss.level))} de ouro).` });
+  } else if (!abyss.amulet && abyss.fragments > 0) {
+    out.push({ horizon: 'depois', text: `Junte fragmentos de amuleto do nível ${abyss.level}: ${abyss.fragments} de ${BALANCE.fragmentsPerAmulet}.` });
+  }
   // O abismo: abrir a primeira passagem, depois descer até o guardião e selar.
   const known = openPassages(world).filter((p) => p.discovered);
   if (known.length === 0) {

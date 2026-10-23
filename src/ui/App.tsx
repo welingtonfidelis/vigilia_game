@@ -15,6 +15,7 @@ import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
 import { CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
+import { AmuletPanel, LordEndPanel } from './panels/AmuletPanels.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
@@ -269,5 +270,9 @@ function PanelContent(props: { panel: Panel }) {
       return <WelcomePanel oldSave={p.oldSave} />;
     case 'campaignEnd':
       return <CampaignEndPanel />;
+    case 'amulet':
+      return <AmuletPanel />;
+    case 'lordEnd':
+      return <LordEndPanel level={p.level} />;
   }
 }
