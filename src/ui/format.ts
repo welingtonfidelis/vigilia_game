@@ -4,8 +4,10 @@ import {
   availableBiomes,
   BALANCE,
   BIOMES,
-  BUILDINGS,
   CLASSES,
+  EFFECTS,
+  gradeOfLevel,
+  levelTier,
   ROLE_NAMES,
   WOUNDS,
   floorLabel,
@@ -15,7 +17,7 @@ import {
   partyRooms,
   TICKS_PER_HOUR,
 } from '../sim/index.ts';
-import type { Doctrine, Hero, MaterialId, Party, PartyOutcome, Passage, RoomKind, World } from '../sim/index.ts';
+import type { BuildingId, Doctrine, Hero, MaterialId, Party, PartyOutcome, Passage, RoomKind, World } from '../sim/index.ts';
 
 /**
  * Número para a tela: inteiro com separador até 9.999; a partir de 10 mil, compacto
@@ -168,27 +170,43 @@ export function phaseText(world: World, party: Party): string {
   }
 }
 
-export function buildingEffects(id: keyof typeof BUILDINGS, level: number): string[] {
-  const l = level;
+/**
+ * O que o prédio faz num nível, com o rendimento da conservação (`factor`, 1 = inteiro). Usa as
+ * mesmas curvas da simulação: o painel mostra o de agora e o do nível seguinte.
+ */
+export function buildingEffects(world: World, id: BuildingId, level: number, factor = 1): string[] {
+  const g = gradeOfLevel(level) * (level > 0 ? factor : 1);
+  const e = level <= 0 ? 0 : Math.max(1, Math.floor(level * factor + 1e-9));
   switch (id) {
     case 'taverna':
-      return [`Recrutas por berrante: ${3 + Math.max(0, l - 1)}`, `Bebida: ${3 + l} de ouro (diversão e ânimo)`];
+      return [`Recrutas por berrante: ${EFFECTS.recruits(g)}`, `Bebida: ${EFFECTS.drink(g)} de ouro (diversão e ânimo)`];
     case 'estalagem':
-      return [`Vagas para heróis: ${6 + 4 * l}`, `Descanso recupera ${[25, 40, 55, 70][l]}% da vida`];
-    case 'ferreiro':
-      return l === 0 ? ['Sem ferreiro, ninguém compra equipamento'] : [`Equipamento até o tier ${4 * l}`];
+      return [`Vagas para heróis: ${EFFECTS.heroSlots(g)}`, `Descanso recupera ${pct(EFFECTS.restHp(g))} da vida`];
+    case 'ferreiro': {
+      if (e === 0) return ['Sem ferreiro, ninguém compra equipamento'];
+      const forge = EFFECTS.gearTier(e);
+      const abyss = levelTier(world.abyss.level) + BALANCE.forgeAbyssEdge;
+      return [forge > abyss ? `Equipamento até o tier ${abyss} (sabe forjar até o ${forge}, mas o abismo ainda não mostrou mais)` : `Equipamento até o tier ${forge}`];
+    }
     case 'templo':
-      return l === 0
+      return e === 0
         ? ['Sem templo, ninguém reza (fé e luto)']
-        : ['Fé, ânimo e consolo para quem está de luto', `Descanso cura +${5 * l}% a mais`, 'Quem juntou fortuna deixa ofertas no altar'];
+        : ['Fé, ânimo e consolo para quem está de luto', `Descanso cura +${pct(EFFECTS.templeHeal(g))} a mais`, 'Quem juntou fortuna deixa ofertas no altar'];
     case 'guilda':
-      return [`Grupos ao mesmo tempo: ${1 + l}`, `Tamanho do grupo: até ${l >= 2 ? 5 : 4}`, l === 0 ? 'Sem contratos nem doutrina' : `Contratos no quadro: até ${l}`];
+      return [
+        `Grupos ao mesmo tempo: ${EFFECTS.parties(g)}`,
+        `Tamanho do grupo: até ${EFFECTS.partySize(e)}`,
+        e === 0 ? 'Sem contratos nem doutrina' : `Contratos no quadro: até ${Math.max(1, EFFECTS.contracts(g))}`,
+      ];
     case 'campo':
-      return l === 0 ? ['Sem campo, só se aprende descendo'] : [`Treino: ${4 * l} de ouro por sessão`, `XP por sessão: ${6 * l}% do nível`];
+      return e === 0 ? ['Sem campo, só se aprende descendo'] : [`Treino: ${EFFECTS.trainPrice(g)} de ouro por sessão`, `XP por sessão: ${pct(EFFECTS.trainXp(g))} do nível`];
     case 'casa':
-      return l === 0
+      return e === 0
         ? ['Sem Casa de cura, os lesionados se tratam na estalagem', `Chance de virar cicatriz: ${pct(BALANCE.scarChance)}`]
-        : [`Lesões saram ${(1 + 0.5 * l).toLocaleString('pt-BR')}× mais rápido`, `Chance de virar cicatriz: ${pct(Math.max(0.05, BALANCE.scarChance - 0.1 * l))}`];
+        : [
+            `Lesões saram ${EFFECTS.healSpeed(g).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}× mais rápido`,
+            `Chance de virar cicatriz: ${pct(EFFECTS.scarChance(g))}`,
+          ];
   }
 }
 

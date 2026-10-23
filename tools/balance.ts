@@ -132,6 +132,27 @@ const ruined = mean(all.map((w) => Object.values(w.town.buildings).filter((lvl) 
 const mood = mean(all.map((w) => (w.citizens.length ? w.citizens.reduce((s, c) => s + c.happiness, 0) / w.citizens.length : 60)));
 console.log(`  população final ${fmt(finalPop, 0)} · humor médio ${fmt(mood, 0)} · prédios em ruína no fim ${fmt(ruined, 1)}`);
 
+// M5 F4: vila longa. Nível médio dos prédios nos anos de referência e a parte do que entra
+// no tesouro que sai em manutenção diária e consertos.
+console.log('\n── Vila longa (M5 F4) ──');
+const buildingsAt = (year: number) => {
+  const samples = all.map((w) => w.metrics.daily[year * DAYS_PER_YEAR - 1]).filter((s) => s !== undefined);
+  return samples.length ? mean(samples.map((s) => s.buildings)) : NaN;
+};
+const villageTargets: [number, number][] = [
+  [10, 3],
+  [40, 6],
+  [75, 9],
+];
+for (const [year, target] of villageTargets) {
+  if (year > years) continue;
+  const at = buildingsAt(year);
+  console.log(`  ${Math.abs(at - target) <= 1 ? '✔' : '✘'} nível médio dos prédios no ano ${year}: ${fmt(at)} (meta ~${target})`);
+}
+const upkeepShare = sum((w) => w.metrics.maintenance) / Math.max(1, sum((w) => w.metrics.treasuryIn));
+console.log(`  ${upkeepShare >= 0.15 && upkeepShare <= 0.3 ? '✔' : '✘'} manutenção e consertos: ${pct(upkeepShare)} do que entrou no tesouro (meta 15% a 30%)`);
+console.log(`  consertos por campanha ${per((w) => w.metrics.repairs)} · conservação média no fim ${fmt(mean(all.map((w) => w.metrics.daily.at(-1)!.care)), 0)}`);
+
 console.log('\n── Confiança ao descer × desfecho (calibra a escolha de andar) ──');
 const buckets = new Map<string, { n: number; deaths: number; wipes: number; conquests: number }>();
 for (const w of all) {
@@ -149,14 +170,14 @@ for (const [k, b] of [...buckets.entries()].sort((a, b) => Number(a[0]) - Number
 }
 
 console.log('\n── Ano a ano (média das sementes) ──');
-console.log('  ano | andar mais fundo | tesouro | ouro heróis | elenco | nv médio | população | pressão');
+console.log('  ano | andar mais fundo | tesouro | ouro heróis | elenco | nv médio | população | pressão | prédios | conservação');
 for (let y = 1; y <= years; y++) {
   const idx = y * DAYS_PER_YEAR - 1;
   const samples = all.map((w) => w.metrics.daily[idx]).filter((s) => s !== undefined);
   if (samples.length === 0) continue;
   const corr = samples.map((s) => s.pressure);
   console.log(
-    `  ${String(y).padStart(3)} | ${fmt(mean(samples.map((s) => s.deepest))).padStart(16)} | ${fmt(mean(samples.map((s) => s.treasury)), 0).padStart(7)} | ${fmt(mean(samples.map((s) => s.heroGold)), 0).padStart(11)} | ${fmt(mean(samples.map((s) => s.roster))).padStart(6)} | ${fmt(mean(samples.map((s) => s.avgLevel))).padStart(8)} | ${fmt(mean(samples.map((s) => s.population)), 0).padStart(9)} | ${fmt(mean(corr), 0)}`,
+    `  ${String(y).padStart(3)} | ${fmt(mean(samples.map((s) => s.deepest))).padStart(16)} | ${fmt(mean(samples.map((s) => s.treasury)), 0).padStart(7)} | ${fmt(mean(samples.map((s) => s.heroGold)), 0).padStart(11)} | ${fmt(mean(samples.map((s) => s.roster))).padStart(6)} | ${fmt(mean(samples.map((s) => s.avgLevel))).padStart(8)} | ${fmt(mean(samples.map((s) => s.population)), 0).padStart(9)} | ${fmt(mean(corr), 0).padStart(7)} | ${fmt(mean(samples.map((s) => s.buildings))).padStart(7)} | ${fmt(mean(samples.map((s) => s.care)), 0)}`,
   );
 }
 

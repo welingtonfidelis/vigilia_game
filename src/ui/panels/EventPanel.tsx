@@ -25,7 +25,7 @@ export function EventPanel() {
         <p class="event-intro">{def.intro}</p>
         <div class="event-choices">
           {def.choices.map((c) => {
-            const cost = eventChoiceCost(world, c.cost);
+            const cost = eventChoiceCost(world, c);
             const blocked = cost > world.town.treasury;
             return (
               <button key={c.id} class="event-choice" disabled={blocked} onClick={() => choose(c.id)}>

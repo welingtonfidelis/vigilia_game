@@ -23,7 +23,27 @@ export function deserialize(json: string): World {
   if (typeof data.version !== 'number') throw new Error('Save inválido: sem versão.');
   if (data.version > SAVE_VERSION) throw new Error(`Save da versão ${data.version}, este jogo lê até a ${SAVE_VERSION}.`);
   if (data.version < SAVE_VERSION) throw new OldSaveError(data.version);
+  fillDefaults(data);
   return data;
+}
+
+/**
+ * Saves da versão 11 feitos no meio do M5 (antes da F2 e da F4) não têm os campos novos:
+ * completa com os valores de um mundo novo.
+ */
+function fillDefaults(world: World): void {
+  const town = world.town;
+  town.care ??= Object.fromEntries(Object.keys(town.buildings).map((id) => [id, 100])) as World['town']['care'];
+  town.repairs ??= {};
+  world.abyss.fragments ??= 0;
+  world.abyss.amulet ??= null;
+  const m = world.metrics;
+  m.bossKills ??= [];
+  m.lordFailures ??= 0;
+  m.treasuryIn ??= 0;
+  m.maintenance ??= 0;
+  m.repairs ??= 0;
+  m.spent ??= {};
 }
 
 /** Hash curto (FNV-1a) do estado, útil para comparar mundos em testes. */

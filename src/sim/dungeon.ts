@@ -7,7 +7,7 @@ import { DIM_RULE_IDS, rulesLabel } from '../data/rules.ts';
 import { dayOf } from './calendar.ts';
 import { listNames, record } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
-import { hasSpec } from './economy.ts';
+import { EFFECTS, grade, hasSpec } from './economy.ts';
 import { hasTrait, heroStrength } from './hero.ts';
 import { chance, int, pick, range, seedRng, shuffle, weighted, type RngState } from './rng.ts';
 import type { Affix, Combat, EnemyUnitDef, Hero, Party, Passage, Room, RoomKind, Spot, Unit, World } from './types.ts';
@@ -244,7 +244,7 @@ export const passageOf = (world: World, id: number): Passage | undefined => worl
 export const openPassages = (world: World): Passage[] => world.abyss.passages.filter((p) => !p.sealed);
 
 /** Quantas passagens a guilda consegue acompanhar ao mesmo tempo. */
-export const passageCapacity = (world: World): number => 1 + world.town.buildings.guilda;
+export const passageCapacity = (world: World): number => EFFECTS.parties(grade(world, 'guilda'));
 
 export const isGuardianFloor = (passage: Passage, floor: number): boolean => floor === passage.floors - 1;
 

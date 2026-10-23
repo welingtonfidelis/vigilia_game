@@ -4,11 +4,14 @@
 import Phaser from 'phaser';
 import {
   abyssPressure,
+  BALANCE,
   BIOMES,
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
+  careOf,
   commands,
+  repairOf,
   dayOf,
   hourOf,
   TICKS_PER_HOUR,
@@ -18,7 +21,8 @@ import type { Session, SessionEvent } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { makeTextures } from './art.ts';
 import { ART_SCALE, MONSTERS, type MonsterLook } from './assets.ts';
-import { PACK_ASSETS, buildingTexture, lightsTexture, packUrl } from './pack.ts';
+import { PACK_ASSETS, artLevel, buildingTexture, lightsTexture, packUrl } from './pack.ts';
+import { scaffoldTexture, wearTexture } from './scaffold.ts';
 import { moveAxis } from './keys.ts';
 import { CELL, NavGrid, type AlphaMask, type Route } from './nav.ts';
 import {
@@ -139,8 +143,13 @@ const FORGE_COALS_X: Record<number, number> = { 1: 84, 2: 91, 3: 97 };
 interface BuildingView {
   base: Phaser.GameObjects.Image;
   lights: Phaser.GameObjects.Image;
+  /** Andaime do conserto e marcas de desgaste (M5 F4), sobre a arte. */
+  scaffold: Phaser.GameObjects.Image;
+  wear: Phaser.GameObjects.Image;
   sign: Phaser.GameObjects.Text;
   level: number;
+  /** Nível, obra e faixa de desgaste da última sincronização: só redesenha quando muda. */
+  state: string;
 }
 
 /** Lápide sem nome: quem está ali se vê no Memorial, ao clicar no cemitério. */
@@ -377,7 +386,9 @@ export class VillageScene extends Phaser.Scene {
     const base = this.add.image(lot.x, y, buildingTexture(id, 1)).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 2);
     const lights = this.add.image(lot.x, y, lightsTexture(buildingTexture(id, 1))).setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(DEPTH.lights).setAlpha(0);
     const sign = label(this, lot.x, y + 2, '', 14).setOrigin(0.5, 1);
-    const view: BuildingView = { base, lights, sign, level: -1 };
+    const wear = this.add.image(lot.x, y, '__DEFAULT').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1.5).setVisible(false);
+    const scaffold = this.add.image(lot.x, y, '__DEFAULT').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(y - 1).setVisible(false);
+    const view: BuildingView = { base, lights, scaffold, wear, sign, level: -1, state: '' };
     this.buildings.set(id, view);
     this.syncBuilding(id, false);
   }
@@ -385,9 +396,27 @@ export class VillageScene extends Phaser.Scene {
   private syncBuilding(id: BuildingId, announce: boolean): void {
     const view = this.buildings.get(id)!;
     const level = buildingLevel(this.world, id);
-    if (level === view.level) return;
+    const repairing = level > 0 && repairOf(this.world, id) !== undefined;
+    const care = careOf(this.world, id);
+    const worn: 0 | 1 | 2 = level <= 0 || repairing ? 0 : care < BALANCE.careBroken ? 2 : care < BALANCE.careWorn ? 1 : 0;
+    const state = `${level}:${repairing}:${worn}`;
+    if (state === view.state) return;
+    view.state = state;
     const lot = LOTS[id];
     const texture = buildingTexture(id, level);
+    // Andaime e desgaste seguem a arte 16-bit (a de 32-bit tem o mesmo enquadramento).
+    view.scaffold.setVisible(repairing);
+    if (repairing) view.scaffold.setTexture(scaffoldTexture(this, texture));
+    view.wear.setVisible(worn > 0);
+    if (worn !== 0) view.wear.setTexture(wearTexture(this, texture, worn));
+    // O prédio gasto perde a cor; o quebrado, mais.
+    if (worn === 0) view.base.clearTint();
+    else view.base.setTint(worn === 1 ? 0xd8cdb8 : 0xb4a58c);
+    view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}${repairing ? ' · em obra' : ''}`);
+    if (level === view.level) {
+      this.layoutSigns();
+      return;
+    }
     showArt(view.base, texture);
     if (this.textures.exists(lightsTexture(texture))) {
       showArt(view.lights, lightsTexture(texture));
@@ -400,9 +429,8 @@ export class VillageScene extends Phaser.Scene {
     // Sombra, janelas acesas e fumaça mudam com a arte de cada nível.
     this.shadows.set(`predio:${id}`, [this.caster({ key: texture, x: lot.x, y: bottom }, true)]);
     this.lighting.setGroup(`janelas:${id}`, this.windowLights(lightsTexture(texture), lot.x, bottom));
-    this.particles.setGroup(`fumaca:${id}`, this.chimneySmoke(id, level, lot.x, bottom));
-    if (id === 'ferreiro') this.syncForge(level);
-    view.sign.setText(level === 0 ? `${BUILDINGS[id].name} · ruína` : `${BUILDINGS[id].name} · nível ${level}`);
+    this.particles.setGroup(`fumaca:${id}`, this.chimneySmoke(id, artLevel(level), lot.x, bottom));
+    if (id === 'ferreiro') this.syncForge(artLevel(level));
     view.sign.setColor(level === 0 ? '#b8a890' : '#f4ecd8');
     if (announce && view.level >= 0 && level > view.level) this.sparkle(lot.x, lot.y + lot.h / 4);
     view.level = level;

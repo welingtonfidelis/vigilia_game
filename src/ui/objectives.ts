@@ -9,12 +9,16 @@ import {
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
+  careOf,
   floorLabel,
   hornCost,
   isGuardianFloor,
   MATERIAL_NAMES,
   nextLevelCost,
   openPassages,
+  repairCost,
+  repairOf,
+  upgradeBlocker,
 } from '../sim/index.ts';
 import type { MaterialId, World } from '../sim/index.ts';
 import { fmt, midSentence } from './format.ts';
@@ -49,6 +53,9 @@ export function objectives(world: World): Objective[] {
     out.push({ horizon: 'agora', text: 'Poste um contrato no quadro para levar os heróis a uma passagem ou ao próximo andar.' });
   }
 
+  // Prédio gasto vem antes de qualquer obra nova: rende menos e, em 0, perde um nível.
+  const worn = wornest(world);
+  if (worn) out.push({ horizon: 'logo', text: worn });
   const upgrade = cheapestUpgrade(world);
   if (upgrade) out.push({ horizon: 'logo', text: upgrade });
 
@@ -80,11 +87,21 @@ export function objectives(world: World): Objective[] {
   return out.slice(0, 3);
 }
 
+/** "Conserte a taverna (conservação 32): …" para o prédio mais gasto abaixo de 50. */
+function wornest(world: World): string | null {
+  const worn = BUILDING_IDS.filter((id) => buildingLevel(world, id) > 0 && repairOf(world, id) === undefined && careOf(world, id) < BALANCE.careWorn);
+  if (worn.length === 0) return null;
+  const id = worn.reduce((a, b) => (careOf(world, b) < careOf(world, a) ? b : a));
+  const cost = repairCost(world, id);
+  const name = `${BUILDINGS[id].gender === 'm' ? 'o' : 'a'} ${BUILDINGS[id].name.toLowerCase()}`;
+  return `Conserte ${name} (conservação ${Math.floor(careOf(world, id))})${cost ? `: ${fmt(cost.gold)} de ouro` : ''}.`;
+}
+
 function cheapestUpgrade(world: World): string | null {
   let best: { text: string; gold: number } | null = null;
   for (const id of BUILDING_IDS) {
     const cost = nextLevelCost(world, id);
-    if (!cost) continue;
+    if (!cost || upgradeBlocker(world, id)) continue;
     const lvl = buildingLevel(world, id);
     // Ruínas primeiro: reconstruir vale mais do que melhorar.
     const weight = cost.gold + (lvl > 0 ? 10_000 : 0);

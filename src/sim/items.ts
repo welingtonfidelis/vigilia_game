@@ -17,7 +17,7 @@ import {
 import { dayOf, yearOf } from './calendar.ts';
 import { floorLabel, ofWhom, record } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_DAY } from './config.ts';
-import { hasSpec, level, maxGearTier } from './economy.ts';
+import { earn, hasSpec, level, maxGearTier } from './economy.ts';
 import { heroStats } from './hero.ts';
 import { levelTier } from './dungeon.ts';
 import { chance, pick } from './rng.ts';
@@ -449,7 +449,7 @@ export interface BenchOffer {
  * (troca um afixo que não serve à classe) ou polir a lendária (+1 tier). null = nada a fazer.
  */
 export function benchOffer(world: World, hero: Hero): BenchOffer | null {
-  if (level(world, 'ferreiro') < 3) return null;
+  if (level(world, 'ferreiro') < B.benchSmithLevel) return null;
   let best: BenchOffer | null = null;
   const consider = (o: BenchOffer) => {
     if (o.price > hero.gold) return;
@@ -477,7 +477,7 @@ export function useBench(world: World, hero: Hero, offer: BenchOffer): void {
   if (!item || hero.gold < offer.price) return;
   hero.gold -= offer.price;
   // A forja fica com uma parte (o resto é o trabalho do joalheiro).
-  world.town.treasury += offer.price * B.benchTreasuryShare;
+  earn(world, offer.price * B.benchTreasuryShare);
   const year = yearOf(dayOf(world.tick));
   const before = item.rarity;
   const statsBefore = heroStats(world, hero).maxHp;

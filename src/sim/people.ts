@@ -8,7 +8,7 @@ import { dayOf } from './calendar.ts';
 import { record, className, g, heroLabel, listNames } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_SEASON, DAYS_PER_YEAR } from './config.ts';
 import { DECREES, hasDecree } from './decrees.ts';
-import { gearPrice, hasSpec, level } from './economy.ts';
+import { EFFECTS, gearPrice, grade, hasSpec, level, spend } from './economy.ts';
 import { equip, heirloomFor, stash, takeItems } from './items.ts';
 import { addBond, addTrait, ageYears, createHero, getBond, heroStats, rollRank, WOUNDS } from './hero.ts';
 import { chance, int, pick } from './rng.ts';
@@ -93,7 +93,7 @@ const injuryPhrase = (kind: InjuryKind): string =>
 
 /** Quanto a lesão melhora por dia: Casa de cura e curandeiros aposentados aceleram. */
 export function recoveryPerDay(world: World): number {
-  return (1 + 0.5 * level(world, 'casa') + 0.5 * roleCount(world, 'curandeiro')) * (hasSpec(world, 'cirurgia') ? 2 : 1);
+  return (EFFECTS.healSpeed(grade(world, 'casa')) + 0.5 * roleCount(world, 'curandeiro')) * (hasSpec(world, 'cirurgia') ? 2 : 1);
 }
 
 function healInjuries(world: World): void {
@@ -105,7 +105,7 @@ function healInjuries(world: World): void {
     const kind = hero.injury.kind;
     hero.injury = null;
     // Com Cirurgia na Casa de cura, lesão nenhuma vira cicatriz.
-    const scarChance = hasSpec(world, 'cirurgia') ? 0 : Math.max(0.05, B.scarChance - 0.1 * level(world, 'casa'));
+    const scarChance = hasSpec(world, 'cirurgia') ? 0 : EFFECTS.scarChance(grade(world, 'casa'));
     if (!chance(world.rng, scarChance)) continue;
     hero.scars.push(kind);
     world.metrics.scars++;
@@ -225,7 +225,7 @@ export function honorFuneral(world: World, dead: Hero): boolean {
   const def = DECREES['funeral-honras'];
   const cost = def.funeralCost ?? 0;
   if (world.town.treasury < cost) return false;
-  world.town.treasury -= cost;
+  spend(world, 'funeral', cost);
   const relief = def.funeralGriefRelief ?? 0;
   for (const hero of world.heroes) {
     if (hero.status !== 'dead' && hero.grief > 0) hero.grief = Math.max(0, hero.grief - relief);

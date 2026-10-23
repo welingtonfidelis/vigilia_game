@@ -54,7 +54,7 @@ export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
   dificil: {
     id: 'dificil',
     name: 'Difícil',
-    description: 'Heróis demoram mais a subir, o abismo paga menos e solta menos peças raras, tudo custa mais e a corrupção e as incursões apertam.',
+    description: 'Heróis demoram mais a subir, o abismo paga menos e solta menos peças raras, tudo custa mais e a pressão do abismo e as incursões apertam.',
     xp: 0.85,
     gold: 0.85,
     rarity: 0.65,

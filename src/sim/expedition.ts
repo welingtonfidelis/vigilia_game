@@ -8,7 +8,7 @@ import { record, floorLabel, g, heroLabel, listNames } from './chronicle.ts';
 import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
 import { enterFloor, isGuardianFloor, levelPower, partyRooms, passageOf, reducePressure, travelTicks } from './dungeon.ts';
-import { hasSpec, heroCapacity } from './economy.ts';
+import { earn, hasSpec, heroCapacity } from './economy.ts';
 import { affixCount, merchantVisit, rollDrop, shareLoot } from './items.ts';
 import { isProvisioned } from './patronage.ts';
 import {
@@ -337,7 +337,7 @@ function deliverFragments(world: World, party: Party, heroes: Hero[]): void {
     record(world, 'amuleto', party.memberIds, `${listNames(heroes)} trouxeram ${what} de amuleto do nível ${party.level} (${abyss.fragments}/${B.fragmentsPerAmulet} no Cofre).`);
   } else {
     const gold = n * B.oldFragmentGold;
-    world.town.treasury += gold;
+    earn(world, gold);
     record(world, 'amuleto', party.memberIds, `${cap(what)} de um nível já vencido virou relíquia de museu e rendeu ${gold} de ouro.`);
   }
 }
@@ -362,7 +362,7 @@ function lordVictory(world: World, party: Party): void {
   // Os fragmentos que sobraram do nível vencido viram relíquia de museu.
   if (abyss.fragments > 0) {
     const gold = abyss.fragments * B.oldFragmentGold;
-    world.town.treasury += gold;
+    earn(world, gold);
     record(world, 'amuleto', [], `Os ${abyss.fragments} fragmentos que sobraram do nível ${level} viraram relíquia de museu: ${gold} de ouro.`);
     abyss.fragments = 0;
   }
@@ -501,7 +501,7 @@ function arrive(world: World, party: Party): void {
   party.loot.gold *= (1 + B.affixGold * lucky) * difficultyOf(world).gold;
   // Ouro: o imposto vai para o tesouro, o resto é dividido por fatias.
   const tax = party.loot.gold * town.lootTax;
-  town.treasury += tax;
+  earn(world, tax);
   world.metrics.goldLooted += party.loot.gold;
   const shares = heroes.map((h) => 1 + (traitSum(h, 'lootShares') > 0 ? traitSum(h, 'lootShares') - 1 : 0));
   const totalShares = shares.reduce((a, b) => a + b, 0);

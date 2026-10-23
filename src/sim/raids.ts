@@ -1,11 +1,12 @@
 // Incursões noturnas (M3): quando a pressão do abismo sobe demais, ele sobe até a vila.
 // A defesa é a soma dos heróis que estão em casa, dos aposentados e da milícia de
-// guardas. O resultado nunca acaba a campanha: no pior caso, prédios caem de nível,
-// moradores morrem e o tesouro sangra.
+// guardas. O resultado nunca acaba a campanha: no pior caso, prédios se desgastam (e os já
+// gastos caem de nível), moradores morrem e o tesouro sangra.
 
 import { BIOMES } from '../data/biomes.ts';
 import { reducePressure, worstPassage } from './dungeon.ts';
-import { BUILDINGS } from '../data/buildings.ts';
+import { BUILDING_IDS } from '../data/buildings.ts';
+import { byGender, theBuilding, wear } from './care.ts';
 import { dayOf, hourOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import { citizenNames, guardDefense, raidCitizenLoss, refreshJobs } from './citizens.ts';
@@ -14,9 +15,9 @@ import { decreeDefenseMultiplier } from './decrees.ts';
 import { difficultyOf } from './difficulty.ts';
 import { heroStrength } from './hero.ts';
 import { maybeInjure } from './people.ts';
-import { chance, int, pick } from './rng.ts';
+import { chance, int } from './rng.ts';
 import { townHeroes } from './town.ts';
-import type { BuildingId, Citizen, Raid, RaidOutcome, World } from './types.ts';
+import type { Citizen, Raid, RaidHit, RaidOutcome, World } from './types.ts';
 
 export interface Threat {
   level: number;
@@ -64,12 +65,16 @@ export function maybeRaid(world: World): void {
   resolveRaid(world, threat);
 }
 
-function damageBuilding(world: World): BuildingId | null {
-  const built = (Object.keys(world.town.buildings) as BuildingId[]).filter((id) => world.town.buildings[id] > 0);
-  if (built.length === 0) return null;
-  const id = pick(world.rng, built);
-  world.town.buildings[id]--;
-  return id;
+/** A incursão desgasta alguns prédios; quem chega a 0 de conservação perde um nível. */
+function damageBuildings(world: World, count: number): RaidHit[] {
+  const built = BUILDING_IDS.filter((id) => world.town.buildings[id] > 0);
+  const hits: RaidHit[] = [];
+  for (let i = 0; i < count && built.length > 0; i++) {
+    const id = built.splice(int(world.rng, 0, built.length - 1), 1)[0]!;
+    const damage = int(world.rng, B.raidCareDamage[0], B.raidCareDamage[1]);
+    hits.push({ id, damage, collapsed: wear(world, id, damage) });
+  }
+  return hits;
 }
 
 /** Resolve a incursão. Exportado para os testes forçarem o cenário. */
@@ -80,12 +85,8 @@ export function resolveRaid(world: World, threat: Threat): Raid {
   const ratio = defense / (defense + power);
   const outcome: RaidOutcome = ratio >= B.raidRepelRatio ? 'repelido' : ratio >= B.raidCostlyRatio ? 'custoso' : 'saque';
 
-  const damage = outcome === 'repelido' ? 0 : outcome === 'custoso' ? 1 : int(world.rng, 1, 2);
-  let building: BuildingId | null = null;
-  for (let i = 0; i < damage; i++) {
-    const hit = damageBuilding(world);
-    if (hit) building = hit;
-  }
+  const struck = outcome === 'repelido' ? 0 : outcome === 'custoso' ? int(world.rng, 1, 2) : int(world.rng, 2, 3);
+  const hits = damageBuildings(world, struck);
 
   const loss = outcome === 'repelido' ? 0 : outcome === 'custoso' ? int(world.rng, 1, 2) : int(world.rng, 2, 5);
   const lost: Citizen[] = loss > 0 ? raidCitizenLoss(world, loss) : [];
@@ -117,11 +118,12 @@ export function resolveRaid(world: World, threat: Threat): Raid {
   world.town.lastRaidDay = dayOf(world.tick);
   refreshJobs(world);
 
-  const hitName = building
-    ? ` ${BUILDINGS[building].gender === 'm' ? 'O' : 'A'} ${BUILDINGS[building].name.toLowerCase()} ${
-        world.town.buildings[building] === 0 ? 'voltou à ruína' : `voltou ao nível ${world.town.buildings[building]}`
-      }.`
-    : '';
+  const hitName = hits
+    .map(({ id, collapsed }) => {
+      const now = world.town.buildings[id];
+      return ` ${theBuilding(id)} ${collapsed ? (now === 0 ? 'voltou à ruína' : `voltou ao nível ${now}`) : `ficou ${byGender(id, 'avariado', 'avariada')} (conservação ${Math.round(world.town.care[id])})`}.`;
+    })
+    .join('');
   const lostText = lost.length ? ` Morreram ${citizenNames(lost)}.` : '';
   const hurtText = injuries ? ` ${injuries} ${injuries === 1 ? 'herói ficou ferido' : 'heróis ficaram feridos'}.` : '';
   const goldText = goldLost ? ` Levaram ${goldLost} de ouro.` : '';
@@ -133,7 +135,7 @@ export function resolveRaid(world: World, threat: Threat): Raid {
     `${head} uma incursão ${BIOMES[biome]!.of} (poder ${power} contra defesa ${defense}).${hitName}${lostText}${hurtText}${goldText}`,
   );
 
-  const raid: Raid = { day: dayOf(world.tick), level, pressure, biome, power, defense, outcome, building, citizenLoss: loss, goldLost, injuries };
+  const raid: Raid = { day: dayOf(world.tick), level, pressure, biome, power, defense, outcome, hits, citizenLoss: loss, goldLost, injuries };
   world.raids.push(raid);
   if (world.raids.length > 12) world.raids.shift();
   return raid;

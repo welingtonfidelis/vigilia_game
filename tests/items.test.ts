@@ -147,12 +147,14 @@ describe('forja e especializações', () => {
     expect(commands.build(world, 'estalagem').ok).toBe(false);
     expect(commands.build(world, 'estalagem', 'laminas').ok).toBe(false);
     expect(commands.build(world, 'estalagem', 'dormitorio').ok).toBe(true);
-    expect(heroCapacity(world)).toBe(before + 4 + 4);
+    // Do nível 2 ao 3 a estalagem ganha 2 vagas na curva nova (M5 F4), e o dormitório dá mais 4.
+    expect(heroCapacity(world)).toBe(before + 2 + 4);
     world.town.buildings.ferreiro = 3;
+    world.abyss.level = 5; // a forja não passa do que o abismo já mostrou
     expect(commands.chooseSpecialization(world, 'ferreiro', 'laminas').ok).toBe(true);
     expect(commands.chooseSpecialization(world, 'ferreiro', 'couracas').ok).toBe(false);
-    expect(maxGearTier(world, 'weapon')).toBe(13);
-    expect(maxGearTier(world, 'armor')).toBe(12);
+    expect(maxGearTier(world, 'weapon')).toBe(11);
+    expect(maxGearTier(world, 'armor')).toBe(10);
   });
 
   it('presentear e vender peças do cofre', () => {
@@ -176,13 +178,14 @@ describe('forja e especializações', () => {
 
 
 describe('bancada do joalheiro, salas novas e chefes em duas fases (9.3)', () => {
-  it('a bancada só abre com o ferreiro no nível 3 e cobra do herói', () => {
+  it('a bancada só abre com o ferreiro no nível 5 e cobra do herói', () => {
     const { world, list } = townWith(1);
     const hero = list[0]!;
     equip(world, hero, newItem(world, { slot: 'weapon', rarity: 'rara', tier: 4, affixes: ['afiado'], origin: 'teste' }));
     hero.gold = 50000;
+    world.town.buildings.ferreiro = 4;
     expect(benchOffer(world, hero)).toBeNull();
-    world.town.buildings.ferreiro = 3;
+    world.town.buildings.ferreiro = 5;
     const offer = benchOffer(world, hero)!;
     expect(offer.service).toBe('encantar');
     const treasury = world.town.treasury;

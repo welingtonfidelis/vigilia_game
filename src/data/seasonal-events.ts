@@ -5,6 +5,11 @@ export interface SeasonalChoiceDef {
   label: string;
   detail: string;
   cost: number;
+  /**
+   * A escolha poupa os prédios de um desgaste (M5 F4): o preço passa a ser uma parte do
+   * conserto que ela evita, para a escolha pesar também numa vila grande.
+   */
+  shields?: { damage: number; buildings: number };
 }
 
 export interface SeasonalEventDef {
@@ -14,12 +19,12 @@ export interface SeasonalEventDef {
   choices: SeasonalChoiceDef[];
 }
 
-/** Primavera, Verão, Outono, Inverno. Verão fica sem evento nesta primeira fatia. */
+/** Primavera, Verão, Outono, Inverno; cada estação gira pelos seus eventos, um por ano. */
 export const SEASON_EVENTS: SeasonalEventId[][] = [
   ['caravana'],
-  ['peste', 'eclipse'],
+  ['peste', 'eclipse', 'tempestade'],
   ['festival-colheita'],
-  ['cobrador', 'visita-lendaria'],
+  ['cobrador', 'visita-lendaria', 'geada'],
 ];
 
 export const SEASONAL_EVENTS: Record<SeasonalEventId, SeasonalEventDef> = {
@@ -31,7 +36,7 @@ export const SEASONAL_EVENTS: Record<SeasonalEventId, SeasonalEventDef> = {
       {
         id: 'materiais',
         label: 'Comprar materiais',
-        detail: 'Custa 40 de ouro. Cada ato aberto recebe 6 materiais.',
+        detail: 'Custa 40 de ouro. A vila recebe 6 de cada material que o abismo já mostrou.',
         cost: 40,
       },
       {
@@ -100,21 +105,21 @@ export const SEASONAL_EVENTS: Record<SeasonalEventId, SeasonalEventDef> = {
   eclipse: {
     id: 'eclipse',
     title: 'Eclipse sobre o abismo',
-    intro: 'O sol some atrás da lua e o abismo responde. Uma onda de corrupção sobe pelos andares.',
+    intro: 'O sol some atrás da lua e o abismo responde. Uma onda de pressão sobe pelas passagens.',
     choices: [
       {
         id: 'conter',
         label: 'Conter a maré',
-        detail: 'Custa 40 de ouro. Os heróis seguram a corrupção nos atos abertos, mas se desgastam.',
+        detail: 'Custa 40 de ouro. Os heróis seguram a pressão das passagens abertas, mas se desgastam.',
         cost: 40,
       },
       {
         id: 'rezar',
         label: 'Rezar no templo',
-        detail: 'Sem custo. O povo se acalma, mas a corrupção avança.',
+        detail: 'Sem custo. O povo se acalma, mas a pressão do abismo avança.',
         cost: 0,
       },
-      { id: 'observar', label: 'Observar o eclipse', detail: 'Sem custo. A corrupção dispara e os heróis perdem ânimo.', cost: 0 },
+      { id: 'observar', label: 'Observar o eclipse', detail: 'Sem custo. A pressão do abismo dispara e os heróis perdem ânimo.', cost: 0 },
     ],
   },
   'visita-lendaria': {
@@ -135,6 +140,36 @@ export const SEASONAL_EVENTS: Record<SeasonalEventId, SeasonalEventDef> = {
         cost: 0,
       },
       { id: 'recusar', label: 'Recusar a visita', detail: 'Sem custo. A vila perde prestígio.', cost: 0 },
+    ],
+  },
+  tempestade: {
+    id: 'tempestade',
+    title: 'Tempestade de verão',
+    intro: 'Nuvens pretas descem do desfiladeiro. O vento arranca telhas antes da primeira gota, e os telhados não vão aguentar todos.',
+    choices: [
+      {
+        id: 'reforcar',
+        label: 'Reforçar os telhados',
+        detail: 'Os pedreiros amarram telhas e escoram paredes. A tempestade passa sem estrago.',
+        cost: 40,
+        shields: { damage: 15, buildings: 2 },
+      },
+      { id: 'abrigar', label: 'Abrigar a vila e esperar', detail: 'Sem custo. Dois prédios perdem 15 de conservação.', cost: 0 },
+    ],
+  },
+  geada: {
+    id: 'geada',
+    title: 'A grande geada',
+    intro: 'O inverno chega de uma vez. A água congela nas calhas e racha as pedras, e a lenha da vila não dá para todo mundo.',
+    choices: [
+      {
+        id: 'lenha',
+        label: 'Comprar lenha e palha',
+        detail: 'As lareiras ficam acesas e as paredes aguentam o frio. Os moradores agradecem.',
+        cost: 40,
+        shields: { damage: 8, buildings: 7 },
+      },
+      { id: 'aguentar', label: 'Aguentar o frio', detail: 'Sem custo. Todos os prédios perdem 8 de conservação e os moradores reclamam.', cost: 0 },
     ],
   },
 };

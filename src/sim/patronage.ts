@@ -5,7 +5,7 @@
 import { WORK_IDS, WORKS } from '../data/works.ts';
 import { record } from './chronicle.ts';
 import { BALANCE as B } from './config.ts';
-import { level } from './economy.ts';
+import { earn, level } from './economy.ts';
 import { hasTrait } from './hero.ts';
 import type { Hero, Party, Spot, WorkId, World } from './types.ts';
 
@@ -29,7 +29,7 @@ export function buyProvisions(world: World, party: Party, members: Hero[]): void
   for (const h of members) {
     if (h.gold >= ration * B.provisionReserve) {
       h.gold -= ration;
-      world.town.treasury += ration * B.provisionTreasuryShare;
+      earn(world, ration * B.provisionTreasuryShare);
       (party.provisioned ??= []).push(h.id);
       h.stats.provisions = (h.stats.provisions ?? 0) + 1;
     }
@@ -37,7 +37,7 @@ export function buyProvisions(world: World, party: Party, members: Hero[]): void
     const fearful = hasTrait(h, 'supersticioso') || hasTrait(h, 'covarde');
     if (h.gold >= ration * (fearful ? B.provisionReserve / 2 : B.provisionReserve)) {
       h.gold -= relic;
-      world.town.treasury += relic * B.provisionTreasuryShare;
+      earn(world, relic * B.provisionTreasuryShare);
       (party.relics ??= []).push(h.id);
     }
   }

@@ -65,7 +65,7 @@ export type CitizenJob = 'lavrador' | 'pedreiro' | 'copeiro' | 'ferreiro' | 'aco
 export type DecreeId = 'taxa-guerra' | 'toque-recolher' | 'funeral-honras';
 
 /** Eventos sazonais do M3. */
-export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador' | 'peste' | 'eclipse' | 'visita-lendaria';
+export type SeasonalEventId = 'caravana' | 'festival-colheita' | 'cobrador' | 'peste' | 'eclipse' | 'visita-lendaria' | 'tempestade' | 'geada';
 
 export interface PendingEvent {
   id: SeasonalEventId;
@@ -88,6 +88,31 @@ export interface Citizen {
 export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
 
 /** Relatório de uma incursão noturna. */
+/** Para onde vai o ouro do tesouro (métrica do balanceador). */
+export type SpendKind =
+  | 'predio'
+  | 'conserto'
+  | 'manutencao'
+  | 'pensao'
+  | 'guarda'
+  | 'decreto'
+  | 'berrante'
+  | 'forja'
+  | 'contrato'
+  | 'amuleto'
+  | 'expansao'
+  | 'mecenato'
+  | 'presente'
+  | 'festa'
+  | 'funeral'
+  | 'evento';
+
+export interface RaidHit {
+  id: BuildingId;
+  damage: number;
+  collapsed: boolean;
+}
+
 export interface Raid {
   day: number;
   /** Nível do abismo na noite da incursão. */
@@ -98,7 +123,8 @@ export interface Raid {
   power: number;
   defense: number;
   outcome: RaidOutcome;
-  building: BuildingId | null;
+  /** Prédios desgastados pela incursão (M5 F4); `collapsed` = perdeu um nível. */
+  hits: RaidHit[];
   citizenLoss: number;
   goldLost: number;
   injuries: number;
@@ -547,6 +573,10 @@ export interface Town {
   forge: ForgeOrder[];
   /** Especialização escolhida ao chegar no nível 3. */
   specs: Partial<Record<BuildingId, SpecId>>;
+  /** Conservação de cada prédio, de 0 a 100 (M5 F4). */
+  care: Record<BuildingId, number>;
+  /** Consertos em andamento: o tick em que cada obra termina. */
+  repairs: Partial<Record<BuildingId, number>>;
   /** Últimas visitas à bancada do joalheiro (para o painel do ferreiro). */
   bench?: BenchVisit[];
   /** Obras pagas pelos heróis (mecenato). */
@@ -628,6 +658,12 @@ export interface Metrics {
   /** Contratos do Senhor perdidos (o grupo caiu, fugiu ou recuou e o amuleto se desfez). */
   lordFailures: number;
   passagesOpened: number;
+  /** Ouro que entrou no tesouro, e o que saiu em manutenção diária e consertos (M5 F4). */
+  treasuryIn: number;
+  maintenance: number;
+  repairs: number;
+  /** Ouro gasto pelo tesouro, por destino. */
+  spent: Partial<Record<SpendKind, number>>;
   passagesSealed: number;
   idleDays: number;
   longestIdleStreak: number;
@@ -657,6 +693,9 @@ export interface DailySample {
   population: number;
   pressure: number;
   level: number;
+  /** Nível médio dos 7 prédios (o construído) e conservação média dos de pé (M5 F4). */
+  buildings: number;
+  care: number;
 }
 
 /** Dificuldade da campanha (multiplicadores em src/data/difficulty.ts). */

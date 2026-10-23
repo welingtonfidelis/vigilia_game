@@ -30,7 +30,18 @@ export {
   guardSalaryPerDay,
   heroCapacity,
   hornCost,
-  level as buildingLevel,
+  // O nível construído (painel, arte, custo) e o efetivo, já com a conservação (M5 F4).
+  builtLevel as buildingLevel,
+  level as effectiveLevel,
+  careFactor,
+  careOf,
+  EFFECTS,
+  gradeOfLevel,
+  levelCost,
+  maxBuildingLevel,
+  maxContracts,
+  repairOf,
+  upgradeBlocker,
   maxGearTier,
   maxParties,
   maxPartySize,
@@ -55,6 +66,7 @@ export {
   upgradeGain,
 } from './items.ts';
 export { hasSpec, specOf } from './economy.ts';
+export { repairCost, theBuilding } from './care.ts';
 export { carriesRelic, cheapestWork, isProvisioned, rationPrice, relicPrice, workEffectLevel, workLevel, workPrice } from './patronage.ts';
 export { WORK_IDS, WORKS, type WorkDef } from '../data/works.ts';
 export { AFFIXES, MATERIAL_AFFIX, RARITY_NAMES, SLOT_NAMES } from '../data/items.ts';
@@ -68,6 +80,7 @@ export {
   isGuardianFloor,
   lairSpot,
   levelPower,
+  levelTier,
   lordCandidates,
   lordConfidence,
   openPassages,
@@ -88,6 +101,6 @@ export { WOUNDS, woundEffects } from './hero.ts';
 export { BIOMES, MATERIAL_NAMES, type BiomeDef } from '../data/biomes.ts';
 export { DIM_RULES, DIM_RULE_IDS, rulesLabel, type DimRuleDef } from '../data/rules.ts';
 export { LORD_LEVELS, lordOf, type LordDef } from '../data/lords.ts';
-export { BUILDINGS, BUILDING_IDS, MAX_BUILDING_LEVEL, type BuildingDef, type LevelCost } from '../data/buildings.ts';
+export { BUILDINGS, BUILDING_IDS, type BuildingDef, type LevelCost } from '../data/buildings.ts';
 export { CLASSES, CLASS_IDS, RANKS, RANK_MAX_LEVEL, type ClassDef } from '../data/classes.ts';
 export { TRAITS, type TraitDef } from '../data/traits.ts';

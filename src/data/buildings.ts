@@ -11,7 +11,7 @@ export interface BuildingDef {
   gender: 'm' | 'f';
   blurb: string;
   startLevel: number;
-  /** Custo para chegar a cada nível (índice 0 = nível 1). */
+  /** Custo para chegar aos níveis 1 a 3 (índice 0 = nível 1); do 4 em diante, `levelCost` em economy.ts. */
   costs: LevelCost[];
 }
 
@@ -36,7 +36,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
     id: 'ferreiro',
     name: 'Ferreiro',
     gender: 'm',
-    blurb: 'Armas e armaduras: libera 4 tiers de equipamento por nível.',
+    blurb: 'Armas e armaduras: libera 3 tiers de equipamento por nível, até onde o abismo já mostrou.',
     startLevel: 0,
     costs: [{ gold: 120 }, { gold: 420, materials: { ossos: 25 } }, { gold: 1400, materials: { ferroNegro: 30 } }],
   },
@@ -76,4 +76,3 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
 
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
 
-export const MAX_BUILDING_LEVEL = 3;

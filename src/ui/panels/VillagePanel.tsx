@@ -38,11 +38,11 @@ const outcomeTone: Record<Raid['outcome'], string> = {
 
 function RaidLine(props: { world: World; raid: Raid }) {
   const { world, raid } = props;
-  const building = raid.building ? BUILDINGS[raid.building] : null;
   const details: string[] = [`poder ${fmt(raid.power)} × defesa ${fmt(raid.defense)}`];
-  if (building) {
-    const level = world.town.buildings[raid.building!];
-    details.push(`${building.name.toLowerCase()} ${level === 0 ? 'em ruínas' : `ao nível ${level}`}`);
+  for (const hit of raid.hits ?? []) {
+    const name = BUILDINGS[hit.id].name.toLowerCase();
+    const level = world.town.buildings[hit.id];
+    details.push(hit.collapsed ? `${name} ${level === 0 ? 'em ruínas' : `caiu ao nível ${level}`}` : `${name} −${hit.damage} de conservação`);
   }
   if (raid.citizenLoss > 0) details.push(`${raid.citizenLoss} ${raid.citizenLoss === 1 ? 'morador' : 'moradores'}`);
   if (raid.goldLost > 0) details.push(`${fmt(raid.goldLost)} de ouro`);

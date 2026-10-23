@@ -1,7 +1,8 @@
 // Alavancas do prefeito. Toda interação do jogador passa por aqui.
 
 import { MATERIAL_NAMES } from '../data/biomes.ts';
-import { BUILDINGS, MAX_BUILDING_LEVEL } from '../data/buildings.ts';
+import { BUILDINGS } from '../data/buildings.ts';
+import { repairCost, theBuilding } from './care.ts';
 import { SPEC_DEFS, SPECS } from '../data/specs.ts';
 import { dayOf } from './calendar.ts';
 import { record, floorLabel, heroLabel } from './chronicle.ts';
@@ -14,17 +15,24 @@ import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
 import { lordOf } from '../data/lords.ts';
 import { departLord } from './party.ts';
 import {
+  builtLevel,
   canAfford,
+  earn,
   expansionClearCost,
+  spend,
   expansionHouseCost,
   festivalCost,
   heroCapacity,
   hornCost,
   level,
+  maxContracts,
   maxGearTier,
   maxPartySize,
   nextLevelCost,
   pay,
+  repairOf,
+  specOf,
+  upgradeBlocker,
   populationCap,
   recruitsPerHorn,
 } from './economy.ts';
@@ -53,7 +61,7 @@ export function blowHorn(world: World): CommandResult {
   if (town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - town.treasury)} de ouro.`);
   const room = heroCapacity(world) - activeHeroes(world).length - town.arrivals.length;
   if (room <= 0) return fail('Não há vagas: amplie a estalagem.');
-  town.treasury -= cost;
+  spend(world, 'berrante', cost);
   town.hornUses++;
   town.hornReadyDay = today + B.hornCooldownDays;
   const count = Math.min(room, recruitsPerHorn(world));
@@ -66,33 +74,57 @@ export function blowHorn(world: World): CommandResult {
 
 /**
  * Sobe o prédio um nível. Chegar ao nível 3 pede a especialização (uma das duas do
- * prédio); a escolha é definitiva.
+ * prédio); a escolha é definitiva. No nível 7 o prédio ganha também o outro caminho.
+ * A obra deixa o prédio inteiro de novo.
  */
 export function build(world: World, id: BuildingId, spec?: SpecId): CommandResult {
   const cost = nextLevelCost(world, id);
   if (!cost) return fail('Já está no nível máximo.');
-  const toMax = level(world, id) + 1 === MAX_BUILDING_LEVEL;
-  if (toMax && (!spec || !SPECS[id].some((s) => s.id === spec))) return fail('Escolha a especialização do nível 3.');
+  const blocked = upgradeBlocker(world, id);
+  if (blocked) return fail(blocked);
+  const toSpec = builtLevel(world, id) + 1 === B.specLevel;
+  if (toSpec && (!spec || !SPECS[id].some((s) => s.id === spec))) return fail('Escolha a especialização do nível 3.');
   if (!canAfford(world, cost)) return fail('Recursos insuficientes.');
-  pay(world, cost);
+  pay(world, cost, 'predio');
   world.town.buildings[id]++;
-  const lvl = level(world, id);
+  world.town.care[id] = 100;
+  const lvl = builtLevel(world, id);
   refreshJobs(world);
   const { name, gender } = BUILDINGS[id];
   const article = gender === 'm' ? 'O' : 'A';
   const rebuilt = gender === 'm' ? 'reconstruído' : 'reconstruída';
-  if (toMax && spec) {
+  if (toSpec && spec) {
     (world.town.specs ??= {})[id] = spec;
     record(world, 'construcao', [], `${article} ${name.toLowerCase()} chegou ao nível ${lvl}, com a especialização ${SPEC_DEFS[spec].name}.`);
+    return OK;
+  }
+  const chosen = specOf(world, id);
+  if (lvl === B.secondSpecLevel && chosen) {
+    const other = SPECS[id].find((s) => s.id !== chosen)!;
+    record(world, 'construcao', [], `${article} ${name.toLowerCase()} chegou ao nível ${lvl} e ganhou também o caminho ${other.name}.`);
     return OK;
   }
   record(world, 'construcao', [], lvl === 1 ? `${article} ${name.toLowerCase()} foi ${rebuilt}.` : `${article} ${name.toLowerCase()} chegou ao nível ${lvl}.`);
   return OK;
 }
 
+/** Manda consertar o prédio: paga agora, e a obra leva de 1 a 3 dias, com andaime. */
+export function repair(world: World, id: BuildingId): CommandResult {
+  if (builtLevel(world, id) <= 0) return fail('Ruína não se conserta: reconstrua.');
+  if (repairOf(world, id) !== undefined) return fail('A obra já está em andamento.');
+  const cost = repairCost(world, id);
+  if (!cost) return fail('O prédio está inteiro.');
+  if (!canAfford(world, cost)) return fail('Recursos insuficientes.');
+  pay(world, cost, 'conserto');
+  world.metrics.repairs++;
+  world.town.repairs[id] = world.tick + cost.days * TICKS_PER_DAY;
+  record(world, 'construcao', [], `O prefeito mandou consertar ${theBuilding(id).toLowerCase()}: ${cost.days} ${cost.days === 1 ? 'dia' : 'dias'} de obra.`);
+  return OK;
+}
+
 /** Escolhe a especialização de um prédio que já está no nível 3 (saves de antes do M4). */
 export function chooseSpecialization(world: World, id: BuildingId, spec: SpecId): CommandResult {
-  if (level(world, id) < MAX_BUILDING_LEVEL) return fail('Só no nível 3.');
+  if (builtLevel(world, id) < B.specLevel) return fail('Só no nível 3.');
   if (world.town.specs?.[id]) return fail('A especialização já foi escolhida.');
   if (!SPECS[id].some((s) => s.id === spec)) return fail('Essa especialização não é deste prédio.');
   (world.town.specs ??= {})[id] = spec;
@@ -108,7 +140,7 @@ export function commission(world: World, slot: ItemSlot, material: MaterialId, r
   const cost = commissionCost(world, slot, rarity);
   if (world.town.treasury < cost.gold) return fail(`Faltam ${Math.ceil(cost.gold - world.town.treasury)} de ouro.`);
   if (world.town.materials[material] < cost.material) return fail(`Faltam ${cost.material - world.town.materials[material]} de ${MATERIAL_NAMES[material].toLowerCase()}.`);
-  world.town.treasury -= cost.gold;
+  spend(world, 'forja', cost.gold);
   world.town.materials[material] -= cost.material;
   (world.town.forge ??= []).push({ id: world.nextId++, slot, material, rarity, tier: cost.tier, readyTick: commissionReadyTick(world, cost.days) });
   const what = slot === 'weapon' ? 'uma arma' : slot === 'armor' ? 'uma armadura' : 'um amuleto';
@@ -138,7 +170,7 @@ export function sellItem(world: World, itemId: number): CommandResult {
   const item = arsenal.find((i) => i.id === itemId);
   if (!item) return fail('Essa peça não está no cofre.');
   arsenal.splice(arsenal.indexOf(item), 1);
-  world.town.treasury += sellPrice(item);
+  earn(world, sellPrice(item));
   return OK;
 }
 
@@ -157,9 +189,9 @@ export function postContract(world: World, passageId: number | null, floor: numb
   } else if (world.town.contracts.some((c) => c.passageId === null)) {
     return fail('Já há um contrato de passagem nova no quadro.');
   }
-  if (world.town.contracts.length >= level(world, 'guilda')) return fail('O quadro está cheio.');
+  if (world.town.contracts.length >= maxContracts(world)) return fail('O quadro está cheio.');
   if (world.town.treasury < reward) return fail('O tesouro não cobre a recompensa.');
-  world.town.treasury -= reward;
+  spend(world, 'contrato', reward);
   world.town.contracts.push({ id: world.nextId++, passageId, floor, reward, postedTick: world.tick, takenBy: null });
   const goal = passage ? `conquistar o ${floorLabel({ biome: passage.biome, floor })}` : 'abrir uma passagem nova';
   record(world, 'contrato', [], `Novo contrato no quadro: ${goal} por ${reward} de ouro.`);
@@ -175,7 +207,7 @@ export function forgeAmulet(world: World): CommandResult {
   if (abyss.fragments < B.fragmentsPerAmulet) return fail(`Faltam ${B.fragmentsPerAmulet - abyss.fragments} fragmentos do nível ${abyss.level}.`);
   const cost = amuletCostFor(world, abyss.level);
   if (world.town.treasury < cost) return fail(`O joalheiro cobra ${cost} de ouro.`);
-  world.town.treasury -= cost;
+  spend(world, 'amuleto', cost);
   abyss.fragments -= B.fragmentsPerAmulet;
   abyss.amulet = { level: abyss.level, readyTick: world.tick + B.amuletDays * TICKS_PER_DAY, inUse: false };
   record(world, 'amuleto', [], `O joalheiro começou a montar o amuleto do nível ${abyss.level} com ${B.fragmentsPerAmulet} fragmentos. Fica pronto em ${B.amuletDays} dias.`);
@@ -246,7 +278,7 @@ export function clearSouthExpansion(world: World): CommandResult {
   if (expansion.cleared) return fail('Os lotes do sul já estão limpos.');
   const cost = expansionClearCost(world);
   if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para limpar os lotes.`);
-  world.town.treasury -= cost;
+  spend(world, 'expansao', cost);
   expansion.cleared = true;
   record(world, 'construcao', [], 'O prefeito limpou a floresta ao sul. Três lotes de moradia estão abertos.');
   return OK;
@@ -260,7 +292,7 @@ export function buildExpansionHouse(world: World, index: number): CommandResult 
   if (expansion.houses[index]) return fail('Esse lote já tem casa.');
   const cost = expansionHouseCost(world);
   if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para a casa.`);
-  world.town.treasury -= cost;
+  spend(world, 'expansao', cost);
   expansion.houses[index] = true;
   record(world, 'construcao', [], `Uma casa foi construída no lote ${index + 1} do distrito sul. A vila cresce.`);
   return OK;
@@ -278,7 +310,7 @@ export function toggleDecree(world: World, id: DecreeId): CommandResult {
   if (world.town.decrees.length >= B.maxActiveDecrees) return fail(`Só cabem ${B.maxActiveDecrees} decretos ativos.`);
   const cost = decreeEnactCost(world, def);
   if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro para promulgar.`);
-  world.town.treasury -= cost;
+  spend(world, 'decreto', cost);
   world.town.decrees.push(id);
   record(world, 'decreto', [], `O prefeito promulgou o decreto "${def.name}": ${def.description}`);
   return OK;
@@ -297,7 +329,7 @@ export function sponsor(world: World, heroId: number, amount: number): CommandRe
   const hero = world.heroes.find((h) => h.id === heroId);
   if (!hero || (hero.status !== 'town' && hero.status !== 'expedition')) return fail('Herói indisponível.');
   if (world.town.treasury < amount) return fail('Ouro insuficiente.');
-  world.town.treasury -= amount;
+  spend(world, 'mecenato', amount);
   hero.gold += amount;
   hero.loyalty = Math.min(100, hero.loyalty + Math.min(20, amount / 5));
   record(world, 'contrato', [hero.id], `O prefeito patrocinou ${heroLabel(hero)} com ${amount} de ouro.`);
@@ -371,7 +403,7 @@ export function gift(world: World, heroId: number, kind: GiftKind): CommandResul
   if (world.town.treasury < price) return fail(`Faltam ${Math.ceil(price - world.town.treasury)} de ouro.`);
   const noEnergy = spendEnergy(world, 1);
   if (noEnergy) return fail(noEnergy);
-  world.town.treasury -= price;
+  spend(world, 'presente', price);
   let what: string;
   switch (kind) {
     case 'bebida': {
@@ -467,7 +499,7 @@ export function holdFestival(world: World): CommandResult {
   if (listeners.length === 0) return fail('Não há ninguém na vila para festejar.');
   const cost = festivalCost(world);
   if (town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - town.treasury)} de ouro para a festa.`);
-  town.treasury -= cost;
+  spend(world, 'festa', cost);
   town.festivalDay = today;
   town.reputation = Math.min(100, town.reputation + B.festivalReputation);
   town.population = Math.min(populationCap(world), town.population + 2);

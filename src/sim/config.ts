@@ -190,6 +190,44 @@ export const BALANCE = {
   recruitLevelsPerAbyssLevel: 3,
   recruitGearFraction: 0.5,
 
+  // Vila longa (M5 F4): prédios até o 10, efeitos em curva e conservação.
+  /** Teto dos prédios na campanha; no pós-jogo não há teto. */
+  buildingMaxLevel: 10,
+  /** Cada nível acima do 1 vale isto em efeito (o antigo nível 3 fica entre o 4 e o 5). */
+  buildingGradeStep: 0.55,
+  /** Do nível 4 em diante, o ouro de cada nível é o do 3 vezes isto a cada nível. */
+  buildingCostGrowth: 1.75,
+  /** Material dos níveis 4 em diante: base no 4, mais o passo a cada nível. */
+  buildingMaterialBase: 20,
+  buildingMaterialStep: 8,
+  /** A primeira especialização chega no nível 3; no 7 o prédio ganha também o outro caminho. */
+  specLevel: 3,
+  secondSpecLevel: 7,
+  /** A forja não passa do tier do nível do abismo mais isto: o resto vem lá de baixo. */
+  forgeAbyssEdge: 4,
+  /** A bancada do joalheiro abre com o ferreiro neste nível. */
+  benchSmithLevel: 5,
+  restHpMax: 0.9,
+  restEnergyMax: 80,
+  /** Conservação perdida por dia (cerca de 10 por ano). */
+  careDecayPerDay: 0.25,
+  /** Abaixo de careWorn o prédio rende careWornFactor; abaixo de careBroken, careBrokenFactor e não sobe de nível. */
+  careWorn: 50,
+  careBroken: 25,
+  careWornFactor: 0.8,
+  careBrokenFactor: 0.5,
+  /** Em conserto, o prédio rende isto e não se desgasta. */
+  careRepairFactor: 0.8,
+  /** Ao chegar a 0, o prédio perde um nível e volta a esta conservação. */
+  careAfterCollapse: 50,
+  /** Conserto: fração do ouro do nível atual por 100 de estrago; acima de repairMaterialFrom, também material. */
+  repairCostFraction: 0.5,
+  repairMaterialFrom: 40,
+  /** Um dia de obra mais um a cada repairDaysPer de estrago. */
+  repairDaysPer: 40,
+  /** Estrago por incursão: [mínimo, máximo] em cada prédio atingido. */
+  raidCareDamage: [10, 30] as [number, number],
+
   // Abismo (M5): dimensões, passagens e pressão
   /** Força dos monstros por nível do abismo (1 a 6); depois cresce com o quadrado do nível. */
   levelPower: [1, 2, 3.4, 5.3, 7.6, 9.2] as readonly number[],

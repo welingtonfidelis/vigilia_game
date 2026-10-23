@@ -252,7 +252,7 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Fabricação no ferreiro:** encomenda de arma, armadura ou amuleto com ouro e material do abismo; rara a partir do nível 2, épica com a especialização do encaixe; fila com prazo e entrega no cofre.
 - [x] **Especializações de nível 3:** ao subir um prédio para o nível 3, um diálogo oferece os dois caminhos (Cervejaria × Casa de apostas, Quartos de luxo × Dormitório, Lâminas × Couraças, Luz × Penitência, Mercenária × Ordem, Disciplina × Arena, Cirurgia × Ervas); prédios que já estavam no nível 3 escolhem pelo painel (`src/data/specs.ts`). Save v8 → v9 migra sozinho.
 - [x] **Andares mais claros:** o cabeçalho do corredor diz "andar 2 de 4" e onde fica o chefe; cada sala mostra "sala 3 de 5" ao passar o mouse.
-- [x] **Bancada do joalheiro** (ferreiro nível 3): heróis ricos vão sozinhos encantar (+1 afixo; rara vira épica), reforjar (troca um afixo que não serve à classe) ou polir a lendária (+1 tier), com o próprio ouro; a história da peça guarda cada serviço e o painel do ferreiro mostra quem passou.
+- [x] **Bancada do joalheiro** (ferreiro nível 3; no M5, nível 5): heróis ricos vão sozinhos encantar (+1 afixo; rara vira épica), reforjar (troca um afixo que não serve à classe) ou polir a lendária (+1 tier), com o próprio ouro; a história da peça guarda cada serviço e o painel do ferreiro mostra quem passou.
 - [x] **Salas novas:** mercador errante (vende uma peça a quem pagar, ouro do herói) e armadilha (dardos ou espinhos; arqueiros e lanceiros percebem antes; fere sem matar). O corredor desenha o mercador com a arca e os espinhos.
 - [x] **Chefes em duas fases:** abaixo de 50% cada chefe ganha um segundo comportamento (urnas que estouram, couraça dura e golpe duplo, jardim que brota, silêncio nas curas, caçada aos feridos, olhar que drena o ânimo); o corredor treme e o relatório conta. O relatório da expedição ganhou a lista de momentos.
 - [x] **Provisões:** ao partir, cada herói compra ração e tochas (gasta metade da energia entre as salas) e, com templo, uma relíquia (foge menos), com o próprio ouro e guardando reserva; o preço cresce com a profundidade. É o gasto que se repete e segura o ouro dos heróis.
@@ -262,7 +262,7 @@ Especificação na seção 9.1 do GDD (neste documento).
 
 ### Próximo: playtest guiado e M5
 
-O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`.
+O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`. As fases F1 a F4 estão prontas no branch; faltam a F5 (balanceamento 5×) e a F6 (biomas e Senhores novos).
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -1158,7 +1158,7 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
   - Tier sem teto (sai o `dropTierMax`).
   - Saque no tier do nível + andar: **2 por nível até o 6, depois 4 por nível** (nível 6: 10; nível 10: 26; nível 30: 106). Era 3N na proposta; 4 por nível é o que casa com o quadrado da força (seção 15.3).
   - O saque não fica mais preso ao teto da forja: acima do que a vila forja, o equipamento vem do abismo.
-  - O ferreiro de nível n forja até o tier **3n + 1** (na F4, com os prédios até o nível 10).
+  - O ferreiro de nível n forja até o tier **3n + 1**, sem passar do tier do nível do abismo + 4 (F4: a forja só faz o que o abismo já mostrou).
   - A regra das lendárias (acima do teto da forja) continua.
 - **Defesa:** a defesa extra dos monstros para de crescer no nível 6, e a da armadura conta só até o tier 12 (acima, a armadura dá vida). O dano é ataque × 100/(100 + defesa); com a defesa crescendo sem teto dos dois lados, as lutas ficariam cada vez mais longas e a fúria decidiria tudo. Assim vida e ataque crescem juntos dos dois lados, e a duração das lutas se mantém.
 - **Recrutas:** chegam com 3 níveis a mais por nível do abismo e com arma e armadura comuns de metade do tier do nível. Quem chega a uma vila do nível 8 vem de um mundo mais duro.
@@ -1169,12 +1169,12 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
 
 - **Níveis:**
   - Os 7 prédios vão até o **nível 10** na campanha e seguem subindo no pós-jogo.
-  - O custo sobe em progressão geométrica, com materiais dos biomas que aparecem em cada faixa.
-  - Os efeitos de hoje viram curvas: o efeito atual do nível 3 chega perto do nível 4 ou 5, e há marcos novos nos níveis 5 e 8.
-  - A especialização do nível 3 continua, e uma **segunda escolha** chega no nível 7.
+  - O custo dos níveis 1 a 3 é o de hoje. Do 4 em diante, o ouro é o do nível 3 vezes **1,75 a cada nível**, com o material do bioma da faixa: pérolas negras (4 e 5), brasas (6 e 7), fragmentos de alma (8 e 9) e alma com brasas do 10 em diante, de 20 unidades no nível 4 a mais 8 por nível.
+  - Os efeitos de hoje viram curvas: o nível 1 vale 1 e cada nível acima vale 0,55. O efeito atual do nível 3 fica entre o 4 e o 5.
+  - **Marcos:** a especialização no nível 3 (como hoje), a **bancada do joalheiro no 5** (era no 3) e, no **7**, o prédio ganha também o outro caminho do par.
 - **Arte por faixa:** a de nível 1 para os níveis 1 a 3, a de nível 2 para os níveis 4 a 6 e a de nível 3 do 7 em diante; a ruína continua no nível 0. Peças novas: **andaime** (durante o conserto) e **desgaste** (quando a conservação está baixa).
 - **Conservação (0 a 100):**
-  - **Cai:** 0,25 por dia (cerca de 10 por ano). Incursões tiram de 10 a 30 de 1 a 3 prédios, e alguns eventos sazonais (tempestade, geada) também desgastam.
+  - **Cai:** 0,25 por dia (cerca de 10 por ano). Incursões tiram de 10 a 30 de 1 ou 2 prédios (vitória custosa) ou de 2 a 3 (saque). Dois eventos sazonais novos também desgastam: a **tempestade** (verão: 15 em 2 prédios) e a **geada** (inverno: 8 em todos). A proteção custa metade do conserto que ela evita.
   - **Efeitos por faixa:**
 
     | Conservação | Efeito |
@@ -1186,8 +1186,9 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
 
 - **Conserto:**
   - O prefeito manda consertar no painel do prédio.
-  - **Custo:** ouro proporcional ao nível e ao estrago; acima de 40 de estrago, também material.
-  - **Duração:** de 1 a 3 dias, com andaime; nesse tempo o prédio rende 80%.
+  - **Custo:** 50% do ouro do nível atual para cada 100 de estrago. Acima de 40 de estrago, também o material da faixa (1 a cada 10 de estrago).
+  - **Duração:** 1 dia, mais 1 a cada 40 de estrago (de 1 a 3), com andaime; nesse tempo o prédio rende 80%, não se desgasta e não sobe de nível.
+  - Subir de nível também deixa o prédio inteiro.
   - O tesouro avisa quando um prédio cai abaixo de 50.
 - A **manutenção diária** de hoje (por nível) continua. O conserto é o gasto grande que equilibra a economia longa.
 
@@ -1246,7 +1247,7 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 | **F1** Motor de dimensões ✅ | Nível do abismo, gerador por semente (bioma, regras, andares, salas, monstros), passagens com mistério e mapa da guilda, restos por passagem, pressão e incursões, quadro com contratos novos, corredor e arena por bioma, save 11 e aviso de campanha nova | Testes do gerador (mesma semente, mesmo mundo; cada regra com efeito), balanceador sem impasse; jogável do nível 1 ao 2 sem amuleto, com o nível subindo por um atalho de teste |
 | **F2** Amuletos e Senhores ✅ | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–9 e o Vigia no 10, fim e pós-jogo com os retornos | Os Senhores caem em ordem pelo prefeito automático. A campanha inteira até o Vigia depende da escala da F3 |
 | **F3** Escala sem fim ✅ | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
-| **F4** Vila longa | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
+| **F4** Vila longa ✅ | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
 | **F5** Balanceamento 5× | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
 | **F6** Biomas e Senhores novos | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
 
@@ -1315,17 +1316,44 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
     - O Vigia cai cedo (meta: anos 70 a 90).
     - Só 7% dos contratos do Senhor se perdem (meta: 20% a 35%).
 
-##### 15.4 Fila de ajustes pedidos durante o M5
+##### 15.4 Como ficou a F4
+
+- **Código:**
+  - `src/sim/economy.ts` separa o nível **construído** (`builtLevel`: painel, arte e custo) do **efetivo** (`level`: o construído vezes o rendimento da conservação, nunca abaixo de 1).
+  - Os efeitos contínuos usam o **grau** (`grade`), e as curvas ficam num lugar só (`EFFECTS`), que a simulação e o painel compartilham.
+  - A conservação, o desgaste, o conserto e a perda de nível ficam em `src/sim/care.ts`.
+- **Vila e telas:**
+  - A arte segue a faixa do nível (`artLevel` em `src/render/pack.ts`).
+  - O **andaime** e as marcas de **desgaste** (rachaduras, musgo e buracos, com o prédio mais apagado) são desenhados na hora sobre a arte do nível (`src/render/scaffold.ts`), nos dois modos de arte. A placa mostra "em obra".
+  - O painel do prédio mostra "Nível N de 10", a barra de conservação, o conserto (custo e dias) e os dois caminhos.
+  - O Cofre lista os prédios gastos, e os objetivos pedem o conserto do mais gasto.
+- **Prefeito automático:**
+  - Conserta abaixo de 55 de conservação, antes de qualquer obra.
+  - Guarda o ouro da próxima obra: festa, encomenda e mecenato só usam o que sobra, e os contratos esperam metade.
+  - Sem isso, os contratos e o mecenato levavam de 60% a 75% do tesouro e a vila parava no nível 2 até o ano 20.
+- **Balanceador:**
+  - Mostra o nível médio dos prédios nos anos 10, 40 e 75, a parte do que entra no tesouro que sai em manutenção e consertos, e a coluna de prédios e conservação no ano a ano.
+  - O tesouro agora registra o que entra (`earn`) e para onde sai cada moeda (`spend`, em `metrics.spent`).
+- **Retrato (8 sementes × 100 anos, salvando e carregando a cada 5 anos):**
+  - Save idêntico em 160 de 160. Saves 11 da F1 a F3 abrem com os prédios inteiros.
+  - **Manutenção e consertos:** 16% do que entra (meta: 15% a 30%), com cerca de 120 consertos por campanha e conservação média de 79 no fim.
+  - **Nível médio dos prédios:** 4,1 no ano 10, 7,2 no 40 e 8,2 no 75 (metas: ~3, ~6 e ~9). O começo está rápido porque as pérolas do nível 4 chegam com o abismo 3, por volta do ano 6.
+  - **Com a vila forte, o abismo andou mais rápido:** o Vigia caiu no ano 44 (era 55 na F3). A forja presa ao nível do abismo segurou só um pouco.
+  - **Fica para a F5:** desacelerar o abismo até as metas (Senhor do 1 nos anos 4 a 7, Vigia de 70 a 90). Isso também atrasa as pérolas e deve trazer a vila para ~3 no ano 10. Continuam fora das metas: mortalidade (1,2 por ano), contratos do Senhor perdidos (6%) e ouro dos heróis (214 mil).
+
+##### 15.5 Fila de ajustes pedidos durante o M5
 
 - **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que hoje estão pequenos demais para ler. Pedido em 2026-10-23.
 
 ##### 16. Escolhas feitas por padrão (fáceis de trocar)
 
-- Passagens ficam abertas 40 dias. A guilda guarda 1 + o nível dela.
+- Passagens ficam abertas 40 dias. A guilda guarda tantas quanto os grupos que ela comporta (1 + o grau dela).
 - Passagens já abertas mantêm o nível de quando abriram, então dá para voltar a um mundo mais fácil.
 - Recuar do Senhor também gasta o amuleto.
 - O Vigia volta a cada 10 níveis no pós-jogo.
-- O teto de nível dos heróis sobe +4 por nível do abismo; o tier do saque é 3N + andar.
+- O teto de nível dos heróis sobe +4 por nível do abismo; o tier do saque é 2 por nível até o 6 e 4 depois, mais o andar.
+- O segundo caminho do nível 7 é o outro do par (não há uma terceira opção). Ele para quando a conservação derruba o nível efetivo abaixo de 7.
+- O prédio em conserto rende 80%. O "Agora" do painel já mostra os efeitos com o rendimento da conservação.
 
 ### 10. Decisões em aberto
 

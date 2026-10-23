@@ -5,6 +5,9 @@ import { dayOf, isNight } from './calendar.ts';
 import { BALANCE as B, DAYS_PER_YEAR, TICKS_PER_HOUR } from './config.ts';
 import {
   drinkPrice,
+  earn,
+  EFFECTS,
+  grade,
   hasSpec,
   heroCapacity,
   level,
@@ -224,7 +227,6 @@ function chooseActivity(world: World, hero: Hero): void {
 
 function finishActivity(world: World, hero: Hero): void {
   const act = hero.activity!;
-  const town = world.town;
   const maxHp = heroStats(world, hero).maxHp;
   switch (act.kind) {
     case 'descansar': {
@@ -232,11 +234,11 @@ function finishActivity(world: World, hero: Hero): void {
       const paid = hero.gold >= price;
       if (paid) {
         hero.gold -= price;
-        town.treasury += price;
+        earn(world, price);
       }
       const hpGain = paid ? restHpGain(world) : 0.25;
       hero.needs.energy = clamp(hero.needs.energy + (paid ? restEnergyGain(world) : 35));
-      hero.hp = Math.min(maxHp, hero.hp + maxHp * (hpGain + 0.05 * level(world, 'templo')));
+      hero.hp = Math.min(maxHp, hero.hp + maxHp * (hpGain + EFFECTS.templeHeal(grade(world, 'templo'))));
       if (paid && hasSpec(world, 'luxo')) hero.morale = clamp(hero.morale + 5);
       break;
     }
@@ -244,7 +246,7 @@ function finishActivity(world: World, hero: Hero): void {
       const price = drinkPrice(world);
       hero.gold -= price;
       // Na casa de apostas a mesa fica com tudo; na cervejaria a bebida rende o dobro.
-      town.treasury += price * (hasSpec(world, 'apostas') ? 1 : 0.7);
+      earn(world, price * (hasSpec(world, 'apostas') ? 1 : 0.7));
       const brew = hasSpec(world, 'cervejaria') ? 2 : 1;
       hero.needs.fun = clamp(hero.needs.fun + 35 * brew);
       hero.morale = clamp(hero.morale + ((hasTrait(hero, 'beberrao') ? 20 : 10) + 5 * roleCount(world, 'contador')) * brew);
@@ -258,7 +260,7 @@ function finishActivity(world: World, hero: Hero): void {
       const tithe = hero.gold > B.templeTitheFrom ? Math.floor(hero.gold * B.templeTithe) : 0;
       const gift = Math.min(hero.gold, B.donation + tithe);
       hero.gold -= gift;
-      town.treasury += gift;
+      earn(world, gift);
       const light = hasSpec(world, 'luz') ? 2 : 1;
       hero.needs.faith = clamp(hero.needs.faith + 40 * light);
       hero.morale = clamp(hero.morale + (hasTrait(hero, 'devoto') ? 15 : 5));
@@ -274,7 +276,7 @@ function finishActivity(world: World, hero: Hero): void {
       const price = forgePrice(world, nextTierWorth(world, hero, slot)!);
       hero.gold -= price;
       upgradeTier(world, hero, slot, 'comprado na forja da vila');
-      town.treasury += price * B.gearMargin;
+      earn(world, price * B.gearMargin);
       break;
     }
     case 'joias': {
@@ -285,14 +287,14 @@ function finishActivity(world: World, hero: Hero): void {
     case 'treinar': {
       const price = trainPrice(world);
       hero.gold -= price;
-      town.treasury += price * 0.5;
+      earn(world, price * 0.5);
       const discipline = hasSpec(world, 'disciplina') ? B.specDisciplinaXp : 1;
-      gainXp(world, hero, xpToNext(hero.level) * 0.06 * level(world, 'campo') * (1 + 0.5 * roleCount(world, 'mentor')) * discipline);
+      gainXp(world, hero, xpToNext(hero.level) * EFFECTS.trainXp(grade(world, 'campo')) * (1 + 0.5 * roleCount(world, 'mentor')) * discipline);
       hero.needs.energy = clamp(hero.needs.energy - 10);
       if (hasSpec(world, 'arena')) {
         // Arena: luta entre heróis com plateia e apostas; às vezes alguém sai machucado.
         hero.needs.fun = clamp(hero.needs.fun + 30);
-        town.treasury += B.specArenaGold;
+        earn(world, B.specArenaGold);
         if (!hero.injury && chance(world.rng, B.specArenaInjury)) {
           hero.injury = { kind: 'braco', daysLeft: 1.5, total: 1.5 };
           record(world, 'lesao', [hero.id], `${hero.name} torceu o braço numa luta da arena.`);
@@ -321,10 +323,10 @@ function finishActivity(world: World, hero: Hero): void {
       break;
     }
     case 'tratar': {
-      if (hero.injury) hero.injury.daysLeft -= 0.25 * (1 + level(world, 'casa'));
+      if (hero.injury) hero.injury.daysLeft -= 0.25 * (1 + grade(world, 'casa'));
       const fee = Math.min(hero.gold, level(world, 'casa') > 0 ? 2 : 0);
       hero.gold -= fee;
-      town.treasury += fee;
+      earn(world, fee);
       hero.morale = clamp(hero.morale + 3);
       break;
     }

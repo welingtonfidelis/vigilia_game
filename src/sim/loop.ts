@@ -1,6 +1,8 @@
+import { BUILDING_IDS } from '../data/buildings.ts';
 import { dayOf } from './calendar.ts';
 import { TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
 import { abyssPressure, dailyPressure } from './dungeon.ts';
+import { dailyCare, finishRepairs } from './care.ts';
 import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { maybeSeasonalEvent } from './events.ts';
@@ -25,6 +27,7 @@ export function step(world: World, hooks: Hooks = {}): void {
   if (world.tick % TICKS_PER_HOUR === 0) {
     hooks.onHour?.(world);
     hourlyTown(world);
+    finishRepairs(world);
     processForge(world);
     // A incursão acontece antes de os grupos partirem: quem está em casa defende.
     maybeRaid(world);
@@ -46,6 +49,7 @@ export function runDays(world: World, days: number, hooks: Hooks = {}): void {
 
 function daily(world: World): void {
   dailyEconomy(world);
+  dailyCare(world);
   raiseLegendaries(world);
   dailyPressure(world);
   dailyTown(world);
@@ -103,5 +107,11 @@ function sample(world: World): void {
     population: Math.round(world.town.population),
     pressure: Math.round(abyssPressure(world)),
     level: world.abyss.level,
+    buildings: +(BUILDING_IDS.reduce((s, id) => s + world.town.buildings[id], 0) / BUILDING_IDS.length).toFixed(2),
+    care: Math.round(mean(BUILDING_IDS.filter((id) => world.town.buildings[id] > 0).map((id) => world.town.care[id]))),
   });
+}
+
+function mean(xs: number[]): number {
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 100;
 }

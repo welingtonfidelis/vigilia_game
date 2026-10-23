@@ -1418,6 +1418,16 @@ kbd {
 .bar-heal .fill {
   background: #7ab35a;
 }
+/* Conservação dos prédios (M5 F4): inteiro, gasto e quebrado. */
+.bar-care .fill {
+  background: var(--good);
+}
+.bar-care-worn .fill {
+  background: var(--warn);
+}
+.bar-care-broken .fill {
+  background: var(--bad);
+}
 
 .epitaph {
   margin: 0.3rem 0 0.4rem;
