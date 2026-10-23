@@ -41,6 +41,8 @@ import { commissionBlocker, commissionCost, commissionReadyTick, equip, itemName
 import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
 import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts';
 import { activeHeroes, townHeroes } from './town.ts';
+import { noteWish } from './wishes.ts';
+import { answerPetition as answerPetitionImpl } from './audiences.ts';
 import { chance, int } from './rng.ts';
 import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
 
@@ -161,6 +163,7 @@ export function giftItem(world: World, itemId: number, heroId: number): CommandR
   stash(world, equip(world, hero, item));
   hero.loyalty = Math.min(100, hero.loyalty + (hasTrait(hero, 'ganancioso') ? 15 : 10));
   record(world, 'prefeito', [hero.id], `O prefeito entregou ${itemName(item, hero.classId).toLowerCase()} a ${hero.name}.`);
+  noteWish(world, { kind: 'presente', heroId: hero.id });
   return OK;
 }
 
@@ -410,6 +413,7 @@ export function talk(world: World, heroId: number): CommandResult {
   hero.morale = Math.min(100, hero.morale + 5);
   const hidden = hero.traits.find((t) => !t.revealed);
   if (hidden && chance(world.rng, 0.25)) revealTrait(world, hero, hidden.id, `Conversando com o prefeito, ${hero.name} se abriu.`);
+  noteWish(world, { kind: 'conversa', heroId: hero.id });
   return OK;
 }
 
@@ -542,6 +546,27 @@ export function holdFestival(world: World): CommandResult {
     listeners.map((h) => h.id),
     `A vila fechou as portas e abriu as mesas: a festa na praça custou ${cost} de ouro e levantou o ânimo de ${listeners.length} heróis.`,
   );
+  noteWish(world, { kind: 'festa' });
+  return OK;
+}
+
+/** Resposta do prefeito a uma petição da audiência da manhã (M6 F1). */
+export const answerPetition = (world: World, petitionId: number, choiceId: string): CommandResult => answerPetitionImpl(world, petitionId, choiceId);
+
+/** Preço da lápide nova (desejo de quem ficou): ouro simbólico, com a dificuldade. */
+export const graveCost = (world: World): number => scaledCost(world, B.wishGraveCost);
+
+/** Lápide nova para um herói morto, a pedido de quem ficou (M6 F1). */
+export function honorGrave(world: World, deadId: number): CommandResult {
+  const dead = world.heroes.find((h) => h.id === deadId && h.status === 'dead');
+  if (!dead) return fail('Essa cova não existe.');
+  if (dead.honoredGrave) return fail(`A lápide de ${dead.name} já foi refeita.`);
+  const cost = graveCost(world);
+  if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro.`);
+  spend(world, 'audiencia', cost);
+  dead.honoredGrave = true;
+  record(world, 'tumulo', [dead.id], `O prefeito mandou fazer uma lápide nova para ${dead.name}.`);
+  noteWish(world, { kind: 'lapide', deadId: dead.id });
   return OK;
 }
 

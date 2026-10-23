@@ -6,16 +6,10 @@ import { PET_LOOKS, PET_NAMES, PET_SPECIES_NAME } from '../data/pets.ts';
 import { dayOf, yearOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_YEAR } from './config.ts';
+import { stableRoll } from './rng.ts';
 import type { Pet, PetSpecies, World } from './types.ts';
 
-/** Número estável em [0, 1) para (semente, dia, sal). */
-function roll(seed: number, day: number, salt: number): number {
-  let h = Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(day + 0x7f4a7c15, 0xc2b2ae35) ^ Math.imul(salt + 0x165667b1, 0x27d4eb2f);
-  h ^= h >>> 15;
-  h = Math.imul(h, 0x2c1b3c6d);
-  h ^= h >>> 12;
-  return (h >>> 0) / 0x100000000;
-}
+const roll = stableRoll;
 
 /** Quantos bichos a vila comporta agora: poucos no primeiro ano, um a mais depois. */
 export const petCap = (world: World): number => (yearOf(dayOf(world.tick)) >= 2 ? B.petsMax : B.petsMaxFirstYear);

@@ -25,6 +25,7 @@ import {
 } from './hero.ts';
 import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
+import { noteWish } from './wishes.ts';
 import { chance, int, pick, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, Spot, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
@@ -142,6 +143,7 @@ function enterRoom(world: World, party: Party, room: Room): void {
       const lost = world.heroes.find((h) => h.id === room.remainsOf);
       if (idx >= 0 && lost) {
         const rem = world.remains.splice(idx, 1)[0]!;
+        noteWish(world, { kind: 'restos', deadId: rem.heroId });
         party.loot.gold += rem.gold;
         // As peças do morto voltam com o grupo, e os fragmentos de amuleto que ele carregava.
         if (rem.items?.length) (party.loot.items ??= []).push(...rem.items);
@@ -307,6 +309,7 @@ function conquer(world: World, party: Party): void {
   world.town.reputation = Math.min(100, world.town.reputation + 5);
   addMaterial(party, BIOMES[party.biome]!.material, B.sealMaterial);
   record(world, 'passagem', party.memberIds, `${listNames(heroes)} venceram o guardião e selaram a passagem para ${BIOMES[party.biome]!.name}.`);
+  noteWish(world, { kind: 'selou', heroIds: heroes.map((h) => h.id) });
 }
 
 // ── Fragmentos e Senhores (M5 F2) ────────────────────────────────────────
@@ -565,6 +568,7 @@ function arrive(world: World, party: Party): void {
     if (outcome === 'fuga') h.morale = Math.max(0, h.morale - 10);
     if (hasSpec(world, 'ordem') && outcome !== 'fuga') h.loyalty = Math.min(100, h.loyalty + B.specOrdemLoyalty);
   }
+  noteWish(world, { kind: 'volta', heroIds: heroes.map((h) => h.id) });
   for (let i = 0; i < heroes.length; i++) {
     for (let j = i + 1; j < heroes.length; j++) {
       const a = heroes[i]!;

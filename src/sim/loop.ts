@@ -1,11 +1,13 @@
 import { BUILDING_IDS } from '../data/buildings.ts';
-import { dayOf } from './calendar.ts';
 import { TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
 import { abyssPressure, dailyPressure } from './dungeon.ts';
 import { dailyCare, finishRepairs } from './care.ts';
 import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { maybeSeasonalEvent } from './events.ts';
+import { morningAudiences } from './audiences.ts';
+import { dayOf, hourOf } from './calendar.ts';
+import { dailyWishes, weeklyWishes } from './wishes.ts';
 import { formParties } from './party.ts';
 import { processForge, raiseLegendaries } from './items.ts';
 import { dailyPatronage } from './patronage.ts';
@@ -25,6 +27,7 @@ export interface Hooks {
 export function step(world: World, hooks: Hooks = {}): void {
   world.tick++;
   if (world.tick % TICKS_PER_HOUR === 0) {
+    if (hourOf(world.tick) === 8) morningAudiences(world);
     hooks.onHour?.(world);
     hourlyTown(world);
     finishRepairs(world);
@@ -57,6 +60,8 @@ function daily(world: World): void {
   dailyPets(world);
   dailyPeople(world);
   dailyCitizens(world);
+  dailyWishes(world);
+  weeklyWishes(world);
   strayArrivals(world);
   trackIdle(world);
   sample(world);

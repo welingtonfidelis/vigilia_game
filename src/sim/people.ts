@@ -194,7 +194,8 @@ function comingOfAge(world: World): void {
     hero.classId = child.classId;
     hero.bornDay = child.bornDay;
     hero.parents = [...child.parents];
-    hero.level = 1;
+    // Quem treinou no campo com a bênção do prefeito (audiência) chega um nível à frente.
+    hero.level = child.apprentice ? 2 : 1;
     hero.xp = 0;
     if (child.heirloom) equip(world, hero, child.heirloom);
     // Cresceu ouvindo histórias do abismo: o talento fica perto do melhor dos pais.

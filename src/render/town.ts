@@ -11,6 +11,7 @@ import { playArt, showArt } from './art32.ts';
 import { FogSystem } from './fx/fog.ts';
 import { ParallaxLayer, type Edge } from './fx/parallax.ts';
 import {
+  AUDIENCE_TABLE,
   CEMETERY_FENCE,
   CEMETERY_TILES,
   COLS,
@@ -524,6 +525,7 @@ export function buildProps(scene: Phaser.Scene, solids: Solid[]): { lights: Phas
   prop('prop/barrel', 17 * TILE, 17 * TILE);
   prop('prop/crate', 26 * TILE, 16 * TILE);
   prop('prop/bench', 22 * TILE, 19 * TILE);
+  prop('prop/audiencia/mesa', AUDIENCE_TABLE.x, AUDIENCE_TABLE.y);
   // Carroça parada na estrada da estalagem; as marcas das rodas saem dela (terrain.ts).
   prop('prop/cart', 222, 900);
 

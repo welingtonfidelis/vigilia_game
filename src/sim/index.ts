@@ -93,6 +93,10 @@ export {
 export { byWhom, floorLabel, heroLabel } from './chronicle.ts';
 // Pessoas (M2): funções dos aposentados, recuperação, filhos e penalidades de lesão.
 export { petCap, petCoat } from './pets.ts';
+export { answerPetition, choiceBlocker, choiceGold, effectSummary, petitionDayTax, textOf as petitionText } from './audiences.ts';
+export { PETITIONS, PETITION_BY_ID, type PetitionChoiceDef, type PetitionDef, type PetitionEffect, type PetitionText } from '../data/petitions.ts';
+export { wishPairBonus, wishText, wishTextFor } from './wishes.ts';
+export { WISHES, type WishDef, type WishText } from '../data/wishes.ts';
 export { PET_LOOKS, PET_NAMES, PET_SPECIES_NAME, type PetLookDef } from '../data/pets.ts';
 export { childAge, defaultRole, forgePrice, honorFuneral, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';
 export { WOUNDS, woundEffects } from './hero.ts';

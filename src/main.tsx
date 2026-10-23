@@ -145,7 +145,7 @@ window.addEventListener(
     if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
     // Decisão pendente: o diálogo exige uma escolha; nada de trocar de painel por atalho.
     const deciding = ui.panel?.kind === 'event';
-    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village') => {
+    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village' | 'audiences') => {
       if (!deciding) ui.panel?.kind === kind ? ui.close() : ui.open({ kind });
     };
     switch (e.code) {
@@ -186,6 +186,9 @@ window.addEventListener(
         break;
       case 'KeyV':
         toggle('village');
+        break;
+      case 'KeyP':
+        toggle('audiences');
         break;
       case 'KeyN':
         ui.setPrefs({ muted: !ui.prefs.muted });

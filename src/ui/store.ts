@@ -25,7 +25,9 @@ export type Panel =
   /** Fragmentos, amuleto e contrato do Senhor (M5). */
   | { kind: 'amulet' }
   /** Um Senhor caiu: o abismo desceu um nível. */
-  | { kind: 'lordEnd'; level: number };
+  | { kind: 'lordEnd'; level: number }
+  /** Pedidos da manhã e desejos dos heróis (M6 F1). */
+  | { kind: 'audiences' };
 
 export type PanelKind = Panel['kind'];
 
@@ -43,6 +45,7 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'roster',
   'memorial',
   'amulet',
+  'audiences',
   'menu',
 ]);
 

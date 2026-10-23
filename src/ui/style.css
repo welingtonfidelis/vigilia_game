@@ -2650,3 +2650,70 @@ kbd {
 .amulet .tag.good {
   color: #9fd18b;
 }
+
+/* Audiências e desejos (M6 F1). */
+.petition {
+  border: 1px solid var(--line-soft);
+  border-radius: 0.55rem;
+  padding: 0.6rem 0.7rem 0.7rem;
+  margin: 0.5rem 0 0.7rem;
+  background: rgba(30, 24, 18, 0.35);
+}
+.petition header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.petition header strong {
+  font-family: var(--serif);
+  font-weight: normal;
+  color: #e8d6a8;
+}
+.petition header small {
+  color: var(--muted, #a89a80);
+  white-space: nowrap;
+}
+.petition header small.warn {
+  color: var(--warn);
+}
+.petition > p {
+  margin: 0.35rem 0 0.55rem;
+}
+.petition .event-choices {
+  display: grid;
+  gap: 0.4rem;
+}
+.wish-list,
+.petition-log {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0;
+}
+.wish-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.wish-list li small,
+.tag.wish small {
+  display: block;
+  color: var(--muted, #a89a80);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+.petition-log li {
+  padding: 0.2rem 0;
+  font-size: 0.86rem;
+}
+.petition-log li small {
+  color: var(--muted, #a89a80);
+  margin-right: 0.3rem;
+}
+.tag.wish {
+  color: #e8d6a8;
+  border-color: #6a5326;
+}

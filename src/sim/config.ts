@@ -360,4 +360,31 @@ export const BALANCE = {
   oldAgeYears: 70,
   oldAgeDeathChance: 0.25,
   roleCap: 2,
+
+  // Audiências e desejos (M6 F1)
+  /**
+   * Petições por manhã: 0, 1 ou 2, com estes pesos. Um dia dura 48 s em 1×: uma petição a cada
+   * 4 dias dá uma a cada ~3 minutos, sem virar uma fila sem fim.
+   */
+  petitionsPerMorning: [3, 1, 0] as [number, number, number],
+  /** Dias para responder (o dia em que chegou conta como o primeiro): ~4 minutos em 1×. */
+  petitionDays: 5,
+  /** Mais que isso em aberto, a mesa não recebe ninguém novo. */
+  petitionMaxOpen: 3,
+  /** Imposto de um dia dos moradores, mínimo: a medida do ouro simbólico das audiências. */
+  petitionDayTaxMin: 10,
+  /** Fatia dos heróis com desejo em aberto, mantida por um sorteio por semana. */
+  wishShare: 0.1,
+  wishDays: [30, 60] as [number, number],
+  wishLoyalty: 10,
+  wishMorale: 10,
+  wishFailMorale: 8,
+  /** Lápide nova (desejo): ouro simbólico, com a dificuldade por cima. */
+  wishGraveCost: 20,
+  /** Quanto o par apresentado pelo prefeito se procura na formação dos grupos. */
+  wishPairBonus: 1,
+  /** Experiência que o novato ganha ouvindo o veterano (fração do próximo nível). */
+  wishVeteranXp: 0.25,
+  /** Chance de quem desceu com o amigo perder o traço Traumatizado. */
+  wishHealTrauma: 0.5,
 } as const;

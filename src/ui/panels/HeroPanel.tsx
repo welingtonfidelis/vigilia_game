@@ -21,6 +21,9 @@ import {
   TRAITS,
   WOUNDS,
   xpToNext,
+  wishText,
+  wishTextFor,
+  WISHES,
 } from '../../sim/index.ts';
 import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
@@ -290,6 +293,11 @@ export function HeroPanel(props: { heroId: number }) {
       {griefFor && hero.grief > 0 && (
         <p class="tag grief">
           De luto por <HeroLink id={griefFor.id} /> ({Math.round(hero.grief)})
+        </p>
+      )}
+      {hero.wish && (
+        <p class="tag wish">
+          Deseja: {wishTextFor(world, hero, hero.wish)} <small>{WISHES[hero.wish.id].how(wishText(world, hero, hero.wish))}</small>
         </p>
       )}
 

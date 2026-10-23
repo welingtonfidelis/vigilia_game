@@ -4,7 +4,8 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, graveCost, honorGrave, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { autoAnswer } from './audiences.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
@@ -50,6 +51,7 @@ const CONTRACT_FUND = 0.5;
 export function autoMayor(world: World): void {
   const town = world.town;
   if (hourOf(world.tick) === 9 && dayOf(world.tick) % 10 === 0) makeRoom(world);
+  if (hourOf(world.tick) === 9) tendAudiences(world);
   if (hourOf(world.tick) === 10) tendPeople(world);
   const roster = activeHeroes(world).length + town.arrivals.length;
   const wanted = Math.min(heroCapacity(world), 4 * maxParties(world) + 2);
@@ -101,6 +103,18 @@ export function autoMayor(world: World): void {
       const gift = Math.round(Math.min(next - hero.gold, town.treasury * 0.3));
       if (gift >= 30) sponsor(world, hero.id, gift);
     }
+  }
+}
+
+/**
+ * Audiências (M6 F1): responde as petições pela resposta mais segura e paga a lápide que
+ * alguém deseja, quando o tesouro sobra.
+ */
+function tendAudiences(world: World): void {
+  autoAnswer(world);
+  for (const hero of world.heroes) {
+    if (hero.wish?.id !== 'lapide' || hero.wish.targetId === null) continue;
+    if (world.town.treasury >= graveCost(world) + hornCost(world) * 2) honorGrave(world, hero.wish.targetId);
   }
 }
 

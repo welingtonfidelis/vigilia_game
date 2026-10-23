@@ -1,12 +1,12 @@
 // Raízes da UI: o HUD (acima do mapa) e a camada sobre o mapa (painéis, avisos, objetivos).
 
-import { useEffect, useState } from 'preact/hooks';
-import { abyssPressure, activeHeroes, formatDate, heroCapacity, isNight, MATERIAL_NAMES } from '../sim/index.ts';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { abyssPressure, activeHeroes, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt, knownMaterials } from './format.ts';
-import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconShield, IconSound, IconSun, PackIcon } from './icons.tsx';
+import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconScroll, IconShield, IconSound, IconSun, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { EventPanel } from './panels/EventPanel.tsx';
@@ -16,6 +16,7 @@ import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
 import { CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { AmuletPanel, LordEndPanel } from './panels/AmuletPanels.tsx';
+import { AudiencesPanel } from './panels/AudiencesPanel.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
@@ -197,6 +198,18 @@ function Nav() {
   const parties = world.parties.length;
   const fighting = world.parties.some((p) => p.phase === 'combate');
   const threat = abyssPressure(world);
+  const petitions = world.town.petitions?.length ?? 0;
+  const urgent = (world.town.petitions ?? []).some((p) => p.untilDay <= dayOf(world.tick));
+  // Petição nova na mesa: um aviso curto (não no carregamento do save).
+  const seenSeq = useRef<number | null>(null);
+  useEffect(() => {
+    const seq = world.town.petitionSeq ?? 0;
+    if (seenSeq.current !== null && seq > seenSeq.current) {
+      const fresh = (world.town.petitions ?? []).filter((p) => p.id > seenSeq.current!);
+      for (const p of fresh) ui.toast(`${petitionText(world, p).quem} pede audiência na mesa da praça (P).`, 'info');
+    }
+    seenSeq.current = seq;
+  }, [world.town.petitionSeq]);
   const toggle = (kind: Panel['kind']) => () => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind } as Panel));
   const active = (kind: Panel['kind']) => (ui.panel?.kind === kind ? ' active' : '');
   return (
@@ -211,6 +224,10 @@ function Nav() {
       <button class={`nav-btn${active('village')}`} onClick={toggle('village')} title="A vila (V)">
         <IconHouse /> <span>Vila</span>
         {threat >= 55 && <b class="badge hot">!</b>}
+      </button>
+      <button class={`nav-btn${active('audiences')}`} onClick={toggle('audiences')} title="Audiências (P)">
+        <IconScroll /> <span>Audiências</span>
+        {petitions > 0 && <b class={`badge${urgent ? ' hot' : ''}`}>{petitions}</b>}
       </button>
       <button class={`nav-btn${active('chronicle')}`} onClick={toggle('chronicle')} title="Crônica (C)">
         <IconBook /> <span>Crônica</span>
@@ -274,5 +291,7 @@ function PanelContent(props: { panel: Panel }) {
       return <AmuletPanel />;
     case 'lordEnd':
       return <LordEndPanel level={p.level} />;
+    case 'audiences':
+      return <AudiencesPanel />;
   }
 }

@@ -53,3 +53,15 @@ export function shuffle<T>(r: RngState, items: T[]): T[] {
   }
   return items;
 }
+
+/** Número estável em [0, 1) para (semente, dia, sal), sem mexer no RNG do núcleo. */
+export function stableRoll(seed: number, day: number, salt: number): number {
+  let h = Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(day + 0x7f4a7c15, 0xc2b2ae35) ^ Math.imul(salt + 0x165667b1, 0x27d4eb2f);
+  h ^= h >>> 15;
+  h = Math.imul(h, 0x2c1b3c6d);
+  h ^= h >>> 12;
+  return (h >>> 0) / 0x100000000;
+}
+
+/** RNG próprio de um dia (audiências, desejos): a campanha sorteia igual com ou sem eles. */
+export const dayRng = (seed: number, day: number, salt: number): RngState => seedRng(Math.floor(stableRoll(seed, day, salt) * 0x100000000));

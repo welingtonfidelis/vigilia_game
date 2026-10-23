@@ -27,6 +27,7 @@ import { moveAxis } from './keys.ts';
 import { CELL, NavGrid, type AlphaMask, type Route } from './nav.ts';
 import {
   ABYSS_EDGE_Y,
+  AUDIENCE_TABLE,
   CEMETERY_TILES,
   EXPANSION_LOTS,
   citizenSpot,
@@ -155,6 +156,8 @@ interface BuildingView {
 /** Lápide sem nome: quem está ali se vê no Memorial, ao clicar no cemitério. */
 interface GraveView {
   stone: Phaser.GameObjects.Image;
+  /** Flores da lápide nova, paga pelo prefeito a pedido de quem ficou (M6 F1). */
+  flowers?: Phaser.GameObjects.Image;
 }
 
 /** 0 = dia claro, 1 = noite fechada. */
@@ -745,6 +748,16 @@ export class VillageScene extends Phaser.Scene {
         open: () => this.speech(),
       },
       {
+        id: 'audiencias',
+        point: { x: AUDIENCE_TABLE.x, y: AUDIENCE_TABLE.y + 22 },
+        hit: { x: AUDIENCE_TABLE.x - 36, y: AUDIENCE_TABLE.y - 52, w: 72, h: 58 },
+        label: (world) => {
+          const n = world.town.petitions?.length ?? 0;
+          return n === 0 ? 'Mesa de audiências' : `Audiências (${n} ${n === 1 ? 'pedido' : 'pedidos'})`;
+        },
+        open: open({ kind: 'audiences' }),
+      },
+      {
         id: 'cemiterio',
         point: cemiterio,
         hit: { x: cem.tx * TILE, y: cem.ty * TILE, w: cem.tw * TILE, h: (cem.th + 1) * TILE },
@@ -1287,8 +1300,8 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private syncGraves(initial: boolean): void {
-    // Roda todo quadro: só refaz quando alguém morreu desde a última vez.
-    const dead = this.world.heroes.reduce((n, h) => n + (h.status === 'dead' ? 1 : 0), 0);
+    // Roda todo quadro: só refaz quando alguém morreu (ou ganhou lápide nova) desde a última vez.
+    const dead = this.world.heroes.reduce((n, h) => n + (h.status === 'dead' ? 1 + (h.honoredGrave ? 1000 : 0) : 0), 0);
     if (dead === this.graveCount) return;
     this.graveCount = dead;
     const standing = standingGraves(this.world);
@@ -1297,18 +1310,26 @@ export class VillageScene extends Phaser.Scene {
     for (const [id, view] of this.graves) {
       if (keep.has(id)) continue;
       view.stone.destroy();
+      view.flowers?.destroy();
       this.graves.delete(id);
     }
     for (const { hero, index } of standing) {
-      if (this.graves.has(hero.id)) continue;
       const p = gravePoint(index);
+      const seen = this.graves.get(hero.id);
+      if (seen && hero.honoredGrave && !seen.flowers) {
+        seen.flowers = showArt(this.add.image(p.x, p.y + 4, 'prop/tumulo/flores'), 'prop/tumulo/flores').setOrigin(0.5, 1).setDepth(p.y + 1);
+      }
+      if (seen) continue;
       const stone = showArt(this.add.image(p.x, p.y, 'decal/grave'), 'decal/grave').setOrigin(0.5, 1).setDepth(p.y);
       if (!initial) {
         stone.setAlpha(0);
         this.tweens.add({ targets: stone, alpha: 1, duration: 1200 });
         this.add.image(p.x, p.y + 6, 'mound').setOrigin(0.5, 1).setScale(ART_SCALE).setDepth(p.y - 1);
       }
-      this.graves.set(hero.id, { stone });
+      const flowers = hero.honoredGrave
+        ? showArt(this.add.image(p.x, p.y + 4, 'prop/tumulo/flores'), 'prop/tumulo/flores').setOrigin(0.5, 1).setDepth(p.y + 1)
+        : undefined;
+      this.graves.set(hero.id, { stone, flowers });
     }
   }
 
@@ -1324,7 +1345,10 @@ export class VillageScene extends Phaser.Scene {
       this.pets.clear();
       this.petsReady = false;
       this.pendingPet = null;
-      for (const g of this.graves.values()) g.stone.destroy();
+      for (const g of this.graves.values()) {
+        g.stone.destroy();
+        g.flowers?.destroy();
+      }
       this.graves.clear();
       this.graveCount = -1;
       for (const b of this.buildings.values()) b.level = -1;

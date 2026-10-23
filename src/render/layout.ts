@@ -51,6 +51,9 @@ export const LOTS: Record<BuildingId, Lot> = Object.fromEntries(
 export const PLAZA_TILES: TileRect = { tx: 20, ty: 15, tw: 10, th: 6 };
 export const PLAZA = { x: 25 * TILE, y: 18 * TILE, r: 150 };
 
+/** Mesa das audiências da manhã (M6 F1), no canto leste da praça: o pé da arte. */
+export const AUDIENCE_TABLE: Point = { x: 27.5 * TILE, y: 20 * TILE };
+
 /** Lavradores se espalham pelo movimento da vila; o campo de treino é dos heróis. */
 const LAVOR_ROUNDS: Point[] = [
   { x: PLAZA.x - 110, y: PLAZA.y + 80 },

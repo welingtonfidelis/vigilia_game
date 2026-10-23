@@ -10,6 +10,7 @@ import { maxParties, maxPartySize } from './economy.ts';
 import { getBond, hasTrait, traitSum } from './hero.ts';
 import { townHeroes } from './town.ts';
 import { buyProvisions } from './patronage.ts';
+import { noteWish, wishPairBonus } from './wishes.ts';
 import type { Hero, Party, Spot, World } from './types.ts';
 
 export const busyParties = (world: World): Party[] => world.parties.filter((p) => p.phase !== 'voltando');
@@ -28,6 +29,8 @@ function candidateScore(world: World, members: Hero[], c: Hero): number {
   const avgLevel = members.reduce((s, m) => s + m.level, 0) / members.length;
   score -= 0.1 * rankGap + 0.06 * Math.abs(c.level - avgLevel);
   if (hasTrait(c, 'sociavel')) score += 0.1;
+  // O par que o prefeito apresentou (desejo) se procura no quadro.
+  score += members.reduce((s, m) => s + wishPairBonus(m, c), 0);
   return score;
 }
 
@@ -128,6 +131,7 @@ function depart(world: World, members: Hero[]): void {
     const contract = world.town.contracts.find((c) => c.id === target.contractId)!;
     contract.takenBy = party.id;
   }
+  noteWish(world, { kind: 'partida', heroIds: members.map((h) => h.id) });
   const why = target.contractId !== null ? ' atrás do contrato do prefeito' : '';
   const where = opened ? 'uma passagem que ninguém conhece' : `o ${floorLabel(spot)}`;
   record(world, 'partida', party.memberIds, `${listNames(members)} desceram rumo a ${where}${why}.`);

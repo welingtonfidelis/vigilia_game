@@ -89,7 +89,7 @@ export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
 
 /** Relatório de uma incursão noturna. */
 /** De onde vem o ouro do tesouro (métrica do balanceador). */
-export type EarnKind = 'saque' | 'imposto' | 'taverna' | 'descanso' | 'oferenda' | 'forja' | 'treino' | 'cura' | 'venda' | 'bancada' | 'provisao' | 'reliquia';
+export type EarnKind = 'saque' | 'imposto' | 'taverna' | 'descanso' | 'oferenda' | 'forja' | 'treino' | 'cura' | 'venda' | 'bancada' | 'provisao' | 'reliquia' | 'audiencia';
 
 /** Para onde vai o ouro do tesouro (métrica do balanceador). */
 export type SpendKind =
@@ -109,7 +109,9 @@ export type SpendKind =
   | 'presente'
   | 'festa'
   | 'funeral'
-  | 'evento';
+  | 'evento'
+  /** Respostas das audiências e lápides dos desejos (M6 F1): valores simbólicos. */
+  | 'audiencia';
 
 export interface RaidHit {
   id: BuildingId;
@@ -224,6 +226,8 @@ export interface Child {
   classId: ClassId;
   /** Peça herdada dos pais (null = nenhuma). */
   heirloom: Item | null;
+  /** Treinou no campo por decisão do prefeito (audiência): chega à maioridade com um nível a mais. */
+  apprentice?: boolean;
 }
 
 export interface Activity {
@@ -240,7 +244,7 @@ export interface HeroTrait {
 
 export interface Deed {
   tick: number;
-  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador';
+  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador' | 'desejo';
   text: string;
 }
 
@@ -296,6 +300,51 @@ export interface Hero {
   lastTalkDay: number;
   /** Escrito na lápide quando morre. */
   epitaph: string | null;
+  /** Desejo pessoal em aberto (M6 F1). */
+  wish?: Wish | null;
+  /** Lápide melhor, paga pelo prefeito a pedido de quem ficou (M6 F1). */
+  honoredGrave?: boolean;
+}
+
+export type WishId = 'herdeiro' | 'lapide' | 'juntos' | 'padrinho' | 'festa' | 'peca' | 'selar' | 'veterano' | 'superar';
+
+/** Desejo de um herói (M6 F1): o prefeito atende pelo que já existe no jogo. */
+export interface Wish {
+  id: WishId;
+  /** O outro personagem do desejo: o morto, o amigo, o rival, o veterano ou o afilhado. */
+  targetId: number | null;
+  sinceDay: number;
+  untilDay: number;
+  /** Desejos de par: o prefeito já conversou com um dos dois neste dia. */
+  talkedDay?: number;
+  talkedId?: number;
+  /** O prefeito conversou com os dois no mesmo dia: eles se procuram para formar grupo. */
+  paired?: boolean;
+}
+
+/** Petição de uma audiência da manhã (M6 F1). */
+export interface Petition {
+  id: number;
+  /** Modelo em src/data/petitions.ts. */
+  defId: string;
+  /** Quem pede e quem mais aparece: morador, herói (vivo ou morto) ou criança. */
+  asker: PetitionPerson;
+  other: PetitionPerson | null;
+  building: BuildingId | null;
+  day: number;
+  /** Último dia em que ainda dá para responder. */
+  untilDay: number;
+}
+
+export interface PetitionPerson {
+  kind: 'morador' | 'heroi' | 'crianca';
+  id: number;
+}
+
+/** O que a vila lembra de uma audiência (para o painel). */
+export interface PetitionRecord {
+  day: number;
+  text: string;
 }
 
 export interface EnemyUnitDef {
@@ -597,6 +646,12 @@ export interface Town {
   pets?: Pet[];
   /** Último id de bicho dado (contador próprio, fora do nextId do mundo). */
   petSeq?: number;
+  /** Audiências da manhã em aberto, o contador próprio delas e as últimas resolvidas (M6 F1). */
+  petitions?: Petition[];
+  petitionSeq?: number;
+  petitionLog?: PetitionRecord[];
+  /** Dia de folga dado a um guarda numa audiência: ele não defende naquela noite. */
+  guardLeaveDay?: number;
 }
 
 export type ChronicleKind =
@@ -643,6 +698,9 @@ export type ChronicleKind =
   | 'incursao'
   | 'item'
   | 'bicho'
+  /** Audiências da manhã e desejos dos heróis (M6 F1). */
+  | 'audiencia'
+  | 'desejo'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -694,6 +752,10 @@ export interface Metrics {
   /** Desfecho das expedições por faixa de confiança (0,25 em 0,25). Calibra a escolha de andar. */
   byConfidence: Record<string, { n: number; deaths: number; wipes: number; conquests: number }>;
   daily: DailySample[];
+  /** Audiências da manhã (M6 F1): petições que chegaram, respondidas e vencidas. */
+  audiences?: { asked: number; answered: number; expired: number };
+  /** Desejos dos heróis (M6 F1): dados, cumpridos e esquecidos. */
+  wishes?: { made: number; done: number; failed: number };
 }
 
 export interface DailySample {

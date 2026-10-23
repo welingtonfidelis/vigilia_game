@@ -91,6 +91,15 @@ export const IconBook = () => (
   </Svg>
 );
 
+/** Pergaminho de petição (audiências). */
+export const IconScroll = () => (
+  <Svg>
+    <path d="M7 4h11a2 2 0 0 1 0 4h-1v10a2 2 0 0 1-2 2H6a2 2 0 0 1 0-4h1z" />
+    <path d="M7 16V4a2 2 0 0 0-2 2v1h2" />
+    <path d="M10 9h4M10 12h4" />
+  </Svg>
+);
+
 export const IconMenu = () => (
   <Svg>
     <path d="M4 7h16M4 12h16M4 17h16" />

@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) está pronto no branch `abismo-procedural` e espera o teste do jogador para ir ao `main`.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) está no `main`. Próximo: o M6 (Histórias sem fim, seção 9.6 do GDD), no branch `m6-historias`.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -260,9 +260,9 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Playtest automático:** `npm run playtest` roda 30 sementes × 30 anos salvando e carregando a cada 5 anos e confere ritmo, mortalidade, ouro, tesouro e saves. Todos os critérios passam.
 - [x] **Playtest guiado** (roteiro na seção 9.4): o jogo até o ano 2 trouxe os ajustes da seção seguinte (famílias, bichos, tiers e dificuldade). O resto do roteiro seguiu junto com o teste do M5.
 
-### Próximo: teste do M5
+### Próximo: M6
 
-O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes abaixo. O **M5: O Abismo das Dimensões** (seção 9.5 do GDD) está pronto no branch `abismo-procedural`: fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção. As fases F1 a F6 e o ajuste do ouro (15.9) estão feitos. O M5 espera o teste do jogador antes de ir para o `main`, e o que aparecer no teste entra na fila da seção 15.8.
+O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes abaixo. O **M5: O Abismo das Dimensões** (seção 9.5 do GDD) foi testado e está no `main`: fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção. O próximo marco é o **M6: Histórias sem fim** (seção 9.6), para o jogador ter o que decidir na vila e ver um abismo que varia, sem mudar a economia nem a duração das dungeons. Ele sai em seis fases no branch `m6-historias`.
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -772,7 +772,8 @@ vigilia/
 | **M2: Pessoas** ✅ | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
 | **M3: Vila viva** ✅ | Cidadãos, incursões noturnas, lotes e expansão sul, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
 | **M4: Profundidade** ✅ | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
-| **M5: O Abismo das Dimensões** 🟡 | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5). Fases F1 a F6 prontas no branch `abismo-procedural`; falta o teste do jogador para ir ao `main` | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
+| **M5: O Abismo das Dimensões** ✅ | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5) | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
+| **M6: Histórias sem fim** | Audiências e desejos, cargos e torneio, nêmesis, rumores, encontros nas salas, modo destaque, bestiário, dinastias e cosmética da vila (ver 9.6) | O jogador tem o que decidir todo dia e o abismo varia, sem mudar a economia nem a duração das dungeons |
 
 #### 9.1 Especificação do M2: Pessoas
 
@@ -1478,6 +1479,237 @@ Quatro dimensões mais fundas, uma por Senhor dos níveis 6 a 9. Os Senhores man
 - O teto de nível dos heróis sobe +4 por nível do abismo; o tier do saque é 2 por nível até o 6 e 4 depois, mais o andar.
 - O segundo caminho do nível 7 é o outro do par (não há uma terceira opção). Ele para quando a conservação derruba o nível efetivo abaixo de 7.
 - O prédio em conserto rende 80%. O "Agora" do painel já mostra os efeitos com o rendimento da conservação.
+
+#### 9.6 Especificação do M6: Histórias sem fim
+
+Com o M5, a campanha dura uns 80 anos (cerca de 40 h em 1×). Pedido de 2026-10-23: o jogador fica entediado em dois lugares.
+
+- **A vila fica sem decisão.** Depois que os prédios sobem, o prefeito passa dias sem nada novo para escolher.
+- **O abismo repete o cenário.** Cada nível dura uns 7 anos (3 a 4 h em 1×) no mesmo bioma, e o Acompanhar mostra o mesmo corredor.
+
+O M6 traz onze sistemas para o jogador ter o que decidir, acompanhar e colecionar.
+
+**Regras do marco:**
+
+- **Economia e duração das dungeons não mudam.** Nada mexe no ouro dos monstros, nos preços, no número de andares e salas nem nos 40 dias da passagem. Quando uma escolha envolve ouro, é valor simbólico. O balanceador confere em toda fase (item 13).
+- **Influência indireta.** O prefeito pede, posta, aconselha e nomeia; os heróis decidem pelos traços e pela lealdade. Nada vira comando direto no combate.
+- **O save 11 continua abrindo.** Os campos novos começam vazios, e a campanha em andamento ganha as novidades sem recomeçar.
+- **Mapa.** A planta (50 × 40 tiles) só cresce se o que é novo não couber nela (item 12).
+
+##### 1. Audiências da manhã
+
+- Às 8h, chega uma petição a cada 4 dias, em média, de moradores e heróis com nome. Um dia dura 48 segundos em 1×, então é uma a cada 3 minutos. Elas ficam no painel novo **Audiências** e na mesa de audiências da praça, sem pausar o jogo. A mesa guarda no máximo 3.
+- Cada petição tem 2 ou 3 respostas e vale por 5 dias (uns 4 minutos em 1×). Sem resposta, ela expira com a consequência mais branda ("o prefeito não ouviu"): um pouco de humor ou de lealdade de quem pediu.
+- Responder não gasta energia. Algumas respostas custam 1 de energia (ouvir com calma, ir até a casa de quem pediu).
+- **Efeitos:**
+  - humor dos moradores, lealdade e ânimo de heróis, laço entre dois personagens e reputação;
+  - um traço revelado, um morador que chega ou vai embora, uma criança que vira aprendiz;
+  - ouro só simbólico: no máximo um dia de imposto por petição, para mais ou para menos.
+- **As petições usam o que está acontecendo:** peste traz pedido de remédio, incursão traz pedido de muro, luto traz pedido de funeral e casamento traz pedido de festa.
+- **Conteúdo inicial:** 30 modelos com variáveis (quem pede, contra quem, de qual prédio). Exemplos:
+
+  | Petição | Respostas |
+  |---|---|
+  | Dois lavradores brigam pela cerca do campo | Dar razão a um (ele fica contente, o outro não); dividir a terra (os dois resmungam um pouco); mandar o guarda resolver (a vila toda fica menos contente) |
+  | A filha de um herói quer treinar para o abismo antes dos 16 | Proibir (o pai fica mais leal); deixar treinar no campo (ela entra no elenco aos 16 com um nível a mais); dizer que a decisão é do pai (os dois discutem, e o laço muda) |
+  | Um viajante pede abrigo na estalagem | Acolher (ele pode virar morador, ou ser ladrão); recusar (reputação cai um pouco) |
+  | Um herói ganancioso quer parte maior do saque | Negar (ânimo cai); prometer uma festa em nome dele (lealdade sobe; a festa fica nos desejos dele) |
+  | O guarda pede folga para o casamento da irmã | Dar a folga (a defesa cai um dia; o guarda fica contente); negar (o humor dele cai) |
+
+- O prefeito automático responde pela opção mais segura, para o balanceador medir.
+
+##### 2. Desejos dos heróis
+
+- Cada herói pode ter **um desejo** por vez. Um sorteio por semana mantém cerca de 10% dos heróis com desejo. O desejo aparece na ficha, num balão sobre o herói no mapa e no painel Audiências.
+- O desejo nasce da vida dele. O prefeito atende pelo que já existe no jogo:
+
+  | Desejo | Como o prefeito atende | Recompensa |
+  |---|---|---|
+  | Recuperar a arma do pai ou da mãe nos restos | Postar contrato no andar onde ficaram os restos | A peça volta com a história, e o herói ganha o feito "Herdeiro" |
+  | Uma lápide melhor para quem perdeu | Pagar a lápide (simbólico) | O luto passa mais rápido, e a lápide muda no mapa |
+  | Descer junto com um amigo ou com o rival | Conversar com os dois no mesmo dia (eles podem formar grupo) | O laço sobe; o rival pode virar amigo |
+  | Ser padrinho do filho do amigo | Conversar com os pais | Laço com a família e ânimo |
+  | Ver a vila em festa | Fazer uma festa no prazo | Ânimo e lealdade |
+  | Uma peça do material do bioma onde nasceu | Encomendar na forja com aquele material | Lealdade |
+  | Voltar ao andar onde quase morreu | Postar contrato naquele andar | Pode perder o traço Traumatizado |
+  | Ouvir a história de um veterano | Pôr os dois para conversar (o prefeito conversa com um e depois com o outro) | Experiência pequena para o novato e laço |
+
+- O prazo é de 30 a 60 dias. Atendido, o desejo dá lealdade, ânimo e às vezes um traço adquirido ou um feito. Esquecido, tira um pouco de ânimo ("o prefeito esqueceu de mim").
+- Desejo não pede ouro além do que a ação já custa.
+
+##### 3. Cargos e títulos
+
+- Três **cargos**, que o prefeito nomeia entre heróis e aposentados. A primavera abre a revisão do ano: o prefeito mantém ou troca.
+
+  | Cargo | Quem pode | Efeito (sempre fora da masmorra) |
+  |---|---|---|
+  | Capitão da guarda | Herói na vila ou aposentado | +15% na defesa das incursões; os guardas ficam mais contentes |
+  | Mestre da guilda | Herói de rank B ou acima, ou aposentado | Recrutas chegam com +10 de lealdade |
+  | Campeão da vila | O vencedor do torneio (ou alguém nomeado, se não houve torneio) | +5 de humor dos moradores e ânimo para o campeão |
+
+- **Ciúme:** quem tinha rank igual ou maior e ficou de fora perde laço com o escolhido. Trocar alguém do cargo tira lealdade dele.
+- O capitão que desce ao abismo deixa o cargo vago até voltar. Nenhum cargo dá poder na masmorra.
+- **Títulos honoríficos** saem dos feitos ("Mata-Senhor", "Escudo da Vila", "Último de Pé", "Vingador") e ficam na ficha e no epitáfio. Não têm efeito.
+
+##### 4. Torneio da estação
+
+- No último dia de cada estação, o campo de treino abre um **torneio de 8 heróis** na vila. Entram os de maior nível que quiserem; o Bravo entra primeiro e o Covarde fica de fora.
+- Os duelos são de eliminação, pelo motor de combate (herói contra herói), e param quando um chega a 20% da vida. Ninguém se fere nem morre.
+- O Acompanhar ganha a aba **Torneio**: a luta aparece na arena do campo, com a chave e o placar. Dá para assistir ou só ver o resultado no painel.
+- **Palpite:** antes da primeira luta, o prefeito aponta um favorito. Acertar dá reputação; errar não custa nada.
+- **Prêmios:** o vencedor vira Campeão da vila e ganha um feito. As lutas mexem nos laços: quem perde para o rival fica com raiva, e quem perde bem pode passar a respeitar.
+- Não há ouro em jogo. Quem luta não desce naquele dia.
+
+##### 5. Nêmesis
+
+- Um monstro comum que mata um herói e **sai vivo da luta** vira nêmesis. Sai vivo quando o grupo foge, recua ou cai, ou quando ele mesmo foge: com menos de 25% da vida, o monstro que matou alguém naquela luta tem 50% de chance de sumir na névoa.
+- A nêmesis ganha:
+  - nome próprio ("Garra-Fria, a que levou Bram");
+  - uma marca na arte (cicatriz e aura);
+  - um degrau a cada herói que mata: +15% de vida e de ataque por degrau, até 3.
+- **Onde aparece:** a cada passagem nova, uma nêmesis viva tem chance de estar lá, numa sala de luta comum (no lugar de um monstro do bando, sem sala a mais). No máximo 3 ficam vivas ao mesmo tempo. Quando o abismo desce, ela desce junto, com a força do nível novo e o mesmo degrau.
+- **Vingança:** quem jurou vingança pela vítima (já existe) e a família dela querem descer na passagem onde ela foi vista. O prefeito pode postar uma **caçada** no quadro: é um contrato comum, com recompensa comum, no andar onde ela está.
+- **Queda:** matar a nêmesis dá o feito "Vingou Bram" a quem acertou o golpe, um troféu no Salão das Lendas e uma página na crônica. O ouro dela é o de um monstro comum do mesmo tipo.
+- **Telas:** a ficha da nêmesis (quem ela matou, onde foi vista, degrau) no painel do Abismo, e o aviso quando um grupo dá de cara com ela.
+
+##### 6. Rumores da próxima passagem
+
+- Quando a guilda tem vaga para uma passagem nova, ela traz **3 rumores**. Cada um mostra o bioma, uma das regras e uma frase ("dizem que há um mercador preso no segundo andar"; "lá dentro alguma coisa canta").
+- O prefeito escolhe um rumor ao postar o contrato "abrir passagem nova", ou marca o rumor no mapa da guilda. Sem escolha, o primeiro grupo segue o primeiro rumor.
+- Cada rumor guarda a semente da passagem: quem abre, abre aquela. O gerador sorteia sementes até achar 3 com o mesmo número de andares, então só muda o sabor, não o tamanho.
+- As outras regras continuam escondidas até alguém entrar, como hoje.
+
+##### 7. Encontros nas salas
+
+- Sala nova, o **encontro**, no lugar de parte das salas vazias. O número de salas por andar não muda.
+- O grupo acha algo e decide. O prefeito pode **aconselhar pelo corvo**:
+  - o encontro aparece num cartão do Acompanhar e num aviso, sem pausar o jogo;
+  - o prefeito tem 1 hora do jogo para mandar o conselho, que custa 1 de energia;
+  - o grupo segue o conselho conforme a lealdade média;
+  - sem conselho, decide pelos traços: o Curioso abre, o Supersticioso e o Covarde passam longe.
+- **Conteúdo inicial:** 24 encontros, 2 por bioma e 4 gerais. Exemplos: sarcófago selado, peregrino perdido, altar que pede sangue, espelho que mostra um herói morto, poço que canta.
+- **Resultados possíveis:**
+  - bênção ou maldição até o fim da expedição (10% a mais ou a menos num atributo);
+  - um prisioneiro resgatado, que vira recruta (como a sala de prisioneiro);
+  - um traço revelado ou adquirido;
+  - uma peça comum, ou o ouro de um baú comum do andar;
+  - uma página na crônica.
+- **Nunca sai:** fragmento, ouro acima do baú, andar ou sala a mais.
+
+##### 8. Modo destaque
+
+- Botão **Destaques** no Acompanhar. A câmera troca sozinha para o grupo onde algo vai acontecer e fica pelo menos 8 segundos em cada um. Prioridade: Senhor, guardião, nêmesis, herói abaixo de 20% da vida, encontro, elite, luta comum.
+- **Chamadas:** um aviso com o botão "Assistir" quando um grupo chega ao guardião, ao Senhor, a uma nêmesis ou a um encontro. O jogador escolhe no menu quais chamadas quer.
+- **Melhores momentos:** o relatório da expedição guarda as 3 lutas mais marcantes (morte, golpe que virou a luta, nêmesis, guardião). Dá para revê-las no corredor, a partir do registro do combate (`combat.log`) e do mapa da sala, em 20 a 30 segundos cada.
+- É só tela: a simulação não muda.
+
+##### 9. Bestiário e códex
+
+- Uma página por bioma, monstro, Senhor, regra e peça lendária, no Salão das Lendas e num painel.
+- **Cada entrada abre em três passos:**
+  - monstros: visto (silhueta e nome), 10 abates (vida, ataque e o que faz) e 50 abates (a história do monstro);
+  - Senhores: visto, vencido e vencido sem baixas.
+- Completar a página de um bioma libera um enfeite da vila com a cara daquele bioma (item 11).
+- **Texto:** 2 ou 3 frases por entrada, no tom do jogo, cerca de 80 entradas.
+- A contagem fica no save, sem outro efeito além do enfeite.
+
+##### 10. Dinastias
+
+- Quem casa e tem filho funda uma **casa**, com nome de família sorteado de uma lista nova de sobrenomes (o prefeito pode trocar). Filhos e netos levam o nome.
+- **Árvore da família** no Salão das Lendas: gerações, casamentos, mortos, aposentados, feitos e as peças que passaram de mão em mão (a história da peça já existe).
+- **Feitos da casa:** "três gerações no abismo", "um Senhor vencido por geração", "vinte anos sem baixas". Cada um dá reputação e um brasão, que aparece como estandarte na vila.
+- A ficha do herói mostra a casa e os pais, e o epitáfio cita a casa.
+- Não tem efeito em combate nem no ouro.
+
+##### 11. Cosmética da vila
+
+- **Estandarte da vila:** cores e símbolo escolhidos pelo prefeito. Aparece nas bandeiras do portão e da praça e na faixa do grupo no corredor.
+- **Enfeites:** pontos fixos pela vila (canteiro, poste, banco, bandeirola, poço, arco de flores, troféu de nêmesis, enfeites dos biomas). O prefeito escolhe o enfeite de cada ponto num catálogo.
+- **Como se liberam:** pelos feitos, não pelo ouro: Senhores vencidos, páginas do bestiário, torneios, feitos das casas e nêmesis caídas. Alguns custam ouro simbólico (até 50).
+- **Nomes:** o prefeito dá nome às ruas e à praça ("Rua do Bram"), e a placa aparece no mapa.
+- **Busto no memorial:** o prefeito escolhe um herói caído para o busto da entrada do cemitério e troca quando quiser. A estátua da praça continua sendo do mecenato.
+- Tudo é só aparência.
+
+##### 12. Lugares novos e o mapa
+
+- **Paço do prefeito:** audiências, cargos e o palpite do torneio. Até ele existir (F6), as audiências ficam numa mesa na praça, perto da fogueira.
+- **Salão das Lendas:** bestiário, casas e troféus das nêmesis.
+- Os dois são marcos, como a fonte termal: sem nível, sem preço e sem manutenção, para não mexer na economia.
+- **Pontos de enfeite:** uns 12, ao longo das estradas, na praça e no portão.
+- **Onde cabem:** primeiro, no distrito sul, a leste dos lotes da expansão. Se não couber, a planta ganha uma faixa a leste (de 50 para 58 colunas), ligada por paredão e escada como os outros níveis. O teste `relief.test.ts` continua garantindo que tudo é alcançável.
+- **Arte nova** (16 e 32-bit, pelo gerador do pack e por `art32/`): Paço, Salão, mesa de audiências, enfeites, estandartes, a marca da nêmesis, os objetos dos encontros (sarcófago, altar, espelho, poço), o balão de desejo e a arena do torneio no corredor.
+
+##### 13. Ritmo e metas
+
+- Em toda fase, o balanceador roda o Normal (10 sementes × 100 anos) com o prefeito automático usando as novidades:
+  - responde petições pela opção segura e atende os desejos que já cabem no que ele faz;
+  - nomeia os cargos pelo rank;
+  - aconselha os encontros pela opção prudente;
+  - posta caçada para as nêmesis.
+- As metas da seção 11 continuam valendo, e mais uma: **nenhuma fase mexe no ritmo nem no ouro** além do ruído.
+  - Senhores dos níveis 1 e 5 e chefe máximo a até 1,5 ano do retrato de 15.9 (6,5, 32,3 e 75,7).
+  - Ouro dos heróis e tesouro no fim a até 10% do retrato (86,5 mil e 17,4 mil de máximo).
+  - Mortes entre 3 e 6 por ano.
+- **Medidas novas no relatório:** petições por ano, desejos atendidos, nêmesis por campanha (meta: de 5 a 15) e caídas, encontros por ano e torneios.
+
+##### 14. Fases de entrega
+
+No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
+
+| Fase | Entrega | Pronto quando |
+|---|---|---|
+| **F1** Audiências e desejos | Petições (30 modelos), desejos (8 modelos), painel Audiências, mesa da praça, balão de desejo e o prefeito automático | Testes de expiração, efeitos e determinismo; balanceador dentro do item 13 |
+| **F2** Nêmesis e rumores | Nêmesis (nome, degrau, migração, caçada, queda), rumores com semente no mapa da guilda e a marca na arte | Testes de nascimento, migração e queda; rumores do mesmo tamanho; balanceador dentro do item 13 |
+| **F3** Encontros e destaques | Sala de encontro (24 encontros), conselho pelo corvo, modo destaque, chamadas e melhores momentos | Testes dos resultados (nada de fragmento nem sala a mais); balanceador dentro do item 13 |
+| **F4** Cargos e torneio | Três cargos com a revisão da primavera, títulos, torneio com a aba no Acompanhar e o palpite | Testes de ciúme, defesa e duelo sem morte; balanceador dentro do item 13 |
+| **F5** Bestiário e dinastias | Códex (cerca de 80 entradas com texto), sobrenomes e casas, árvore da família, feitos da casa e o painel do Salão | Testes de contagem e de herança do nome; save 11 abre |
+| **F6** Cosmética e lugares | Estandarte, enfeites e o catálogo, nomes de ruas, busto, Paço e Salão no mapa (com a planta maior, se precisar) e a arte nova | Arte nos dois modos; `relief.test.ts` passa; tudo alcançável |
+
+##### 15. Escolhas feitas por padrão (fáceis de trocar)
+
+- 1 petição a cada 4 dias em média, válida por 5 dias, até 3 na mesa; desejo em cerca de 10% dos heróis, com 30 a 60 dias de prazo.
+- 3 cargos, revistos na primavera; torneio de 8 no último dia da estação.
+- Nêmesis: até 3 vivas, degrau até 3, 50% de chance de fuga abaixo de 25% da vida.
+- 3 rumores por vaga; encontros no lugar de parte das salas vazias; 1 hora para o conselho do corvo.
+- Enfeites liberados por feitos, com ouro simbólico de até 50.
+
+##### 16. Como ficou a F1
+
+- **Ritmo das audiências corrigido:** a spec pedia 1 petição por dia, válida por 2 dias, mas um dia do jogo dura 48 segundos em 1×. Isso dava uma petição nova a cada 48 segundos e 1 minuto e meio para responder. Ficou 1 a cada 4 dias, válida por 5 dias, até 3 na mesa (item 1).
+- **Petições:** 31 modelos em `src/data/petitions.ts` (`src/sim/audiences.ts` sorteia, aplica e expira).
+  - Cada um diz quem pede (morador de um ofício, herói com um traço ou uma marca da vida, aposentado), quem mais aparece, o prédio e a hora certa (peste, incursão, luto, casamento, nascimento, estação, pressão, cão na vila).
+  - As respostas mexem em humor, lealdade, laço, reputação, luto e traço revelado. Também podem fazer uma criança virar aprendiz (chega à maioridade no nível 2), trazer ou levar um morador, dar folga a um guarda (um a menos na defesa daquela noite) ou dar um desejo a quem pediu.
+  - O ouro é simbólico: custo e ganho em dias do imposto dos moradores (mínimo de 10 de ouro por dia). Sai no gasto `audiencia` e entra no ganho `audiencia`.
+  - Os sorteios saem de um RNG próprio do dia, sem mexer no RNG do núcleo.
+- **Desejos:** 9 modelos em `src/data/wishes.ts` (`src/sim/wishes.ts`), um a mais que a spec. Duas trocas:
+  - "Uma peça do material do bioma onde nasceu" virou "uma peça nova do cofre": o herói não guarda de onde veio, e a peça chega pelo presente do arsenal.
+  - "Voltar ao andar onde quase morreu" virou "descer de novo ao lado de um amigo e voltar inteiro", para quem ficou Traumatizado: o jogo não guarda onde alguém quase morreu. Cumprido, o traço pode sair (50%).
+  - Entrou "estar no grupo que selar uma passagem".
+  - Os desejos de par (descer junto, ouvir o veterano, superar o trauma) se cumprem quando o prefeito conversa com os dois no mesmo dia. Depois disso, os dois se procuram no quadro: +1 na escolha do companheiro.
+- **Telas:**
+  - Painel **Audiências** (botão na barra de baixo e tecla P; a tecla A já anda): as petições com as respostas, o que cada uma muda e o custo, os desejos com a dica e o prazo, e as últimas audiências.
+  - A **mesa de audiências** fica na praça, ao lado do Cofre, com o E.
+  - Aviso quando alguém chega à mesa.
+  - Balão de desejo sobre o herói na vila e o desejo na ficha.
+  - Lápide nova com flores no cemitério.
+- **Arte:** `art32/historias32.py` desenha a mesa, o balão e as flores em 16 e 32-bit e grava o índice `src/render/pack-historias.ts`.
+- **Prefeito automático:** responde tudo pela resposta segura às 9h e paga a lápide que alguém deseja quando o tesouro sobra. Os outros desejos ele cumpre sem querer, com as festas, os presentes e os contratos de sempre.
+- **Testes:** 14 novos (`tests/audiences.test.ts`), 222 no total.
+- **Retrato (Normal, 40 sementes × 100 anos de cada lado, a mesma conta no `main` e na F1):**
+
+  | | `main` | F1 |
+  |---|---|---|
+  | Senhor do nível 1 | ano 6,8 | ano 6,8 |
+  | Senhor do nível 5 | ano 31,9 | ano 33,1 |
+  | Chefe máximo | ano 75,0 | ano 76,8 |
+  | Ouro dos heróis no fim | 90,8 mil | 87,4 mil |
+  | Tesouro médio no fim | 12,1 mil | 12,2 mil |
+  | Mortes por ano | 4,8 | 5,0 |
+  | Contratos do Senhor perdidos | 19% | 17% |
+
+  - Por campanha: 10 petições por ano e 340 desejos (133 cumpridos pelo prefeito automático e 167 esquecidos).
+  - Os alertas de contratos perdidos abaixo de 20% e de ócio vêm das sementes, não da F1: no `main`, as sementes 21 a 40 também dão 16% e 9 dias.
+  - O chefe máximo ficou 1,8 ano depois, um pouco acima da margem de 1,5 do item 13. Com 40 sementes, o ruído da média é de uns 2 anos. Sem o bônus do par, o resultado sai idêntico: o prefeito automático quase nunca conversa com os dois no mesmo dia, então o par não explica a diferença.
 
 ### 10. Decisões em aberto
 
