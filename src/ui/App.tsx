@@ -7,7 +7,7 @@ import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt, knownMaterials } from './format.ts';
-import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconScroll, IconShield, IconSound, IconSun, MaterialIcon, PackIcon } from './icons.tsx';
+import { IconAbyss, IconBook, IconClose, IconHouse, IconMenu, IconMoon, IconMute, IconPanels, IconPause, IconScroll, IconShield, IconSound, IconSun, MaterialIcon, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { EventPanel } from './panels/EventPanel.tsx';
@@ -110,10 +110,19 @@ function Hud() {
           <IconPause />
         </button>
         {SPEEDS.map((s) => (
-          <button key={s} class={`spd${!session.paused && session.speed === s ? ' active' : ''}`} onClick={() => session.setSpeed(s)} title={`Velocidade ${s}×`}>
+          <button key={s} class={`spd spd-step${!session.paused && session.speed === s ? ' active' : ''}`} onClick={() => session.setSpeed(s)} title={`Velocidade ${s}×`}>
             {s}×
           </button>
         ))}
+        {/* No celular, um botão só: cada toque passa para a próxima velocidade; pausado, volta a andar na que mostra. */}
+        <button
+          class={`spd spd-cycle${session.paused ? '' : ' active'}`}
+          onClick={() => (session.paused ? session.setPaused(false) : session.setSpeed(SPEEDS[(SPEEDS.indexOf(session.speed) + 1) % SPEEDS.length]!))}
+          title={session.paused ? `Voltar a andar em ${session.speed}×` : `Velocidade ${session.speed}× (toque para trocar)`}
+          aria-label={`Velocidade ${session.speed}×`}
+        >
+          {session.speed}×
+        </button>
       </span>
     </div>
   );
@@ -247,6 +256,14 @@ function WatchButton() {
   );
 }
 
+interface NavItem {
+  kind: Panel['kind'];
+  label: string;
+  title: string;
+  icon: preact.JSX.Element;
+  badge?: { text: string | number; hot: boolean };
+}
+
 function Nav() {
   const { world, ui } = useGame();
   const parties = world.parties.length;
@@ -265,32 +282,87 @@ function Nav() {
     }
     seenSeq.current = seq;
   }, [world.town.petitionSeq]);
+  const items: NavItem[] = [
+    { kind: 'dungeon', label: 'Abismo', title: 'O abismo (M)', icon: <IconAbyss />, badge: parties > 0 ? { text: parties, hot: fighting } : undefined },
+    { kind: 'roster', label: 'Heróis', title: 'Heróis (H)', icon: <IconShield /> },
+    { kind: 'village', label: 'Vila', title: 'A vila (V)', icon: <IconHouse />, badge: threat >= 55 ? { text: '!', hot: true } : undefined },
+    { kind: 'audiences', label: 'Audiências', title: 'Audiências (P)', icon: <IconScroll />, badge: petitions > 0 ? { text: petitions, hot: urgent } : undefined },
+    { kind: 'chronicle', label: 'Crônica', title: 'Crônica (C)', icon: <IconBook /> },
+    { kind: 'menu', label: 'Menu', title: 'Menu', icon: <IconMenu /> },
+  ];
+  // O botão flutuante resume o que pede o prefeito: as petições e os corvos, ou o perigo de incursão.
+  // Os grupos lutando ficam de fora (quase sempre há um) e já piscam no Acompanhar.
+  const alert = petitions > 0 ? { text: petitions, hot: urgent || threat >= 55 } : threat >= 55 ? { text: '!', hot: true } : null;
   const toggle = (kind: Panel['kind']) => () => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind } as Panel));
-  const active = (kind: Panel['kind']) => (ui.panel?.kind === kind ? ' active' : '');
   return (
-    <nav class="nav" aria-label="Painéis">
-      <button class={`nav-btn${active('dungeon')}`} onClick={toggle('dungeon')} title="O abismo (M)">
-        <IconAbyss /> <span>Abismo</span>
-        {parties > 0 && <b class={`badge${fighting ? ' hot' : ''}`}>{parties}</b>}
+    <>
+      <nav class="nav" aria-label="Painéis">
+        {items.map((it) => (
+          <button key={it.kind} class={`nav-btn${ui.panel?.kind === it.kind ? ' active' : ''}`} onClick={toggle(it.kind)} title={it.title}>
+            {it.icon} <span>{it.label}</span>
+            {it.badge && <b class={`badge${it.badge.hot ? ' hot' : ''}`}>{it.badge.text}</b>}
+          </button>
+        ))}
+      </nav>
+      <Fab items={items} alert={alert} onPick={(kind) => toggle(kind)()} />
+    </>
+  );
+}
+
+/** Graus entre um item e outro no leque: os seis cobrem o quarto de círculo. */
+const FAN_STEP = 90 / 5;
+
+/**
+ * No celular (até 720 px) a barra vira um botão flutuante no canto: o toque abre os painéis num
+ * leque em quarto de círculo, ao alcance do polegar. Quem é canhoto espelha no Menu.
+ */
+function Fab(props: { items: NavItem[]; alert: { text: string | number; hot: boolean } | null; onPick: (kind: Panel['kind']) => void }) {
+  const { ui } = useGame();
+  const [open, setOpen] = useState(false);
+  const left = ui.prefs.fabLeft;
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopImmediatePropagation();
+      setOpen(false);
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [open]);
+  return (
+    <div class={`fab-root${open ? ' open' : ''}${left ? ' left' : ''}`}>
+      <div class="fab-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />
+      <nav class="fab-fan" aria-label="Painéis" aria-hidden={!open}>
+        {props.items.map((it, i) => {
+          // Do lado (180°) até em cima (90°); no canhoto, espelhado.
+          const a = ((180 - i * FAN_STEP) * Math.PI) / 180;
+          const x = Math.cos(a) * (left ? -1 : 1);
+          const y = -Math.sin(a);
+          return (
+            <button
+              key={it.kind}
+              class={`fab-item${ui.panel?.kind === it.kind ? ' active' : ''}`}
+              style={`--fx:${x.toFixed(3)};--fy:${y.toFixed(3)};--i:${i}`}
+              tabIndex={open ? 0 : -1}
+              title={it.title}
+              onClick={() => {
+                setOpen(false);
+                props.onPick(it.kind);
+              }}
+            >
+              {it.icon}
+              <span>{it.label}</span>
+              {it.badge && <b class={`badge${it.badge.hot ? ' hot' : ''}`}>{it.badge.text}</b>}
+            </button>
+          );
+        })}
+      </nav>
+      <button class="fab" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? 'Fechar os painéis' : 'Abrir os painéis'}>
+        {open ? <IconClose /> : <IconPanels />}
+        {!open && props.alert && <b class={`badge${props.alert.hot ? ' hot' : ''}`}>{props.alert.text}</b>}
       </button>
-      <button class={`nav-btn${active('roster')}`} onClick={toggle('roster')} title="Heróis (H)">
-        <IconShield /> <span>Heróis</span>
-      </button>
-      <button class={`nav-btn${active('village')}`} onClick={toggle('village')} title="A vila (V)">
-        <IconHouse /> <span>Vila</span>
-        {threat >= 55 && <b class="badge hot">!</b>}
-      </button>
-      <button class={`nav-btn${active('audiences')}`} onClick={toggle('audiences')} title="Audiências (P)">
-        <IconScroll /> <span>Audiências</span>
-        {petitions > 0 && <b class={`badge${urgent ? ' hot' : ''}`}>{petitions}</b>}
-      </button>
-      <button class={`nav-btn${active('chronicle')}`} onClick={toggle('chronicle')} title="Crônica (C)">
-        <IconBook /> <span>Crônica</span>
-      </button>
-      <button class={`nav-btn${active('menu')}`} onClick={toggle('menu')} title="Menu">
-        <IconMenu /> <span>Menu</span>
-      </button>
-    </nav>
+    </div>
   );
 }
 

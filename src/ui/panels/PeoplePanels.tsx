@@ -403,6 +403,9 @@ export function MenuPanel() {
           A+
         </button>
       </div>
+      <label class="check">
+        <input type="checkbox" checked={prefs.fabLeft} onChange={(e) => ui.setPrefs({ fabLeft: (e.target as HTMLInputElement).checked })} /> No celular, botão dos painéis no canto esquerdo (para canhotos)
+      </label>
 
       <h3>Controles</h3>
       <ul class="effects">

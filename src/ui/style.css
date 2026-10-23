@@ -186,6 +186,13 @@ button {
   font-weight: 700;
 }
 
+/* Botão único que alterna 1×, 2× e 4× (só no celular). */
+.spd-cycle {
+  display: none;
+  min-width: 2.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Objetivos, avisos, prompt, navegação ───────────────────────────── */
 
 .objectives {
@@ -334,6 +341,144 @@ kbd {
 
 .nav-btn.active {
   background: #33291c;
+}
+
+/* ── Botão flutuante dos painéis (celular): um leque em quarto de círculo ── */
+
+:root {
+  /* Tamanho do botão flutuante: as margens do painel e dos avisos no celular contam com ele. */
+  --fab: 3.5rem;
+}
+
+.fab-root {
+  display: none;
+  --fan-item: 3.9rem;
+  /* Raio do leque: seis itens de 3,9rem cabem no quarto de círculo sem encostar. */
+  --fan-r: min(13.6rem, calc(100vw - 7rem));
+  --fab-gap: 0.8rem;
+}
+
+.fab {
+  position: absolute;
+  z-index: 14;
+  right: var(--fab-gap);
+  bottom: calc(var(--fab-gap) + env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  width: var(--fab);
+  height: var(--fab);
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #4a3a22, #211a12 72%);
+  color: var(--gold);
+  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.fab .ico {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+.fab-root.open .fab .ico {
+  animation: fab-turn 0.2s ease-out;
+}
+
+@keyframes fab-turn {
+  from {
+    transform: rotate(-90deg);
+  }
+}
+
+.fab .badge {
+  top: -0.2rem;
+  right: -0.2rem;
+}
+
+.fab-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  background: rgba(6, 5, 4, 0.68);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.fab-root.open .fab-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* O centro do leque é o centro do botão; cada item anda até a sua posição no arco. */
+.fab-fan {
+  position: absolute;
+  z-index: 14;
+  right: calc(var(--fab-gap) + var(--fab) / 2);
+  bottom: calc(var(--fab-gap) + var(--fab) / 2 + env(safe-area-inset-bottom));
+  width: 0;
+  height: 0;
+}
+
+.fab-root.left .fab {
+  right: auto;
+  left: var(--fab-gap);
+}
+
+.fab-root.left .fab-fan {
+  right: auto;
+  left: calc(var(--fab-gap) + var(--fab) / 2);
+}
+
+.fab-item {
+  position: absolute;
+  left: calc(var(--fan-item) / -2);
+  top: calc(var(--fan-item) / -2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  width: var(--fan-item);
+  height: var(--fan-item);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(29, 25, 20, 0.97);
+  color: var(--text);
+  font-size: 0.66rem;
+  line-height: 1;
+  box-shadow: 0 0.3rem 0.9rem rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.3);
+  transition:
+    transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.15),
+    opacity 0.15s ease;
+  transition-delay: calc(var(--i) * 18ms);
+  cursor: pointer;
+}
+
+.fab-root.open .fab-item {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(calc(var(--fan-r) * var(--fx)), calc(var(--fan-r) * var(--fy)));
+}
+
+.fab-item .ico {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.fab-item.active {
+  border-color: var(--gold);
+  background: #33291c;
+  color: var(--gold);
+}
+
+.fab-item .badge {
+  top: -0.15rem;
+  right: -0.15rem;
 }
 
 .badge {
@@ -1213,37 +1358,44 @@ kbd {
     min-height: 2.3rem;
   }
 
+  /* Topo mais enxuto: o som fica no Menu, e a velocidade vira pausa + um botão que alterna. */
+  .hud-mute,
+  .spd-step {
+    display: none;
+  }
+
+  .hud-mute + .speed {
+    margin-left: auto;
+  }
+
+  .spd-cycle {
+    display: inline-block;
+  }
+
+  /* No celular a barra vira o botão flutuante com o leque (ver .fab). */
   .nav {
-    left: 0.4rem;
-    right: 0.4rem;
-    bottom: 0.4rem;
-    justify-content: space-between;
+    display: none;
   }
 
-  .nav-btn {
-    flex: 1;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.1rem;
-    padding: 0.35rem 0.2rem;
-    font-size: 0.78rem;
+  .fab-root {
+    display: block;
   }
 
-  .nav-btn .ico {
-    width: 1.3em;
-    height: 1.3em;
-  }
-
+  /* O painel desce até embaixo; o fim da rolagem deixa o canto livre para o botão flutuante. */
   .panel,
   .panel.wide {
     top: auto;
     left: 0.4rem;
     right: 0.4rem;
-    bottom: calc(3.75rem + env(safe-area-inset-bottom));
+    bottom: calc(0.4rem + env(safe-area-inset-bottom));
     width: auto;
-    max-height: calc(100% - 4.5rem);
+    max-height: calc(100% - 1.2rem - env(safe-area-inset-bottom));
     border-radius: 1rem;
     animation-name: sheet-in;
+  }
+
+  .panel-body {
+    padding-bottom: calc(var(--fab) + 1.2rem);
   }
 
   @keyframes sheet-in {
@@ -1260,7 +1412,7 @@ kbd {
 
   .toasts,
   .prompt {
-    bottom: 4.4rem;
+    bottom: calc(var(--fab) + 1.4rem + env(safe-area-inset-bottom));
   }
 
   .combat {
@@ -1537,7 +1689,7 @@ kbd {
   .prompt {
     left: 0.45rem;
     right: 0.45rem;
-    bottom: calc(3.9rem + env(safe-area-inset-bottom));
+    bottom: calc(var(--fab) + 1.4rem + env(safe-area-inset-bottom));
     transform: none;
     text-align: center;
     font-size: 0.9rem;
@@ -1548,12 +1700,26 @@ kbd {
     left: 0.45rem;
     right: 0.45rem;
     width: auto;
-    bottom: calc(7.2rem + env(safe-area-inset-bottom));
+    bottom: calc(var(--fab) + 4.7rem + env(safe-area-inset-bottom));
   }
 
   .toast {
     font-size: 0.76rem;
     padding: 0.3rem 0.5rem;
+  }
+}
+
+/* Tela de toque (celular e tablet): sem teclado, o aviso "E …" não serve. Tocar no prédio, no
+   quadro ou no bicho já leva o prefeito até lá. Os avisos do jogo descem para o lugar dele. */
+@media (hover: none) and (pointer: coarse) {
+  .prompt {
+    display: none;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (max-width: 720px) {
+  .toasts {
+    bottom: calc(var(--fab) + 1.4rem + env(safe-area-inset-bottom));
   }
 }
 

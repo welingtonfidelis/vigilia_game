@@ -124,6 +124,8 @@ export interface Prefs {
   calls: { guardiao: boolean; senhor: boolean; nemesis: boolean; encontro: boolean; torneio?: boolean };
   /** Modo destaque do Acompanhar: um corredor só, que troca sozinho para onde algo acontece. */
   highlight: boolean;
+  /** No celular, o botão flutuante dos painéis fica no canto esquerdo (para canhotos). */
+  fabLeft: boolean;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -139,6 +141,7 @@ export const DEFAULT_PREFS: Prefs = {
   sfxVolume: 0.9,
   calls: { guardiao: true, senhor: true, nemesis: true, encontro: true, torneio: true },
   highlight: false,
+  fabLeft: false,
 };
 
 export function loadPrefs(store: KeyValueStore | null): Prefs {

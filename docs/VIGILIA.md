@@ -42,7 +42,7 @@ npm run dev -- --host                           # idem, acessível pelo celular 
 - **Tempo:** Espaço pausa · 1, 2, 3 = 1×, 2×, 4× · **M** abismo · **H** heróis · **C** crônica · **Esc** fecha.
 - **Som:** liga no primeiro clique (regra dos navegadores). **N** ou o alto-falante no topo silencia; Menu → Som ajusta geral, música, ambiente e efeitos.
 - **Save:** salva sozinho no `localStorage` a cada dia do jogo e ao sair da página. Menu → Salvar/Carregar/Novo jogo.
-- **Celular:** toque para andar e interagir; os painéis viram folhas acima da barra de navegação; Menu → A−/A+ ajusta o tamanho da interface.
+- **Celular:** toque para andar e interagir. Em telas de até 720 px, a barra de navegação vira um botão flutuante no canto, que abre os painéis num leque em quarto de círculo (Menu → canto esquerdo, para canhotos). Os painéis viram folhas que descem até embaixo. O topo cabe numa linha: o som sai de lá (fica em Menu → Som), e a velocidade vira a pausa mais um botão que alterna 1×, 2× e 4× a cada toque (pausado, o toque volta a andar na velocidade mostrada). Em tela de toque (celular ou tablet), o aviso "E …" de perto dos objetos não aparece: tocar no prédio, no quadro, no cofre ou no bicho já leva o prefeito até lá. Menu → A−/A+ ajusta o tamanho da interface.
 
 ### Rodar as ferramentas
 
@@ -1643,8 +1643,30 @@ O M6 traz onze sistemas para o jogador ter o que decidir, acompanhar e coleciona
 ##### 12. Lugares novos e o mapa
 
 - **Paço do prefeito:** audiências, cargos e o palpite do torneio. Até ele existir (F6), as audiências ficam numa mesa na praça, perto da fogueira.
-- **Salão das Lendas:** bestiário, casas e troféus das nêmesis.
-- Os dois são marcos, como a fonte termal: sem nível, sem preço e sem manutenção, para não mexer na economia.
+- **Salão das Lendas** (pedido de 2026-10-23, vem na F5 junto com o painel): bestiário, casas e troféus das nêmesis.
+  - É um prédio novo com **níveis só de aparência**: não tem preço, manutenção nem efeito no jogo.
+  - O nível sobe com as **lendas da vila**: cada Senhor vencido, página de bioma completa no códex e feito de casa conta 1.
+    - Nível 1: um salão de pedra simples, desde a F5.
+    - Nível 2: colunas, braseiros acesos e estandartes das casas na fachada, por volta do ano 20 no Normal.
+    - Nível 3: torre ou cúpula, vitrais e as portas abertas com luz dentro, por volta do ano 50.
+    - O limiar exato sai do balanceador, que passa a contar as lendas.
+  - **Estátuas na frente:** quem deu o golpe final em cada Senhor ganha uma estátua num pedestal: 2 pedestais no nível 1, 4 no 2 e 6 no 3.
+    - A estátua é o desenho do próprio herói (classe e gênero) pintado de pedra, então cada uma é aquele herói, sem arte nova por estátua.
+    - Com os pedestais cheios, a mais nova entra no lugar da mais antiga. O painel guarda a galeria completa, e o prefeito pode fixar uma estátua para ela não sair.
+    - Não concorre com a estátua da praça (mecenato) nem com o busto do memorial (item 11).
+  - Arte nova: o prédio nos 3 níveis e o pedestal, pelo gerador do pack (16 e 32-bit).
+- **Paço do prefeito** é marco, como a fonte termal: sem nível, sem preço e sem manutenção, para não mexer na economia.
+- **Como se chega lá:** a barra de baixo guarda só o que se usa a toda hora. Os lugares da vila abrem tocando neles no mapa, como já fazem o cemitério, o cofre, o quadro e a fonte termal.
+  - O Salão das Lendas abre pelo prédio no mapa, por um botão no topo da Crônica (as duas são a memória da vila), pela casa na ficha do herói e pela tecla L. Não ganha botão na barra.
+  - O Paço (F6) abre pelo mapa e pelo botão Audiências, que continua na barra.
+  - **Botão flutuante no celular** (pedido de 2026-10-23, feito antes da F5): em telas de até 720 px, a barra de 6 botões, que já estava no limite, deu lugar a um botão redondo no canto de baixo à direita.
+    - O toque abre os painéis num leque em quarto de círculo, ao alcance do polegar, com o fundo escurecido. Tocar fora fecha.
+    - O botão mostra o aviso mais urgente: o número de petições e corvos (vermelho se há prazo vencendo ou perigo de incursão), ou "!" quando só há o perigo. Os grupos lutando ficam de fora, porque quase sempre há um e o Acompanhar já pisca. No leque, cada item mostra o seu indicador.
+    - O painel desce até embaixo e ganha a altura da antiga barra. O fim da rolagem deixa espaço para o botão, que flutua no canto do painel. Trocar de painel custa 2 toques, em vez de 1.
+    - Menu → "botão dos painéis no canto esquerdo" espelha tudo para canhotos.
+    - No computador e no tablet, a barra continua.
+    - **Topo enxuto no celular** (pedido do mesmo dia): o botão de som sai do topo (fica em Menu → Som), e os três botões de velocidade viram um só, que alterna 1×, 2× e 4× ao lado da pausa. O topo inteiro passa a caber numa linha. Os atalhos 1, 2 e 3 do teclado continuam.
+    - **Sem o aviso de tecla na tela de toque** (pedido do mesmo dia): o aviso "E Quadro de contratos" some em celular e tablet, porque não há teclado. Tudo o que ele oferecia já funciona tocando no objeto. Os avisos do jogo descem para o lugar dele, logo acima do botão flutuante. O critério é a tela ser só de toque, e não a largura: num computador com a janela estreita, o aviso continua.
 - **Pontos de enfeite:** uns 12, ao longo das estradas, na praça e no portão.
 - **Onde cabem:** primeiro, no distrito sul, a leste dos lotes da expansão. Se não couber, a planta ganha uma faixa a leste (de 50 para 58 colunas), ligada por paredão e escada como os outros níveis. O teste `relief.test.ts` continua garantindo que tudo é alcançável.
 - **Arte nova** (16 e 32-bit, pelo gerador do pack e por `art32/`): Paço, Salão, mesa de audiências, enfeites, estandartes, a marca da nêmesis, os objetos dos encontros (sarcófago, altar, espelho, poço), o balão de desejo e a arena do torneio no corredor.
@@ -1672,8 +1694,8 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
 | **F2** Nêmesis e rumores | Nêmesis (nome, degrau, migração, caçada, queda), rumores com semente no mapa da guilda e a marca na arte | Testes de nascimento, migração e queda; rumores do mesmo tamanho; balanceador dentro do item 13 |
 | **F3** Encontros e destaques | Sala de encontro (24 encontros), conselho pelo corvo, modo destaque, chamadas e melhores momentos | Testes dos resultados (nada de fragmento nem sala a mais); balanceador dentro do item 13 |
 | **F4** Cargos e torneio | Três cargos com a revisão da primavera, títulos, torneio com a aba no Acompanhar e o palpite | Testes de ciúme, defesa e duelo sem morte; balanceador dentro do item 13 |
-| **F5** Bestiário e dinastias | Códex (cerca de 80 entradas com texto), sobrenomes e casas, árvore da família, feitos da casa e o painel do Salão | Testes de contagem e de herança do nome; save 11 abre |
-| **F6** Cosmética e lugares | Estandarte, enfeites e o catálogo, nomes de ruas, busto, clima das estações, Paço e Salão no mapa (com a planta maior, se precisar) e a arte nova | Arte nos dois modos; `relief.test.ts` passa; tudo alcançável |
+| **F5** Bestiário e dinastias | Códex (cerca de 80 entradas com texto), sobrenomes e casas, árvore da família, feitos da casa, o painel do Salão e o prédio do Salão no mapa (3 níveis de aparência e as estátuas) | Testes de contagem e de herança do nome; save 11 abre |
+| **F6** Cosmética e lugares | Estandarte, enfeites e o catálogo, nomes de ruas, busto, clima das estações, Paço no mapa (com a planta maior, se precisar) e a arte nova | Arte nos dois modos; `relief.test.ts` passa; tudo alcançável |
 
 ##### 15. Escolhas feitas por padrão (fáceis de trocar)
 
