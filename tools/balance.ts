@@ -7,7 +7,7 @@
 // sobe 1 a cada N anos, para olhar o gerador e as curvas nos níveis altos.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { abyssPressure, autoMayor, checksum, createWorld, deserialize, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
+import { abyssPressure, autoMayor, checksum, codexOf, codexProgress, createWorld, deserialize, hallLevel, housesOf, legendsOf, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { Difficulty, World } from '../src/sim/index.ts';
 import { BALANCE } from '../src/sim/config.ts';
 import { parseArgs, num } from './args.ts';
@@ -34,15 +34,19 @@ interface Run {
   seed: number;
   world: World;
   ms: number;
+  /** Lendas da vila (M6 F5) a cada passo: ano e total. */
+  legends: { year: number; total: number }[];
 }
 
 const runs: Run[] = [];
 for (let s = firstSeed; s < firstSeed + seeds; s++) {
   const t0 = performance.now();
   let world = createWorld(s, difficulty);
+  const legends: Run['legends'] = [];
   const step = levelEvery > 0 ? Math.min(SAVE_EVERY, levelEvery) : SAVE_EVERY;
   for (let y = 0; y < years; y += step) {
     runDays(world, Math.min(step, years - y) * DAYS_PER_YEAR, { onHour: autoMayor });
+    legends.push({ year: y + Math.min(step, years - y), total: legendsOf(world).total });
     if (levelEvery > 0 && (y + step) % levelEvery === 0) world.abyss.level++;
     if (!checkSaves) continue;
     const loaded = deserialize(serialize(world));
@@ -50,7 +54,7 @@ for (let s = firstSeed; s < firstSeed + seeds; s++) {
     if (checksum(loaded) !== checksum(world)) saveFailures++;
     world = loaded;
   }
-  runs.push({ seed: s, world, ms: performance.now() - t0 });
+  runs.push({ seed: s, world, ms: performance.now() - t0, legends });
 }
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -166,6 +170,16 @@ console.log('\n── Audiências, desejos e nêmesis (M6) ──');
 console.log(`  petições por ano ${perYear((w) => w.metrics.audiences?.asked ?? 0)} · respondidas ${perYear((w) => w.metrics.audiences?.answered ?? 0)} · vencidas ${perYear((w) => w.metrics.audiences?.expired ?? 0)}`);
 console.log(`  desejos por campanha ${per((w) => w.metrics.wishes?.made ?? 0)} · cumpridos ${per((w) => w.metrics.wishes?.done ?? 0)} · esquecidos ${per((w) => w.metrics.wishes?.failed ?? 0)}`);
 console.log(`  torneios por campanha ${per((w) => w.metrics.tournaments?.held ?? 0)} · palpites certos ${per((w) => w.metrics.tournaments?.guessed ?? 0)}`);
+// Salão das Lendas (M6 F5): casas, feitos, códex e o nível do prédio.
+const deedsOf = (w: World, id: string) => housesOf(w).reduce((n, h) => n + h.deeds.filter((d) => d.id === id).length, 0);
+console.log(
+  `  casas por campanha ${per((w) => housesOf(w).length)} · feitos: três gerações ${per((w) => deedsOf(w, 'tresGeracoes'))}, Senhor por geração ${per((w) => deedsOf(w, 'senhorPorGeracao'))}, vinte anos ${per((w) => deedsOf(w, 'vinteAnos'))}`,
+);
+console.log(
+  `  códex no fim ${per((w) => codexProgress(codexOf(w)).open)} de ${codexProgress(codexOf(all[0]!)).total} entradas · páginas de bioma completas ${per((w) => legendsOf(w).pages)} · Salão no fim nível ${per((w) => hallLevel(w))}`,
+);
+const legendsAt = (year: number) => fmt(mean(runs.map((r) => r.legends.find((l) => l.year === year)?.total ?? 0)));
+console.log(`  lendas no ano 10 ${legendsAt(10)} · 20 ${legendsAt(20)} · 35 ${legendsAt(35)} · 50 ${legendsAt(50)} · 75 ${legendsAt(75)} (Salão: nível 2 com ${BALANCE.hallLevel2Legends}, nível 3 com ${BALANCE.hallLevel3Legends})`);
 console.log(
   `  encontros por ano ${perYear((w) => w.metrics.encounters?.met ?? 0)} · com conselho ${perYear((w) => w.metrics.encounters?.advised ?? 0)} · conselhos seguidos ${perYear((w) => w.metrics.encounters?.followed ?? 0)}`,
 );
