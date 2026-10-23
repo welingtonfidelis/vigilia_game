@@ -338,9 +338,11 @@ O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes aba
   5. Abismo: monstros, chefes com fases e variantes, corredor e arena dos 6 atos, efeitos. **Feito.**
   6. Interface: retratos e ícones. **Feito.** O modelo animado da ficha do herói (48×64) usa, na 32-bit, a folha 32-bit do herói, que tem quadros do mesmo tamanho.
 - **Situação:** 401 das 461 peças têm versão 32-bit. As que faltam não aparecem no jogo (o portão antigo com berrante, as folhas 16×28 antigas dos heróis, os modelos 48×64 da ficha, que a folha 32-bit substitui), são vetoriais (os ícones SVG) ou são ícones do site.
-- **Pendente, depois do teste:**
-  - Desenhar o canvas da vila na densidade da tela. Hoje ele é desenhado no tamanho CSS: no zoom do computador (1,5×) o pixel 32-bit ocupa 1,5 pixel do canvas e as linhas finas ficam com espessura irregular. No celular, com zoom 1, o pixel 32-bit cai em 1 pixel do canvas.
-  - Escolher o modo padrão (hoje 16-bit).
+- **Canvas na densidade da tela (feito com o M6, 2026-10-23):** antes, o canvas da vila era desenhado no tamanho de CSS, e no zoom do computador (1,5×) o pixel 32-bit ocupava 1,5 pixel do canvas, com as linhas finas de espessura irregular.
+  - Agora o canvas tem a densidade da tela (até 2) e aparece no tamanho de CSS; a câmera multiplica o zoom pela densidade. Numa tela Retina, o 1,5× vira 3 pixels de tela por pixel 32-bit. Os rótulos usam o dobro dessa densidade para continuar nítidos.
+  - Numa tela de densidade 1, a arte 32-bit arredonda o zoom para um número inteiro (2 no computador), um pouco mais perto que o 1,5. A arte 16-bit continua em 1,5, que já dá 3 pixels por pixel da arte.
+  - O tamanho acompanha o contêiner e a troca de tela (`src/render/game.ts`). Conferido com densidade 2 simulada: o enquadramento é o mesmo e o clique acerta os prédios.
+- **Modo padrão: 32-bit** (decisão de 2026-10-23, no fechamento do M6). Vale para quem abre o jogo pela primeira vez; quem já escolheu no Menu fica com a escolha.
 - **Aceite:**
   - Cada peça 32-bit respeita a convenção.
   - A vila, o corredor e a interface rodam nos dois modos, sem nenhuma imagem de terceiros carregada.

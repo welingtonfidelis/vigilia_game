@@ -85,7 +85,7 @@ import { registerWind, TREES } from './fx/wind.ts';
 import type { FogSystem } from './fx/fog.ts';
 import type { ParallaxLayer } from './fx/parallax.ts';
 import { faceCells } from './relief.ts';
-import { playArt, preload32, registerAnims32, showArt } from './art32.ts';
+import { artMode, playArt, preload32, registerAnims32, showArt } from './art32.ts';
 import { buildGround, type GroundSeasons } from './terrain.ts';
 import { WeatherSystem } from './fx/weather.ts';
 import {
@@ -535,7 +535,13 @@ export class VillageScene extends Phaser.Scene {
 
   private fitCamera(): void {
     const { width, height } = this.scale.gameSize;
-    const zoom = Math.min(width, height) < SMALL_SCREEN ? CAMERA_ZOOM_SMALL : CAMERA_ZOOM;
+    // O canvas tem a densidade da tela (game.ts): o zoom da câmera vai junto, e o tamanho de
+    // CSS decide o enquadramento. Na arte 32-bit, o zoom fica num número inteiro de pixels da
+    // tela por pixel da arte (sem a espessura irregular do 1,5).
+    const density = 1 / (this.scale.zoom || 1);
+    const css = Math.min(width, height) / density < SMALL_SCREEN ? CAMERA_ZOOM_SMALL : CAMERA_ZOOM;
+    const zoom = artMode() === '32' ? Math.max(1, Math.round(css * density)) : css * density;
+    const cssZoom = zoom / density;
     const cam = this.cameras.main;
     cam.setZoom(zoom);
     // Tela maior que a vila: centraliza na horizontal e põe a sobra em cima, onde ela
@@ -543,7 +549,7 @@ export class VillageScene extends Phaser.Scene {
     const bw = Math.max(WORLD_W, width / zoom);
     const bh = Math.max(WORLD_H, height / zoom);
     cam.setBounds((WORLD_W - bw) / 2, WORLD_H - bh, bw, bh);
-    this.labelScale = Phaser.Math.Clamp(1 / zoom, 1, 1.8);
+    this.labelScale = Phaser.Math.Clamp(1 / cssZoom, 1, 1.8);
     for (const obj of this.children.list) {
       if (obj.name === 'label' && obj instanceof Phaser.GameObjects.Text) obj.setScale(this.labelScale);
     }

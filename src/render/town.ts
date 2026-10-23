@@ -362,7 +362,8 @@ export function buildAbyss(scene: Phaser.Scene): AbyssView {
 
 /** Texto nítido: a arte usa filtro "nearest", mas texto reduzido assim fica serrilhado. */
 export function smooth<T extends Phaser.GameObjects.Text>(text: T): T {
-  text.setResolution(2);
+  // O canvas tem a densidade da tela (game.ts): o texto vem com o dobro disso, para ficar nítido no zoom.
+  text.setResolution(2 * Math.min(2, Math.max(1, window.devicePixelRatio || 1)));
   text.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
   return text;
 }

@@ -148,7 +148,8 @@ export const DEFAULT_PREFS: Prefs = {
   uiScale: 1,
   pauseOnDeath: false,
   runInBackground: false,
-  art: '16',
+  // 32-bit desde o fechamento do M6: toda a arte nova tem par 32-bit e o canvas desenha na densidade da tela.
+  art: '32',
   autosave: true,
   muted: false,
   masterVolume: 0.8,
