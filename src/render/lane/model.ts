@@ -29,8 +29,8 @@ export const roomX = (i: number): number => ENTRY_W + i * ROOM_W;
  * Qual das duas paredes do corredor vai em cada sala. Fixo por andar (a mesma sala
  * mostra sempre a mesma parede), sem padrão óbvio, com cerca de 40% de "b".
  */
-export function wallVariant(act: number, floor: number, room: number): 'a' | 'b' {
-  const h = Math.imul(room + 1, 2654435761) ^ Math.imul(floor + 1, 40503) ^ Math.imul(act + 1, 69069);
+export function wallVariant(seed: number, floor: number, room: number): 'a' | 'b' {
+  const h = Math.imul(room + 1, 2654435761) ^ Math.imul(floor + 1, 40503) ^ Math.imul(seed + 1, 69069);
   return ((h >>> 0) % 5) < 2 ? 'b' : 'a';
 }
 export const stopX = (i: number): number => roomX(i) + STOP_IN_ROOM;

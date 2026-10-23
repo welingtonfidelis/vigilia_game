@@ -1,6 +1,6 @@
 import { dayOf } from './calendar.ts';
-import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
-import { dailyCorruption } from './dungeon.ts';
+import { TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
+import { abyssPressure, dailyPressure } from './dungeon.ts';
 import { dailyEconomy, hornCost } from './economy.ts';
 import { expeditionTick } from './expedition.ts';
 import { maybeSeasonalEvent } from './events.ts';
@@ -47,7 +47,7 @@ export function runDays(world: World, days: number, hooks: Hooks = {}): void {
 function daily(world: World): void {
   dailyEconomy(world);
   raiseLegendaries(world);
-  dailyCorruption(world);
+  dailyPressure(world);
   dailyTown(world);
   dailyPatronage(world);
   dailyPets(world);
@@ -90,8 +90,9 @@ function trackIdle(world: World): void {
 
 function sample(world: World): void {
   const heroes = activeHeroes(world);
-  let deepest = 0;
-  world.acts.forEach((act, a) => act.conquered.forEach((c, f) => c && (deepest = Math.max(deepest, a * B.floorsPerAct + f + 1))));
+  // Mais fundo alcançado: andares conquistados do nível atual (os níveis contam de 10 em 10).
+  let deepest = (world.abyss.level - 1) * 10;
+  for (const p of world.abyss.passages) p.conquered.forEach((c, f) => c && (deepest = Math.max(deepest, (p.level - 1) * 10 + f + 1)));
   world.metrics.daily.push({
     day: dayOf(world.tick),
     treasury: Math.round(world.town.treasury),
@@ -100,6 +101,7 @@ function sample(world: World): void {
     avgLevel: heroes.length ? +(heroes.reduce((s, h) => s + h.level, 0) / heroes.length).toFixed(1) : 0,
     deepest,
     population: Math.round(world.town.population),
-    corruption: world.acts.map((a) => Math.round(a.corruption)),
+    pressure: Math.round(abyssPressure(world)),
+    level: world.abyss.level,
   });
 }

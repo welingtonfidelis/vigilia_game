@@ -8,7 +8,7 @@ import { blowHorn, build, comfort, commission, giftItem, holdFestival, postContr
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { canAfford, festivalCost, gearPrice, heroCapacity, hornCost, level, maxGearTier, maxParties, nextLevelCost } from './economy.ts';
-import { BALANCE as B } from './config.ts';
+import { openPassages } from './dungeon.ts';
 import { activeHeroes, townHeroes } from './town.ts';
 import type { BuildingId, ItemSlot, MaterialId, SpecId, World } from './types.ts';
 
@@ -76,9 +76,9 @@ export function autoMayor(world: World): void {
   // Contratos para todos os andares da fronteira, até o limite do quadro.
   for (const frontier of frontierFloors(world)) {
     if (town.contracts.length >= level(world, 'guilda')) break;
-    if (town.contracts.some((c) => c.act === frontier.act && c.floor === frontier.floor)) continue;
-    const reward = suggestedReward(frontier.act, frontier.floor);
-    if (town.treasury >= reward + reserve * 2) postContract(world, frontier.act, frontier.floor, reward);
+    if (town.contracts.some((c) => c.passageId === frontier.passageId && c.floor === frontier.floor)) continue;
+    const reward = suggestedReward(frontier.level, frontier.floor);
+    if (town.treasury >= reward + reserve * 2) postContract(world, frontier.passageId, frontier.floor, reward);
   }
 
   if (hourOf(world.tick) === 11) giveFromArsenal(world);
@@ -128,14 +128,15 @@ function orderFromForge(world: World, reserve: number): void {
   commission(world, slot, material, rarity);
 }
 
-function frontierFloors(world: World): { act: number; floor: number }[] {
-  const out: { act: number; floor: number }[] = [];
-  world.acts.forEach((act, a) => {
-    if (!act.unlocked) return;
-    const f = act.conquered.findIndex((c) => !c);
-    if (f >= 0 && f < B.floorsPerAct) out.push({ act: a, floor: f });
-  });
-  return out.reverse();
+/** O primeiro andar ainda não conquistado de cada passagem conhecida, do nível mais alto ao mais baixo. */
+function frontierFloors(world: World): { passageId: number; level: number; floor: number }[] {
+  const out: { passageId: number; level: number; floor: number }[] = [];
+  for (const p of openPassages(world)) {
+    if (!p.discovered) continue;
+    const f = p.conquered.findIndex((c) => !c);
+    if (f >= 0) out.push({ passageId: p.id, level: p.level, floor: f });
+  }
+  return out.sort((a, b) => b.level - a.level || b.floor - a.floor);
 }
 
 /**

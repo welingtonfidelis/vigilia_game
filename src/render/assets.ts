@@ -2,7 +2,7 @@
 // Phaser: a interface em DOM também usa (retratos e monstros em CSS). Toda a arte é do
 // pack próprio do Vigília (public/assets/vigilia/), em 16-bit e 32-bit.
 
-import { ACTS } from '../sim/index.ts';
+import { BIOMES } from '../sim/index.ts';
 import type { ClassId, Unit, World } from '../sim/index.ts';
 import { heroPortraitUrl, heroSpriteId } from './pack.ts';
 
@@ -30,7 +30,7 @@ export interface MonsterLook {
   portrait?: string;
 }
 
-/** Inimigos de cada ato (por id em src/data/acts.ts) e o chefe. */
+/** Monstros de cada bioma (por id em src/data/biomes.ts) e os Senhores. */
 export const MONSTERS: Record<string, MonsterLook> = {
   esqueleto: { asset: 'char/monster/esqueleto', frameSize: [24, 32] },
   rato: { asset: 'char/monster/rato', frameSize: [24, 16] },
@@ -58,9 +58,12 @@ export const MONSTERS: Record<string, MonsterLook> = {
   aquiloQueVigia: { asset: 'char/boss/aquiloQueVigia', frameSize: [64, 64] },
 };
 
-/** Qual folha desenha esta unidade (monstro do ato, chefe ou o eco de um herói morto). */
-export function monsterBase(world: World, unit: Unit, act: number): MonsterLook {
-  const def = ACTS[act];
+/** Monstros de todos os biomas, do nome mais longo ao mais curto (o invasor também acha a dele). */
+const ALL_ENEMIES = BIOMES.flatMap((b) => b.enemies).sort((a, b) => b.name.length - a.name.length);
+
+/** Qual folha desenha esta unidade (monstro do bioma, invasor, Senhor ou o eco de um herói morto). */
+export function monsterBase(world: World, unit: Unit, biome: number): MonsterLook {
+  const def = BIOMES[biome];
   if (!def) return MONSTERS.esqueleto!;
   if (unit.tags.includes('boss')) return MONSTERS[def.boss.id] ?? MONSTERS.esqueleto!;
   if (unit.name.startsWith('Eco de ')) {
@@ -68,6 +71,6 @@ export function monsterBase(world: World, unit: Unit, act: number): MonsterLook 
     if (!lost) return { asset: 'char/monster/sombra', ghost: true };
     return { asset: heroSpriteId(lost.classId, lost.gender), ghost: true, portrait: heroPortraitUrl(lost.classId, lost.gender, true) };
   }
-  const enemy = def.enemies.find((e) => unit.name.startsWith(e.name));
+  const enemy = ALL_ENEMIES.find((e) => unit.name.startsWith(e.name));
   return (enemy && MONSTERS[enemy.id]) || MONSTERS.esqueleto!;
 }

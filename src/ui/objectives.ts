@@ -2,17 +2,19 @@
 
 import {
   activeHeroes,
-  ACTS,
+  BIOMES,
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
   floorLabel,
   hornCost,
+  isGuardianFloor,
   MATERIAL_NAMES,
   nextLevelCost,
+  openPassages,
 } from '../sim/index.ts';
 import type { MaterialId, World } from '../sim/index.ts';
-import { fmt, midSentence } from './format.ts';
+import { fmt } from './format.ts';
 
 export type Horizon = 'agora' | 'logo' | 'depois';
 
@@ -41,21 +43,26 @@ export function objectives(world: World): Objective[] {
   } else if (roster < 3 && town.arrivals.length === 0) {
     out.push({ horizon: 'agora', text: `Restam poucos heróis. Toque o berrante (${fmt(hornCost(world))} de ouro).` });
   } else if (buildingLevel(world, 'guilda') >= 1 && town.contracts.length === 0) {
-    out.push({ horizon: 'agora', text: 'Poste um contrato no quadro para levar os heróis ao próximo andar.' });
+    out.push({ horizon: 'agora', text: 'Poste um contrato no quadro para levar os heróis a uma passagem ou ao próximo andar.' });
   }
 
   const upgrade = cheapestUpgrade(world);
   if (upgrade) out.push({ horizon: 'logo', text: upgrade });
 
-  const actIdx = world.acts.findIndex((a) => a.unlocked && !a.bossDefeated);
-  if (actIdx >= 0) {
-    const act = world.acts[actIdx]!;
-    const floor = act.conquered.findIndex((c) => !c);
-    const def = ACTS[actIdx]!;
-    out.push({
-      horizon: 'depois',
-      text: floor === act.conquered.length - 1 ? `Derrote ${midSentence(def.boss.name)} no ${floorLabel(actIdx, floor)}.` : `Conquiste o ${floorLabel(actIdx, floor)}.`,
-    });
+  // O abismo: abrir a primeira passagem, depois descer até o guardião e selar.
+  const known = openPassages(world).filter((p) => p.discovered);
+  if (known.length === 0) {
+    out.push({ horizon: 'depois', text: 'Abra a primeira passagem: o próximo grupo que descer vai descobrir o que há do outro lado.' });
+  } else {
+    const deepest = known.reduce((a, b) => (b.level * 10 + b.conquered.filter(Boolean).length > a.level * 10 + a.conquered.filter(Boolean).length ? b : a));
+    const floor = deepest.conquered.findIndex((c) => !c);
+    if (floor >= 0) {
+      const name = BIOMES[deepest.biome]!.name;
+      out.push({
+        horizon: 'depois',
+        text: isGuardianFloor(deepest, floor) ? `Vença o guardião e sele a passagem para ${name}.` : `Conquiste o ${floorLabel({ biome: deepest.biome, floor })}.`,
+      });
+    }
   }
   return out.slice(0, 3);
 }

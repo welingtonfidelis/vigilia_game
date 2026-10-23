@@ -23,6 +23,8 @@ export type TraitId =
   | 'marcado';
 export type BuildingId = 'taverna' | 'estalagem' | 'ferreiro' | 'templo' | 'guilda' | 'campo' | 'casa';
 export type MaterialId = 'ossos' | 'ferroNegro' | 'esporos' | 'perolas' | 'brasas' | 'almas';
+/** Regra especial de uma dimensão (src/data/rules.ts). Sem regra nenhuma, é a Calmaria. */
+export type DimRuleId = 'nevoa' | 'mare' | 'esporos' | 'calor' | 'silencio' | 'ganancia' | 'luaSangue' | 'ecos';
 export type Doctrine = 'cautelosa' | 'equilibrada' | 'agressiva';
 export type HeroStatus = 'town' | 'expedition' | 'dead' | 'left' | 'retired';
 
@@ -88,8 +90,11 @@ export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
 /** Relatório de uma incursão noturna. */
 export interface Raid {
   day: number;
-  act: number;
-  corruption: number;
+  /** Nível do abismo na noite da incursão. */
+  level: number;
+  pressure: number;
+  /** De que bioma vieram os monstros (o de uma passagem aberta). */
+  biome: number;
   power: number;
   defense: number;
   outcome: RaidOutcome;
@@ -273,7 +278,7 @@ export interface EnemyUnitDef {
   tags: EnemyTag[];
 }
 
-export type EnemyTag = 'backline' | 'swarm' | 'boss';
+export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian';
 export type Affix = 'veloz' | 'vampirico' | 'explosivo' | 'couracado' | 'feroz';
 export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos';
 
@@ -349,6 +354,9 @@ export type RoomKind =
   | 'vazia'
   | 'prisioneiro'
   | 'restos'
+  /** Guardião da passagem, no último andar: vencê-lo sela a passagem. */
+  | 'guardiao'
+  /** Senhor do abismo (contrato do amuleto, M5 F2). */
   | 'chefe'
   /** Mercador errante: vende uma peça a quem pagar (ouro do herói). */
   | 'mercador'
@@ -364,12 +372,22 @@ export interface Room {
 export type PartyPhase = 'descendo' | 'explorando' | 'combate' | 'voltando';
 export type PartyOutcome = 'conquista' | 'retirada' | 'chamado' | 'massacre' | 'cansaco' | 'fuga';
 
-export interface Party {
+/**
+ * Onde um grupo está no abismo: a passagem, o nível e o bioma dela, as regras e o andar.
+ * O grupo leva uma cópia: a passagem pode fechar enquanto ele volta para a vila.
+ */
+export interface Spot {
+  passageId: number;
+  level: number;
+  biome: number;
+  rules: DimRuleId[];
+  floor: number;
+}
+
+export interface Party extends Spot {
   id: number;
   memberIds: number[];
   startMemberIds: number[];
-  act: number;
-  floor: number;
   phase: PartyPhase;
   phaseEndsAt: number;
   /** true = usa o mapa persistente do andar; false = salas próprias (andar já conquistado). */
@@ -387,6 +405,8 @@ export interface Party {
     bought?: { heroId: number; itemId: number; price: number }[];
   };
   contractId: number | null;
+  /** O grupo abriu a passagem nesta descida (conta para o contrato de passagem nova). */
+  opened?: boolean;
   rescued: number;
   dead: number[];
   recallRequested: boolean;
@@ -401,18 +421,36 @@ export interface Party {
   relics?: number[];
 }
 
-export interface ActState {
-  unlocked: boolean;
-  corruption: number;
+/** Uma passagem para outra dimensão: o mundo gerado por semente e o que já mudou nele. */
+export interface Passage {
+  id: number;
+  seed: number;
+  level: number;
+  biome: number;
+  rules: DimRuleId[];
+  floors: number;
+  /** Alguém já entrou: o bioma e as regras aparecem para a vila. */
+  discovered: boolean;
+  openedDay: number;
+  closesDay: number;
   conquered: boolean[];
   /** Mapa persistente de andares ainda não conquistados (salas limpas continuam limpas). */
   maps: (Room[] | null)[];
-  bossDefeated: boolean;
+  /** O guardião caiu: a passagem fecha assim que ninguém mais estiver nela. */
+  sealed: boolean;
+  /** 0 a 100: sobe todo dia e cai com as salas e os andares limpos nela (monstros mais fortes, salas reocupadas). */
+  pressure: number;
+}
+
+/** O abismo da vila: o nível e as passagens abertas (a pressão é de cada passagem). */
+export interface AbyssState {
+  level: number;
+  passages: Passage[];
 }
 
 export interface Remains {
   heroId: number;
-  act: number;
+  passageId: number;
   floor: number;
   gold: number;
   /** Peças que ficaram com o morto (voltam com quem achar os restos). */
@@ -421,7 +459,8 @@ export interface Remains {
 
 export interface Contract {
   id: number;
-  act: number;
+  /** null: abrir uma passagem nova. */
+  passageId: number | null;
   floor: number;
   reward: number;
   postedTick: number;
@@ -508,6 +547,8 @@ export type ChronicleKind =
   | 'fuga'
   | 'vinganca'
   | 'conquista'
+  /** Passagem aberta, selada ou fechada (M5). */
+  | 'passagem'
   | 'chefe'
   | 'promocao'
   | 'nivel'
@@ -562,7 +603,10 @@ export interface Metrics {
   roomsCleared: number;
   floorsConquered: number;
   rankUps: number;
-  bossKills: { act: number; day: number }[];
+  /** Senhores vencidos (M5 F2). */
+  bossKills: { level: number; day: number }[];
+  passagesOpened: number;
+  passagesSealed: number;
   idleDays: number;
   longestIdleStreak: number;
   idleStreak: number;
@@ -589,7 +633,8 @@ export interface DailySample {
   avgLevel: number;
   deepest: number;
   population: number;
-  corruption: number[];
+  pressure: number;
+  level: number;
 }
 
 /** Dificuldade da campanha (multiplicadores em src/data/difficulty.ts). */
@@ -605,7 +650,7 @@ export interface World {
   heroes: Hero[];
   parties: Party[];
   town: Town;
-  acts: ActState[];
+  abyss: AbyssState;
   bonds: Record<string, number>;
   remains: Remains[];
   chronicle: ChronicleEntry[];
@@ -613,7 +658,7 @@ export interface World {
   citizens: Citizen[];
   raids: Raid[];
   /** Heróis que fugiram sozinhos neste tick e ainda precisam virar um retorno solo. */
-  pendingFugitives: { heroId: number; act: number; floor: number }[];
+  pendingFugitives: { heroId: number; spot: Spot }[];
   metrics: Metrics;
   endedTick: number | null;
 }

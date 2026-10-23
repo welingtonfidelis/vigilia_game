@@ -3,7 +3,8 @@
 
 import Phaser from 'phaser';
 import {
-  ACTS,
+  abyssPressure,
+  BIOMES,
   BUILDING_IDS,
   BUILDINGS,
   buildingLevel,
@@ -540,9 +541,9 @@ export class VillageScene extends Phaser.Scene {
     this.lighting.add({ x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 40, color: 0xcfd8ff, radius: 150, intensity: 0.45 });
   }
 
-  /** Corrupção mais alta entre os atos abertos (0 a 100). */
+  /** Pressão do abismo (0 a 100): o brilho da caverna e dos cristais acompanha. */
   private corruption(): number {
-    return Math.max(0, ...this.world.acts.filter((a) => a.unlocked).map((a) => a.corruption));
+    return abyssPressure(this.world);
   }
 
   /**
@@ -1250,11 +1251,9 @@ export class VillageScene extends Phaser.Scene {
     this.floatText(LANDMARKS.cofre.x, LANDMARKS.cofre.y - 120, 'Incursão!', '#ff8a7a');
   }
 
-  /** Os monstros comuns do ato mais corrompido: são eles que sobem na incursão. */
+  /** Os monstros comuns do bioma de onde a incursão subiu. */
   private raidMonsters(): MonsterLook[] {
-    const open = this.world.acts.filter((a) => a.unlocked);
-    const worst = open.reduce((best, a) => (a.corruption > best.corruption ? a : best), open[0] ?? this.world.acts[0]!);
-    const def = ACTS[this.world.acts.indexOf(worst)] ?? ACTS[0]!;
+    const def = BIOMES[this.world.raids.at(-1)?.biome ?? 0] ?? BIOMES[0]!;
     const looks = def.enemies.map((e) => MONSTERS[e.id]).filter((m): m is MonsterLook => !!m);
     return looks.length ? looks : [MONSTERS.esqueleto!];
   }

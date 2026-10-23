@@ -3,10 +3,11 @@
 // [--difficulty facil|normal|dificil]
 // Com --saves (o playtest automático: npm run playtest), a cada 5 anos salva e carrega o
 // mundo e segue jogando com o carregado; o save tem que voltar idêntico.
+// Com --level-every N (atalho de teste do M5 F1, antes dos amuletos), o nível do abismo
+// sobe 1 a cada N anos, para olhar o gerador e as curvas nos níveis altos.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { ACTS } from '../src/data/acts.ts';
-import { ACT_COUNT, autoMayor, checksum, createWorld, deserialize, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
+import { abyssPressure, autoMayor, checksum, createWorld, deserialize, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { Difficulty, World } from '../src/sim/index.ts';
 import { parseArgs, num } from './args.ts';
 
@@ -16,6 +17,7 @@ const years = num(args.years, 10);
 const firstSeed = num(args.from, 1);
 const checkSaves = !!args.saves;
 const difficulty = (typeof args.difficulty === 'string' ? args.difficulty : 'normal') as Difficulty;
+const levelEvery = num(args['level-every'], 0);
 /** De quantos em quantos anos o playtest salva e carrega. */
 const SAVE_EVERY = 5;
 let saveChecks = 0;
@@ -31,8 +33,10 @@ const runs: Run[] = [];
 for (let s = firstSeed; s < firstSeed + seeds; s++) {
   const t0 = performance.now();
   let world = createWorld(s, difficulty);
-  for (let y = 0; y < years; y += SAVE_EVERY) {
-    runDays(world, Math.min(SAVE_EVERY, years - y) * DAYS_PER_YEAR, { onHour: autoMayor });
+  const step = levelEvery > 0 ? Math.min(SAVE_EVERY, levelEvery) : SAVE_EVERY;
+  for (let y = 0; y < years; y += step) {
+    runDays(world, Math.min(step, years - y) * DAYS_PER_YEAR, { onHour: autoMayor });
+    if (levelEvery > 0 && (y + step) % levelEvery === 0) world.abyss.level++;
     if (!checkSaves) continue;
     const loaded = deserialize(serialize(world));
     saveChecks++;
@@ -51,7 +55,7 @@ const hoursAt1x = (year: number) => (year * DAYS_PER_YEAR * TICKS_PER_DAY) / TIC
 
 // ── Por semente ───────────────────────────────────────────────────────────
 console.log(`\nVigília · balanceamento · ${seeds} sementes × ${years} anos · ${difficulty}\n`);
-const header = ['seed', 'chefes (ano)', 'mortes/ano', 'recrut', 'saíram', 'elenco', 'nv médio', 'tesouro', 'ouro heróis', 'impasses', 'ócio máx', 'ms'];
+const header = ['seed', 'nível', 'passagens (abertas/seladas)', 'senhores (ano)', 'mortes/ano', 'recrut', 'saíram', 'elenco', 'nv médio', 'tesouro', 'ouro heróis', 'impasses', 'ócio máx', 'ms'];
 console.log(header.join(' | '));
 for (const { seed, world, ms } of runs) {
   const m = world.metrics;
@@ -60,6 +64,8 @@ for (const { seed, world, ms } of runs) {
   console.log(
     [
       seed,
+      world.abyss.level,
+      `${m.passagesOpened}/${m.passagesSealed}`,
       bosses,
       fmt(m.deaths / years),
       m.recruits,
@@ -77,16 +83,17 @@ for (const { seed, world, ms } of runs) {
 
 // ── Agregado ──────────────────────────────────────────────────────────────
 const all = runs.map((r) => r.world);
-console.log('\n── Ritmo do abismo (ano em que cada chefe caiu, média · faixa · % das sementes) ──');
-for (let a = 0; a < ACTS.length; a++) {
-  const days = all.map((w) => w.metrics.bossKills.find((b) => b.act === a)?.day).filter((d): d is number => d !== undefined);
-  if (days.length === 0) {
-    console.log(`  ${ACTS[a]!.name.padEnd(18)} —`);
-    continue;
-  }
+console.log('\n── Ritmo do abismo ──');
+const perYear = (f: (w: World) => number) => fmt(all.reduce((s, w) => s + f(w), 0) / all.length / years);
+console.log(`  passagens abertas por ano: ${perYear((w) => w.metrics.passagesOpened)} · seladas por ano: ${perYear((w) => w.metrics.passagesSealed)}`);
+console.log(`  nível do abismo no fim: ${fmt(mean(all.map((w) => w.abyss.level)))} · pressão no fim: ${fmt(mean(all.map((w) => abyssPressure(w))), 0)}`);
+// Ano em que cada nível de Senhor caiu (M5 F2), média · faixa · % das sementes.
+const lordLevels = [...new Set(all.flatMap((w) => w.metrics.bossKills.map((b) => b.level)))].sort((a, b) => a - b);
+for (const level of lordLevels) {
+  const days = all.map((w) => w.metrics.bossKills.find((b) => b.level === level)?.day).filter((d): d is number => d !== undefined);
   const ys = days.map(yearOfDay);
   console.log(
-    `  ${ACTS[a]!.name.padEnd(18)} ano ${fmt(mean(ys))} (~${fmt(hoursAt1x(mean(ys)))} h em 1×) · ${fmt(Math.min(...ys))}–${fmt(Math.max(...ys))} · ${pct(days.length / all.length)}`,
+    `  Senhor do nível ${String(level).padEnd(3)} ano ${fmt(mean(ys))} (~${fmt(hoursAt1x(mean(ys)))} h em 1×) · ${fmt(Math.min(...ys))}–${fmt(Math.max(...ys))} · ${pct(days.length / all.length)}`,
   );
 }
 
@@ -139,12 +146,12 @@ for (const [k, b] of [...buckets.entries()].sort((a, b) => Number(a[0]) - Number
 }
 
 console.log('\n── Ano a ano (média das sementes) ──');
-console.log('  ano | andar mais fundo | tesouro | ouro heróis | elenco | nv médio | população | corrupção ato atual');
+console.log('  ano | andar mais fundo | tesouro | ouro heróis | elenco | nv médio | população | pressão');
 for (let y = 1; y <= years; y++) {
   const idx = y * DAYS_PER_YEAR - 1;
   const samples = all.map((w) => w.metrics.daily[idx]).filter((s) => s !== undefined);
   if (samples.length === 0) continue;
-  const corr = samples.map((s) => s.corruption[Math.min(Math.floor(s.deepest / 4), s.corruption.length - 1)] ?? 0);
+  const corr = samples.map((s) => s.pressure);
   console.log(
     `  ${String(y).padStart(3)} | ${fmt(mean(samples.map((s) => s.deepest))).padStart(16)} | ${fmt(mean(samples.map((s) => s.treasury)), 0).padStart(7)} | ${fmt(mean(samples.map((s) => s.heroGold)), 0).padStart(11)} | ${fmt(mean(samples.map((s) => s.roster))).padStart(6)} | ${fmt(mean(samples.map((s) => s.avgLevel))).padStart(8)} | ${fmt(mean(samples.map((s) => s.population)), 0).padStart(9)} | ${fmt(mean(corr), 0)}`,
   );
@@ -161,22 +168,13 @@ console.log(`  ${emptyTown === 0 ? '✔' : '✘'} vila nunca fica sem heróis de
 
 // Critérios do M4 (playtest amplo): ritmo, mortalidade e o ouro do fim de jogo.
 const deathsPerYear = sum((w) => w.metrics.deaths) / all.length / years;
-const lastBoss = all.map((w) => w.metrics.bossKills.find((b) => b.act === ACT_COUNT - 1)?.day).map((d) => (d === undefined ? null : yearOfDay(d)));
-const lastBossYears = lastBoss.filter((y): y is number => y !== null);
-const lastBossReach = lastBossYears.length / all.length;
-const lastBossMean = mean(lastBossYears);
 const heroGold = all.map((w) => w.metrics.daily[w.metrics.daily.length - 1]!.heroGold);
 const goldMean = mean(heroGold);
 const treasuryMax = Math.max(...all.map((w) => w.metrics.daily[w.metrics.daily.length - 1]!.treasury));
 console.log(`  ${deathsPerYear >= 3 && deathsPerYear <= 6 ? '✔' : '✘'} mortalidade entre 3 e 6 por ano (${fmt(deathsPerYear)})`);
-if (years >= 22) {
-  // A dispersão entre sementes é grande desde antes do M4 (o prefeito automático erra); o que
-  // se cobra é que quase todas cheguem lá e que a média fique na janela.
-  const ok = lastBossReach >= 0.8 && lastBossMean >= 14 && lastBossMean <= 22;
-  console.log(
-    `  ${ok ? '✔' : '✘'} último chefe cai em pelo menos 80% das sementes, com média entre os anos 14 e 22 (${pct(lastBossReach)} · média ${fmt(lastBossMean)} · ${fmt(Math.min(...lastBossYears))}–${fmt(Math.max(...lastBossYears))})`,
-  );
-}
+// M5 F1: sem amuletos ainda, o abismo tem de girar (passagens abertas e seladas todo ano).
+const sealedPerYear = sum((w) => w.metrics.passagesSealed) / all.length / years;
+console.log(`  ${sealedPerYear >= 1 ? '✔' : '✘'} passagens seladas: pelo menos 1 por ano (${fmt(sealedPerYear)})`);
 console.log(
   `  ${goldMean >= 15000 && goldMean <= 40000 ? '✔' : '✘'} ouro dos heróis no fim entre 15 e 40 mil (média ${fmt(goldMean / 1000)} mil · ${fmt(Math.min(...heroGold) / 1000)}–${fmt(Math.max(...heroGold) / 1000)} mil)`,
 );

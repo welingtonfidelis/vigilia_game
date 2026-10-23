@@ -49,11 +49,14 @@ import {
   totalBuildingLevels,
   townHeroes,
   TICKS_PER_DAY,
+  openPassages,
+  passageCapacity,
+  passageOf,
 } from '../../sim/index.ts';
-import type { ActivityKind, BuildingId, Doctrine, Item, ItemSlot, MaterialId, SpecId, World } from '../../sim/index.ts';
+import type { ActivityKind, BuildingId, Contract, Doctrine, Item, ItemSlot, MaterialId, SpecId, World } from '../../sim/index.ts';
 import { HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { ItemCard } from '../items.tsx';
-import { buildingEffects, DOCTRINES, fmt, pct, plural } from '../format.ts';
+import { buildingEffects, cap, DOCTRINES, fmt, knownMaterials, pct, plural } from '../format.ts';
 import { ROLE_PLACE } from '../../render/layout.ts';
 
 const BUILDING_ACTIVITY: Partial<Record<BuildingId, ActivityKind>> = {
@@ -241,14 +244,33 @@ export function HornPanel() {
   );
 }
 
-function frontier(world: World): { act: number; floor: number }[] {
-  const out: { act: number; floor: number }[] = [];
-  world.acts.forEach((act, a) => {
-    if (!act.unlocked) return;
-    const f = act.conquered.findIndex((c) => !c);
-    if (f >= 0) out.push({ act: a, floor: f });
-  });
+interface BoardTarget {
+  /** null: abrir uma passagem nova. */
+  passageId: number | null;
+  floor: number;
+  level: number;
+  label: string;
+}
+
+/** Alvos de contrato: uma passagem nova (se a guilda tem vaga) e a fronteira de cada passagem conhecida. */
+function frontier(world: World): BoardTarget[] {
+  const out: BoardTarget[] = [];
+  if (openPassages(world).length < passageCapacity(world)) {
+    out.push({ passageId: null, floor: 0, level: world.abyss.level, label: 'abrir uma passagem nova' });
+  }
+  for (const p of openPassages(world)) {
+    if (!p.discovered) continue;
+    const f = p.conquered.findIndex((c) => !c);
+    if (f >= 0) out.push({ passageId: p.id, floor: f, level: p.level, label: `conquistar o ${floorLabel({ biome: p.biome, floor: f })}` });
+  }
   return out;
+}
+
+/** "conquistar o andar 2 das Catacumbas", "abrir uma passagem nova". */
+function contractGoal(world: World, c: Contract): string {
+  if (c.passageId === null) return 'abrir uma passagem nova';
+  const p = passageOf(world, c.passageId);
+  return p ? `conquistar o ${floorLabel({ biome: p.biome, floor: c.floor })}` : 'uma passagem que já se fechou';
 }
 
 export function BoardPanel() {
@@ -259,7 +281,7 @@ export function BoardPanel() {
   const targets = frontier(world);
   const [choice, setChoice] = useState(0);
   const target = targets[Math.min(choice, targets.length - 1)];
-  const suggested = target ? commands.suggestedReward(target.act, target.floor) : 0;
+  const suggested = target ? commands.suggestedReward(target.level, target.floor) : 0;
   const [reward, setReward] = useState<number | null>(null);
   const value = reward ?? suggested;
   const waiting = townHeroes(world).filter((h) => h.activity?.kind === 'aguardar').map((h) => h.id);
@@ -288,7 +310,7 @@ export function BoardPanel() {
             {town.contracts.map((c) => (
               <li key={c.id}>
                 <span>
-                  Conquistar o {floorLabel(c.act, c.floor)} · <strong>{fmt(c.reward)} de ouro</strong>
+                  {cap(contractGoal(world, c))} · <strong>{fmt(c.reward)} de ouro</strong>
                   {c.takenBy !== null && <span class="tag gold">um grupo aceitou</span>}
                 </span>
                 {c.takenBy === null && (
@@ -307,13 +329,13 @@ export function BoardPanel() {
                 <div class="row">
                   {targets.map((t, i) => (
                     <button key={i} class={`tab${i === choice ? ' active' : ''}`} onClick={() => { setChoice(i); setReward(null); }}>
-                      {floorLabel(t.act, t.floor)}
+                      {t.label}
                     </button>
                   ))}
                 </div>
               )}
               <p>
-                Alvo: <strong>{floorLabel(target.act, target.floor)}</strong>
+                Alvo: <strong>{target.label}</strong>
               </p>
               <div class="row stepper">
                 <button class="btn" onClick={() => setReward(Math.max(10, value - 10))} aria-label="Menos 10">
@@ -333,9 +355,9 @@ export function BoardPanel() {
               </div>
               <button
                 class="btn primary"
-                disabled={value <= 0 || town.treasury < value || town.contracts.some((c) => c.act === target.act && c.floor === target.floor)}
+                disabled={value <= 0 || town.treasury < value || town.contracts.some((c) => c.passageId === target.passageId && c.floor === target.floor)}
                 onClick={() => {
-                  if (command(commands.postContract, target.act, target.floor, value)) setReward(null);
+                  if (command(commands.postContract, target.passageId, target.floor, value)) setReward(null);
                 }}
               >
                 Postar por {fmt(value)} de ouro
@@ -449,9 +471,7 @@ export function CofferPanel() {
       <p class="sub">Os heróis que juntam fortuna também deixam ofertas no templo: o ouro deles volta para a vila.</p>
       <h3>Materiais</h3>
       <div class="stats">
-        {(Object.keys(town.materials) as MaterialId[])
-          .filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked)
-          .map((m) => (
+        {knownMaterials(world).map((m) => (
             <Stat key={m} label={MATERIAL_NAMES[m]} value={town.materials[m]} />
           ))}
       </div>
@@ -527,7 +547,7 @@ function ForgeOrders(props: { world: World }) {
   const command = useCommand();
   const town = world.town;
   const [slot, setSlot] = useState<ItemSlot>('weapon');
-  const materials = (Object.keys(town.materials) as MaterialId[]).filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked);
+  const materials = knownMaterials(world);
   const [material, setMaterial] = useState<MaterialId>(materials[0] ?? 'ossos');
   const epicBlocked = commissionBlocker(world, slot, 'epica');
   const [epic, setEpic] = useState(false);

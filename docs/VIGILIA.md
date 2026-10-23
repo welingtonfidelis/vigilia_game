@@ -91,7 +91,7 @@ src/audio/  som 100% sintetizado (Web Audio, sem arquivos)
   music.ts       trilha generativa em Ré menor: dia, noite, luto, tensão (chefe) e alvorada (fim)
   ambience.ts    vento, grilos, pássaros, fogueira, metal distante do combate e o zumbido do abismo (cresce com a corrupção)
   engine.ts      mesa com canais de música, ambiente e efeitos, reverb e compressor
-src/data/   classes, traços, atos/inimigos/chefes, prédios, nomes (dados puros)
+src/data/   classes, traços, biomas/monstros/Senhores, regras das dimensões, prédios, nomes (dados puros)
 src/sim/    regras: tudo determinístico, estado 100% JSON
   world.ts       cria o mundo
   loop.ts        step(): 1 tick = 0,1 s em 1× · hora = 20 ticks · dia = 480 ticks · ano = 40 dias (~32 min)
@@ -100,7 +100,7 @@ src/sim/    regras: tudo determinístico, estado 100% JSON
   expedition.ts  descida, salas, saque, conquista, retorno, luto, contratos
   people.ts      lesões e cicatrizes, casamentos e filhos, aposentados com função, velhice e epitáfios
   combat.ts      combate em tempo real: papéis, ânimo, fuga, retirada, vingança, mecânicas de chefe
-  dungeon.ts     andares (mapa persistente até conquistar), inimigos, afixos, corrupção, estimativa de força
+  dungeon.ts     abismo (M5): nível, passagens geradas por semente, andares (mapa persistente até conquistar), guardião, inimigos, afixos, regras, pressão por passagem, estimativa de força
   economy.ts     tesouro, preços, efeitos dos prédios, população e impostos
   commands.ts    alavancas do prefeito (berrante, construir, contrato, sino, doutrina, imposto, patrocínio, dispensar)
   chronicle.ts   Crônica da Vila (eventos com texto em pt-BR)
@@ -262,7 +262,7 @@ Especificação na seção 9.1 do GDD (neste documento).
 
 ### Próximo: playtest guiado e M5
 
-O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. Depois vem o M5 (Lenda): gerações, Eras e Pactos, profundezas infinitas, polimento e PT/EN. Ver a seção 9 do GDD (neste documento).
+O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`.
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -771,7 +771,7 @@ vigilia/
 | **M2: Pessoas** ✅ | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
 | **M3: Vila viva** 🟡 | Cidadãos e incursões noturnas entregues; faltam lotes e expansão, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
 | **M4: Profundidade** | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
-| **M5: Lenda** | Atos V–VI, gerações, Eras e Pactos, profundezas infinitas, celular, polimento, PT/EN | Campanha completa e motivo para recomeçar |
+| **M5: O Abismo das Dimensões** | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5) | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
 
 #### 9.1 Especificação do M2: Pessoas
 
@@ -990,6 +990,284 @@ Jogue em 1× e 2×, no computador e no celular. Anote em `docs/PLAYTEST.md` (ou 
 5. **Meio de campanha (Atos III e IV).** Mercador e armadilha aparecem? Os heróis ricos vão à bancada? O ouro deles fica razoável?
 6. **Fim (Atos V e VI).** Os chefes pedem composição? Alguém pagou uma obra (mural dos mecenas)? O ritmo cansa em algum ponto?
 7. **Celular.** Painéis, diálogo de decisão, corredor empilhado, botão Acompanhar e som ao voltar do segundo plano.
+
+#### 9.5 Especificação do M5: O Abismo das Dimensões
+
+Os atos fixos dão lugar a um **motor de fase procedural**. Cada descida abre passagem para uma dimensão diferente. Fragmentos de amuleto levam aos Senhores do abismo, um nível por vez até o 10, e depois ao chefe máximo. Depois dele, o jogo segue sem fim. A campanha fica cerca de 5 vezes mais longa, e a vila cresce devagar, com prédios que se desgastam.
+
+**Decisões do usuário (2026-10-22):**
+
+- Os 6 atos viram **dimensões** sorteadas a cada descida. Mais adiante entram dimensões novas, com arte nova.
+- Saves antigos não são convertidos: abrem com aviso e começam uma **campanha nova**.
+- Ritmo **~5× o atual**: o chefe máximo cai perto do ano 80, cerca de 40 h em 1×. Os heróis envelhecem e se aposentam várias vezes no caminho.
+- Desgaste dos prédios com **conserto mandado pelo prefeito**.
+
+**História.** A caverna a leste não é só uma masmorra: ela liga a Vigília a outras dimensões, mundos de criaturas agressivas governados por monstros poderosos, os **Senhores**. Ninguém sabe o que há do outro lado até atravessar. Nas lutas, às vezes os heróis acham um **fragmento de amuleto**. Com cinco, o joalheiro monta o amuleto, que abre caminho até o covil do Senhor daquele nível. No fim de tudo está **Aquilo que Vigia**, que dá nome à vila.
+
+##### O ciclo
+
+1. Os grupos descem pela guilda, como hoje. Cada um entra numa **passagem**: uma já aberta, que a guilda conhece, ou uma nova, que ninguém conhece.
+2. A passagem nova revela uma dimensão quando o grupo entra: cenário, monstros, uma regra especial, o número de andares e as salas.
+3. Combates vencidos e voltas triunfais têm uma chance pequena de render um **fragmento** do nível atual.
+4. Com 5 fragmentos do mesmo nível, o joalheiro monta o **amuleto**, e a guilda abre o **contrato do Senhor**.
+5. Os heróis mais fortes enfrentam o Senhor:
+   - **Vitória:** o **nível do abismo** sobe 1.
+   - **Derrota:** o amuleto se perde.
+6. O amuleto do nível 10 leva ao chefe máximo. Depois dele vem o **pós-jogo**: níveis sem fim, amuletos e Senhores cada vez mais fortes.
+
+##### 1. Nível do abismo
+
+- Um número global, que começa em **1** e sobe 1 a cada Senhor vencido.
+- Toda passagem **nova** abre no nível atual. Uma passagem já aberta mantém o nível com que abriu até fechar, então dá para voltar a um mundo mais fácil enquanto ele existir.
+- O nível define a força dos monstros, o tier do saque, o nível dos fragmentos e o material das salas.
+- Substitui o "ato" como medida de progresso. A crônica e o relatório passam a dizer "nível 4 do abismo".
+
+##### 2. Dimensões
+
+Uma dimensão é um **bioma** (cenário, monstros e material) com **regras** sorteadas. Os seis atos de hoje viram os seis primeiros biomas e mantêm toda a arte: corredor, arena, monstros com variantes, chefes e retratos.
+
+| Bioma | Aparece a partir do nível | Material | Monstros | Senhor ligado |
+|---|---|---|---|---|
+| Catacumbas | 1 | ossos | esqueleto, rato, acólito | Guardião das Urnas |
+| Minas Inundadas | 1 | ferro-negro | mineiro, enguia, golem | Couraça Submersa |
+| Jardim de Fungos | 2 | esporos | esporento, aranha, brotado | Mãe-Bolor |
+| Cidade Afogada | 3 | pérolas negras | sacerdote, sereia, cavaleiro salobro | Arcebispo Sem Fôlego |
+| Forja Abissal | 5 | brasas | ferreiro cinzento, cão de brasa, escravo da forja | O Martelo Que Não Dorme |
+| Coração do Abismo | 7 | fragmentos de alma | sombra faminta, lamento, arauto do fundo | Aquilo que Vigia (chefe máximo) |
+
+**Biomas novos:** cinco, um por Senhor dos níveis 6 a 10 (seção 7). Entram na tabela a partir do nível 6, com arte própria em 16 e 32-bit (cenário, três monstros com variantes, o Senhor com as duas fases e os retratos).
+
+**Gerador.** Usa uma semente própria da passagem: o mesmo mundo sai sempre igual, e o save guarda só a semente e o que já mudou.
+
+- **Andares:** 3 no nível 1, mais um a cada 3 níveis, até 6.
+- **Salas por andar:** 4 + andar + 0 a 2, com os mesmos tipos de hoje (matilha, elite, baú, santuário, vazia, prisioneiro, mercador, armadilha). O peso de cada tipo muda com a regra.
+- **Guardião da passagem:** no último andar. É um elite grande, com 2 ou 3 afixos e acólitos. Vencê-lo **sela** a passagem.
+- **Monstros:** os três do bioma.
+  - A partir do nível 4, uma matilha pode trazer um **invasor** de outro bioma já liberado.
+  - Elites com 1 afixo até o nível 2, 2 afixos até o 5 e 3 depois.
+- **Regras:** nenhuma ou 1 até o nível 4, 1 ou 2 até o 9 e 2 depois. Ficam escondidas até o grupo entrar.
+
+| Regra | Efeito |
+|---|---|
+| Calmaria | Nenhum (a mais comum no começo) |
+| Névoa espessa | Crítico pela metade, dos dois lados |
+| Maré alta | Todos 15% mais lentos; descida 1 h mais longa |
+| Esporos no ar | Os heróis perdem 2% da vida a cada sala andada |
+| Calor da forja | Inimigos com 20% mais ataque; 30% mais ouro |
+| Silêncio | Cura 40% menor |
+| Ganância | 50% mais baús e elites |
+| Lua de sangue | O afixo vampírico aparece duas vezes mais |
+| Ecos | Os ecos de heróis mortos aparecem com mais frequência |
+
+##### 3. Passagens: o mistério e o mapa da guilda
+
+- **Passagem nova:** a guilda só sabe que ela existe. O painel mostra "passagem desconhecida" até o primeiro grupo entrar. Aí a crônica registra: "O grupo de Mira abriu passagem para as Catacumbas, sob Névoa espessa".
+- **Passagens abertas:**
+  - A guilda guarda até **1 + nível da guilda** abertas ao mesmo tempo.
+  - Cada uma fica aberta por **40 dias** (um ano de jogo) ou até ser selada.
+  - Salas limpas continuam limpas; é o mapa persistente de hoje, agora por passagem.
+- **Selar:** vencer o guardião fecha a passagem com uma recompensa grande (ouro, material e chance maior de fragmento) e baixa a pressão do abismo.
+- **Restos de heróis caídos** ficam na passagem onde morreram. Um grupo que voltar lá antes de ela fechar recupera o corpo e o equipamento. Se fechar antes, o memorial registra que o abismo ficou com ele.
+- **Escolha do grupo:** a guilda decide entre voltar a uma passagem conhecida (mais segura, a confiança usa o que já se sabe) e abrir uma nova (mistério, mais recompensa). O prefeito orienta pelo **quadro**: os contratos passam a apontar uma passagem e um andar, ou "abrir uma passagem nova".
+
+##### 4. Pressão do abismo e incursões
+
+A corrupção por ato vira a **pressão de cada passagem**, de 0 a 100. A vila sente a da passagem mais pressionada.
+
+- **Começa** em 30 quando a passagem abre.
+- **Sobe** 2 por dia.
+- **Desce** 1 a cada sala limpa nela e 10 a cada andar conquistado. Selada, a passagem fecha e deixa de contar.
+- **Efeitos:**
+  - Os monstros daquela passagem ficam mais fortes, como a corrupção de antes.
+  - Acima de 70, salas já limpas dela voltam a ser ocupadas.
+  - Quando a mais pressionada passa de 55, voltam as **incursões**. Os monstros sobem por ela, com força proporcional ao nível dela.
+  - Os eventos sazonais que mexiam na corrupção passam a mexer na pressão de todas as passagens.
+
+Na implementação (F1), uma pressão única para o abismo inteiro caía rápido demais: são cerca de 600 salas limpas por ano contra um número só. Com uma pressão por passagem, os números da corrupção de antes continuam valendo, e uma passagem abandonada apodrece sozinha.
+
+##### 5. Fragmentos e amuletos
+
+- **Onde caem:** só em passagens do **nível atual**.
+- **Chances iniciais** (o balanceador ajusta):
+  - 0,3% por combate de matilha vencido;
+  - 1% por elite;
+  - 4% pelo guardião;
+  - 3% numa **volta triunfal** (o grupo volta inteiro, tendo feito o que foi fazer).
+- **Quem carrega:** o herói que acha leva o fragmento.
+  - Se ele morrer, o fragmento fica com os restos na passagem.
+  - Na volta, entrega ao prefeito; o fragmento vai para o Cofre, e o herói ganha lealdade e fama na crônica.
+- **Montagem:** com 5 fragmentos do mesmo nível, o **joalheiro** (na bancada do Cofre) monta o amuleto. Custa ouro proporcional ao nível e leva 2 dias.
+- **Fragmentos de níveis passados** viram relíquia de museu (ouro pequeno ao vender) ou enfeite no memorial.
+- Só existe **um amuleto por vez**: o do nível atual.
+
+##### 6. Contrato do Senhor
+
+- Com o amuleto pronto, a guilda abre o **contrato do Senhor de nível N**.
+- **Formação do grupo:** a guilda propõe os heróis **mais fortes disponíveis** (saudáveis, na vila, fora de expedição), até o tamanho máximo de grupo da guilda. O prefeito pode trocar qualquer um por outro disponível e confirma; aí o grupo parte.
+- **A descida:**
+  - Vai direto ao covil, sem passar por uma passagem.
+  - Tem duas salas de guarda (elites do bioma do Senhor) e depois o Senhor, com as duas fases e as mecânicas de hoje.
+  - O sino de retirada funciona, mas recuar também gasta o amuleto.
+- **Vitória:**
+  - O nível do abismo sobe 1.
+  - O grupo ganha uma lendária (regra de hoje: acima do teto da forja), muito ouro, reputação e um capítulo na crônica.
+  - A vila ganha uma festa sem custo.
+  - Os fragmentos passam a cair no nível novo.
+- **Derrota** (o grupo foge ou cai): o amuleto se desfaz, e são precisos 5 fragmentos novos do mesmo nível. Os mortos ficam no covil, sem resgate.
+
+##### 7. Os Senhores e o chefe máximo
+
+| Nível | Senhor | Arte |
+|---|---|---|
+| 1 | O Guardião das Urnas | a de hoje |
+| 2 | A Couraça Submersa | a de hoje |
+| 3 | A Mãe-Bolor | a de hoje |
+| 4 | O Arcebispo Sem Fôlego | a de hoje |
+| 5 | O Martelo Que Não Dorme | a de hoje |
+| 6–10 | **Cinco Senhores novos**, um por bioma novo, cada um com uma mecânica própria | arte nova (fase F6) |
+| Chefe máximo | **Aquilo que Vigia**, no Coração do Abismo | a de hoje (fase 2 incluída) |
+
+Decisão do usuário (2026-10-22): os níveis 6 a 10 têm Senhores inéditos, e não os cinco primeiros de volta. Enquanto a arte deles não chega, o jogo usa um Senhor provisório (um dos cinco primeiros, mais forte e com o nome do novo), só para a campanha poder ser jogada e balanceada de ponta a ponta.
+
+##### 8. Fim e pós-jogo
+
+- Vencer o Vigia **fecha a campanha**: tela de fim com o resumo dos anos, os heróis lendários e o memorial. Continua valendo `endedTick`.
+- O jogo **continua**:
+  - O nível do abismo segue em 11, 12, ... sem limite.
+  - Os Senhores voltam em ciclo, como **Ecos**, mais fortes a cada volta.
+  - A cada 10 níveis, o Vigia volta como chefe do amuleto.
+- Prédios, heróis e equipamento continuam crescendo sem teto (seção 9).
+
+##### 9. Escala sem fim
+
+Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de força quase em quadrado. A escala nova mantém isso: os três lados crescem de forma **polinomial** (perto do quadrado do nível do abismo). Assim os números ficam legíveis por muito tempo; no nível 50, um monstro tem algumas centenas de milhares de vida.
+
+- **Monstros:** força ∝ ~N² (N = nível do abismo), mais o crescimento por andar e a pressão.
+- **Heróis:** o teto de nível de cada rank sobe **+4 por nível do abismo** (rank E: 10 no nível 1; rank S: 30 no nível 1 e 66 no nível 10). O resto da progressão de ranks segue igual.
+- **Equipamento:**
+  - Tier sem teto (sai o `dropTierMax`).
+  - Saque no tier **3N + andar**.
+  - O ferreiro de nível n forja até o tier **3n + 1**.
+  - A regra das lendárias (acima do teto da forja) continua.
+- **Interface:** números compactos a partir de 10 mil ("12,3 mil", "4,5 mi").
+- **Coeficientes:** saem do balanceador. A regra é que um grupo bem cuidado no nível N tenha a mesma chance que no nível 1.
+
+##### 10. Vila longa: mais níveis e manutenção
+
+- **Níveis:**
+  - Os 7 prédios vão até o **nível 10** na campanha e seguem subindo no pós-jogo.
+  - O custo sobe em progressão geométrica, com materiais dos biomas que aparecem em cada faixa.
+  - Os efeitos de hoje viram curvas: o efeito atual do nível 3 chega perto do nível 4 ou 5, e há marcos novos nos níveis 5 e 8.
+  - A especialização do nível 3 continua, e uma **segunda escolha** chega no nível 7.
+- **Arte por faixa:** a de nível 1 para os níveis 1 a 3, a de nível 2 para os níveis 4 a 6 e a de nível 3 do 7 em diante; a ruína continua no nível 0. Peças novas: **andaime** (durante o conserto) e **desgaste** (quando a conservação está baixa).
+- **Conservação (0 a 100):**
+  - **Cai:** 0,25 por dia (cerca de 10 por ano). Incursões tiram de 10 a 30 de 1 a 3 prédios, e alguns eventos sazonais (tempestade, geada) também desgastam.
+  - **Efeitos por faixa:**
+
+    | Conservação | Efeito |
+    |---|---|
+    | 50 ou mais | normal |
+    | 25 a 50 | o prédio rende 80% |
+    | abaixo de 25 | rende 50% e não pode subir de nível |
+    | 0 | perde um nível e volta a 50 |
+
+- **Conserto:**
+  - O prefeito manda consertar no painel do prédio.
+  - **Custo:** ouro proporcional ao nível e ao estrago; acima de 40 de estrago, também material.
+  - **Duração:** de 1 a 3 dias, com andaime; nesse tempo o prédio rende 80%.
+  - O tesouro avisa quando um prédio cai abaixo de 50.
+- A **manutenção diária** de hoje (por nível) continua. O conserto é o gasto grande que equilibra a economia longa.
+
+##### 11. Ritmo e metas do balanceador
+
+`npm run balance` passa a simular **100 anos** por semente. Metas de partida:
+
+| Meta | Alvo |
+|---|---|
+| Senhor do nível 1 | anos 4 a 7 |
+| Senhor do nível 5 | anos 30 a 40 |
+| Chefe máximo | cai em pelo menos 80% das sementes, com média entre os anos 70 e 90 |
+| Contratos do Senhor perdidos | 20% a 35% (tem que haver tensão) |
+| Mortes por ano | 3 a 6 |
+| Impasses e ócio | 0 impasses; ócio de no máximo 4 dias |
+| Nível médio dos prédios | ~3 no ano 10, ~6 no ano 40, ~9 no ano 75 |
+| Manutenção e consertos | de 15% a 30% do que entra no tesouro |
+| Ouro dos heróis no fim | faixa a definir com o primeiro retrato |
+
+O prefeito automático aprende a montar amuletos, abrir o contrato do Senhor e mandar consertar.
+
+##### 12. Save
+
+`SAVE_VERSION` 11.
+
+- Um save antigo (10 ou menos) abre o aviso: "O abismo mudou. Esta versão começa uma campanha nova."
+- O save antigo fica guardado numa chave à parte, com botão para exportar.
+- O mundo novo guarda o nível do abismo, a pressão, as passagens (semente, nível, dias, salas limpas e restos), os fragmentos, o amuleto e a conservação dos prédios.
+
+##### 13. Telas
+
+- **Painel do Abismo:**
+  - nível do abismo, pressão e fragmentos (x/5);
+  - lista de passagens abertas, com bioma, regras, andares selados, dias até fechar e restos;
+  - a linha "passagem desconhecida".
+- **Corredor e arena:** usam a arte do bioma da passagem (hoje é a do ato).
+- **Cofre:** fragmentos, montagem do amuleto na bancada e o contrato do Senhor, com o grupo proposto e a troca de membros.
+- **Prédios:** barra de conservação, botão Consertar e níveis até 10.
+- **Fim:** tela de fim da campanha e um aviso de pós-jogo.
+
+##### 14. O que sai
+
+- Atos lineares e liberados em ordem.
+- Corrupção por ato.
+- Mapas persistentes por ato.
+- Contratos por ato e andar.
+- O fim no chefe do Ato VI.
+- O "profundezas infinitas" do M5 antigo fica coberto pelo pós-jogo. Gerações, Eras e Pactos ficam para depois.
+
+##### 15. Fases de entrega
+
+Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador.
+
+| Fase | Entrega | Pronto quando |
+|---|---|---|
+| **F1** Motor de dimensões ✅ | Nível do abismo, gerador por semente (bioma, regras, andares, salas, monstros), passagens com mistério e mapa da guilda, restos por passagem, pressão e incursões, quadro com contratos novos, corredor e arena por bioma, save 11 e aviso de campanha nova | Testes do gerador (mesma semente, mesmo mundo; cada regra com efeito), balanceador sem impasse; jogável do nível 1 ao 2 sem amuleto, com o nível subindo por um atalho de teste |
+| **F2** Amuletos e Senhores | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–10 e o Vigia, fim e pós-jogo com Ecos | Campanha inteira jogável pelo prefeito automático do começo ao Vigia |
+| **F3** Escala sem fim | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
+| **F4** Vila longa | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
+| **F5** Balanceamento 5× | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
+| **F6** Biomas e Senhores novos | Os cinco biomas dos níveis 6 a 10, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
+
+##### 15.1 Como ficou a F1
+
+- **Código:**
+  - `src/sim/dungeon.ts` concentra o abismo: nível, força por nível (`levelPower`), normalização por bioma, gerador de passagens e salas por semente, guardião, regras, pressão por passagem e fechamento.
+  - Os biomas e os Senhores ficam em `src/data/biomes.ts` (os antigos atos). As regras ficam em `src/data/rules.ts`.
+  - O grupo leva um "lugar" (`Spot`): a passagem, o nível, o bioma, as regras e o andar.
+- **Monstros normalizados:** cada bioma tem a mesma ameaça média no mesmo nível. O bioma muda o jeito da luta (couraça, enxame, retaguarda), não a força.
+- **Guardião:** é o monstro mais forte do bioma, com 2 afixos (3 a partir do nível 5), 5× a vida e dois acólitos. No corredor, ele usa a variante mais marcada do monstro e o portão do covil. Vencido, deixa uma peça épica e sela a passagem.
+- **Escolha dos grupos:**
+  - Preferem descer mais fundo nas passagens conhecidas.
+  - Quando não há andar novo à altura e a guilda tem vaga, abrem uma passagem nova. A confiança num mundo desconhecido é a média dos biomas possíveis, com 10% de desconto.
+  - Com uma passagem acima de 60 de pressão, quem pode desce nela para conter.
+- **Contratos:** apontam um andar de uma passagem conhecida ou "abrir uma passagem nova". Se a passagem fechar, a recompensa volta ao tesouro.
+- **Save 11:** um save antigo vai para a chave `vigilia:save:antigo`, e as boas-vindas avisam e oferecem o download.
+- **Atalhos de teste:**
+  - `vigilia.abyssLevel(n)` no console do navegador, só em desenvolvimento.
+  - `npm run balance -- --level-every N` sobe o nível a cada N anos.
+- **Retrato (3 sementes × 10 anos, nível 1 o tempo todo):**
+  - 116 expedições e cerca de 600 salas limpas por ano.
+  - 19 passagens seladas por ano.
+  - Pressão entre 8 e 29.
+  - Quase ninguém morre: sem Senhores, o nível não sobe, e os heróis sobram.
+- **Retrato com o atalho (nível subindo a cada 2 anos, até o 13):** roda sem erro, mas as mortes disparam (≈40 por ano). É o esperado: a escala dos heróis e do equipamento é a F3, e o ritmo real vem dos amuletos (F2) e do balanceamento (F5).
+
+##### 16. Escolhas feitas por padrão (fáceis de trocar)
+
+- Passagens ficam abertas 40 dias. A guilda guarda 1 + o nível dela.
+- Passagens já abertas mantêm o nível de quando abriram, então dá para voltar a um mundo mais fácil.
+- Recuar do Senhor também gasta o amuleto.
+- O Vigia volta a cada 10 níveis no pós-jogo.
+- O teto de nível dos heróis sobe +4 por nível do abismo; o tier do saque é 3N + andar.
 
 ### 10. Decisões em aberto
 

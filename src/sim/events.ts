@@ -1,5 +1,6 @@
 // Eventos sazonais (M3): uma escolha por estação, com custo e consequência.
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
+import { availableBiomes } from './dungeon.ts';
 import { SEASONAL_EVENTS, SEASON_EVENTS } from '../data/seasonal-events.ts';
 import { DAYS_PER_SEASON } from './config.ts';
 import { dayOf, seasonOf, yearOf } from './calendar.ts';
@@ -59,10 +60,8 @@ export function resolveSeasonalEvent(world: World, choiceId: string): CommandRes
 
   switch (`${pending.id}:${choice.id}`) {
     case 'caravana:materiais': {
-      for (let i = 0; i < ACTS.length; i++) {
-        if (!world.acts[i]?.unlocked) continue;
-        world.town.materials[ACTS[i]!.material] += 6;
-      }
+      // Material de cada bioma que o nível do abismo já abriu.
+      for (const b of availableBiomes(world.abyss.level)) world.town.materials[BIOMES[b]!.material] += 6;
       for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, 2);
       break;
     }
@@ -103,15 +102,15 @@ export function resolveSeasonalEvent(world: World, choiceId: string): CommandRes
       applyMood(-2, 0);
       break;
     case 'eclipse:conter':
-      for (const act of world.acts) if (act.unlocked) act.corruption = Math.max(0, act.corruption - 4);
+      for (const p of world.abyss.passages) p.pressure = Math.max(0, p.pressure - 4);
       for (const hero of heroes) hero.morale = bump(hero.morale, -3);
       break;
     case 'eclipse:rezar':
       for (const citizen of world.citizens) citizen.happiness = bump(citizen.happiness, 3);
-      for (const act of world.acts) if (act.unlocked) act.corruption = Math.min(100, act.corruption + 2);
+      for (const p of world.abyss.passages) p.pressure = Math.min(100, p.pressure + 2);
       break;
     case 'eclipse:observar':
-      for (const act of world.acts) if (act.unlocked) act.corruption = Math.min(100, act.corruption + 7);
+      for (const p of world.abyss.passages) p.pressure = Math.min(100, p.pressure + 7);
       for (const hero of heroes) hero.morale = bump(hero.morale, -6);
       break;
     case 'visita-lendaria:hospedar':

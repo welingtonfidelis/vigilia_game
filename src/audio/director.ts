@@ -1,7 +1,7 @@
 // Decide o que soa: traduz eventos da sessão em efeitos (com prioridade e intervalo
 // mínimo) e lê o clima do mundo para a música e o ambiente. Puro: testável no Node.
 
-import { commands, hourOf, isNight, TICKS_PER_DAY } from '../sim/index.ts';
+import { abyssPressure, commands, hourOf, isNight, TICKS_PER_DAY } from '../sim/index.ts';
 import type { ChronicleKind, World } from '../sim/index.ts';
 import type { SessionEvent } from '../game/session.ts';
 import type { SfxName } from './sfx.ts';
@@ -164,7 +164,7 @@ export const MOURNING_TICKS = 2 * TICKS_PER_DAY;
 
 export function moodOf(world: World): Mood {
   const night = isNight(world.tick);
-  const corruption = world.acts.reduce((max, a) => (a.unlocked ? Math.max(max, a.corruption) : max), 0) / 100;
+  const corruption = abyssPressure(world) / 100;
   const fighting = world.parties.filter((p) => p.phase === 'combate').length;
   const bossFight = world.parties.some((p) => p.combat?.isBoss);
   const lastDeath = world.chronicle.findLast((e) => e.kind === 'morte');

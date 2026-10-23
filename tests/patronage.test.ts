@@ -4,22 +4,22 @@ import type { Party } from '../src/sim/index.ts';
 import { addTrait, createHero } from '../src/sim/hero.ts';
 import { buyProvisions, cheapestWork, dailyPatronage, fundWork, rationPrice, relicPrice, workPrice } from '../src/sim/patronage.ts';
 
-const party = (act: number, floor: number): Party =>
-  ({ id: 900, act, floor, memberIds: [], startMemberIds: [], moments: [], loot: { gold: 0, materials: {}, xp: 0 } }) as unknown as Party;
+const party = (level: number, floor: number): Party =>
+  ({ id: 900, passageId: -1, level, biome: 0, rules: [], floor, memberIds: [], startMemberIds: [], moments: [], loot: { gold: 0, materials: {}, xp: 0 } }) as unknown as Party;
 
 describe('provisões (9.4)', () => {
   it('o preço cresce com a profundidade e a relíquia custa metade', () => {
-    expect(rationPrice(0, 0)).toBeLessThan(rationPrice(2, 1));
-    expect(rationPrice(5, 3)).toBeGreaterThan(rationPrice(3, 3));
-    expect(relicPrice(3, 2)).toBe(Math.round(rationPrice(3, 2) * 0.5));
+    expect(rationPrice({ level: 1, floor: 0 })).toBeLessThan(rationPrice({ level: 3, floor: 1 }));
+    expect(rationPrice({ level: 6, floor: 3 })).toBeGreaterThan(rationPrice({ level: 4, floor: 3 }));
+    expect(relicPrice({ level: 4, floor: 2 })).toBe(Math.round(rationPrice({ level: 4, floor: 2 }) * 0.5));
   });
 
   it('cada um compra o que o ouro deixa, guardando reserva; o medroso compra relíquia antes', () => {
     const world = createWorld(31);
     world.town.buildings.templo = 1;
     const [rich, poor, fearful] = [createHero(world), createHero(world), createHero(world)];
-    const p = party(2, 1);
-    const ration = rationPrice(2, 1);
+    const p = party(3, 1);
+    const ration = rationPrice({ level: 3, floor: 1 });
     rich.gold = ration * 10;
     poor.gold = ration;
     fearful.traits = [];
@@ -36,7 +36,7 @@ describe('provisões (9.4)', () => {
     const world = createWorld(32);
     const hero = createHero(world);
     const before = fleeLimit(world, hero);
-    const p = party(0, 0);
+    const p = party(1, 0);
     p.relics = [hero.id];
     world.parties.push(p);
     hero.partyId = p.id;

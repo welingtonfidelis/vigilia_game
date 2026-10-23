@@ -5,16 +5,19 @@ export interface BossDef extends EnemyUnitDef {
   adds: number;
 }
 
-export interface ActDef {
+// Biomas das dimensões do abismo (M5): cenário, monstros, material e o Senhor ligado a
+// cada um. A força vem do nível do abismo, não do bioma (src/sim/dungeon.ts). Os seis
+// primeiros eram os atos fixos de antes e mantêm toda a arte (o índice escolhe a arte).
+
+export interface BiomeDef {
   name: string;
   /** Nome com preposição: "das Catacumbas". */
   of: string;
   material: MaterialId;
-  /** Multiplicador de vida e ataque dos inimigos. */
-  power: number;
-  /** Somado à defesa dos inimigos. */
-  defBonus: number;
+  /** Nível do abismo a partir do qual o bioma pode aparecer numa passagem nova. */
+  minLevel: number;
   enemies: EnemyUnitDef[];
+  /** O Senhor do bioma (contrato do amuleto, M5 F2). */
   boss: BossDef;
 }
 
@@ -27,13 +30,12 @@ export const MATERIAL_NAMES: Record<MaterialId, string> = {
   almas: 'Fragmentos de alma',
 };
 
-export const ACTS: ActDef[] = [
+export const BIOMES: BiomeDef[] = [
   {
     name: 'Catacumbas',
     of: 'das Catacumbas',
     material: 'ossos',
-    power: 1,
-    defBonus: 0,
+    minLevel: 1,
     enemies: [
       { id: 'esqueleto', name: 'Esqueleto Rangente', hp: 55, atk: 7, def: 10, interval: 14, tags: [] },
       { id: 'rato', name: 'Rato-de-ossuário', hp: 30, atk: 5, def: 0, interval: 9, tags: ['swarm'] },
@@ -55,8 +57,7 @@ export const ACTS: ActDef[] = [
     name: 'Minas Inundadas',
     of: 'das Minas Inundadas',
     material: 'ferroNegro',
-    power: 2,
-    defBonus: 10,
+    minLevel: 1,
     enemies: [
       { id: 'mineiro', name: 'Mineiro Afogado', hp: 60, atk: 8, def: 12, interval: 14, tags: [] },
       { id: 'enguia', name: 'Enguia de Breu', hp: 35, atk: 7, def: 2, interval: 8, tags: ['swarm'] },
@@ -78,8 +79,7 @@ export const ACTS: ActDef[] = [
     name: 'Jardim de Fungos',
     of: 'do Jardim de Fungos',
     material: 'esporos',
-    power: 3.4,
-    defBonus: 20,
+    minLevel: 2,
     enemies: [
       { id: 'esporento', name: 'Esporento', hp: 50, atk: 7, def: 8, interval: 13, tags: [] },
       { id: 'aranha', name: 'Aranha-de-micélio', hp: 40, atk: 9, def: 6, interval: 10, tags: ['backline'] },
@@ -101,8 +101,7 @@ export const ACTS: ActDef[] = [
     name: 'Cidade Afogada',
     of: 'da Cidade Afogada',
     material: 'perolas',
-    power: 5.3,
-    defBonus: 30,
+    minLevel: 3,
     enemies: [
       { id: 'sacerdote', name: 'Sacerdote Afogado', hp: 50, atk: 10, def: 10, interval: 15, tags: ['backline'] },
       { id: 'sereia', name: 'Sereia de Lodo', hp: 45, atk: 8, def: 6, interval: 11, tags: [] },
@@ -124,8 +123,7 @@ export const ACTS: ActDef[] = [
     name: 'Forja Abissal',
     of: 'da Forja Abissal',
     material: 'brasas',
-    power: 7.6,
-    defBonus: 40,
+    minLevel: 5,
     enemies: [
       { id: 'ferreiroCinzento', name: 'Ferreiro Cinzento', hp: 80, atk: 10, def: 25, interval: 15, tags: [] },
       { id: 'caoBrasa', name: 'Cão de Brasa', hp: 40, atk: 8, def: 5, interval: 8, tags: ['swarm'] },
@@ -147,8 +145,7 @@ export const ACTS: ActDef[] = [
     name: 'Coração do Abismo',
     of: 'do Coração do Abismo',
     material: 'almas',
-    power: 9.2,
-    defBonus: 50,
+    minLevel: 7,
     enemies: [
       { id: 'sombra', name: 'Sombra Faminta', hp: 55, atk: 10, def: 10, interval: 11, tags: [] },
       { id: 'lamento', name: 'Lamento', hp: 45, atk: 11, def: 5, interval: 14, tags: ['backline'] },
@@ -168,4 +165,3 @@ export const ACTS: ActDef[] = [
   },
 ];
 
-export const ACT_COUNT = ACTS.length;

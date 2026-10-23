@@ -8,7 +8,7 @@ export const SEASONS = ['Primavera', 'Verão', 'Outono', 'Inverno'] as const;
 export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length; // ~32 min em 1×
 export const START_HOUR = 8;
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 /** Números de balanceamento. Tudo que o balanceador mexe mora aqui. */
 export const BALANCE = {
@@ -176,17 +176,42 @@ export const BALANCE = {
   trainPrice: 4,
   donation: 2,
 
-  // Masmorra
-  floorsPerAct: 4,
+  // Abismo (M5): dimensões, passagens e pressão
+  /** Força dos monstros por nível do abismo (1 a 6); depois cresce com o quadrado do nível. */
+  levelPower: [1, 2, 3.4, 5.3, 7.6, 9.2] as readonly number[],
+  /** Defesa somada aos monstros por nível do abismo acima do 1. */
+  defBonusPerLevel: 10,
   floorPowerGrowth: 0.18,
+  /** Andares de uma passagem: 3 no nível 1, um a mais a cada 3 níveis, até 6. */
+  passageFloorsBase: 3,
+  passageFloorsEvery: 3,
+  passageFloorsMax: 6,
+  /** Dias que uma passagem fica aberta (um ano de jogo), se ninguém a selar antes. */
+  passageDays: 40,
+  /** Um invasor de outro bioma pode aparecer nas matilhas a partir deste nível. */
+  invaderMinLevel: 4,
+  invaderChance: 0.25,
+  /** Guardião da passagem: elite grande no último andar, com acólitos. */
+  guardianHp: 5,
+  guardianAdds: 2,
+  /** Selar uma passagem: ouro extra do guardião (em matilhas) e material. */
+  sealGoldPacks: 12,
+  sealMaterial: 8,
+  /** A confiança num mundo desconhecido é menor: ninguém sabe o que há do outro lado. */
+  mysteryConfidence: 0.9,
   descendHours: 2,
   descendHoursPerFloor: 0.75,
+  /** Cada nível do abismo acima do 1 conta como este tanto de andares na descida. */
+  descendFloorsPerLevel: 4,
   roomWalkTicks: 30,
-  corruptionStart: 30,
-  corruptionPerDay: 2,
-  corruptionPerRoom: 1,
-  corruptionPerConquest: 10,
-  corruptionStatDivisor: 250,
+  /** Pressão de cada passagem: começa aqui, sobe por dia, cai por sala e por andar limpos. */
+  pressureStart: 30,
+  pressurePerDay: 2,
+  pressurePerRoom: 1,
+  pressurePerConquest: 10,
+  pressureStatDivisor: 250,
+  /** A partir daqui, salas limpas das passagens abertas voltam a ser ocupadas. */
+  pressureReoccupy: 70,
   goldPerEnemy: 2,
   xpPerEnemy: 10,
   materialChance: 0.3,

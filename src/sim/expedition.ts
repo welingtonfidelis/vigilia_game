@@ -1,11 +1,10 @@
 // Ciclo de uma expedição: descer, atravessar salas, lutar, voltar e dividir o saque.
 
-import { ACTS, ACT_COUNT, MATERIAL_NAMES } from '../data/acts.ts';
+import { BIOMES, MATERIAL_NAMES } from '../data/biomes.ts';
 import { record, floorLabel, g, heroLabel, listNames } from './chronicle.ts';
-import { dayOf } from './calendar.ts';
 import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
-import { enterFloor, isBossFloor, partyRooms, reduceCorruption, travelTicks } from './dungeon.ts';
+import { enterFloor, isGuardianFloor, levelPower, partyRooms, passageOf, reducePressure, travelTicks } from './dungeon.ts';
 import { hasSpec, heroCapacity } from './economy.ts';
 import { affixCount, merchantVisit, rollDrop, shareLoot } from './items.ts';
 import { isProvisioned } from './patronage.ts';
@@ -24,7 +23,7 @@ import {
 import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
 import { chance, int, range } from './rng.ts';
-import type { Hero, MaterialId, Party, PartyOutcome, Room, World } from './types.ts';
+import type { Hero, MaterialId, Party, PartyOutcome, Room, Spot, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
 
 const members = (world: World, party: Party): Hero[] =>
@@ -32,7 +31,7 @@ const members = (world: World, party: Party): Hero[] =>
 
 export function expeditionTick(world: World): void {
   for (const party of [...world.parties]) stepParty(world, party);
-  for (const f of world.pendingFugitives.splice(0)) soloReturn(world, f.heroId, f.act, f.floor);
+  for (const f of world.pendingFugitives.splice(0)) soloReturn(world, f.heroId, f.spot);
 }
 
 function stepParty(world: World, party: Party): void {
@@ -41,7 +40,7 @@ function stepParty(world: World, party: Party): void {
       if (world.tick < party.phaseEndsAt) return;
       const heroes = members(world, party);
       enterFloor(world, party, heroes);
-      if (world.remains.some((r) => r.act === party.act && r.floor === party.floor)) {
+      if (world.remains.some((r) => r.passageId === party.passageId && r.floor === party.floor)) {
         for (const h of heroes) if (hasTrait(h, 'supersticioso')) h.morale = Math.max(0, h.morale - 10);
       }
       party.phase = 'explorando';
@@ -63,16 +62,15 @@ function stepParty(world: World, party: Party): void {
       if (result === 'andamento') return;
       syncHeroes(world, party.combat!);
       party.combat = null;
-      for (const h of members(world, party)) maybeInjure(world, h, h.hp / heroStats(world, h).maxHp, `do ${floorLabel(party.act, party.floor)}`);
+      for (const h of members(world, party)) maybeInjure(world, h, h.hp / heroStats(world, h).maxHp, `do ${floorLabel(party)}`);
       if (party.memberIds.length === 0) {
         finish(world, party, 'massacre');
         return;
       }
       if (result === 'vitoria') {
-        // Elite e chefe deixam peças (o chefe antes de o andar contar como conquistado).
+        // Elite, guardião e chefe deixam peças (antes de o andar contar como conquistado).
         const kind = partyRooms(world, party)[party.roomIndex]?.kind;
-        if (kind === 'elite') rollDrop(world, party, 'elite');
-        if (kind === 'chefe') rollDrop(world, party, 'chefe');
+        if (kind === 'elite' || kind === 'guardiao' || kind === 'chefe') rollDrop(world, party, kind);
       }
       if (result === 'vitoria' && !party.retreating) {
         lastStandCheck(world, party);
@@ -94,18 +92,18 @@ function stepParty(world: World, party: Party): void {
 
 function enterRoom(world: World, party: Party, room: Room): void {
   const heroes = members(world, party);
-  const act = ACTS[party.act]!;
   switch (room.kind) {
     case 'matilha':
     case 'elite':
+    case 'guardiao':
     case 'chefe':
       party.combat = startCombat(world, party, room);
       party.phase = 'combate';
       return;
     case 'bau': {
-      const gold = B.goldPerEnemy * Math.pow(act.power, 0.9) * (1 + 0.2 * party.floor) * 6;
+      const gold = B.goldPerEnemy * Math.pow(levelPower(party.level), 0.9) * (1 + 0.2 * party.floor) * 6;
       party.loot.gold += gold;
-      addMaterial(party, act.material, int(world.rng, 2, 4));
+      addMaterial(party, BIOMES[party.biome]!.material, int(world.rng, 2, 4));
       party.moments.push(`Encontraram um baú com ${Math.round(gold)} de ouro.`);
       rollDrop(world, party, 'bau');
       break;
@@ -154,7 +152,7 @@ function enterRoom(world: World, party: Party, room: Room): void {
           world,
           'restos',
           [finder.id, lost.id],
-          `${finder.name} encontrou os restos de ${lost.name} no ${floorLabel(party.act, party.floor)} e trouxe de volta o que restou.`,
+          `${finder.name} encontrou os restos de ${lost.name} no ${floorLabel(party)} e trouxe de volta o que restou.`,
         );
       }
       break;
@@ -200,7 +198,7 @@ function markCleared(world: World, party: Party): void {
   if (!room || room.cleared) return;
   room.cleared = true;
   world.metrics.roomsCleared++;
-  reduceCorruption(world, party.act, B.corruptionPerRoom);
+  reducePressure(world, party.passageId, B.pressurePerRoom);
 }
 
 function afterRoomClearedOnly(world: World, party: Party): void {
@@ -229,12 +227,16 @@ function afterRoom(world: World, party: Party, freshlyCleared: boolean): void {
 function recoverBetweenRooms(world: World, party: Party): void {
   const heroes = members(world, party);
   const healer = heroes.find((h) => h.classId === 'clerigo');
-  const healAmount = healer ? heroStats(world, healer).atk * 3 : 0;
+  // Silêncio: a cura rende menos na dimensão inteira.
+  const silence = party.rules.includes('silencio') ? 0.6 : 1;
+  const healAmount = healer ? heroStats(world, healer).atk * 3 * silence : 0;
   // Ervas da Casa de cura: o grupo leva remédio para o caminho.
   const herbs = hasSpec(world, 'ervas') ? B.specErvasHeal : 0;
+  // Esporos no ar: cada sala atravessada custa um pouco de vida.
+  const spores = party.rules.includes('esporos') ? 0.02 : 0;
   for (const h of heroes) {
     const max = heroStats(world, h).maxHp;
-    h.hp = Math.min(max, h.hp + max * (0.03 + herbs) + healAmount);
+    h.hp = Math.max(1, Math.min(max, h.hp + max * (0.03 * silence + herbs - spores) + healAmount));
     // Quem levou ração e tochas cansa pela metade entre as salas.
     h.needs.energy = Math.max(0, h.needs.energy - (isProvisioned(party, h.id) ? 2 : 4));
   }
@@ -251,7 +253,7 @@ function shouldContinue(world: World, party: Party, nextRoom: Room): 'seguir' | 
   const avgMorale = heroes.reduce((s, h) => s + h.morale, 0) / heroes.length;
   let threshold = B.continueHp[world.town.doctrine];
   threshold -= 0.05 * heroes.filter((h) => hasTrait(h, 'ganancioso')).length;
-  if (nextRoom.kind === 'chefe') threshold += 0.25;
+  if (nextRoom.kind === 'guardiao' || nextRoom.kind === 'chefe') threshold += 0.25;
   if (nextRoom.cleared) threshold -= 0.15;
   if (avgHp < threshold || avgMorale < 30) return 'retirada';
   return 'seguir';
@@ -265,46 +267,37 @@ function lastStandCheck(world: World, party: Party): void {
   if (hero.deeds.some((d) => d.kind === 'ultimoDePe' && d.tick === world.tick)) return;
   hero.deeds.push({ tick: world.tick, kind: 'ultimoDePe', text });
   party.moments.push(`${hero.name} ${text}.`);
-  record(world, 'promocao', [hero.id], `${heroLabel(hero)} ${text} no ${floorLabel(party.act, party.floor)}.`);
+  record(world, 'promocao', [hero.id], `${heroLabel(hero)} ${text} no ${floorLabel(party)}.`);
   if (chance(world.rng, 0.6)) promote(world, hero, 'por sobreviver ao impossível');
 }
 
 // ── Conquista ─────────────────────────────────────────────────────────────
 
 function conquer(world: World, party: Party): void {
-  const actState = world.acts[party.act]!;
-  if (actState.conquered[party.floor]) return;
-  actState.conquered[party.floor] = true;
-  actState.maps[party.floor] = null;
+  const passage = passageOf(world, party.passageId);
+  if (!passage || passage.conquered[party.floor]) return;
+  passage.conquered[party.floor] = true;
+  passage.maps[party.floor] = null;
   party.persistent = false;
-  reduceCorruption(world, party.act, B.corruptionPerConquest);
+  reducePressure(world, party.passageId, B.pressurePerConquest);
   world.metrics.floorsConquered++;
-  world.town.reputation = Math.min(100, world.town.reputation + 2 + party.act);
+  world.town.reputation = Math.min(100, world.town.reputation + 1 + party.level);
   const heroes = members(world, party);
-  const boss = isBossFloor(party.floor);
+  const guardian = isGuardianFloor(passage, party.floor);
   for (const h of heroes) {
     h.stats.floorsConquered++;
-    h.deeds.push({ tick: world.tick, kind: 'conquista', text: `conquistou o ${floorLabel(party.act, party.floor)}` });
-    if (chance(world.rng, boss ? 0.2 : 0.1)) promote(world, h, `por abrir caminho no ${floorLabel(party.act, party.floor)}`);
+    h.deeds.push({ tick: world.tick, kind: 'conquista', text: `conquistou o ${floorLabel(party)}` });
+    if (chance(world.rng, guardian ? 0.2 : 0.1)) promote(world, h, `por abrir caminho no ${floorLabel(party)}`);
   }
-  record(world, 'conquista', party.memberIds, `${listNames(heroes)} conquistaram o ${floorLabel(party.act, party.floor)}.`);
-  if (!boss) return;
+  record(world, 'conquista', party.memberIds, `${listNames(heroes)} conquistaram o ${floorLabel(party)}.`);
+  if (!guardian) return;
 
-  actState.bossDefeated = true;
-  world.metrics.bossKills.push({ act: party.act, day: dayOf(world.tick) });
-  world.town.reputation = Math.min(100, world.town.reputation + 10);
-  const actDef = ACTS[party.act]!;
-  record(world, 'chefe', party.memberIds, `${actDef.boss.name} caiu. O caminho ${actDef.of} está livre.`);
-  const nextAct = world.acts[party.act + 1];
-  if (nextAct && !nextAct.unlocked) {
-    nextAct.unlocked = true;
-    nextAct.corruption = B.corruptionStart;
-    record(world, 'conquista', [], `Abaixo ${actDef.of}, um novo caminho se abriu: ${ACTS[party.act + 1]!.name}.`);
-  }
-  if (party.act === ACT_COUNT - 1 && world.endedTick === null) {
-    world.endedTick = world.tick;
-    record(world, 'fim', party.memberIds, 'Aquilo que Vigia foi silenciado. Pela primeira vez em séculos, a vila dorme sem medo.');
-  }
+  // O guardião caiu: a passagem se fecha assim que o grupo voltar.
+  passage.sealed = true;
+  world.metrics.passagesSealed++;
+  world.town.reputation = Math.min(100, world.town.reputation + 5);
+  addMaterial(party, BIOMES[party.biome]!.material, B.sealMaterial);
+  record(world, 'passagem', party.memberIds, `${listNames(heroes)} venceram o guardião e selaram a passagem para ${BIOMES[party.biome]!.name}.`);
 }
 
 // ── Retorno ───────────────────────────────────────────────────────────────
@@ -313,20 +306,20 @@ function startReturn(world: World, party: Party, outcome: PartyOutcome): void {
   if (party.memberIds.length === 0) return finish(world, party, 'massacre');
   party.outcome = outcome;
   party.phase = 'voltando';
-  party.phaseEndsAt = world.tick + travelTicks(party.act, party.floor);
+  party.phaseEndsAt = world.tick + travelTicks(party);
 }
 
-function soloReturn(world: World, heroId: number, act: number, floor: number): void {
+function soloReturn(world: World, heroId: number, spot: Spot): void {
   const hero = world.heroes.find((h) => h.id === heroId);
   if (!hero || hero.status !== 'expedition') return;
   const party: Party = {
     id: world.nextId++,
     memberIds: [hero.id],
     startMemberIds: [hero.id],
-    act,
-    floor,
+    ...spot,
+    rules: [...spot.rules],
     phase: 'voltando',
-    phaseEndsAt: world.tick + travelTicks(act, floor),
+    phaseEndsAt: world.tick + travelTicks(spot),
     persistent: false,
     rooms: [],
     roomIndex: 0,
@@ -368,7 +361,7 @@ function finish(world: World, party: Party, outcome: PartyOutcome): void {
   }
   if (outcome === 'massacre' && party.dead.length > 0) {
     const fallen = party.dead.map((id) => world.heroes.find((h) => h.id === id)!);
-    record(world, 'morte', party.dead, `Ninguém voltou do ${floorLabel(party.act, party.floor)}. ${listNames(fallen)} não verão outro amanhecer.`);
+    record(world, 'morte', party.dead, `Ninguém voltou do ${floorLabel(party)}. ${listNames(fallen)} não verão outro amanhecer.`);
   }
   world.parties = world.parties.filter((p) => p.id !== party.id);
 }
@@ -419,7 +412,9 @@ function arrive(world: World, party: Party): void {
 
   // Contrato
   const contract = town.contracts.find((c) => c.id === party.contractId);
-  const done = !!contract && world.acts[contract.act]!.conquered[contract.floor] === true;
+  // Passagem nova: vale ter aberto a passagem. Andar: vale o andar estar conquistado.
+  const done =
+    !!contract && (contract.passageId === null ? party.opened === true : passageOf(world, contract.passageId)?.conquered[contract.floor] === true);
   if (contract && done && heroes.length > 0) {
     // A guilda Mercenária completa a recompensa do bolso dela.
     const reward = Math.round(contract.reward * (hasSpec(world, 'mercenaria') ? B.specMercenariaReward : 1));
@@ -491,7 +486,7 @@ function arrive(world: World, party: Party): void {
       world,
       'retorno',
       party.memberIds,
-      `${listNames(heroes)} ${how[outcome]} do ${floorLabel(party.act, party.floor)} com ${Math.round(party.loot.gold)} de ouro${mats ? ` e ${mats}` : ''}.${lost}`,
+      `${listNames(heroes)} ${how[outcome]} do ${floorLabel(party)} com ${Math.round(party.loot.gold)} de ouro${mats ? ` e ${mats}` : ''}.${lost}`,
     );
   }
   finish(world, party, outcome);

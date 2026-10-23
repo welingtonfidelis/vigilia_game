@@ -1,12 +1,11 @@
 // Raízes da UI: o HUD (acima do mapa) e a camada sobre o mapa (painéis, avisos, objetivos).
 
 import { useEffect, useState } from 'preact/hooks';
-import { activeHeroes, formatDate, heroCapacity, isNight, MATERIAL_NAMES } from '../sim/index.ts';
-import type { MaterialId } from '../sim/index.ts';
+import { abyssPressure, activeHeroes, formatDate, heroCapacity, isNight, MATERIAL_NAMES } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
 import { EnergyCandles } from './Energy.tsx';
-import { clockOf, fmt } from './format.ts';
+import { clockOf, fmt, knownMaterials } from './format.ts';
 import { IconAbyss, IconBook, IconHouse, IconMenu, IconMoon, IconMute, IconPause, IconShield, IconSound, IconSun, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
@@ -15,7 +14,7 @@ import { BattlePanel } from './panels/BattlePanel.tsx';
 import { DungeonPanel } from './panels/DungeonPanel.tsx';
 import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
-import { ActEndPanel, CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
+import { CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
@@ -65,7 +64,7 @@ function Hud() {
   const { world, session, ui } = useGame();
   const muted = ui.prefs.muted;
   const town = world.town;
-  const mats = (Object.keys(town.materials) as MaterialId[]).filter((m, i) => town.materials[m] > 0 || world.acts[i]?.unlocked);
+  const mats = knownMaterials(world);
   // Evento sazonal pendente: abre o painel e pausa a simulação até a escolha.
   useEffect(() => {
     if (!world.town.event) return;
@@ -196,7 +195,7 @@ function Nav() {
   const { world, ui } = useGame();
   const parties = world.parties.length;
   const fighting = world.parties.some((p) => p.phase === 'combate');
-  const threat = Math.max(0, ...world.acts.filter((a) => a.unlocked).map((a) => a.corruption));
+  const threat = abyssPressure(world);
   const toggle = (kind: Panel['kind']) => () => (ui.panel?.kind === kind ? ui.close() : ui.open({ kind } as Panel));
   const active = (kind: Panel['kind']) => (ui.panel?.kind === kind ? ' active' : '');
   return (
@@ -267,10 +266,8 @@ function PanelContent(props: { panel: Panel }) {
     case 'menu':
       return <MenuPanel />;
     case 'welcome':
-      return <WelcomePanel />;
+      return <WelcomePanel oldSave={p.oldSave} />;
     case 'campaignEnd':
       return <CampaignEndPanel />;
-    case 'actEnd':
-      return <ActEndPanel act={p.act} />;
   }
 }

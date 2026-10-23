@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, BUILDING_IDS, CLASS_IDS } from '../src/sim/index.ts';
+import { BIOMES, BUILDING_IDS, CLASS_IDS } from '../src/sim/index.ts';
 import { MONSTERS } from '../src/render/assets.ts';
 import { heroSpriteId, PACK_ASSETS } from '../src/render/pack.ts';
 import { PACK32 } from '../src/render/pack32.ts';
@@ -16,7 +16,7 @@ describe('pack de arena 1.9', () => {
       expect(ids.has(`arena/${r}/fore`), `${r} fore`).toBe(true);
       expect(ids.has(`prop/arena/${r}/boss-gate`), `${r} boss gate`).toBe(true);
     }
-    for (const act of ACTS) {
+    for (const act of BIOMES) {
       expect(ids.has(`char/boss/${act.boss.id}-phase2`), act.boss.id).toBe(true);
       for (const e of act.enemies) {
         expect(ids.has(`char/monster/${e.id}-deep`), `${e.id} deep`).toBe(true);
@@ -42,9 +42,9 @@ describe('arte própria', () => {
     expect(byId.get('char/mayor')?.animations?.run).toBeDefined();
   });
 
-  it('todo inimigo e todo chefe dos 6 atos tem um monstro com quadros', () => {
-    for (const act of ACTS) {
-      for (const id of [...act.enemies.map((e) => e.id), act.boss.id]) {
+  it('todo monstro e todo Senhor dos 6 biomas tem uma folha com quadros', () => {
+    for (const biome of BIOMES) {
+      for (const id of [...biome.enemies.map((e) => e.id), biome.boss.id]) {
         const look = MONSTERS[id];
         expect(look, id).toBeDefined();
         expect(ids.has(look!.asset), id).toBe(true);

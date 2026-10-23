@@ -1,6 +1,6 @@
 // Combate automático em tempo real (1 tick = 0,1 s). Determinístico pela semente.
 
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
 import { CLASSES } from '../data/classes.ts';
 import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
@@ -54,8 +54,9 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     units: [],
     ticks: 0,
     enraged: false,
-    isBoss: room.kind === 'chefe',
-    bossMech: room.kind === 'chefe' ? ACTS[party.act]!.boss.mech : null,
+    // O guardião da passagem luta com o fôlego de chefe (fúria mais tardia), sem mecânica.
+    isBoss: room.kind === 'chefe' || room.kind === 'guardiao',
+    bossMech: room.kind === 'chefe' ? BIOMES[party.biome]!.boss.mech : null,
     mechCd: 60,
     echoesSpawned: false,
     nextUid: 1,
@@ -64,7 +65,12 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     const hero = world.heroes.find((h) => h.id === id);
     if (hero && hero.status === 'expedition') combat.units.push(heroUnit(world, combat, hero));
   }
-  combat.units.push(...spawnRoom(world, combat, room, party.act, party.floor));
+  // Regras da dimensão que pesam nos heróis: névoa corta o crítico, maré deixa todos lentos.
+  for (const u of combat.units) {
+    if (party.rules.includes('nevoa')) u.crit *= 0.5;
+    if (party.rules.includes('mare')) u.interval = Math.round(u.interval * 1.15);
+  }
+  combat.units.push(...spawnRoom(world, combat, room, party));
   return combat;
 }
 
@@ -141,7 +147,8 @@ function heroAct(world: World, party: Party, c: Combat, u: Unit): void {
         const beloved = hurt.find((a) => a.heroId !== null && a.hp / a.maxHp < 0.6 && getBond(world, hero.id, a.heroId) > 50);
         const target = beloved ?? hurt.reduce((lo, a) => (a.hp / a.maxHp < lo.hp / lo.maxHp ? a : lo));
         const silenced = c.silenceUntil !== undefined && c.ticks < c.silenceUntil;
-        const heal = atk * B.healMult * enrageHealFactor(c) * (silenced ? 0.5 : 1);
+        const quiet = party.rules.includes('silencio') ? 0.6 : 1;
+        const heal = atk * B.healMult * enrageHealFactor(c) * (silenced ? 0.5 : 1) * quiet;
         const before = target.hp;
         target.hp = Math.min(target.maxHp, target.hp + heal);
         target.poisonTicks = 0;
@@ -334,12 +341,12 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
   hero.status = 'dead';
   hero.hp = 0;
   hero.activity = null;
-  hero.death = { tick: world.tick, where: floorLabel(party.act, party.floor), by };
+  hero.death = { tick: world.tick, where: floorLabel(party), by };
   party.memberIds = party.memberIds.filter((id) => id !== hero.id);
   party.dead.push(hero.id);
   world.metrics.deaths++;
   // As peças ficam com o corpo: voltam com quem achar os restos.
-  world.remains.push({ heroId: hero.id, act: party.act, floor: party.floor, gold: hero.gold, items: takeItems(hero) });
+  world.remains.push({ heroId: hero.id, passageId: party.passageId, floor: party.floor, gold: hero.gold, items: takeItems(hero) });
   hero.gold = 0;
   hero.injury = null;
   hero.epitaph = epitaph(world, hero);
@@ -349,7 +356,7 @@ export function heroDies(world: World, party: Party, hero: Hero, by: string): vo
     world,
     'morte',
     [hero.id],
-    `${heroLabel(hero)} tombou no ${floorLabel(party.act, party.floor)}, ${g(hero, 'abatido', 'abatida')} ${byWhom(by)}. ${
+    `${heroLabel(hero)} tombou no ${floorLabel(party)}, ${g(hero, 'abatido', 'abatida')} ${byWhom(by)}. ${
       hero.stats.expeditions === 0
         ? 'Era sua primeira descida.'
         : `Tinha ${hero.stats.expeditions} ${hero.stats.expeditions === 1 ? 'expedição' : 'expedições'} nas costas.`
@@ -371,15 +378,16 @@ function checkFlee(world: World, party: Party, c: Combat): void {
     world.metrics.fled++;
     party.memberIds = party.memberIds.filter((id) => id !== hero.id);
     hero.hp = Math.max(1, u.hp);
-    maybeInjure(world, hero, u.hp / u.maxHp, `do ${floorLabel(party.act, party.floor)}`);
+    maybeInjure(world, hero, u.hp / u.maxHp, `do ${floorLabel(party)}`);
     for (const id of party.memberIds) {
       const mate = world.heroes.find((h) => h.id === id);
       if (mate) addBond(world, hero, mate, -8);
     }
     party.moments.push(`${hero.name} perdeu a coragem e fugiu.`);
-    record(world, 'fuga', [hero.id], `${heroLabel(hero)} perdeu a coragem e fugiu do ${floorLabel(party.act, party.floor)}.`);
+    record(world, 'fuga', [hero.id], `${heroLabel(hero)} perdeu a coragem e fugiu do ${floorLabel(party)}.`);
     revealTrait(world, hero, 'covarde', `${hero.name} foi ${g(hero, 'o primeiro', 'a primeira')} a correr.`);
-    world.pendingFugitives.push({ heroId: hero.id, act: party.act, floor: party.floor });
+    const { passageId, level, biome, rules, floor } = party;
+    world.pendingFugitives.push({ heroId: hero.id, spot: { passageId, level, biome, rules: [...rules], floor } });
   }
 }
 
@@ -431,11 +439,11 @@ const PHASE2_TEXT: Record<BossMech, (name: string) => string> = {
 
 function enterPhase2(world: World, party: Party, c: Combat, boss: Unit): void {
   c.phase2 = true;
-  const actDef = ACTS[party.act]!;
+  const actDef = BIOMES[party.biome]!;
   if (c.bossMech === 'couraca') boss.def *= 1.5;
   if (c.bossMech === 'veneno') {
     const sprout = actDef.enemies.find((e) => e.id === 'brotado') ?? actDef.enemies[actDef.enemies.length - 1]!;
-    for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party.act, party.floor));
+    for (let i = 0; i < 2; i++) c.units.push(makeEnemy(world, c, sprout, party));
   }
   if (c.bossMech) party.moments.push(PHASE2_TEXT[c.bossMech](actDef.boss.name));
 }
@@ -443,7 +451,7 @@ function enterPhase2(world: World, party: Party, c: Combat, boss: Unit): void {
 function bossMechanics(world: World, party: Party, c: Combat): void {
   const boss = c.units.find((u) => u.tags.includes('boss'));
   if (!boss || !boss.alive) return;
-  const actDef = ACTS[party.act]!;
+  const actDef = BIOMES[party.biome]!;
   if (!c.phase2 && boss.hp < boss.maxHp / 2) enterPhase2(world, party, c, boss);
   // Fase 2 de Aquilo que Vigia: o olhar drena o ânimo de todos aos poucos.
   if (c.phase2 && c.bossMech === 'ecos' && c.ticks % TICKS_PER_SECOND === 0) {
@@ -462,7 +470,7 @@ function bossMechanics(world: World, party: Party, c: Combat): void {
       c.mechCd = c.phase2 ? 60 : 80;
       const count = c.phase2 ? B.phase2Summons : 2;
       if (aliveEnemies(c).length < (c.phase2 ? 9 : 7)) {
-        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor));
+        for (let i = 0; i < count; i++) c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party));
       }
       // Fase 2: as urnas estouram a cada invocação.
       if (c.phase2) for (const h of activeHeroUnits(c)) strike(world, party, c, boss, h, boss.atk * B.phase2UrnBlast);
@@ -503,17 +511,17 @@ function spawnEchoes(world: World, party: Party, c: Combat): void {
     .filter((h) => h.status === 'dead')
     .sort((a, b) => b.level - a.level || a.id - b.id)
     .slice(0, 6);
-  const actDef = ACTS[party.act]!;
+  const actDef = BIOMES[party.biome]!;
   for (let i = 0; i < 2; i++) {
     if (fallen.length === 0) {
-      c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor));
+      c.units.push(makeEnemy(world, c, actDef.enemies[0]!, party));
       continue;
     }
     const lost = fallen.splice(int(world.rng, 0, fallen.length - 1), 1)[0]!;
     const s = heroStats(world, lost);
     const power = 1.2;
     c.units.push({
-      ...makeEnemy(world, c, actDef.enemies[0]!, party.act, party.floor, { nameOverride: `Eco de ${lost.name}` }),
+      ...makeEnemy(world, c, actDef.enemies[0]!, party, { nameOverride: `Eco de ${lost.name}` }),
       maxHp: s.maxHp * power * 2,
       hp: s.maxHp * power * 2,
       atk: s.atk * power,

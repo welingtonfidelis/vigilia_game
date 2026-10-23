@@ -1,8 +1,9 @@
 // Textos da tela em pt-BR. Funções puras sobre o World (sem DOM).
 
 import {
-  ACTS,
+  availableBiomes,
   BALANCE,
+  BIOMES,
   BUILDINGS,
   CLASSES,
   ROLE_NAMES,
@@ -10,11 +11,11 @@ import {
   floorLabel,
   heroStats,
   hourOf,
-  isBossFloor,
+  isGuardianFloor,
   partyRooms,
   TICKS_PER_HOUR,
 } from '../sim/index.ts';
-import type { Doctrine, Hero, Party, PartyOutcome, RoomKind, World } from '../sim/index.ts';
+import type { Doctrine, Hero, MaterialId, Party, PartyOutcome, Passage, RoomKind, World } from '../sim/index.ts';
 
 export const fmt = (n: number): string => Math.floor(n).toLocaleString('pt-BR');
 export const pct = (x: number): string => `${Math.round(x * 100)}%`;
@@ -42,7 +43,8 @@ export const ROOM_LABELS: Record<RoomKind, string> = {
   vazia: 'Sala vazia',
   prisioneiro: 'Prisioneiro',
   restos: 'Restos de um herói',
-  chefe: 'Chefe',
+  guardiao: 'Guardião da passagem',
+  chefe: 'Senhor do abismo',
   mercador: 'Mercador errante',
   armadilha: 'Armadilha',
 };
@@ -92,7 +94,7 @@ export function activityText(world: World, hero: Hero): string {
     case 'expedition': {
       const party = world.parties.find((p) => p.id === hero.partyId);
       if (!party) return 'No abismo';
-      return `${phaseText(world, party)} · ${floorLabel(party.act, party.floor)}`;
+      return `${phaseText(world, party)} · ${floorLabel(party)}`;
     }
     case 'town':
       break;
@@ -189,6 +191,13 @@ export function injuryName(kind: keyof typeof WOUNDS): string {
 /** "O Guardião das Urnas" no meio da frase vira "o Guardião das Urnas". */
 export const midSentence = (name: string): string => name.replace(/^(O|A) /, (m) => m.toLowerCase());
 
-export function floorName(act: number, floor: number): string {
-  return isBossFloor(floor) ? `Andar ${floor + 1}: covil ${ACTS[act]!.boss.name.startsWith('A ') ? 'da' : 'do'} ${ACTS[act]!.boss.name.replace(/^(O|A) /, '')}` : `Andar ${floor + 1}`;
+/** "Andar 3: guardião" no último andar da passagem; "Andar 2" nos outros. */
+export function floorName(passage: Passage, floor: number): string {
+  return isGuardianFloor(passage, floor) ? `Andar ${floor + 1}: guardião da passagem` : `Andar ${floor + 1}`;
+}
+
+/** Materiais que a vila já tem ou que o nível do abismo já abriu (na ordem do estoque). */
+export function knownMaterials(world: World): MaterialId[] {
+  const open = new Set(availableBiomes(world.abyss.level).map((b) => BIOMES[b]!.material));
+  return (Object.keys(world.town.materials) as MaterialId[]).filter((m) => world.town.materials[m] > 0 || open.has(m));
 }

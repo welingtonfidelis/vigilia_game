@@ -7,15 +7,15 @@ import { record } from './chronicle.ts';
 import { BALANCE as B } from './config.ts';
 import { level } from './economy.ts';
 import { hasTrait } from './hero.ts';
-import type { Hero, Party, WorkId, World } from './types.ts';
+import type { Hero, Party, Spot, WorkId, World } from './types.ts';
 
 // ── Provisões ────────────────────────────────────────────────────────────
 
 /** Preço da ração e das tochas por herói: cresce com a profundidade do andar-alvo. */
-export const rationPrice = (act: number, floor: number): number =>
-  Math.round(B.rationBase * Math.pow(1 + act * B.floorsPerAct + floor, B.rationExp));
+export const rationPrice = (spot: Pick<Spot, 'level' | 'floor'>): number =>
+  Math.round(B.rationBase * Math.pow(1 + (Math.max(1, spot.level) - 1) * B.descendFloorsPerLevel + spot.floor, B.rationExp));
 
-export const relicPrice = (act: number, floor: number): number => Math.round(rationPrice(act, floor) * B.relicPriceFraction);
+export const relicPrice = (spot: Pick<Spot, 'level' | 'floor'>): number => Math.round(rationPrice(spot) * B.relicPriceFraction);
 
 /**
  * Ao partir, cada herói compra o que o ouro dele permite, guardando o resto para o
@@ -23,8 +23,8 @@ export const relicPrice = (act: number, floor: number): number => Math.round(rat
  * com a mesma folga, ou com metade dela se for Supersticioso ou Covarde.
  */
 export function buyProvisions(world: World, party: Party, members: Hero[]): void {
-  const ration = rationPrice(party.act, party.floor);
-  const relic = relicPrice(party.act, party.floor);
+  const ration = rationPrice(party);
+  const relic = relicPrice(party);
   const temple = level(world, 'templo') >= 1;
   for (const h of members) {
     if (h.gold >= ration * B.provisionReserve) {

@@ -6,6 +6,7 @@ import {
   commands,
   createWorld,
   deserialize,
+  OldSaveError,
   citizenTaxesPerDay,
   festivalCost,
   guardSalaryPerDay,
@@ -22,12 +23,12 @@ import {
   dayOf,
   DAYS_PER_SEASON,
   DAYS_PER_YEAR,
-  SAVE_VERSION,
   TICKS_PER_DAY,
 } from '../src/sim/index.ts';
 import { startCombat, combatTick } from '../src/sim/combat.ts';
 import { addBond, createHero, getBond } from '../src/sim/hero.ts';
 import { dailyEconomy } from '../src/sim/economy.ts';
+import { openPassage } from '../src/sim/dungeon.ts';
 import { citizenMood, dailyCitizens, syncCitizenRoster } from '../src/sim/citizens.ts';
 import { defensePower, resolveRaid } from '../src/sim/raids.ts';
 import { dailyPeople, epitaph, maybeInjure } from '../src/sim/people.ts';
@@ -81,7 +82,8 @@ describe('critérios do M0', () => {
     const m = world.metrics;
     expect(m.stalemates).toBe(0);
     expect(m.longestIdleStreak).toBeLessThanOrEqual(4);
-    expect(m.bossKills.length).toBeGreaterThanOrEqual(2);
+    // M5: o abismo gira; passagens se abrem e se selam (os Senhores vêm com os amuletos).
+    expect(m.passagesSealed).toBeGreaterThanOrEqual(2);
     // A Fase B mexe no fluxo do RNG; o teto segue barrando espiral de mortes.
     expect(m.deaths / 10).toBeLessThan(12);
     const last = m.daily[m.daily.length - 1]!;
@@ -145,7 +147,10 @@ describe('combate', () => {
       id: 999,
       memberIds: [...heroIds],
       startMemberIds: [...heroIds],
-      act: 0,
+      passageId: -1,
+      level: 1,
+      biome: 0,
+      rules: [],
       floor: 3,
       phase: 'combate',
       phaseEndsAt: 0,
@@ -222,10 +227,10 @@ describe('comandos do prefeito', () => {
 
   it('contrato exige guilda, separa a recompensa e devolve ao cancelar', () => {
     const world = createWorld(1);
-    expect(commands.postContract(world, 0, 0, 50).ok).toBe(false);
+    expect(commands.postContract(world, null, 0, 50).ok).toBe(false);
     world.town.buildings.guilda = 1;
     const before = world.town.treasury;
-    expect(commands.postContract(world, 0, 0, 50)).toEqual({ ok: true });
+    expect(commands.postContract(world, null, 0, 50)).toEqual({ ok: true });
     expect(world.town.treasury).toBe(before - 50);
     const id = world.town.contracts[0]!.id;
     expect(commands.cancelContract(world, id)).toEqual({ ok: true });
@@ -246,7 +251,7 @@ describe('crônica', () => {
     const world = createWorld(5);
     runDays(world, 2 * DAYS_PER_YEAR, bot);
     const kinds = new Set(world.chronicle.map((e) => e.kind));
-    for (const k of ['chegada', 'partida', 'retorno', 'conquista', 'chefe']) expect(kinds.has(k as never)).toBe(true);
+    for (const k of ['chegada', 'partida', 'retorno', 'conquista', 'passagem']) expect(kinds.has(k as never)).toBe(true);
     expect(world.chronicle.every((e) => e.text.length > 0 && !e.text.includes('undefined'))).toBe(true);
   });
 });
@@ -405,32 +410,11 @@ describe('pessoas (M2)', () => {
     expect(old.epitaph).toContain('velhice');
   });
 
-  it('save da versão 1 carrega com os campos do M2 e epitáfio para os mortos', () => {
-    const world = createWorld(29);
-    runDays(world, 2 * DAYS_PER_YEAR, bot);
-    const v1 = JSON.parse(serialize(world));
-    v1.version = 1;
-    delete v1.children;
-    delete v1.town.mayorEnergy;
-    delete v1.town.speechDay;
-    delete v1.town.festivalDay;
-    delete v1.town.popGrowth;
-    delete v1.town.lastRaidDay;
-    delete v1.town.buildings.casa;
-    delete v1.citizens;
-    delete v1.raids;
-    for (const k of ['injuries', 'scars', 'marriages', 'births', 'comeOfAge', 'oldAgeDeaths', 'raids', 'citizenDeaths', 'citizensLeft']) delete v1.metrics[k];
-    for (const h of v1.heroes) for (const k of ['injury', 'scars', 'partnerId', 'parents', 'retiredRole', 'lastTalkDay', 'epitaph']) delete h[k];
-    const loaded = deserialize(JSON.stringify(v1));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.town.buildings.casa).toBe(0);
-    expect(loaded.town.festivalDay).toBe(-1);
-    expect(loaded.children).toEqual([]);
-    expect(loaded.heroes.every((h) => Array.isArray(h.scars) && h.injury === null)).toBe(true);
-    const dead = loaded.heroes.filter((h) => h.status === 'dead');
-    expect(dead.every((h) => typeof h.epitaph === 'string' && h.epitaph.length > 0)).toBe(true);
-    runDays(loaded, 30, bot); // e o jogo segue
-    expect(loaded.metrics.stalemates).toBe(0);
+  it('save de antes do M5 (atos fixos) não abre: a tela começa uma campanha nova', () => {
+    const world = createWorld(3);
+    const old = JSON.parse(serialize(world));
+    old.version = 10;
+    expect(() => deserialize(JSON.stringify(old))).toThrow(OldSaveError);
   });
 });
 
@@ -567,9 +551,10 @@ describe('economia da vila (Fase A)', () => {
     expect(world.citizens[0]!.happiness).toBe(55);
 
     world.town.event = { id: 'eclipse', year: 1, season: 1, tick: 0 };
-    const corruption = world.acts[0]!.corruption;
+    const passage = openPassage(world);
+    const pressure = passage.pressure;
     expect(resolveSeasonalEvent(world, 'observar')).toEqual({ ok: true });
-    expect(world.acts[0]!.corruption).toBeGreaterThan(corruption);
+    expect(passage.pressure).toBeGreaterThan(pressure);
 
     world.town.event = { id: 'visita-lendaria', year: 2, season: 3, tick: 0 };
     world.town.treasury = 200;
@@ -636,22 +621,6 @@ describe('economia da vila (Fase A)', () => {
     expect(world.chronicle.some((e) => e.kind === 'doacao')).toBe(true);
   });
 
-  it('save da versão 2 ganha a data da festa ao carregar', () => {
-    const world = createWorld(35);
-    const v2 = JSON.parse(serialize(world));
-    v2.version = 2;
-    delete v2.town.festivalDay;
-    delete v2.town.popGrowth;
-    delete v2.town.lastRaidDay;
-    delete v2.citizens;
-    delete v2.raids;
-    for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v2.metrics[k];
-    const loaded = deserialize(JSON.stringify(v2));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.town.festivalDay).toBe(-1);
-    expect(loaded.town.lastRaidDay).toBe(-1);
-    expect(loaded.citizens.length).toBeGreaterThan(0);
-  });
 });
 
 
@@ -686,7 +655,7 @@ describe('vila e incursões (M3)', () => {
     }
     const before = world.town.population;
     expect(defensePower(world)).toBeGreaterThan(100);
-    const raid = resolveRaid(world, 0, 60);
+    const raid = resolveRaid(world, { level: 1, pressure: 60, biome: 0, passageId: null });
     expect(raid.outcome).toBe('repelido');
     expect(raid.citizenLoss).toBe(0);
     expect(raid.goldLost).toBe(0);
@@ -697,7 +666,7 @@ describe('vila e incursões (M3)', () => {
   it('uma vila sem defesa é saqueada: prédio cai, moradores morrem e ouro some', () => {
     const world = createWorld(43);
     world.town.treasury = 1000;
-    const raid = resolveRaid(world, 5, 100);
+    const raid = resolveRaid(world, { level: 6, pressure: 100, biome: 5, passageId: null });
     expect(raid.outcome).toBe('saque');
     expect(raid.power).toBeGreaterThan(raid.defense);
     expect(world.town.treasury).toBeLessThan(1000);
@@ -708,61 +677,10 @@ describe('vila e incursões (M3)', () => {
     expect(world.chronicle.some((e) => e.kind === 'incursao')).toBe(true);
   });
 
-  it('save v7 carrega na versão atual', () => {
-    const world = createWorld(51);
-    const v7 = JSON.parse(serialize(world));
-    v7.version = 7;
-    const loaded = deserialize(JSON.stringify(v7));
-    expect(loaded.version).toBe(SAVE_VERSION);
-  });
 
-  it('save v6 ganha a expansão sul vazia ao carregar', () => {
-    const world = createWorld(49);
-    const v6 = JSON.parse(serialize(world));
-    v6.version = 6;
-    delete v6.town.expansion;
-    const loaded = deserialize(JSON.stringify(v6));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.town.expansion).toEqual({ cleared: false, houses: [false, false, false] });
-  });
 
-  it('save v5 ganha evento sazonal vazio ao carregar', () => {
-    const world = createWorld(46);
-    const v5 = JSON.parse(serialize(world));
-    v5.version = 5;
-    delete v5.town.event;
-    delete v5.town.lastEventKey;
-    const loaded = deserialize(JSON.stringify(v5));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.town.event).toBeNull();
-    expect(loaded.town.lastEventKey).toBe('');
-  });
 
-  it('save v4 ganha a lista de decretos ao carregar', () => {
-    const world = createWorld(45);
-    const v4 = JSON.parse(serialize(world));
-    v4.version = 4;
-    delete v4.town.decrees;
-    const loaded = deserialize(JSON.stringify(v4));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.town.decrees).toEqual([]);
-  });
 
-  it('save v3 ganha moradores e campos de incursão ao carregar', () => {
-    const world = createWorld(44);
-    const v3 = JSON.parse(serialize(world));
-    v3.version = 3;
-    delete v3.citizens;
-    delete v3.raids;
-    delete v3.town.popGrowth;
-    delete v3.town.lastRaidDay;
-    for (const k of ['raids', 'citizenDeaths', 'citizensLeft']) delete v3.metrics[k];
-    const loaded = deserialize(JSON.stringify(v3));
-    expect(loaded.version).toBe(SAVE_VERSION);
-    expect(loaded.citizens.length).toBe(BALANCE.citizenStart);
-    expect(loaded.raids).toEqual([]);
-    expect(loaded.town.lastRaidDay).toBe(-1);
-  });
 });
 
 describe('registro de golpes do combate (para a tela)', () => {

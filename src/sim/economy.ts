@@ -1,4 +1,5 @@
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
+import { abyssPressure } from './dungeon.ts';
 import { BUILDING_IDS, BUILDINGS, MAX_BUILDING_LEVEL, type LevelCost } from '../data/buildings.ts';
 import { record } from './chronicle.ts';
 import { citizenMood } from './citizens.ts';
@@ -101,7 +102,7 @@ export function populationCap(world: World): number {
 export function dailyEconomy(world: World): void {
   const town = world.town;
   town.population = Math.round(town.population);
-  const corruption = averageCorruption(world);
+  const corruption = abyssPressure(world);
   const cap = populationCap(world);
   if (corruption < 60) {
     // Crescimento em moradores inteiros: o acumulador guarda a fração entre dias.
@@ -120,7 +121,7 @@ export function dailyEconomy(world: World): void {
     town.popGrowth = 0;
     const lastAlarm = world.chronicle.findLast((e) => e.kind === 'corrupcao');
     if (corruption >= 80 && (!lastAlarm || world.tick - lastAlarm.tick > 10 * 480)) {
-      record(world, 'corrupcao', [], 'A corrupção do abismo assusta a vila: famílias fazem as malas.');
+      record(world, 'corrupcao', [], 'A pressão do abismo assusta a vila: famílias fazem as malas.');
     }
   }
   // O humor dos moradores regula quanto eles pagam; a taxa de guerra soma.
@@ -134,12 +135,6 @@ export function dailyEconomy(world: World): void {
   if (town.treasury < 0) town.treasury = 0;
 }
 
-export function averageCorruption(world: World): number {
-  const open = world.acts.filter((a) => a.unlocked);
-  if (open.length === 0) return 0;
-  return open.reduce((s, a) => s + a.corruption, 0) / open.length;
-}
-
-export function materialOf(act: number): MaterialId {
-  return ACTS[act]!.material;
+export function materialOf(biome: number): MaterialId {
+  return BIOMES[biome]!.material;
 }

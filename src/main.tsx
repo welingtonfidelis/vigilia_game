@@ -1,5 +1,5 @@
 import { render } from 'preact';
-import { createWorld, runTicks, autoMayor, TICKS_PER_DAY, ACTS } from './sim/index.ts';
+import { createWorld, runTicks, autoMayor, TICKS_PER_DAY, BIOMES } from './sim/index.ts';
 import type { ChronicleEntry } from './sim/index.ts';
 import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
@@ -19,7 +19,7 @@ setArtMode(ui.prefs.art);
 
 const loaded = loadWorld(store);
 const session = new Session(loaded.ok ? loaded.world : createWorld(Math.floor(Math.random() * 1_000_000)));
-if (!loaded.ok) ui.open({ kind: 'welcome' });
+if (!loaded.ok) ui.open({ kind: 'welcome', oldSave: loaded.old === true });
 
 // ── Avisos a partir da crônica ─────────────────────────────────────────────
 
@@ -31,6 +31,7 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   tumulo: 'grief',
   restos: 'grief',
   conquista: 'gold',
+  passagem: 'gold',
   chefe: 'gold',
   eco: 'bad',
   fim: 'gold',
@@ -61,13 +62,8 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   incursao: 'bad',
 };
 
-let bossesSeen = new Set(session.world.acts.flatMap((a, i) => (a.bossDefeated ? [i] : [])));
-
 session.subscribe((event) => {
-  if (event.type === 'reset') {
-    bossesSeen = new Set(session.world.acts.flatMap((a, i) => (a.bossDefeated ? [i] : [])));
-    return;
-  }
+  if (event.type === 'reset') return;
   if (event.type === 'day' && ui.prefs.autosave) {
     saveWorld(store, session.world);
     return;
@@ -78,14 +74,6 @@ session.subscribe((event) => {
     if (tone) ui.toast(entry.text, tone, entry.heroIds);
     if (entry.kind === 'morte' && ui.prefs.pauseOnDeath) session.setPaused(true);
   }
-  session.world.acts.forEach((act, i) => {
-    if (!act.bossDefeated || bossesSeen.has(i)) return;
-    bossesSeen.add(i);
-    session.setPaused(true);
-    // O último chefe não abre "fim de ato": abre o fim da campanha.
-    if (i === ACTS.length - 1) ui.open({ kind: 'campaignEnd' });
-    else ui.open({ kind: 'actEnd', act: i });
-  });
 });
 
 // ── Preferências ───────────────────────────────────────────────────────────
@@ -210,8 +198,13 @@ if (import.meta.env.DEV) {
       renderer,
       audio,
       lanes,
-      ACTS,
+      BIOMES,
       advance: (ticks: number) => session.advance(ticks),
+      /** Atalho de teste (M5 F1): muda o nível do abismo sem o amuleto. */
+      abyssLevel: (n: number) => {
+        session.world.abyss.level = Math.max(1, Math.round(n));
+        return session.world.abyss.level;
+      },
       /** Roda N quadros do Phaser na mão (com a aba oculta o requestAnimationFrame para). */
       frames: (n: number, ms = 1000 / 60) => {
         const game = renderer.game;

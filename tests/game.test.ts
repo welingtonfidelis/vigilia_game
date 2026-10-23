@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { openPassage } from '../src/sim/dungeon.ts';
 import { autoMayor, byWhom, checksum, commands, createWorld, runDays, runTicks, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { ActivityKind } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
@@ -202,20 +203,22 @@ describe('planta da vila', () => {
 });
 
 describe('textos da tela', () => {
-  it('objetivos guiam o começo: berrante, reconstrução e o primeiro andar', () => {
+  it('objetivos guiam o começo: berrante, reconstrução e a primeira passagem', () => {
     const world = createWorld(3);
     const first = objectives(world);
     expect(first[0]!.text).toMatch(/berrante/);
     expect(first.some((o) => /Reconstrua a estalagem/.test(o.text))).toBe(true);
-    expect(first.some((o) => /andar 1 das Catacumbas/.test(o.text))).toBe(true);
+    expect(first.some((o) => /primeira passagem/.test(o.text))).toBe(true);
     commands.blowHorn(world);
     expect(objectives(world)[0]!.text).not.toMatch(/Ande até o berrante/);
   });
 
-  it('o chefe aparece no meio da frase com artigo minúsculo', () => {
+  it('com a passagem aberta até o fim, o objetivo é vencer o guardião', () => {
     const world = createWorld(3);
-    world.acts[0]!.conquered = [true, true, true, false];
-    expect(objectives(world).some((o) => o.text.includes('Derrote o Guardião das Urnas'))).toBe(true);
+    const passage = openPassage(world);
+    passage.discovered = true;
+    passage.conquered = passage.conquered.map((_, f) => f < passage.floors - 1);
+    expect(objectives(world).some((o) => o.text.startsWith('Vença o guardião e sele a passagem'))).toBe(true);
     expect(midSentence('A Mãe-Bolor')).toBe('a Mãe-Bolor');
   });
 

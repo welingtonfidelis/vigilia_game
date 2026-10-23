@@ -15,13 +15,13 @@ export type Panel =
   | { kind: 'roster' }
   | { kind: 'memorial' }
   | { kind: 'menu' }
-  | { kind: 'welcome' }
+  /** `oldSave`: havia um save de antes do M5, guardado à parte (a campanha recomeça). */
+  | { kind: 'welcome'; oldSave?: boolean }
   | { kind: 'thermal' }
   | { kind: 'event' }
   | { kind: 'battle'; partyId: number }
   | { kind: 'village' }
-  | { kind: 'campaignEnd' }
-  | { kind: 'actEnd'; act: number };
+  | { kind: 'campaignEnd' };
 
 export type PanelKind = Panel['kind'];
 

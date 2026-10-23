@@ -218,7 +218,8 @@ export class LaneRenderer {
   private last = 0;
   private reveal = 0;
   private floorKey = '';
-  private act = 0;
+  /** Bioma da passagem do grupo: escolhe a arte do corredor e da arena. */
+  private biome = 0;
   private combatRoom = 0;
   private heroes = new Map<number, Actor>();
   private enemies = new Map<number, Actor>();
@@ -338,10 +339,10 @@ export class LaneRenderer {
 
   /** Uma expedição nova (ou outro andar) zera o chão: corpos e sangue são deste andar. */
   private syncFloor(party: Party): void {
-    const key = `${party.startedTick}:${party.act}:${party.floor}`;
+    const key = `${party.startedTick}:${party.passageId}:${party.floor}`;
     if (key === this.floorKey) return;
     this.floorKey = key;
-    this.act = party.act;
+    this.biome = party.biome;
     this.corpses = [];
     this.decals = [];
     this.enemies.clear();
@@ -629,7 +630,7 @@ export class LaneRenderer {
   }
 
   private roman(): string {
-    return ROMAN[this.act] ?? 'I';
+    return ROMAN[this.biome] ?? 'I';
   }
 
   // ── Passo dos efeitos ─────────────────────────────────────────────────
@@ -719,7 +720,7 @@ export class LaneRenderer {
     ctx.imageSmoothingEnabled = false;
     const cam = Math.round(this.camX * s) / s;
     ctx.setTransform(s, 0, 0, s, -Math.round(this.camX * s), this.top);
-    const roman = ROMAN[party.act] ?? 'I';
+    const roman = ROMAN[party.biome] ?? 'I';
     const left = cam - 8;
     const right = cam + this.viewW + 8;
 
@@ -766,7 +767,7 @@ export class LaneRenderer {
     };
     draw(`corridor/${roman}/entry`, 0);
     for (let i = 0; i < Math.max(1, rooms.length); i++) {
-      draw(`corridor/${roman}/wall-${wallVariant(party.act, party.floor, i)}`, roomX(i));
+      draw(`corridor/${roman}/wall-${wallVariant(party.passageId, party.floor, i)}`, roomX(i));
     }
     const door = packAsset(`corridor/${roman}/door`);
     const half = Math.round((door?.size?.[0] ?? 48) / 2);
@@ -782,7 +783,8 @@ export class LaneRenderer {
     for (let i = -1; i < Math.max(1, rooms.length); i++) {
       const x = roomX(i);
       if (x + ROOM_W < left || x > right) continue;
-      const asset = rooms[i]?.kind === 'chefe' ? boss : i % 2 === 0 ? depth : plain;
+      const lair = rooms[i]?.kind === 'chefe' || rooms[i]?.kind === 'guardiao';
+      const asset = lair ? boss : i % 2 === 0 ? depth : plain;
       const back = asset ? art(asset.id) : null;
       if (back) this.ctx.drawImage(back.img, x, 0, ROOM_W, LANE_H);
       // Os pilares nas bordas de cada painel escondem a emenda entre salas.
@@ -814,7 +816,7 @@ export class LaneRenderer {
         this.drawProp('prop/arena/torch', x0 + 34, 148, t);
         this.drawProp('prop/arena/torch', x0 + ROOM_W - 34, 148, t + 0.2);
         const props = (ROOM_PROPS[roman] ?? []).filter((p) => p.y > 100);
-        const pick = props[(i * 7 + this.act) % Math.max(1, props.length)];
+        const pick = props[(i * 7 + this.biome) % Math.max(1, props.length)];
         if (pick && i % 3 !== 2) this.drawProp(pick.id, x0 + (i % 2 ? 70 : 262), pick.y, t);
       } else {
         for (const p of ROOM_PROPS[roman] ?? []) this.drawProp(p.id, x0 + p.x, p.y, t);
@@ -845,6 +847,7 @@ export class LaneRenderer {
         case 'armadilha':
           this.drawSpikes(tx, room.cleared);
           break;
+        case 'guardiao':
         case 'chefe': {
           this.drawProp(`prop/arena/${roman}/boss-gate`, tx + 40, ROW_Y[0] - 2, t);
           const ritual = art('decal/arena/ritual-circle');
@@ -1125,18 +1128,19 @@ export class LaneRenderer {
     // Olhos na névoa onde há luta à frente.
     rooms.forEach((room, i) => {
       if (room.cleared || i <= party.roomIndex - (party.phase === 'combate' ? 0 : 1)) return;
-      if (room.kind !== 'matilha' && room.kind !== 'elite' && room.kind !== 'chefe') return;
+      if (room.kind !== 'matilha' && room.kind !== 'elite' && room.kind !== 'chefe' && room.kind !== 'guardiao') return;
       const x = threatX(i);
       if (x < fogX + 20 || x > end) return;
-      const n = room.kind === 'chefe' ? 1 : room.kind === 'elite' ? 2 : 3;
+      const big = room.kind === 'chefe' || room.kind === 'guardiao';
+      const n = big ? 1 : room.kind === 'elite' ? 2 : 3;
       for (let k = 0; k < n; k++) {
         const blink = Math.sin(this.real * 1.7 + i * 2 + k * 1.3) > 0.85;
         if (blink) continue;
         const ex = x + k * 22;
-        const ey = (room.kind === 'chefe' ? 118 : 140) - (k % 2) * 8;
-        ctx.fillStyle = room.kind === 'chefe' ? '#ff5a3a' : '#c83a2a';
+        const ey = (big ? 118 : 140) - (k % 2) * 8;
+        ctx.fillStyle = big ? '#ff5a3a' : '#c83a2a';
         ctx.fillRect(ex, ey, 1, 1);
-        ctx.fillRect(ex + (room.kind === 'chefe' ? 5 : 3), ey, 1, 1);
+        ctx.fillRect(ex + (big ? 5 : 3), ey, 1, 1);
       }
     });
   }

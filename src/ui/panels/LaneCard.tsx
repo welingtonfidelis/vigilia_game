@@ -3,7 +3,7 @@
 // grupo por cima do corredor (embaixo no celular), as salas e o aviso de volta à vila.
 
 import { useEffect, useRef } from 'preact/hooks';
-import { ACTS, BALANCE, commands, fleeLimit, floorLabel, isBossFloor, maxLevel, partyRooms, xpToNext } from '../../sim/index.ts';
+import { BIOMES, commands, fleeLimit, floorLabel, isGuardianFloor, maxLevel, partyRooms, passageOf, rulesLabel, xpToNext } from '../../sim/index.ts';
 import type { Hero, Party } from '../../sim/index.ts';
 import { lanes } from '../../render/lane/lanes.ts';
 import { hiUrl } from '../../render/art32.ts';
@@ -103,18 +103,20 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   const heroes = party.startMemberIds.map((id) => heroById(world, id)).filter((h): h is Hero => !!h);
   const canRecall = party.phase !== 'voltando' && !party.recallRequested;
   const returning = party.phase === 'voltando';
+  const passage = passageOf(world, party.passageId);
+  const floors = passage?.floors ?? party.floor + 1;
 
   return (
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
-        <strong title={`Cada ato tem ${BALANCE.floorsPerAct} andares; o chefe fica no último. Um andar só abre depois que o de cima for conquistado.`}>
-          Ato {party.act + 1} · andar {party.floor + 1} de {BALANCE.floorsPerAct} {ACTS[party.act]!.of}
-          {!isBossFloor(party.floor) && <small class="lane-boss-hint"> · chefe no andar {BALANCE.floorsPerAct}</small>}
+        <strong title={`Esta passagem tem ${floors} andares; o guardião fica no último e, vencido, sela a passagem. Um andar só abre depois que o de cima for conquistado. Regras: ${rulesLabel(party.rules)}.`}>
+          Nível {party.level} · andar {party.floor + 1} de {floors} {BIOMES[party.biome]!.of}
+          {passage && !isGuardianFloor(passage, party.floor) && <small class="lane-boss-hint"> · guardião no andar {floors}</small>}
         </strong>
         <span>
           {phaseText(world, party)}
           {room && !returning ? ` · ${ROOM_LABELS[room.kind]}` : ''}
-          {combat?.isBoss ? ' · CHEFE' : ''}
+          {combat?.isBoss ? (combat.bossMech ? ' · SENHOR' : ' · GUARDIÃO') : ''}
           {bossPhase2 ? ' · FASE 2' : ''}
         </span>
         <span class="arena-card-loot">{fmt(party.loot.gold)} ouro · {fmt(party.loot.xp)} XP</span>
@@ -129,7 +131,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
       </header>
       <div class="lane-stage">
         <div class="lane-view" ref={stage}>
-          <canvas ref={canvas} class="lane-canvas" aria-label={`Corredor do ${floorLabel(party.act, party.floor)}`} />
+          <canvas ref={canvas} class="lane-canvas" aria-label={`Corredor do ${floorLabel(party)}`} />
           {rooms.length > 0 && (
             <div class="arena-room-progress lane-rooms">
               {rooms.map((r, i) => (

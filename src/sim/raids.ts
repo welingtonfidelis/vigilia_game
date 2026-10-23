@@ -1,9 +1,10 @@
-// Incursões noturnas (M3): quando um ato acumula corrupção, o abismo sobe até a vila.
+// Incursões noturnas (M3): quando a pressão do abismo sobe demais, ele sobe até a vila.
 // A defesa é a soma dos heróis que estão em casa, dos aposentados e da milícia de
 // guardas. O resultado nunca acaba a campanha: no pior caso, prédios caem de nível,
 // moradores morrem e o tesouro sangra.
 
-import { ACTS } from '../data/acts.ts';
+import { BIOMES } from '../data/biomes.ts';
+import { reducePressure, worstPassage } from './dungeon.ts';
 import { BUILDINGS } from '../data/buildings.ts';
 import { dayOf, hourOf } from './calendar.ts';
 import { record } from './chronicle.ts';
@@ -18,19 +19,17 @@ import { townHeroes } from './town.ts';
 import type { BuildingId, Citizen, Raid, RaidOutcome, World } from './types.ts';
 
 export interface Threat {
-  act: number;
-  corruption: number;
+  level: number;
+  pressure: number;
+  /** De que bioma vêm os monstros: o da passagem mais pressionada (ou o das Catacumbas). */
+  biome: number;
+  passageId: number | null;
 }
 
-/** O ato mais corrompido aberto é a origem da próxima incursão. */
-export function threatOf(world: World): Threat | null {
-  let best: Threat | null = null;
-  for (let i = 0; i < world.acts.length; i++) {
-    const act = world.acts[i]!;
-    if (!act.unlocked) continue;
-    if (!best || act.corruption > best.corruption) best = { act: i, corruption: act.corruption };
-  }
-  return best;
+/** A passagem mais pressionada é a origem da próxima incursão. */
+export function threatOf(world: World): Threat {
+  const worst = worstPassage(world);
+  return { level: worst?.level ?? world.abyss.level, pressure: worst?.pressure ?? 0, biome: worst?.biome ?? 0, passageId: worst?.id ?? null };
 }
 
 /** Heróis em casa, aposentados e milícia de guardas. */
@@ -48,8 +47,8 @@ export function defensePower(world: World): number {
   return Math.round(power * decreeDefenseMultiplier(world));
 }
 
-export function raidPower(act: number, corruption: number): number {
-  return Math.round((B.raidPowerBase + act * B.raidPowerPerAct) * (corruption / 100));
+export function raidPower(level: number, pressure: number): number {
+  return Math.round((B.raidPowerBase + (Math.max(1, level) - 1) * B.raidPowerPerAct) * (pressure / 100));
 }
 
 /** Roda de hora em hora; só tenta às 22h. */
@@ -58,11 +57,11 @@ export function maybeRaid(world: World): void {
   const day = dayOf(world.tick);
   if (day - world.town.lastRaidDay < B.raidCooldownDays) return;
   const threat = threatOf(world);
-  if (!threat || threat.corruption < B.raidMinCorruption) return;
-  const t = Math.max(0, Math.min(1, (threat.corruption - B.raidMinCorruption) / (100 - B.raidMinCorruption)));
+  if (threat.pressure < B.raidMinCorruption) return;
+  const t = Math.max(0, Math.min(1, (threat.pressure - B.raidMinCorruption) / (100 - B.raidMinCorruption)));
   const p = B.raidChanceAtMin + (B.raidChanceAtMax - B.raidChanceAtMin) * t;
   if (!chance(world.rng, p)) return;
-  resolveRaid(world, threat.act, threat.corruption);
+  resolveRaid(world, threat);
 }
 
 function damageBuilding(world: World): BuildingId | null {
@@ -74,9 +73,10 @@ function damageBuilding(world: World): BuildingId | null {
 }
 
 /** Resolve a incursão. Exportado para os testes forçarem o cenário. */
-export function resolveRaid(world: World, act: number, corruption: number): Raid {
+export function resolveRaid(world: World, threat: Threat): Raid {
+  const { level, pressure, biome } = threat;
   const defense = defensePower(world);
-  const power = Math.round(raidPower(act, corruption) * difficultyOf(world).raid);
+  const power = Math.round(raidPower(level, pressure) * difficultyOf(world).raid);
   const ratio = defense / (defense + power);
   const outcome: RaidOutcome = ratio >= B.raidRepelRatio ? 'repelido' : ratio >= B.raidCostlyRatio ? 'custoso' : 'saque';
 
@@ -109,7 +109,7 @@ export function resolveRaid(world: World, act: number, corruption: number): Raid
   for (const citizen of world.citizens) citizen.happiness = Math.max(0, Math.min(100, citizen.happiness + mood));
 
   if (outcome === 'repelido') {
-    world.acts[act]!.corruption = Math.max(0, world.acts[act]!.corruption - 3);
+    if (threat.passageId !== null) reducePressure(world, threat.passageId, 3);
     world.town.reputation = Math.min(100, world.town.reputation + 2);
   }
 
@@ -130,10 +130,10 @@ export function resolveRaid(world: World, act: number, corruption: number): Raid
     world,
     'incursao',
     [],
-    `${head} uma incursão ${ACTS[act]!.of} (poder ${power} contra defesa ${defense}).${hitName}${lostText}${hurtText}${goldText}`,
+    `${head} uma incursão ${BIOMES[biome]!.of} (poder ${power} contra defesa ${defense}).${hitName}${lostText}${hurtText}${goldText}`,
   );
 
-  const raid: Raid = { day: dayOf(world.tick), act, corruption, power, defense, outcome, building, citizenLoss: loss, goldLost, injuries };
+  const raid: Raid = { day: dayOf(world.tick), level, pressure, biome, power, defense, outcome, building, citizenLoss: loss, goldLost, injuries };
   world.raids.push(raid);
   if (world.raids.length > 12) world.raids.shift();
   return raid;

@@ -1,6 +1,6 @@
 // Alavancas do prefeito. Toda interação do jogador passa por aqui.
 
-import { ACTS, MATERIAL_NAMES } from '../data/acts.ts';
+import { MATERIAL_NAMES } from '../data/biomes.ts';
 import { BUILDINGS, MAX_BUILDING_LEVEL } from '../data/buildings.ts';
 import { SPEC_DEFS, SPECS } from '../data/specs.ts';
 import { dayOf } from './calendar.ts';
@@ -8,6 +8,7 @@ import { record, floorLabel, heroLabel } from './chronicle.ts';
 import { decreeEnactCost, DECREES, DECREE_IDS } from './decrees.ts';
 import { DIFFICULTIES } from '../data/difficulty.ts';
 import { resolveSeasonalEvent as resolveSeasonalEventImpl } from './events.ts';
+import { levelPower, passageOf } from './dungeon.ts';
 import { BALANCE as B, TICKS_PER_HOUR } from './config.ts';
 import {
   canAfford,
@@ -137,15 +138,27 @@ export function sellItem(world: World, itemId: number): CommandResult {
   return OK;
 }
 
-export function postContract(world: World, act: number, floor: number, reward: number): CommandResult {
+/**
+ * Contrato no quadro: conquistar um andar de uma passagem conhecida, ou (passageId null)
+ * abrir uma passagem nova.
+ */
+export function postContract(world: World, passageId: number | null, floor: number, reward: number): CommandResult {
   if (level(world, 'guilda') < 1) return fail('Reconstrua a guilda para postar contratos.');
-  if (!world.acts[act]?.unlocked) return fail('Esse ato ainda não foi aberto.');
-  if (world.acts[act]!.conquered[floor]) return fail('Esse andar já foi conquistado.');
+  const passage = passageId === null ? null : passageOf(world, passageId);
+  if (passageId !== null) {
+    if (!passage || passage.sealed) return fail('Essa passagem não está mais aberta.');
+    if (!passage.discovered) return fail('Ninguém entrou nessa passagem ainda.');
+    if (floor < 0 || floor >= passage.floors) return fail('Esse andar não existe nessa passagem.');
+    if (passage.conquered[floor]) return fail('Esse andar já foi conquistado.');
+  } else if (world.town.contracts.some((c) => c.passageId === null)) {
+    return fail('Já há um contrato de passagem nova no quadro.');
+  }
   if (world.town.contracts.length >= level(world, 'guilda')) return fail('O quadro está cheio.');
   if (world.town.treasury < reward) return fail('O tesouro não cobre a recompensa.');
   world.town.treasury -= reward;
-  world.town.contracts.push({ id: world.nextId++, act, floor, reward, postedTick: world.tick, takenBy: null });
-  record(world, 'contrato', [], `Novo contrato no quadro: conquistar o ${floorLabel(act, floor)} por ${reward} de ouro.`);
+  world.town.contracts.push({ id: world.nextId++, passageId, floor, reward, postedTick: world.tick, takenBy: null });
+  const goal = passage ? `conquistar o ${floorLabel({ biome: passage.biome, floor })}` : 'abrir uma passagem nova';
+  record(world, 'contrato', [], `Novo contrato no quadro: ${goal} por ${reward} de ouro.`);
   return OK;
 }
 
@@ -262,9 +275,8 @@ export function dismiss(world: World, heroId: number): CommandResult {
   return OK;
 }
 
-/** Recompensa sugerida para um contrato, proporcional ao perigo do andar. */
-export const suggestedReward = (act: number, floor: number): number =>
-  Math.round(30 * ACTS[act]!.power * (1 + 0.3 * floor));
+/** Recompensa sugerida para um contrato, proporcional ao perigo do andar (do nível do abismo). */
+export const suggestedReward = (level: number, floor: number): number => Math.round(30 * levelPower(level) * (1 + 0.3 * floor));
 
 // ── Prefeito e pessoas (M2) ─────────────────────────────────────────────
 
