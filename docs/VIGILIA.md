@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. Próximo: o playtest guiado e o M5.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) está pronto no branch `abismo-procedural` e espera o teste do jogador para ir ao `main`.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -258,11 +258,11 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Provisões:** ao partir, cada herói compra ração e tochas (gasta metade da energia entre as salas) e, com templo, uma relíquia (foge menos), com o próprio ouro e guardando reserva; o preço cresce com a profundidade. É o gasto que se repete e segura o ouro dos heróis.
 - [x] **Mecenato:** quem junta fortuna paga obras na vila com o nome gravado (estátua, vitral, fonte, muro dos nomes), cada nível mais caro; efeito até o 5º nível e o **mural dos mecenas** no Cofre (`src/sim/patronage.ts`).
 - [x] **Playtest automático:** `npm run playtest` roda 30 sementes × 30 anos salvando e carregando a cada 5 anos e confere ritmo, mortalidade, ouro, tesouro e saves. Todos os critérios passam.
-- [ ] Playtest guiado (roteiro na seção 9.4): é a próxima etapa, antes do M5.
+- [x] **Playtest guiado** (roteiro na seção 9.4): o jogo até o ano 2 trouxe os ajustes da seção seguinte (famílias, bichos, tiers e dificuldade). O resto do roteiro seguiu junto com o teste do M5.
 
-### Próximo: playtest guiado e M5
+### Próximo: teste do M5
 
-O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`. As fases F1 a F6 estão prontas no branch; o M5 espera o teste do jogador antes de ir para o `main`.
+O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes abaixo. O **M5: O Abismo das Dimensões** (seção 9.5 do GDD) está pronto no branch `abismo-procedural`: fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção. As fases F1 a F6 e o ajuste do ouro (15.9) estão feitos. O M5 espera o teste do jogador antes de ir para o `main`, e o que aparecer no teste entra na fila da seção 15.8.
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -770,9 +770,9 @@ vigilia/
 | **M0: Núcleo** ✅ | Simulação headless com heróis, necessidades, traços, expedição, combate, economia, save e balanceador | Simula 10 anos sem soft-lock; relatório de mortalidade e ouro coerente |
 | **M1: Fatia vertical** ✅ | Vila jogável com 7 prédios, berrante, quadro de contratos, 6 classes, ranks, 12 traços, ânimo, sino de retirada, Ato I e HUD | Paridade com o jam, mais correções, 2–3 h divertidas |
 | **M2: Pessoas** ✅ | Vínculos, luto/vingança, lesões, envelhecimento, aposentadoria, crônica, memorial, conversas e presentes | Os playtesters contam histórias dos heróis sem você perguntar |
-| **M3: Vila viva** 🟡 | Cidadãos e incursões noturnas entregues; faltam lotes e expansão, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
-| **M4: Profundidade** | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
-| **M5: O Abismo das Dimensões** | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5) | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
+| **M3: Vila viva** ✅ | Cidadãos, incursões noturnas, lotes e expansão sul, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
+| **M4: Profundidade** ✅ | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
+| **M5: O Abismo das Dimensões** 🟡 | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5). Fases F1 a F6 prontas no branch `abismo-procedural`; falta o teste do jogador para ir ao `main` | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
 
 #### 9.1 Especificação do M2: Pessoas
 
