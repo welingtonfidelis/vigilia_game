@@ -51,8 +51,9 @@ import { appoint as appointImpl } from './posts.ts';
 import { guessTournament as guessTournamentImpl } from './tournament.ts';
 import { renameHouse as renameHouseImpl } from './houses.ts';
 import { togglePinStatue as togglePinStatueImpl } from './hall.ts';
+import { placeDecor as placeDecorImpl, renameStreet as renameStreetImpl, setBanner as setBannerImpl, setBust as setBustImpl } from './cosmetics.ts';
 import { chance, int } from './rng.ts';
-import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, PostId, RetiredRole, SpecId, World } from './types.ts';
+import type { BuildingId, Crest, DecorId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, PostId, RetiredRole, SpecId, StreetId, World } from './types.ts';
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
@@ -575,6 +576,12 @@ export const guessTournament = (world: World, heroId: number): CommandResult => 
 /** Salão das Lendas (M6 F5): o prefeito dá nome a uma casa e fixa as estátuas da frente. */
 export const renameHouse = (world: World, houseId: number, name: string): CommandResult => renameHouseImpl(world, houseId, name);
 export const togglePinStatue = (world: World, heroId: number): CommandResult => togglePinStatueImpl(world, heroId);
+
+/** Cosmética da vila (M6 F6): estandarte, enfeites, nomes de ruas e o busto do memorial. */
+export const setBanner = (world: World, banner: Crest): CommandResult => setBannerImpl(world, banner);
+export const placeDecor = (world: World, point: number, id: DecorId | null): CommandResult => placeDecorImpl(world, point, id);
+export const renameStreet = (world: World, id: StreetId, name: string): CommandResult => renameStreetImpl(world, id, name);
+export const setBust = (world: World, heroId: number | null): CommandResult => setBustImpl(world, heroId);
 
 /** O conselho do prefeito a um grupo que achou um encontro e mandou um corvo (M6 F3). */
 export const adviseEncounter = (world: World, partyId: number, optionId: string): CommandResult => adviseEncounterImpl(world, partyId, optionId);

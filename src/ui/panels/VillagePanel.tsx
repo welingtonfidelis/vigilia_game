@@ -62,8 +62,8 @@ function RaidLine(props: { world: World; raid: Raid }) {
   );
 }
 
-/** Cargos da vila (M6 F4): quem está em cada um, o que ele faz e a nomeação. */
-function PostsSection() {
+/** Cargos da vila (M6 F4): quem está em cada um, o que ele faz e a nomeação. Fica no Paço (M6 F6). */
+export function PostsSection() {
   const { world } = useGame();
   const command = useCommand();
   const [pick, setPick] = useState<Partial<Record<PostId, number>>>({});
@@ -123,7 +123,7 @@ function PostsSection() {
 }
 
 export function VillagePanel() {
-  const { world } = useGame();
+  const { world, ui } = useGame();
   const command = useCommand();
   const expansion = world.town.expansion;
   const builtHouses = expansion.houses.filter(Boolean).length;
@@ -156,7 +156,13 @@ export function VillagePanel() {
         </p>
       )}
 
-      <PostsSection />
+      <p class="sub">
+        Os cargos da vila, o estandarte, os enfeites e os nomes das ruas ficam no{' '}
+        <button class="link" onClick={() => ui.open({ kind: 'paco', tab: 'cargos' })}>
+          Paço do prefeito
+        </button>
+        .
+      </p>
       <h3>Distrito Sul <span class="sub">({builtHouses}/3 casas)</span></h3>
       <p class="sub">
         A floresta ao sul esconde três lotes de moradia. Limpar a área custa {fmt(expansionClearCost(world))} de ouro; cada casa custa{' '}

@@ -3,7 +3,8 @@
 // grupo por cima do corredor (embaixo no celular), as salas e o aviso de volta à vila.
 
 import { useEffect, useRef } from 'preact/hooks';
-import { BIOMES, commands, fleeLimit, floorLabel, isGuardianFloor, maxLevel, partyRooms, passageOf, rulesLabel, xpToNext } from '../../sim/index.ts';
+import { BIOMES, commands, fleeLimit, floorLabel, isGuardianFloor, maxLevel, partyRooms, passageOf, rulesLabel, villageBanner, xpToNext } from '../../sim/index.ts';
+import { Crest } from '../Crest.tsx';
 import type { Hero, Party } from '../../sim/index.ts';
 import { lanes } from '../../render/lane/lanes.ts';
 import { hiUrl } from '../../render/art32.ts';
@@ -110,6 +111,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   return (
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
+        <Crest crest={villageBanner(world)} label="Estandarte da vila" size={18} />
         <strong title={`Esta passagem tem ${floors} andares; o guardião fica no último e, vencido, sela a passagem. Um andar só abre depois que o de cima for conquistado. Regras: ${rulesLabel(party.rules)}.`}>
           {party.lord ? (
             <>Nível {party.level} · {floorLabel(party)}</>

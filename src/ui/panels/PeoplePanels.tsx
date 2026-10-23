@@ -138,6 +138,33 @@ export function RosterPanel() {
   );
 }
 
+/** Busto da entrada do cemitério (M6 F6): o prefeito escolhe o herói caído e troca quando quiser. */
+function BustSection(props: { dead: Hero[] }) {
+  const { world } = useGame();
+  const command = useCommand();
+  const current = world.town.bust ?? null;
+  const [pick, setPick] = useState<number>(current ?? props.dead[0]!.id);
+  const bust = current === null ? undefined : world.heroes.find((h) => h.id === current);
+  return (
+    <>
+      <h3>Busto da entrada</h3>
+      <p class="sub">{bust ? <>O busto ao lado do portãozinho lembra <HeroLink id={bust.id} cross />.</> : 'A coluna ao lado do portãozinho ainda espera um busto.'}</p>
+      <div class="post-pick">
+        <select value={pick} onChange={(e) => setPick(Number((e.target as HTMLSelectElement).value))}>
+          {props.dead.map((h) => (
+            <option key={h.id} value={h.id}>
+              {h.name} · {className(h)} {h.rank}, nível {h.level}
+            </option>
+          ))}
+        </select>
+        <button class="btn small" disabled={pick === current} onClick={() => command(commands.setBust, pick)}>
+          {bust ? 'Trocar o busto' : 'Erguer o busto'}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function MemorialPanel() {
   const { world } = useGame();
   const dead = graveOrder(world).reverse();
@@ -156,6 +183,7 @@ export function MemorialPanel() {
           </ul>
         </>
       )}
+      {dead.length > 0 && <BustSection dead={dead} />}
       {dead.length > GRAVE_SLOTS && (
         <p class="sub">Cabem {GRAVE_SLOTS} covas dentro da cerca; as mais antigas foram para o ossário, mas os nomes ficam aqui.</p>
       )}

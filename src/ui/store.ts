@@ -29,6 +29,7 @@ export type Panel =
   /** O torneio da estação: a chave e os duelos para rever (M6 F4). */
   | { kind: 'tournament' }
   | { kind: 'hall'; tab?: HallTab; houseId?: number }
+  | { kind: 'paco'; tab?: PacoTab }
   /** Pedidos da manhã e desejos dos heróis (M6 F1). */
   | { kind: 'audiences' };
 
@@ -51,8 +52,12 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'audiences',
   'tournament',
   'hall',
+  'paco',
   'menu',
 ]);
+
+/** Abas do Paço do prefeito (M6 F6). */
+export type PacoTab = 'audiencias' | 'cargos' | 'estandarte' | 'enfeites' | 'nomes';
 
 /** Abas do Salão das Lendas (M6 F5). */
 export type HallTab = 'codex' | 'houses' | 'trophies' | 'statues';

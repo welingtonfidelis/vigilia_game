@@ -18,6 +18,11 @@ import {
   EXPANSION_TILES,
   HALL_PATH,
   HALL_TILES,
+  PACO_PATH,
+  PACO_TILES,
+  DECOR_SPOTS,
+  FLAG_POLES,
+  BUST_SPOT,
   HOME_LOTS,
   HORN_STAND,
   HORN_TOWER,
@@ -229,6 +234,11 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
     // Salão das Lendas (M6 F5): o prédio, o pátio e a trilha, com folga em volta.
     { tx: HALL_TILES.tx - 1, ty: HALL_TILES.ty - 1, tw: HALL_TILES.tw + 2, th: HALL_TILES.th + 3 },
     HALL_PATH,
+    // Paço do prefeito (M6 F6): o prédio e a trilha até a rua do portão.
+    { tx: PACO_TILES.tx - 1, ty: PACO_TILES.ty - 1, tw: PACO_TILES.tw + 2, th: PACO_TILES.th + 2 },
+    PACO_PATH,
+    // Pontos de enfeite, mastros e o busto (M6 F6): sem árvore solta por cima.
+    ...[...DECOR_SPOTS, ...FLAG_POLES, BUST_SPOT].map((d) => ({ tx: Math.floor(d.x) - 1, ty: Math.floor(d.y) - 2, tw: 3, th: 3 })),
     ...HOME_LOTS,
     ...DECOR.map((d) => ({ tx: Math.floor(d.x / TILE) - 1, ty: Math.floor(d.y / TILE) - 1, tw: 3, th: 2 })),
     { tx: 0, ty: 0, tw: 21, th: 10 }, // platô do cemitério e a fileira de pinheiros
@@ -246,6 +256,8 @@ export function scatterTrees(scene: Phaser.Scene, mask: boolean[][], solids: Sol
       CEMETERY_TILES,
       { tx: HALL_TILES.tx - 1, ty: HALL_TILES.ty - 1, tw: HALL_TILES.tw + 2, th: HALL_TILES.th + 3 },
       HALL_PATH,
+      { tx: PACO_TILES.tx - 1, ty: PACO_TILES.ty - 1, tw: PACO_TILES.tw + 2, th: PACO_TILES.th + 2 },
+      PACO_PATH,
       { tx: 21, ty: 0, tw: 12, th: 8 }, // portão e torrinha do berrante no topo central
       { tx: 16, ty: 0, tw: 5, th: 10 }, // fileira de pinheiros do cemitério
       { tx: 20, ty: 5, tw: 10, th: 3 }, // abadia

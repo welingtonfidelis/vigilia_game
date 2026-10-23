@@ -18,7 +18,7 @@ import {
   WISHES,
 } from '../../sim/index.ts';
 import type { Hero, Petition, World } from '../../sim/index.ts';
-import { HeroLink, PanelShell, useCommand, useGame } from '../components.tsx';
+import { HeroLink, useCommand, useGame } from '../components.tsx';
 import { CrowCard } from './CrowCard.tsx';
 import { fmt } from '../format.ts';
 
@@ -135,7 +135,8 @@ function TournamentSection() {
   );
 }
 
-export function AudiencesPanel() {
+/** Aba Audiências do Paço (M6 F6): corvos, torneio, a mesa, os desejos e as últimas audiências. */
+export function AudiencesBody() {
   const { world } = useGame();
   const petitions = world.town.petitions ?? [];
   const wishes = world.heroes.filter((h) => h.wish && (h.status === 'town' || h.status === 'expedition'));
@@ -143,7 +144,8 @@ export function AudiencesPanel() {
   const crows = world.parties.filter((p) => p.encounter && p.phase !== 'voltando');
   const tournament = todaysTournament(world);
   return (
-    <PanelShell title="Audiências" subtitle={`Os pedidos da manhã e os desejos dos heróis. O jogo não para: quem não for ouvido em ${BALANCE.petitionDays} dias desiste.`}>
+    <>
+      <p class="sub">Os pedidos da manhã e os desejos dos heróis. O jogo não para: quem não for ouvido em {BALANCE.petitionDays} dias desiste.</p>
       {crows.length > 0 && (
         <>
           <h3>Corvos do abismo</h3>
@@ -181,6 +183,6 @@ export function AudiencesPanel() {
           </ul>
         </>
       )}
-    </PanelShell>
+    </>
   );
 }

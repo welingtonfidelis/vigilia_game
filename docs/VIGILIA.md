@@ -1925,7 +1925,7 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
   - **Estátuas:** de quem deu o golpe final em cada Senhor. O save agora guarda quem foi e se o grupo voltou inteiro. São 2, 4 ou 6 pedestais, e a estátua é o sprite do herói refeito em tons de pedra. Tocar na estátua abre a ficha.
 - **Prédio no mapa:** no canto leste do distrito sul (colunas 35 a 41, linhas 31 a 36), com o pátio dos pedestais na frente e uma trilha que desce da estrada de baixo pelo lado leste.
   - A expansão sul encolheu para as colunas 6 a 33. Os três lotes dela continuam onde estavam, e nada mais mudou na planta.
-  - `relief.test.ts` confere que a porta do Salão é alcançável.
+  - `relief.test.ts` confere que a porta do Salão é alcançável. Na F5 esta linha estava no doc, mas a conferência não tinha entrado no teste; entrou na F6a.
 - **Arte** (`art32/historias32.py`, em 16 e 32-bit, com a camada de luzes): um salão de pedra com a empena virada para a frente, que se distingue do templo (telhado de quatro águas e torre).
   - Nível 1: cantaria grossa, óculo pequeno, porta dupla com cintas de ferro sob um lintel com placa, duas janelas estreitas e musgo no pé.
   - Nível 2: mais largo, com pórtico de duas colunas, frontão com coroa de louros, dois braseiros acesos (com fagulhas) e dois suportes de estandarte.
@@ -1955,6 +1955,47 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
   | Contratos do Senhor perdidos | 19% | 21% | 21% |
 
   - Por campanha: 32 casas; feitos de três gerações 2,2, de um Senhor por geração 1,7 e de vinte anos 5,3. O códex fecha com 74 de 78 entradas e quase todas as páginas de bioma; o Salão termina no nível 3.
+
+##### 21. Spec da F6, parte a: Paço e cosmética
+
+A F6 ficou em duas partes, cada uma com seu commit: **F6a** (Paço, estandarte, enfeites, nomes e busto) e **F6b** (clima das estações e a arte do corredor: objetos dos encontros, marca da nêmesis e arena do torneio).
+
+- **Paço do prefeito:** no nível de cima, a leste da torrinha do berrante (colunas 33 a 38, linhas 2 a 6), com a porta para o sul e uma trilha que sai da rua do portão por baixo do berrante.
+  - O paredão a leste da guilda corta a área na diagonal e não deixa espaço; o distrito sul ficou com o Salão. A mata do norte abre espaço para ele, e a planta não cresce.
+  - Marco sem nível, preço nem manutenção. A mesa de audiências continua na praça (as audiências são públicas, junto da fogueira).
+  - Abre o painel do Paço, com cinco abas: Audiências, Cargos (sai do painel Vila), Estandarte, Enfeites e Nomes. O botão Audiências da barra abre o Paço na primeira aba.
+  - O estandarte da vila pende da sacada.
+- **Estandarte da vila:** campo, figura e símbolo, nas mesmas cores e símbolos dos brasões das casas. O primeiro sai da semente, e o prefeito troca de graça.
+  - Aparece no Paço, em dois mastros ao lado do portão, num mastro da praça, nas bandeirolas e na faixa do grupo no corredor do Acompanhar.
+- **Enfeites:** 12 pontos fixos, na praça, nas duas estradas, na rua do portão e perto das termas. Cada ponto leva um enfeite do catálogo ou fica vazio; o prefeito escolhe e troca no Paço.
+  - Livres desde o começo: banco, lampião (acende à noite) e canteiro de flores (10 de ouro).
+  - Poço: 3 lendas, 40 de ouro. Bandeirola nas cores da vila: o primeiro torneio, 20. Arco de flores: o primeiro feito de casa, 30.
+  - Troféu de nêmesis: a primeira nêmesis caída. Estandarte de Senhor: o primeiro Senhor vencido. Taça do torneio: 5 torneios.
+  - Um enfeite por bioma, liberado pela página completa no bestiário: urna, vagonete, cogumelo gigante, sino afogado, bigorna, cristal de alma, favo pálido, concha, engrenagem e crânio de boi.
+  - O ouro é simbólico (até 50) e o prefeito automático não compra enfeite: a economia não muda.
+- **Nomes:** a praça e quatro ruas (estrada de cima, estrada de baixo, rua do portão e rua das termas). Cada uma tem placa no mapa, com o nome que o prefeito escreve; o painel sugere "Rua do Bram" com os heróis caídos de mais feitos.
+- **Busto no memorial:** ao lado do portãozinho do cemitério, numa coluna. O prefeito escolhe o herói caído no painel do cemitério e troca quando quiser. O busto é o herói em pedra, do peito para cima, como as estátuas do Salão.
+- **Arte nova** (`art32/historias32.py`, 16 e 32-bit): o Paço com a camada de luzes, o mastro, a coluna do busto, o canteiro, a bandeirola, o arco de flores, o troféu de nêmesis, a taça, o estandarte de Senhor e os 10 enfeites dos biomas. Banco, lampião e poço vêm do pack. Os panos (estandarte, mastros e bandeirola) são desenhados pelo jogo nas cores da vila.
+- **Pronto quando:** testes de liberação, custo e nomes; save 11 abre; `relief.test.ts` alcança o Paço, os pontos de enfeite e o busto; arte nos dois modos.
+
+##### 22. Como ficou a F6a
+
+- **Paço do prefeito:** no nível de cima, à direita da torrinha do berrante, com uma trilha de terra desde a rua do portão.
+  - A arte é um sobrado de vila pobre: térreo de pedra com porta em arco, andar de enxaimel com sacada, telhado alto de tabuinhas e uma torrinha com sino e cata-vento. O estandarte da vila pende da sacada, por cima da porta.
+  - O painel tem cinco abas: Audiências, Cargos (saíram do painel Vila, que agora aponta para o Paço), Estandarte, Enfeites e Nomes. O botão Audiências da barra abre o Paço na primeira aba.
+- **Estandarte da vila:** o editor tem campo, figura e símbolo, com a prévia do escudo e a regra de metal sobre cor. Ele aparece:
+  - na sacada do Paço;
+  - em dois mastros ao lado do portão e num mastro no canto da praça (flâmula);
+  - nas bandeirolas;
+  - no cabeçalho de cada grupo no Acompanhar.
+- **Enfeites:** 12 pontos e 19 enfeites no catálogo. Banco, lampião e poço vêm do pack; o lampião acende à noite. O cordão da bandeirola é desenhado nas cores da vila.
+  - Quatro pontos da primeira escolha caíam na face do paredão da praça (os dois cantos da praça e dois sobre a estrada de cima) e mudaram de lugar.
+  - A mata deixou de plantar árvore solta em cima dos pontos, dos mastros e do busto.
+- **Nomes:** as placas da praça e das quatro ruas ficam no mapa, pequenas e em tom apagado. As sugestões trazem "Rua do …" com os caídos de mais feitos.
+- **Busto:** coluna de calcário à direita do portãozinho do cemitério, com o herói em pedra do peito para cima (a mesma pedra das estátuas do Salão). A escolha fica no painel do cemitério.
+- **Arte nova** (`art32/historias32.py`, 16 e 32-bit): o Paço com a camada de luzes, o mastro, a coluna do busto e 16 enfeites, entre eles uma lembrança de cada bioma, na paleta do lugar.
+- **Testes:** 5 novos (`tests/cosmetics.test.ts`). `relief.test.ts` agora alcança o Salão, o Paço e os 12 pontos de enfeite. São 264 no total.
+- **Retrato:** o balanço de 40 sementes deu igual ao da F5, porque o prefeito automático não compra enfeite e nada da F6a usa o sorteio do mundo.
 
 ### 10. Decisões em aberto
 

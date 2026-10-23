@@ -2272,6 +2272,8 @@ kbd {
   overflow: hidden;
 }
 .arena-card-head strong { color: #d8bd86; font-family: var(--serif); font-weight: normal; }
+/* Estandarte da vila na faixa do grupo (M6 F6). */
+.arena-card-head .crest { align-self: center; margin-right: -0.3rem; }
 .arena-card-head span { overflow: hidden; text-overflow: ellipsis; }
 .arena-card-loot { margin-left: auto; color: #bfa77a; }
 
@@ -3465,4 +3467,47 @@ button.hud-item.hud-tipped:focus .hud-tip {
 .crest {
   flex: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+
+/* ── Paço do prefeito (M6 F6): o estandarte da vila ─────────────────────── */
+
+.banner-edit {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.banner-edit > div {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.banner-edit h3 {
+  margin-top: 0.4rem;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.swatch {
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 2px solid var(--line);
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.swatch.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(233, 196, 106, 0.35);
+}
+
+.banner-edit .btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: #33291c;
 }

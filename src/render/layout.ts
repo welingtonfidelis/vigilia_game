@@ -2,7 +2,7 @@
 
 import { buildingLevel } from '../sim/index.ts';
 import { JOB_BUILDING } from '../sim/citizens.ts';
-import type { BuildingId, Citizen, Hero, Pet, PetSpecies, RetiredRole, World } from '../sim/index.ts';
+import type { BuildingId, Citizen, Hero, Pet, PetSpecies, RetiredRole, StreetId, World } from '../sim/index.ts';
 
 /** Lado do tile no mundo: 16 px de arte × 2. */
 export const TILE = 32;
@@ -104,6 +104,49 @@ export const HALL_YARD: TileRect = { tx: 34, ty: 37, tw: 10, th: 2 };
 export const HALL_PATH: TileRect = { tx: 42, ty: 28, tw: 2, th: 9 };
 /** Centro do prédio em x e o pé dele (a porta), em px do mundo. */
 export const HALL = { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, bottom: (HALL_TILES.ty + HALL_TILES.th) * TILE };
+
+/**
+ * Paço do prefeito (M6 F6): no nível de cima, a leste da torrinha do berrante, com a porta para
+ * o sul. A trilha sai da rua do portão e passa por baixo do berrante.
+ */
+export const PACO_TILES: TileRect = { tx: 33, ty: 2, tw: 6, th: 5 };
+export const PACO_PATH: TileRect = { tx: 26, ty: 7, tw: 11, th: 2 };
+export const PACO = { x: (PACO_TILES.tx + PACO_TILES.tw / 2) * TILE, bottom: (PACO_TILES.ty + PACO_TILES.th) * TILE };
+
+/** Mastros com o estandarte da vila (M6 F6): dois ao lado do portão e um no canto da praça (pé, em tiles). */
+export const FLAG_POLES: Point[] = [
+  { x: 21.6, y: 7.2 },
+  { x: 27.3, y: 6.8 },
+  { x: 20.2, y: 15.4 },
+];
+
+/** Busto do memorial (M6 F6): ao lado do caminho entre o portãozinho do cemitério e a escadaria (pé, em tiles). */
+export const BUST_SPOT: Point = { x: 8.6, y: 7.3 };
+
+/** Placas das ruas (M6 F6): onde o nome aparece no mapa (em tiles). */
+export const STREET_SIGNS: Record<StreetId, Point> = {
+  praca: { x: 25, y: 15.1 },
+  estradaCima: { x: 11, y: 17.2 },
+  estradaBaixo: { x: 33, y: 26.2 },
+  ruaPortao: { x: 24.5, y: 9.6 },
+  ruaTermas: { x: 24.5, y: 23 },
+};
+
+/** Pontos de enfeite (M6 F6): o pé do enfeite, em tiles, e o nome do lugar para o painel. */
+export const DECOR_SPOTS: { x: number; y: number; name: string }[] = [
+  { x: 19.4, y: 19.3, name: 'Praça, canto oeste' },
+  { x: 30.5, y: 19.3, name: 'Praça, canto leste' },
+  { x: 15.2, y: 16.9, name: 'Estrada de cima, entre o templo e a taverna' },
+  { x: 38.5, y: 16.9, name: 'Estrada de cima, entre a guilda e a caverna' },
+  { x: 4.5, y: 16.8, name: 'Estrada de cima, ponta oeste' },
+  { x: 46.5, y: 16.9, name: 'Estrada de cima, perto da caverna' },
+  { x: 13.5, y: 28.9, name: 'Estrada de baixo, em frente à estalagem' },
+  { x: 19.6, y: 28.9, name: 'Estrada de baixo, perto das termas' },
+  { x: 34.5, y: 28.9, name: 'Estrada de baixo, perto das casinhas' },
+  { x: 23, y: 24.3, name: 'Rua das termas, lado oeste' },
+  { x: 26.9, y: 24.3, name: 'Rua das termas, lado leste' },
+  { x: 26.8, y: 11.8, name: 'Rua do portão' },
+];
 export const EXPANSION_ROADS: TileRect[] = [
   { tx: 24, ty: 27, tw: 2, th: 9 },
   { tx: 8, ty: 33, tw: 23, th: 2 },
@@ -160,7 +203,7 @@ export const THERMAL_PATH: TileRect = { tx: 24, ty: 25, tw: 2, th: 2 };
 /** Terreiro e trilha da caverna no canto direito, no pé do paredão. */
 export const CAVE_PATH: TileRect = { tx: 43, ty: 15, tw: 2, th: 3 };
 
-export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas' | 'salao';
+export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas' | 'salao' | 'paco';
 
 /** Portão de paliçada: é a entrada da vila, no alto do mapa (norte), ao centro. */
 export const HORN_TOWER: TileRect = { tx: 22, ty: 1, tw: 5, th: 6 };
@@ -180,6 +223,8 @@ export const LANDMARKS: Record<Landmark, Point> = {
   termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },
   // Na frente da porta do Salão das Lendas, entre os pedestais.
   salao: { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, y: (HALL_TILES.ty + HALL_TILES.th) * TILE + 16 },
+  // Na porta do Paço do prefeito, no nível de cima.
+  paco: { x: (PACO_TILES.tx + PACO_TILES.tw / 2) * TILE, y: (PACO_TILES.ty + PACO_TILES.th) * TILE + 16 },
 };
 
 export const door = (id: BuildingId): Point => {

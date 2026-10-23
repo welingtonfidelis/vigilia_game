@@ -3,6 +3,8 @@
 F1: a mesa de audiências da praça, o balão de desejo sobre o herói e as flores da lápide nova.
 F5: o Salão das Lendas (prédio só de aparência, níveis 1 a 3, com o overlay "-lights") e o
 pedestal das estátuas do pátio.
+F6a: o Paço do prefeito (com o overlay "-lights"), o mastro, a coluna do busto do memorial e os
+enfeites dos pontos da vila (canteiro, bandeirola, arco, troféus e um por bioma).
 
 Uso: python3 -I art32/historias32.py [--preview PASTA] [--dry]
   --dry    só as prévias (não grava no pack nem no índice)
@@ -22,6 +24,11 @@ from PIL import Image  # noqa: E402
 
 import lib32 as L  # noqa: E402
 import predios32_kit as K  # noqa: E402
+import abismo32_base as A  # noqa: E402  (paletas dos atos, para os enfeites dos biomas)
+import dimensoes32_cidadela as DC  # noqa: E402
+import dimensoes32_colmeia as DM  # noqa: E402
+import dimensoes32_deserto as DD  # noqa: E402
+import dimensoes32_fossa as DF  # noqa: E402
 
 OL = (23, 18, 15)
 WOOD = [(42, 30, 22), (90, 62, 42), (138, 98, 58), (150, 112, 52)]
@@ -1024,6 +1031,936 @@ def pedestal(s: int) -> Image.Image:
     return p.image()
 
 
+# ── F6a: o Paço do prefeito, o mastro, a coluna do busto e os enfeites ──────
+#
+# Mesmas regras do salão: desenho em unidades 16-bit pelo Piece, materiais no pixel de saída
+# (linhas de 1 px nas duas escalas) e o detalhe fino só na 32-bit. Os panos (o estandarte da
+# sacada, a flâmula do mastro e as bandeirinhas) são desenhados pelo jogo nas cores da vila;
+# aqui ficam só os suportes vazios. Os enfeites dos biomas usam as paletas dos atos
+# (abismo32_base) e das dimensões (dimensoes32_*), mais claras porque ficam na vila.
+
+TABUINHA = [L.mix(K.SHINGLE[i], SLATE[i], 0.35) for i in range(5)]      # telhado gasto do Paço
+REBOCO = [(128, 112, 90), (160, 144, 116), (188, 174, 144), (210, 198, 170)]
+FOLHA = L.LEAF
+TERRA = L.DIRT
+FLOR = K.FLOWER
+OSSO = L.BONE
+CHIFRE = [(40, 32, 26), (74, 60, 46), (116, 98, 74), (164, 146, 114)]
+PANO_SENHOR = [(14, 10, 18), (28, 20, 34), (44, 32, 54), (64, 48, 76)]
+SIGILO = [(96, 22, 30), (150, 40, 44), (196, 70, 62)]
+PX = 48          # eixo do Paço (entre as colunas 47 e 48)
+
+
+def poly(p: Piece, pts, col):
+    """Polígono em unidades 16-bit, preenchido pelo centro do pixel nas duas escalas."""
+    p.c.poly([(x * p.s, y * p.s) for x, y in pts], col)
+
+
+def seg(p: Piece, x0, y0, x1, y1, col, w=1.0):
+    """Traço reto de espessura w (unidades 16-bit), com as pontas redondas."""
+    dx, dy = x1 - x0, y1 - y0
+    n = dx * dx + dy * dy or 1e-9
+    xa, ya = math.floor(min(x0, x1) - w), math.floor(min(y0, y1) - w)
+    for X, Y, u, v in p.each(xa, ya, math.ceil(max(x0, x1) + w) - xa, math.ceil(max(y0, y1) + w) - ya):
+        t = max(0.0, min(1.0, ((u - x0) * dx + (v - y0) * dy) / n))
+        if math.hypot(u - x0 - t * dx, v - y0 - t * dy) <= w / 2:
+            p.put(X, Y, col)
+
+
+def ball(p: Piece, cx, cy, rx, ry, pal, clip=None, lo=0.25, gain=1.15):
+    """Elipse sombreada como volume, com a luz de cima e da esquerda."""
+    n = len(pal)
+    for X, Y, u, v in p.each(math.floor(cx - rx), math.floor(cy - ry), math.ceil(2 * rx) + 2, math.ceil(2 * ry) + 2):
+        nx, ny = (u - cx) / rx, (v - cy) / ry
+        d = nx * nx + ny * ny
+        if d > 1 or (clip and not clip(u, v)):
+            continue
+        dot = -0.55 * nx - 0.62 * ny + 0.56 * math.sqrt(1 - d)
+        p.put(X, Y, pal[max(0, min(n - 1, int((dot + lo) / gain * n)))])
+
+
+def cyl(p: Piece, x, y, w, h, pal, clip=None, grain=0.0, seed=0):
+    """Cilindro em pé (mastro, fuste, coluna): o tom vai por coluna, claro um pouco à esquerda."""
+    n = len(pal)
+    for X, Y, u, v in p.each(x, y, w, h):
+        if clip and not clip(u, v):
+            continue
+        t = (u - x) / w
+        b = 1 - abs(t - 0.32) * 1.7
+        col = pal[max(0, min(n - 1, int(b * n)))]
+        if grain and p.s == 2 and L.hsh(X, Y // 3, seed) < grain:
+            col = L.mul(col, 0.86)
+        p.put(X, Y, col)
+
+
+def beam(p: Piece, x, y, w, h, vertical, pal=MADEIRA, seed=0):
+    """Viga de madeira: quina clara em cima/à esquerda, a de baixo/direita escura, veio na 32-bit."""
+    s = p.s
+    X0, Y0 = round(x * s), round(y * s)
+    size = round((w if vertical else h) * s)
+    for X, Y, u, v in p.each(x, y, w, h):
+        c = (X - X0) if vertical else (Y - Y0)
+        col = pal[3] if c == 0 else (pal[1] if c == size - 1 else pal[2])
+        if s == 2 and 0 < c < size - 1:
+            along = Y if vertical else X
+            if L.noise(along / 4, c * 3 + (X if vertical else Y) // 7, seed, 2) > 0.66:
+                col = pal[1]
+        p.put(X, Y, col)
+
+
+def plaster(p: Piece, x, y, w, h, pal=REBOCO, seed=0):
+    """Reboco de cal, manchado (na 32-bit, grão e pintas)."""
+    for X, Y, u, v in p.each(x, y, w, h):
+        n = L.noise(u, v, seed, 3.0)
+        if p.s == 1:
+            col = pal[2] if n < 0.64 else pal[3]
+            if L.hsh(X, Y, seed + 1) < 0.03:
+                col = pal[1]
+        else:
+            col = L.mix(pal[1], pal[3], 0.3 + 0.55 * n)
+            if L.hsh(X, Y, seed + 1) < 0.025:
+                col = pal[0]
+        p.put(X, Y, col)
+
+
+def hip_roof(p: Piece, y0, y1, ridge, eave, hips, pal=TABUINHA, seed=0):
+    """Telhado de quatro águas visto de frente: cumeeira ridge = (x0, x1) na linha y0, beiral
+    eave = (x0, x1) na y1, espigões descendo até hips = (x0, x1) no beiral. A água da frente
+    fica entre os espigões; as dos lados, mais escuras. Tabuinhas em fiadas deitadas."""
+    s = p.s
+    H = y1 - y0
+    ch, sw = 3 * s, 3 * s
+    for X, Y, u, v in p.each(eave[0], y0, eave[1] - eave[0], H + 1):
+        t = min(1.0, (v - y0) / H)
+        xl, xr = ridge[0] + (eave[0] - ridge[0]) * t, ridge[1] + (eave[1] - ridge[1]) * t
+        if not xl <= u <= xr:
+            continue
+        hl, hr = ridge[0] + (hips[0] - ridge[0]) * t, ridge[1] + (hips[1] - ridge[1]) * t
+        face = -1 if u < hl else (1 if u > hr else 0)
+        course, ly = Y // ch, Y % ch
+        off = (course % 2) * (sw // 2) + int(L.hsh(course, 1, seed) * 2)
+        sx, sh = (X + off) % sw, (X + off) // sw
+        tone = L.hsh(sh, course, seed + 2)
+        if ly == ch - 1:
+            col = pal[0]
+        elif ly == 0:
+            col = pal[3] if sx < sw - 1 else pal[2]
+        elif sx == sw - 1:
+            col = pal[1]
+        else:
+            col = pal[2]
+        if s == 2:
+            col = L.mul(col, 0.88 + 0.22 * tone)
+        elif tone < 0.2 and col == pal[2]:
+            col = pal[1]
+        if face:
+            col = L.mul(col, 0.74 if face < 0 else 0.56)
+        if abs(u - hl) < 0.5 or abs(u - hr) < 0.5:
+            col = pal[3] if u < PX else pal[1]                      # capa do espigão
+        if v < y0 + 1:
+            col = pal[4] if (X // s) % 3 else pal[2]                # cumeeira
+        elif v >= y1:
+            col = L.mul(pal[0], 0.75)                               # beiral
+        p.put(X, Y, col)
+
+
+def window_box(p: Piece, gx, gy, gw, gh, frame=MADEIRA, bars=(), seed=0):
+    """Janela de caixilho: moldura de 1 (16-bit), vidro escuro aceso no overlay, cruzeta e,
+    se pedir, barras de ferro em pé nas colunas `bars`."""
+    s = p.s
+    for X, Y, u, v in p.each(gx - 1, gy - 1, gw + 2, gh + 2):
+        inside = gx <= u < gx + gw and gy <= v < gy + gh
+        if not inside:
+            col = frame[3] if (u < gx or v < gy) and not (u >= gx + gw) else frame[1]
+            p.put(X, Y, col)
+            continue
+        mx, my = gx + gw // 2, gy + gh // 2
+        if int(u) == mx or int(v) == my:
+            col = frame[2] if (s == 1 or (X % 2 == 0 and int(u) == mx) or (Y % 2 == 0 and int(v) == my)) else frame[1]
+            p.put(X, Y, col)
+            continue
+        if int(u) in bars:
+            p.put(X, Y, IRON[1] if s == 1 or X % 2 else IRON[3])
+            continue
+        t = ((u - gx) / gw + (v - gy) / gh) / 2
+        col = L.mix(GLASS[2], GLASS[0], t)
+        if s == 2 and 1 <= (X - gx * 2) - (Y - gy * 2) * 0.7 <= 2:
+            col = GLASS[3]
+        p.put(X, Y, col)
+        p.glow(X, Y, lit_color(p, X, Y, u, v, gx + gw / 2, gy + gh * 0.6, gw * 0.7, gh * 0.7, seed))
+
+
+def arch_door(p: Piece, x, y, w, h, seed=0):
+    """Porta dupla de tábuas em arco pleno, com aduelas de pedra, cravos e argolas."""
+    s = p.s
+    r = w / 2
+    cx, cy = x + r, y + r
+
+    def inside(u, v, grow=0.0):
+        if not (x - grow <= u < x + w + grow and v < y + h):
+            return False
+        return v >= cy or math.hypot(u - cx, v - cy) <= r + grow
+
+    for X, Y, u, v in p.each(x - 2, y - 2, w + 4, h + 2):
+        if inside(u, v):
+            lx = u - x
+            if abs(lx - r) < 0.5 / s + (0.5 if s == 1 else 0) and (s == 2 or lx < r):
+                col = MADEIRA[0]                                    # junta das folhas
+            else:
+                k = (X - round(x * s)) % (3 * s)
+                col = MADEIRA[3] if k == 0 else (MADEIRA[1] if k == 3 * s - 1 else MADEIRA[2])
+                if s == 2 and 0 < k < 5 and L.hsh(X // 6, (Y + X) // 5, seed) < 0.22:
+                    col = MADEIRA[1]
+            if v < cy - r * 0.2 and math.hypot(u - cx, v - cy) > r - 0.9:
+                col = L.mul(col, 0.7)                               # sombra da aduela
+            p.put(X, Y, col)
+        elif inside(u, v, 2.0) and v < y + h:
+            ang = math.atan2(v - cy, u - cx)
+            col = STONE[3] if (u < cx and v < cy + 2) else STONE[2]
+            if v >= cy:
+                col = STONE[3] if u < cx else STONE[1]
+            if s == 2 and v < cy and abs(((ang + math.pi) / math.pi * 7) - round((ang + math.pi) / math.pi * 7)) < 0.09:
+                col = MORTAR
+            if s == 2 and not inside(u, v, 1.5):
+                col = L.mul(col, 0.85)
+            p.put(X, Y, col)
+    for by in (cy + 0.5, y + h - 3):
+        strata(p, x, by, w, [IRON[2]], [IRON[3], IRON[1]])
+        if s == 2:
+            for X in range(round(x * 2) + 2, round((x + w) * 2) - 1, 4):
+                p.fine(X, round(by * 2), IRON[4])
+    ry = round(cy + 3)
+    p.dot(round(cx) - 2, ry, IRON[4])
+    p.dot(round(cx) + 1, ry, IRON[4])
+
+
+def paco(s: int):
+    """Paço do prefeito (96 × 80): o sobrado da vila pobre. Térreo de pedra com a porta em arco,
+    duas janelas gradeadas e o lampião; andar de cima em enxaimel sobre o balanço do
+    vigamento, com a sacada de madeira sobre a porta (o estandarte da vila pende do varão de
+    ferro da grade); telhado alto de tabuinhas com a torrinha do sino e o cata-vento.
+    Devolve a peça e o overlay de luzes (janelas, porta da sacada e lampião)."""
+    p = Piece(96, 80, s)
+    # Térreo de pedra e rodapé.
+    ashlar(p, 16, 57, 64, 18, bw=6, bh=3, seed=8)
+    socle(p, 14, 75, 68, 4, seed=7)
+    # Andar de cima: reboco e enxaimel.
+    plaster(p, 14, 39, 68, 16, seed=3)
+    for x in (34, 56):                                            # mãos-francesas nos painéis da sacada
+        a, b = (x, 52.5), (x + 4.5, 41.5)
+        if x > PX:
+            a, b = (x + 5, 52.5), (x + 0.5, 41.5)
+        seg(p, a[0] + 0.5, a[1], b[0] + 0.5, b[1], MADEIRA[2], 1.6)
+    for x0 in (16, 64):                                           # escoras sob as janelas
+        seg(p, x0 + 0.5, 52.5, x0 + 4, 50.5, MADEIRA[2], 1.4)
+        seg(p, x0 + 15.5, 52.5, x0 + 12, 50.5, MADEIRA[2], 1.4)
+    for x in (14, 32, 40, 54, 62, 80):
+        beam(p, x, 39, 2, 16, True, seed=x)
+    beam(p, 14, 39, 68, 2, False, seed=1)
+    beam(p, 14, 53, 68, 2, False, seed=2)
+    for gx in (21, 70):
+        window_box(p, gx, 43, 5, 7, seed=gx)
+        beam(p, gx - 2, 50, 9, 1, False, seed=gx)                 # peitoril
+    # Porta da sacada: duas folhas envidraçadas em cima.
+    for X, Y, u, v in p.each(42, 41, 12, 12):
+        lx = u - 42
+        if lx < 1 or lx >= 11 or v < 42:
+            p.put(X, Y, MADEIRA[1] if lx >= 11 else MADEIRA[3])
+        elif 5.5 <= lx < 6.5:
+            p.put(X, Y, MADEIRA[0])
+        elif v < 48 and (2 <= lx < 5 or 7 <= lx < 10) and not (v >= 44.5 and v < 45.5):
+            t = ((u - 42) / 12 + (v - 42) / 6) / 2
+            p.put(X, Y, L.mix(GLASS[2], GLASS[0], t))
+            p.glow(X, Y, lit_color(p, X, Y, u, v, PX, 45.5, 5, 4, 7))
+        else:
+            k = (X - round(42 * s)) % (2 * s)
+            p.put(X, Y, MADEIRA[2] if k else MADEIRA[3])
+    # Beiral: sombra no reboco.
+    p.shade(14, 41, 68, 1, 0.7)
+    # Balanço do vigamento: viga, cabeças dos barrotes e a sombra no térreo.
+    beam(p, 13, 55, 70, 2, False, seed=4)
+    p.shade(16, 57, 64, 1, 0.62)
+    p.shade(16, 58, 64, 1, 0.8)
+    for x in range(17, 80, 5):
+        p.rect(x, 57, 2, 1, MADEIRA[1])
+        p.dot(x, 57, MADEIRA[3])
+    # Janelas do térreo, gradeadas, com verga e peitoril de pedra.
+    for gx in (24, 66):
+        strata(p, gx - 2, 60, 10, [STONE[4], STONE[1]], [STONE[4], STONE[3], STONE[3], STONE[1]])
+        window_box(p, gx, 63, 6, 7, bars=(gx + 1, gx + 4), seed=gx + 1)
+        strata(p, gx - 2, 71, 10, [STONE[4], 'sombra'], [STONE[4], STONE[3], 'sombra', None])
+    # Porta em arco e o degrau.
+    arch_door(p, 42, 63, 12, 12, seed=5)
+    strata(p, 40, 75, 16, [STONE[4], STONE[2]], [STONE[4], STONE[3], STONE[2], STONE[1]])
+    # Lampião da porta (acende).
+    p.rect(55, 63, 4, 1, IRON[1])
+    p.rect(57, 64, 3, 1, IRON[2])
+    p.rect(57, 65, 3, 3, (255, 200, 110))
+    p.rect(57, 68, 3, 1, IRON[1])
+    p.dot(58, 69, IRON[1])
+    for X, Y, u, v in p.each(57, 65, 3, 3):
+        hot = abs(u - 58.5) < 0.6 and abs(v - 66.5) < 0.9
+        p.put(X, Y, (255, 236, 190) if hot else (255, 196, 104))
+        p.glow(X, Y, LUZ16[1] if s == 1 else (LIT[4] if hot else LIT[3]))
+    if s == 2:
+        for Y in range(130, 136):
+            p.fine(114, Y, IRON[1])
+            p.fine(119, Y, IRON[1])
+    # Sacada: mãos-francesas, piso, grade e o varão do estandarte.
+    for x in (37, 58):
+        d = 1 if x < PX else -1
+        seg(p, x + 0.5, 62, x + 0.5 + 3 * d, 58, MADEIRA[1], 1.5)
+        p.rect(x, 58, 1, 4, MADEIRA[2])
+    for X, Y, u, v in p.each(36, 55, 24, 3):
+        ly = Y - round(55 * s)
+        col = MADEIRA[4] if ly == 0 else (MADEIRA[1] if ly == 3 * s - 1 else MADEIRA[2])
+        if s == 2 and ly in (2, 3) and (X % 7 == 0):
+            col = MADEIRA[1]
+        p.put(X, Y, col)
+    for x in range(38, 58, 2):
+        p.rect(x, 50, 1, 4, MADEIRA[2])
+        p.fine(x * 2, 101, MADEIRA[3])
+        p.fine(x * 2, 104, MADEIRA[3])
+    for x in (36, 59):
+        beam(p, x, 49, 1, 6, True)
+    beam(p, 36, 49, 24, 1, False)
+    beam(p, 36, 54, 24, 1, False)
+    # Suporte vazio do estandarte: dois ganchos na grade e o varão de ferro na frente.
+    for x in (43, 52):
+        p.rect(x, 49, 1, 2, IRON[1])
+    p.rect(43, 50, 10, 1, IRON[1])
+    p.dot(43, 50, IRON[3])
+    p.dot(52, 50, IRON[3])
+    if s == 2:
+        for X in range(86, 106):
+            p.fine(X, 100, IRON[3] if X % 3 else IRON[4])
+    # Telhado e a torrinha do sino.
+    hip_roof(p, 17, 38, (30, 66), (8, 88), (21, 75), seed=6)
+    belfry(p)
+    return p.image(), p.lights()
+
+
+def belfry(p: Piece):
+    """Torrinha de madeira na cumeeira: base de tábuas, vão com o sino, capelo de tabuinhas em
+    pirâmide e o cata-vento de ferro (uma seta)."""
+    s = p.s
+    # Base fechada (tábuas em pé) e o vão escuro com o sino.
+    for X, Y, u, v in p.each(43, 14, 10, 5):
+        k = (X - round(43 * s)) % (2 * s)
+        p.put(X, Y, MADEIRA[3] if k == 0 else MADEIRA[2])
+    p.shade(43, 18, 10, 1, 0.7)
+    p.rect(45, 10, 6, 4, K.VOID[1])
+    ball(p, PX, 12.2, 2.2, 2.4, BRONZE[:3], clip=lambda u, v: v < 13.6)
+    p.rect(46, 13, 4, 1, BRONZE[1])
+    p.dot(47, 13, BRONZE[2])
+    p.fine(94, 22, BRONZE[3])
+    beam(p, 43, 10, 2, 5, True)
+    beam(p, 51, 10, 2, 5, True)
+    beam(p, 43, 13, 10, 1, False)
+    # Capelo em pirâmide.
+    for X, Y, u, v in p.each(41, 4, 14, 6):
+        half = 0.6 + (v - 4) * 1.15
+        if abs(u - PX) > half:
+            continue
+        col = TABUINHA[3] if u < PX else TABUINHA[1]
+        if int((v - 4) * s) % (2 * s) == 2 * s - 1:
+            col = TABUINHA[0]
+        if v >= 9:
+            col = L.mul(TABUINHA[0], 0.8)
+        p.put(X, Y, col)
+    # Cata-vento: haste, bolinha e a seta apontando para leste.
+    p.rect(47, 2, 1, 2, IRON[3])
+    p.rect(44, 2, 7, 1, IRON[4])
+    p.dot(50, 1, IRON[3])
+    p.dot(44, 1, IRON[3])
+    p.fine(101, 5, IRON[4])
+    p.fine(89, 3, IRON[4])
+
+
+# ── Mastro, busto e enfeites ──────────────────────────────────────────────
+
+def mastro(s: int) -> Image.Image:
+    """Mastro (8 × 44): base de pedra em dois degraus, haste de madeira, cunho de ferro para a
+    corda e o remate dourado. A flâmula (desenhada pelo jogo) sai de (5, 4), à direita da ponta."""
+    p = Piece(8, 44, s)
+    strata(p, 1, 39, 6, [STONE[4], STONE[2], STONE[2], STONE[1]],
+           [STONE[4], STONE[3], STONE[3], STONE[2], STONE[2], STONE[2], STONE[1], STONE[1]])
+    strata(p, 2, 36, 4, [STONE[4], STONE[2], STONE[1]], [STONE[4], STONE[3], STONE[2], STONE[2], STONE[1], STONE[1]])
+    p.shade(1, 39, 1, 4, 1.08)
+    cyl(p, 3, 4, 2, 32, MADEIRA[1:], grain=0.3, seed=2)
+    # Cunho da corda e a argola de cima.
+    p.rect(5, 27, 1, 2, IRON[2])
+    p.dot(2, 28, IRON[1])
+    if s == 2:
+        for Y in range(9, 56):
+            p.fine(10, Y, (150, 140, 112) if Y % 4 else (120, 110, 88))     # a corda
+        p.fine(10, 8, IRON[3])
+        p.fine(11, 55, IRON[4])
+    # Remate: bola dourada e ponta.
+    ball(p, 4, 3, 1.25, 1.2, OURO)
+    p.rect(3.5 if s == 2 else 3, 1, 1, 1, OURO[2])
+    return p.image()
+
+
+def busto(s: int) -> Image.Image:
+    """Coluna do busto (14 × 18): capitel com o topo liso e vazio nas linhas 1 e 2 (o jogo põe
+    o busto em cima), fuste canelado com a plaquinha de bronze, base e um pouco de musgo."""
+    pal = CALCARIO
+    p = Piece(14, 18, s)
+    strata(p, 1, 1, 12, [pal[4], pal[3]], [pal[4], pal[4], pal[4], pal[3]])
+    strata(p, 1, 3, 12, [pal[2]], [pal[3], pal[1]])
+    strata(p, 2, 4, 10, [pal[1]], [pal[2], pal[1]])
+    cyl(p, 3, 5, 8, 9, pal[1:])
+    if s == 2:
+        for X in (8, 11, 14, 17):
+            for Y in range(11, 27):
+                p.fine(X, Y, L.mul(p.get(X, Y), 0.86))                       # caneluras
+    p.shade(3, 5, 8, 1 if s == 1 else 0.5, 0.75)
+    p.rect(5, 8, 4, 2, BRONZE[2])
+    p.rect(5, 8, 4, 1, BRONZE[3])
+    p.dot(8, 9, BRONZE[1])
+    p.fine(10, 16, BRONZE[4])
+    for X in (11, 12, 14, 15):
+        p.fine(X, 18, BRONZE[1])
+    strata(p, 2, 14, 10, [pal[3]], [pal[4], pal[2]])
+    strata(p, 1, 15, 12, [pal[3], pal[1]], [pal[4], pal[3], pal[2], pal[1]])
+    moss(p, 1, 13, 12, 4, amount=0.5, seed=9)
+    return p.image()
+
+
+def canteiro(s: int) -> Image.Image:
+    """Canteiro de flores (24 × 12): borda de pedra baixa, terra, folhagem em tufos e flores
+    de quatro cores."""
+    p = Piece(24, 12, s)
+    for i, cx in enumerate(range(4, 21, 4)):
+        ball(p, cx + (L.hsh(i, 0, 3) - 0.5), 5.2 - L.hsh(i, 1, 3), 3.2, 2.6, FOLHA[1:])
+    p.rect(2, 6, 20, 1, TERRA[1])
+    for i in range(9):
+        x = 3 + i * 2 + (1 if i % 2 else 0) * 0.0
+        y = 2 + round(L.hsh(i, 2, 4) * 3)
+        col = FLOR[int(L.hsh(i, 3, 4) * 4)]
+        p.rect(x, y, 1, 1, col)
+        p.fine(round(x * 2) + 1, y * 2, L.mul(col, 1.15))
+        p.fine(round(x * 2), y * 2 + 1, L.mul(col, 0.8))
+    # Borda: topo claro e a face de pedras.
+    strata(p, 1, 7, 22, [STONE[4]], [STONE[4], STONE[3]])
+    for X, Y, u, v in p.each(1, 8, 22, 3):
+        ly = Y - round(8 * s)
+        joint = (u - 1 + (2 if int(v) % 2 else 0)) % 5 >= 5 - 1 / s
+        col = STONE[1] if (joint or ly == 3 * s - 1) else (STONE[3] if ly == 0 and s == 2 else STONE[2])
+        p.put(X, Y, col)
+    moss(p, 1, 8, 22, 3, amount=0.35, seed=4)
+    return p.image()
+
+
+def bandeirola(s: int) -> Image.Image:
+    """Bandeirola (28 × 22): dois postes de madeira com argola na ponta, fincados entre pedras.
+    O jogo estende o cordão de bandeirinhas entre (2, 2) e (26, 2)."""
+    p = Piece(28, 22, s)
+    for x in (1, 25):
+        cyl(p, x, 3, 2, 16, MADEIRA[1:], grain=0.3, seed=x)
+        p.rect(x, 2, 2, 1, MADEIRA[3])
+        p.rect(x, 1, 2, 1, IRON[2])                                      # argola
+        p.fine(x * 2 + 1, 2, IRON[4])
+        side = 1 if x < 14 else -1
+        ball(p, x + 1 + side * 0.6, 19.6, 2.2, 1.5, STONE[1:])
+        ball(p, x + 1 - side * 1.2, 20.2, 1.4, 1.0, STONE[1:])
+    return p.image()
+
+
+def arco(s: int) -> Image.Image:
+    """Arco de flores (28 × 28): dois postes de madeira e o arco coberto de folhas e flores."""
+    p = Piece(28, 28, s)
+    for x in (3, 23):
+        cyl(p, x, 12, 2, 15, MADEIRA[1:], grain=0.3, seed=x)
+    # Arco de folhagem: anel em cima e trepadeira descendo pelos postes.
+    for X, Y, u, v in p.each(1, 1, 26, 26):
+        d = math.hypot(u - 14, v - 13.5)
+        ring = 9 <= d <= 12.6 and v <= 13.5
+        vine = v > 13.5 and (abs(u - 4) < 1.6 or abs(u - 24) < 1.6) and L.noise(u, v, 5, 1.6) > 0.35 + (v - 13) / 30
+        if not (ring or vine):
+            continue
+        n = L.noise(u * 1.3, v * 1.3, 6, 1.4)
+        col = FOLHA[3] if n > 0.62 else (FOLHA[2] if n > 0.36 else FOLHA[1])
+        if u > 14 and ring:
+            col = L.mul(col, 0.86)
+        if v < 13.5 and d > 12 and n < 0.4:
+            continue                                                     # borda de fora recortada
+        p.put(X, Y, col)
+    for i in range(16):
+        a = math.pi * (0.06 + 0.88 * i / 15)
+        r = 10.8 + (L.hsh(i, 1, 8) - 0.5) * 2.2
+        x, y = 14 - math.cos(a) * r, 13.5 - math.sin(a) * r
+        col = FLOR[i % 4]
+        p.rect(math.floor(x), math.floor(y), 1, 1, col)
+        p.fine(math.floor(x) * 2 + 1, math.floor(y) * 2, L.mul(col, 1.15))
+    for i, (x, y) in enumerate(((3.5, 17), (24.5, 19), (3.6, 22), (24.2, 24))):
+        p.rect(math.floor(x), y, 1, 1, FLOR[(i + 1) % 4])
+    for x in (4, 24):
+        ball(p, x, 26.2, 2.2, 1.2, STONE[1:])
+    return p.image()
+
+
+def trofeu_nemesis(s: int) -> Image.Image:
+    """Troféu de nêmesis (16 × 22): crânio de fera com chifres, pregado numa tábua num poste."""
+    p = Piece(16, 22, s)
+    cyl(p, 7, 13, 2, 7, MADEIRA[1:])
+    ball(p, 8, 20.4, 3.0, 1.3, STONE[1:])
+    for X, Y, u, v in p.each(2, 4, 12, 10):
+        ly = Y - round(4 * s)
+        k = ly % (3 * s)
+        col = MADEIRA[3] if k == 0 else (MADEIRA[1] if k == 3 * s - 1 else MADEIRA[2])
+        if s == 2 and 0 < k < 5 and L.hsh(X // 5, ly // 6, 2) < 0.25:
+            col = MADEIRA[1]
+        p.put(X, Y, col)
+    p.shade(2, 13, 12, 1, 0.8)
+    for x, y in ((3, 5), (12, 5), (3, 12), (12, 12)):
+        p.dot(x, y, IRON[1])
+        p.fine(x * 2, y * 2, IRON[4])
+    # Arranhões de garra na tábua.
+    for i in range(3):
+        seg(p, 11 + i * 0.9, 9.5, 11.6 + i * 0.9, 12.2, MADEIRA[0], 0.6 if s == 2 else 0.9)
+    # Chifres (saem de lado, sobem e viram a ponta para dentro) e o crânio comprido da fera.
+    for side in (-1, 1):
+        pts = [(8 + side * 2.4, 6.2), (8 + side * 4.6, 5.8), (8 + side * 6.2, 4.4), (8 + side * 6.6, 2.4), (8 + side * 5.6, 1.2)]
+        for i in range(len(pts) - 1):
+            seg(p, *pts[i], *pts[i + 1], CHIFRE[2 if side < 0 else 1] if i < 2 else CHIFRE[3 if side < 0 else 2], 2.0 - i * 0.3)
+        tip = pts[-1]
+        p.dot(math.floor(tip[0]), math.floor(tip[1]), CHIFRE[0])
+    poly(p, [(5.2, 5), (10.8, 5), (11.4, 7), (10, 9), (9.6, 13.2), (6.4, 13.2), (6, 9), (4.6, 7)], OSSO[2])
+    for X, Y, u, v in p.each(4, 5, 8, 9):
+        if p.get(X, Y) != OSSO[2]:
+            continue
+        col = OSSO[3] if u < 7.6 else (OSSO[2] if u < 9 else OSSO[1])
+        if v < 5.6 and u < 9:
+            col = OSSO[4]
+        p.put(X, Y, col)
+    for x in (5.8, 9.0):
+        p.rect(x, 6.6, 1.2, 1.4, (30, 20, 22))                           # órbitas
+    p.rect(7, 12, 0.5 if s == 2 else 1, 1, OSSO[0])
+    p.rect(8.5 if s == 2 else 8, 12, 0.5 if s == 2 else 1, 1, OSSO[0])
+    p.fine(11, 14, SIGILO[2])
+    p.fine(20, 14, SIGILO[2])                                            # brasa no fundo dos olhos
+    p.fine(15, 15, OSSO[0])
+    p.fine(15, 16, OSSO[0])
+    p.fine(16, 18, OSSO[1])                                              # racha no osso
+    return p.image()
+
+
+def taca(s: int) -> Image.Image:
+    """Taça do torneio (12 × 20): cálice de ouro com alças numa coluninha de pedra."""
+    p = Piece(12, 20, s)
+    strata(p, 2, 17, 8, [CALCARIO[3], CALCARIO[1]], [CALCARIO[4], CALCARIO[3], CALCARIO[2], CALCARIO[1]])
+    cyl(p, 3, 11, 6, 6, CALCARIO[1:])
+    strata(p, 2, 10, 8, [CALCARIO[4]], [CALCARIO[4], CALCARIO[2]])
+    # Pé, haste e o bojo.
+    p.rect(4, 9, 4, 1, OURO[1])
+    p.rect(4, 9, 2, 1, OURO[2])
+    cyl(p, 5, 7, 2, 2, OURO)
+    ball(p, 6, 3.6, 3.6, 3.6, OURO, clip=lambda u, v: v >= 2.4)
+    strata(p, 2, 2, 8, [OURO[3]], [OURO[3], OURO[2]])
+    p.fine(7, 5, (255, 248, 210))
+    for side in (-1, 1):
+        x = 1 if side < 0 else 10
+        p.rect(x, 3, 1, 3, OURO[1] if side > 0 else OURO[2])
+        p.dot(x, 3, OURO[2])
+    return p.image()
+
+
+def estandarte_senhor(s: int) -> Image.Image:
+    """Estandarte de Senhor (12 × 28): o pano escuro tomado no abismo, rasgado e chamuscado,
+    numa haste com travessa e ponta de ferro, fincada num monte de pedras."""
+    p = Piece(12, 28, s)
+    cyl(p, 5, 3, 2, 22, MADEIRA[1:])
+    poly(p, [(5, 3), (7, 3), (6, 0.6)], IRON[3])
+    p.dot(6, 2, IRON[1])
+    beam(p, 1, 3, 10, 1, False, pal=IRON[1:])
+    p.dot(1, 3, IRON[4])
+    p.dot(10, 3, IRON[3])
+    # Pano: escuro, com dobras, a bainha em farrapos e furos.
+    for X, Y, u, v in p.each(2, 4, 8, 18):
+        lx = u - 2
+        edge = 16 + 2.6 * abs(math.sin(lx * 1.9 + 0.7)) + L.hsh(int(lx), 9, 4) * 1.5
+        if v - 4 > edge:
+            continue
+        if L.noise(u * 1.7, v * 1.7, 11, 1.0) > 0.86 and 7 < v < 19:
+            continue                                                     # furo
+        fold = math.sin(lx * 1.6)
+        col = PANO_SENHOR[2] if fold > 0.3 else (PANO_SENHOR[1] if fold > -0.4 else PANO_SENHOR[0])
+        if lx < 0.6:
+            col = PANO_SENHOR[3]
+        if v - 4 > edge - 1.2:
+            col = L.mix(col, (60, 40, 30), 0.45)                         # bainha chamuscada
+        p.put(X, Y, col)
+    # O olho do Senhor, desbotado.
+    for X, Y, u, v in p.each(3, 8, 6, 5):
+        d = math.hypot((u - 6) / 2.6, (v - 10.5) / 1.4)
+        if d <= 1 and p.get(X, Y) is not None:
+            p.put(X, Y, SIGILO[1] if d > 0.5 else (SIGILO[0] if p.s == 1 else (20, 8, 10)))
+    p.fine(11, 20, SIGILO[2])
+    for (x, y, rx, ry) in ((6, 25.6, 3.2, 1.6), (4.2, 24.4, 1.6, 1.2), (8, 24.6, 1.5, 1.1)):
+        ball(p, x, y, rx, ry, STONE[1:])
+    return p.image()
+
+
+# Enfeites dos biomas: cada um na paleta do lugar (ato ou dimensão).
+
+def urna(s: int) -> Image.Image:
+    """Urna funerária das Catacumbas (14 × 18): pedra esverdeada do ato I, faixa de caveirinhas
+    de osso, tampa com pega e musgo no pé."""
+    st = A.ST['I'][7:]
+    p = Piece(14, 18, s)
+    strata(p, 3, 15, 8, [st[6], st[2]], [st[7], st[5], st[4], st[2]])
+    poly(p, [(5, 13), (9, 13), (10, 15), (4, 15)], st[3])
+    ball(p, 7, 9.5, 5.2, 4.6, st)
+    p.rect(5, 4, 4, 1, st[2])
+    ball(p, 7, 3.4, 3.2, 1.3, st)
+    ball(p, 7, 1.9, 1.0, 0.9, A.EMPH['I'][:3])
+    for X, Y, u, v in p.each(2, 8, 10, 3):
+        if p.get(X, Y) is None:
+            continue
+        cell = int((u - 2) // 2.5)
+        lx = (u - 2) - cell * 2.5
+        if 9 <= v < 10.4 and 0.4 < lx < 2.1:
+            p.put(X, Y, A.BONE[3] if v < 9.8 or s == 1 else A.BONE[2])
+            if s == 2 and v >= 9.5 and (0.8 < lx < 1.1 or 1.4 < lx < 1.7):
+                p.put(X, Y, (30, 26, 22))                                # órbitas
+        elif abs(v - 8.2) < 0.4 or abs(v - 11) < 0.4:
+            p.put(X, Y, st[1])                                           # frisos da faixa
+    moss(p, 2, 10, 10, 7, amount=0.4, seed=12)
+    return p.image()
+
+
+def vagonete(s: int) -> Image.Image:
+    """Vagonete das Minas (24 × 16): caçamba de tábuas com cantoneiras de ferro enferrujado,
+    cheia de minério de ferro escuro com veios, sobre um trecho de trilho."""
+    p = Piece(24, 16, s)
+    # Trilho com dormentes.
+    for x in (3, 9, 15, 20):
+        p.rect(x, 14, 2, 1, MADEIRA[1])
+    strata(p, 1, 13, 22, [IRON[3]], [IRON[4], IRON[2]])
+    # Rodas.
+    for cx in (6.5, 17.5):
+        ball(p, cx, 12, 2.6, 2.6, IRON[:4])
+        ball(p, cx, 12, 1.0, 1.0, A.RUST[1:4])
+    # Minério em pedaços por cima da borda.
+    ore = A.ST['II'][6:]
+    for i in range(7):
+        cx = 4 + i * 2.7 + L.hsh(i, 0, 5)
+        cy = 4.4 - math.sin(i / 6 * math.pi) * 1.6 + L.hsh(i, 1, 5) * 0.6
+        ball(p, cx, cy, 1.8, 1.5, ore)
+    for i in range(5):
+        x, y = 5 + i * 3.3, 3.2 + L.hsh(i, 2, 5) * 2
+        p.dot(math.floor(x), math.floor(y), A.ORE[2])
+        p.fine(math.floor(x) * 2 + 1, math.floor(y) * 2, A.ORE[3])
+    # Caçamba (mais larga em cima), tábuas deitadas e cantoneiras.
+    poly(p, [(2, 5), (22, 5), (20.5, 11), (3.5, 11)], MADEIRA[2])
+    for X, Y, u, v in p.each(2, 5, 20, 6):
+        if p.get(X, Y) != MADEIRA[2]:
+            continue
+        ly = Y - round(5 * s)
+        k = ly % (2 * s)
+        col = MADEIRA[3] if k == 0 else MADEIRA[2]
+        if s == 2 and k == 2 * s - 1:
+            col = MADEIRA[1]
+        p.put(X, Y, col)
+    for x0 in (2.5, 19.5):
+        seg(p, x0 + 0.5, 5.5, x0 + (1.6 if x0 < 12 else -0.6), 10.5, A.RUST[1], 1.4)
+    strata(p, 2, 5, 20, [A.RUST[3]], [A.RUST[4], A.RUST[2]])
+    strata(p, 3.5 if s == 2 else 4, 10, 17, [A.RUST[1]], [A.RUST[2], A.RUST[0]])
+    for x in (6, 12, 17):
+        p.dot(x, 7, A.RUST[2])
+        p.fine(x * 2, 14, A.RUST[4])
+    return p.image()
+
+
+def cogumelo(s: int) -> Image.Image:
+    """Cogumelo gigante do Jardim de Fungos (20 × 24): pé claro arroxeado, chapéu verde-limão com
+    pintas, lamelas escuras embaixo e dois cogumelinhos no pé."""
+    p = Piece(20, 24, s)
+    stem = [(70, 56, 92), (112, 96, 132), (156, 142, 170), (196, 186, 206)]
+    cap = A.FUNGUS[1:6]
+    cyl(p, 8, 9, 4, 13, stem, clip=lambda u, v: abs(u - 10) < 1.6 + (v - 9) * 0.06 + (0.6 if v > 19 else 0))
+    p.rect(7, 21, 6, 1, stem[1])
+    ball(p, 10, 22, 4, 1.2, A.ST['III'][8:])
+    # Saia (anel) no pé.
+    p.rect(8, 13, 4, 1, stem[3])
+    p.rect(8, 14, 4, 1, stem[1])
+    # Lamelas e chapéu.
+    ball(p, 10, 9.2, 8.6, 2.0, [(40, 26, 58), (60, 40, 82)])
+    ball(p, 10, 8.4, 9.2, 7.2, cap, clip=lambda u, v: v <= 8.6)
+    for (x, y, r) in ((6, 4.5, 1.1), (11, 3, 1.0), (14.5, 6, 1.2), (8.5, 7.2, 0.8), (3.5, 7.4, 0.7)):
+        ball(p, x, y, r, r * 0.85, [A.FUNGUS[4], A.FUNGUS[6]])
+    p.fine(26, 7, A.SPORE[4])
+    p.fine(31, 4, A.SPORE[3])
+    # Cogumelinhos.
+    for (x, h) in ((3.5, 3), (16.5, 2)):
+        p.rect(math.floor(x), 22 - h, 1, h, stem[2])
+        ball(p, x, 22 - h, 1.8, 1.1, cap[1:], clip=lambda u, v, y0=22 - h: v <= y0 + 0.2)
+    return p.image()
+
+
+def sino(s: int) -> Image.Image:
+    """Sino da Cidade Afogada (22 × 20): bronze com manchas de zinabre e cracas, pendurado numa
+    armação baixa de madeira escura e molhada, com fiapos de alga."""
+    p = Piece(22, 20, s)
+    wet = [L.mix(c, A.ALGAE[1], 0.3) for c in MADEIRA]
+    for x in (2, 18):
+        beam(p, x, 3, 2, 15, True, pal=wet)
+        ball(p, x + 1, 18.4, 2.4, 1.3, A.ST['IV'][8:])
+    beam(p, 1, 2, 20, 2, False, pal=wet)
+    p.rect(10, 4, 2, 2, IRON[1])
+    # Sino: alça, ombro, cintura e a boca aberta.
+    for X, Y, u, v in p.each(4, 5, 14, 12):
+        t = (v - 6) / 10
+        if v < 6:
+            if abs(u - 11) > 1.6:
+                continue
+            p.put(X, Y, BRONZE[2] if u < 11 else BRONZE[1])
+            continue
+        half = 2.8 + 1.4 * t + (2.4 * (t - 0.72) / 0.28 if t > 0.72 else 0)
+        if abs(u - 11) > half or t > 1:
+            continue
+        nx = (u - 11) / half
+        b = 1 - abs(nx + 0.4) * 1.05
+        col = BRONZE[max(0, min(4, int(b * 5)))]
+        if t > 0.9:
+            col = BRONZE[4] if u < 10 else BRONZE[2]                      # beiço
+        elif L.noise(u * 1.3, v * 1.3, 21, 1.4) > 0.62:
+            col = L.mix(col, COBRE[3] if b > 0.4 else COBRE[1], 0.65)     # zinabre
+        p.put(X, Y, col)
+    p.rect(10, 16, 2, 1, (20, 26, 28))
+    p.rect(10, 17, 2, 1, BRONZE[1])                                      # badalo
+    # Cracas: tufinhos claros no bronze.
+    for i in range(6):
+        x = 7.5 + L.hsh(i, 0, 9) * 7
+        y = 8 + L.hsh(i, 1, 9) * 6
+        X, Y = math.floor(x), math.floor(y)
+        p.dot(X, Y, (204, 206, 196))
+        p.fine(X * 2 + 1, Y * 2 + 1, (120, 126, 126))
+        p.fine(X * 2 + 1, Y * 2, (230, 232, 222))
+    # Alga pendurada da travessa e nos pés.
+    for i, x in enumerate((3, 6, 15, 19)):
+        for k in range(3 + i % 2):
+            p.dot(x + (k % 2), 4 + k, A.ALGAE[3] if k % 2 else A.ALGAE[2])
+    return p.image()
+
+
+def bigorna(s: int) -> Image.Image:
+    """Bigorna da Forja Abissal (20 × 14): ferro negro com o bico à esquerda, cintura, pés e um
+    ferro ainda em brasa na mesa, sobre o cepo de madeira."""
+    p = Piece(20, 14, s)
+    iron = A.ST['V'][6:]
+    # Cepo.
+    for X, Y, u, v in p.each(4, 10, 13, 3):
+        ly = Y - round(10 * s)
+        col = MADEIRA[3] if ly == 0 else (MADEIRA[1] if ly == 3 * s - 1 else MADEIRA[2])
+        if s == 2 and 0 < ly < 5 and L.hsh(X // 2, ly, 3) < 0.25:
+            col = MADEIRA[1]
+        p.put(X, Y, col)
+    p.rect(4, 10, 1, 3, MADEIRA[3])
+    # Pés, cintura, mesa e bico.
+    poly(p, [(6, 8), (15, 8), (16, 10), (5, 10)], iron[3])
+    poly(p, [(7.5, 5), (13.5, 5), (12.6, 8), (8.4, 8)], iron[2])
+    poly(p, [(5, 2), (17, 2), (17, 5), (5, 5)], iron[4])
+    poly(p, [(0.8, 2.2), (5.2, 2), (5.2, 4.8), (3, 3.6)], iron[4])
+    for X, Y, u, v in p.each(0, 2, 18, 8):
+        c = p.get(X, Y)
+        if c is None:
+            continue
+        if v < 3 and c == iron[4]:
+            p.put(X, Y, iron[8] if u < 13 else iron[7])                 # quina da mesa
+        elif u > 15.4 and v < 10 and c != iron[8]:
+            p.put(X, Y, L.mul(c, 0.8))
+        elif c == iron[2] and u < 9.2:
+            p.put(X, Y, iron[4])
+    p.rect(5, 4, 12, 1, iron[1])
+    # Ferro em brasa e o calor na mesa.
+    p.rect(9, 1, 6, 1, A.LAVA[5])
+    p.rect(10, 1, 3, 1, A.LAVA[6])
+    p.fine(22, 2, A.LAVA[7])
+    p.fine(29, 3, A.LAVA[4])
+    for X, Y, u, v in p.each(8, 2, 8, 1):
+        p.put(X, Y, L.mix(p.get(X, Y), A.LAVA[4], 0.45))
+    return p.image()
+
+
+def cristal(s: int) -> Image.Image:
+    """Cristal de alma do Coração do Abismo (14 × 20): ponta violeta com o miolo claro, duas
+    lascas menores e a pedra carnuda do ato VI embaixo."""
+    p = Piece(14, 20, s)
+    rock = A.ST['VI'][7:]
+    ball(p, 7, 16.5, 5.6, 2.8, rock)
+    vio = A.VIOLET + [(184, 140, 220), (232, 210, 246)]
+
+    def prism(x0, x1, top, base, tip):
+        poly(p, [(x0, base), (x0, top + tip), ((x0 + x1) / 2, top), (x1, top + tip), (x1, base)], vio[2])
+        for X, Y, u, v in p.each(math.floor(x0), math.floor(top), math.ceil(x1 - x0) + 1, math.ceil(base - top) + 1):
+            if p.get(X, Y) != vio[2]:
+                continue
+            t = (u - x0) / (x1 - x0)
+            col = vio[4] if t < 0.3 else (vio[3] if t < 0.55 else vio[1])
+            if abs(t - 0.42) < 0.12 and v > top + tip + 1:
+                col = vio[5]                                             # o brilho de dentro
+            p.put(X, Y, col)
+
+    prism(2.2, 5.2, 8, 16, 1.6)
+    prism(9.4, 12.2, 10, 16.4, 1.4)
+    prism(4.8, 9.4, 1, 16, 2.4)
+    p.fine(14, 6, vio[6])
+    p.fine(14, 7, vio[6])
+    p.fine(15, 14, vio[6])
+    for X, Y, u, v in p.each(1, 14, 12, 2):
+        if p.get(X, Y) in (vio[1], vio[3], vio[4], vio[5]) and v > 15.4:
+            p.put(X, Y, L.mix(p.get(X, Y), rock[1], 0.5))
+    return p.image()
+
+
+def favo(s: int) -> Image.Image:
+    """Favo da Colmeia Pálida (18 × 16): um naco de cera clara quebrado nas bordas, com os
+    alvéolos sextavados (grade de colmeia de verdade) cheios de mel escuro, alguns tampados,
+    e uma gota escorrendo."""
+    p = Piece(18, 16, s)
+    wax, honey = DM.WAX, DM.HONEY
+    rc = 2.0                                                             # raio da célula com a parede
+    pw, ph = math.sqrt(3) * rc, 1.5 * rc
+    for X, Y, u, v in p.each(1, 1, 16, 14):
+        # Naco em pé, quebrado: lados ondulados, topo e base mordidos.
+        hw = 7.2 - 0.5 * math.sin(v * 1.4 + 0.5)
+        top, bot = 2.0 + 0.9 * abs(math.sin(u * 0.9)), 13.8 - 0.7 * abs(math.sin(u * 1.3 + 1))
+        if abs(u - 9) > hw or not top <= v <= bot:
+            continue
+        rim = max(abs(u - 9) / hw, (top + 1.2 - v) / 1.2, (v - bot + 1.0) / 1.0)
+        j = round((v - 1) / ph)
+        best = None
+        for jj in (j - 1, j, j + 1):
+            i0 = round((u - (jj % 2) * pw / 2) / pw)
+            for ii in (i0 - 1, i0, i0 + 1):
+                hx, hy = ii * pw + (jj % 2) * pw / 2, 1 + jj * ph
+                d = math.hypot(u - hx, v - hy)
+                if best is None or d < best[0]:
+                    best = (d, ii, jj, u - hx, v - hy)
+        _, ii, jj, dx, dy = best
+        R = 1.62
+        inside = abs(dx) <= R * math.sqrt(3) / 2 and abs(dx) / math.sqrt(3) + abs(dy) <= R
+        k = L.hsh(ii, jj, 5)
+        if not inside:
+            col = wax[5] if u + v < 15 else (wax[4] if u + v < 21 else wax[3])
+        elif k < 0.16:
+            col = wax[3] if dy < 0.4 else wax[2]                         # alvéolo tampado
+        elif k > 0.86:
+            col = (70, 52, 26)                                           # alvéolo vazio
+        else:
+            col = honey[2] if L.hsh(ii, jj, 6) < 0.5 else honey[1]
+            if dy < -0.4 and dx < 0.3:
+                col = honey[3]                                           # brilho do mel
+        if rim > 0.86:
+            col = L.mul(col, 0.82) if inside else wax[2]                 # borda quebrada
+        p.put(X, Y, col)
+    p.rect(10, 14, 1, 1, honey[2])
+    p.fine(20, 30, honey[3])
+    p.fine(20, 31, honey[1])
+    return p.image()
+
+
+def concha(s: int) -> Image.Image:
+    """Concha da Fossa Cantante (20 × 16): caracol grande deitado, a espiral riscada até o miolo,
+    a boca rosada para a esquerda e a pérola dentro."""
+    p = Piece(20, 16, s)
+    pale, pink = DF.PALE, DF.PINK
+    cx, cy, R = 11.2, 8.2, 6.8
+    ball(p, cx, cy, R, R * 0.92, pale[1:])
+    for X, Y, u, v in p.each(4, 1, 15, 15):
+        dx, dy = u - cx, v - cy
+        r = math.hypot(dx, dy)
+        if r > R * 0.92 or p.get(X, Y) is None:
+            continue
+        phi = math.atan2(dy, dx) % (2 * math.pi)
+        groove = min(abs(r - 0.52 * (phi + 2 * math.pi * k)) for k in range(3))
+        if groove < (0.42 if s == 1 else 0.3):
+            p.put(X, Y, pale[0] if dx > -dy else pale[1])
+        elif s == 2 and groove < 0.75 and (dx + dy) < 0:
+            p.put(X, Y, pale[4])                                         # quina clara da volta
+    # Boca rosada (sobre a volta de baixo, à esquerda) e a pérola.
+    ball(p, 5.6, 10.2, 3.4, 3.6, pink[1:4])
+    ball(p, 5.9, 10.6, 2.3, 2.5, [pink[0], pink[1]])
+    ball(p, 6.2, 11.0, 1.5, 1.5, [DF.CYAN[3], (236, 240, 244), (255, 255, 255)])
+    p.fine(11, 20, (255, 255, 255))
+    return p.image()
+
+
+def engrenagem(s: int) -> Image.Image:
+    """Engrenagem da Cidadela (24 × 16): roda dentada de ferro negro, aro, cinco raios e o cubo
+    de latão, meio enterrada num monte de terra escura com pedrinhas."""
+    p = Piece(24, 16, s)
+    iron, brass = DC.IRONB, DC.BRASS
+    cx, cy = 12, 12.5
+    for X, Y, u, v in p.each(0, 1, 24, 13):
+        dx, dy = u - cx, v - cy
+        r = math.hypot(dx, dy)
+        a = math.atan2(dy, dx)
+        tooth = (a / (2 * math.pi) * 12 + 0.25) % 1.0 < 0.5
+        if r > (10.8 if tooth else 9.3):
+            continue
+        spoke = (a / (2 * math.pi) * 5 + 0.1) % 1.0 < 0.26
+        if 3.4 < r < 7.4 and not spoke:
+            continue                                                     # vão entre os raios
+        lit = (-dx - dy) / max(r, 0.1)
+        if r > 9.3:
+            col = iron[5] if lit > 0.3 else (iron[4] if lit > -0.4 else iron[3])
+        elif r > 7.4:
+            col = iron[4] if lit > 0.2 else iron[3]
+            if r < 8:
+                col = iron[2]
+        elif r > 3.4:
+            col = iron[4] if lit > 0.5 else iron[3]
+        elif r > 2.6:
+            col = brass[1]
+        else:
+            col = brass[3] if dx + dy < 0 else brass[2]
+        if s == 2 and r > 3.4 and L.hsh(X // 3, Y // 3, 7) < 0.07:
+            col = L.mix(col, (120, 64, 30), 0.55)                        # ferrugem
+        p.put(X, Y, col)
+    # Monte de terra por cima da metade de baixo, com pedrinhas.
+    for X, Y, u, v in p.each(0, 9, 24, 6):
+        top = 10.6 + 3.2 * ((u - 12) / 12) ** 2 + L.noise(u, 1, 3, 2) * 0.7
+        if v < top or abs(u - 12) > 11.6:
+            continue
+        col = TERRA[2] if v < top + 1 else (TERRA[1] if v < 14 else TERRA[0])
+        if s == 2 and L.hsh(X, Y, 8) < 0.1:
+            col = TERRA[3]
+        p.put(X, Y, col)
+    for (x, y) in ((5, 13), (17, 12), (11, 14)):
+        p.dot(x, y, STONE[3])
+        p.fine(x * 2, y * 2, STONE[4])
+    return p.image()
+
+
+def cranio(s: int) -> Image.Image:
+    """Crânio de boi do Deserto de Ossos (22 × 14): osso descorado com chifres longos, sobre
+    três pedras de arenito."""
+    p = Piece(22, 14, s)
+    bone, rock = DD.BONE, DD.STONE
+    for (x, y, rx, ry) in ((6, 12, 3.8, 1.7), (15.5, 12.2, 4.2, 1.6), (11, 12.6, 3, 1.3)):
+        ball(p, x, y, rx, ry, rock[1:])
+    for side in (-1, 1):
+        pts = [(11 + side * 2.6, 4.4), (11 + side * 6, 3.8), (11 + side * 8.6, 2.4), (11 + side * 9.6, 1.0)]
+        for i in range(len(pts) - 1):
+            seg(p, *pts[i], *pts[i + 1], bone[3] if side < 0 else bone[2], 1.8 - i * 0.4)
+    ball(p, 11, 5.8, 3.8, 3.0, bone[1:])
+    poly(p, [(8.4, 7), (13.6, 7), (12.6, 11.6), (9.4, 11.6)], bone[2])
+    for X, Y, u, v in p.each(8, 7, 6, 5):
+        if p.get(X, Y) == bone[2] and u > 11.2:
+            p.put(X, Y, bone[1])
+    for x in (9, 12):
+        p.rect(x, 6, 1 if s == 1 else 1.5, 2 if s == 1 else 1.5, DD.DARK[1])
+    p.rect(10, 10, 2, 1, DD.DARK[2])
+    p.fine(21, 21, DD.DARK[0])
+    p.fine(22, 21, DD.DARK[0])
+    return p.image()
+
+
+
 PIECES = {
     'prop/audiencia/mesa': (mesa, 'export/png/prop-audiencia-mesa.png', 'prop'),
     # Desenhado no mapa sobre o herói: entra como decalque (o tipo 'ui' é só do DOM).
@@ -1034,6 +1971,26 @@ PIECES = {
     'building/salao/level-2': (functools.partial(salao, 2), 'export/png/building-salao-level-2.png', 'building'),
     'building/salao/level-3': (functools.partial(salao, 3), 'export/png/building-salao-level-3.png', 'building'),
     'prop/salao/pedestal': (pedestal, 'export/png/prop-salao-pedestal.png', 'prop'),
+    # F6a: o Paço (com luzes), o mastro, a coluna do busto e os enfeites dos pontos da vila.
+    'building/paco': (paco, 'export/png/building-paco.png', 'building'),
+    'prop/vila/mastro': (mastro, 'export/png/prop-vila-mastro.png', 'prop'),
+    'prop/vila/busto': (busto, 'export/png/prop-vila-busto.png', 'prop'),
+    'prop/enfeite/canteiro': (canteiro, 'export/png/prop-enfeite-canteiro.png', 'prop'),
+    'prop/enfeite/bandeirola': (bandeirola, 'export/png/prop-enfeite-bandeirola.png', 'prop'),
+    'prop/enfeite/arco': (arco, 'export/png/prop-enfeite-arco.png', 'prop'),
+    'prop/enfeite/trofeu-nemesis': (trofeu_nemesis, 'export/png/prop-enfeite-trofeu-nemesis.png', 'prop'),
+    'prop/enfeite/taca': (taca, 'export/png/prop-enfeite-taca.png', 'prop'),
+    'prop/enfeite/estandarte-senhor': (estandarte_senhor, 'export/png/prop-enfeite-estandarte-senhor.png', 'prop'),
+    'prop/enfeite/urna': (urna, 'export/png/prop-enfeite-urna.png', 'prop'),
+    'prop/enfeite/vagonete': (vagonete, 'export/png/prop-enfeite-vagonete.png', 'prop'),
+    'prop/enfeite/cogumelo': (cogumelo, 'export/png/prop-enfeite-cogumelo.png', 'prop'),
+    'prop/enfeite/sino': (sino, 'export/png/prop-enfeite-sino.png', 'prop'),
+    'prop/enfeite/bigorna': (bigorna, 'export/png/prop-enfeite-bigorna.png', 'prop'),
+    'prop/enfeite/cristal': (cristal, 'export/png/prop-enfeite-cristal.png', 'prop'),
+    'prop/enfeite/favo': (favo, 'export/png/prop-enfeite-favo.png', 'prop'),
+    'prop/enfeite/concha': (concha, 'export/png/prop-enfeite-concha.png', 'prop'),
+    'prop/enfeite/engrenagem': (engrenagem, 'export/png/prop-enfeite-engrenagem.png', 'prop'),
+    'prop/enfeite/cranio': (cranio, 'export/png/prop-enfeite-cranio.png', 'prop'),
 }
 
 INDEX = os.path.join(L.ROOT, 'src', 'render', 'pack-historias.ts')

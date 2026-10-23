@@ -9,7 +9,7 @@ import { dayOf } from './calendar.ts';
 import { record } from './chronicle.ts';
 import { BALANCE as B, DAYS_PER_YEAR, TICKS_PER_DAY } from './config.ts';
 import { stableRoll } from './rng.ts';
-import type { Child, Hero, House, HouseDeedId, World } from './types.ts';
+import type { Child, Crest, Hero, House, HouseDeedId, World } from './types.ts';
 
 export type HouseResult = { ok: true } | { ok: false; reason: string };
 
@@ -30,14 +30,18 @@ export function fullName(world: World, hero: Hero | Child): string {
 export const houseMembers = (world: World, house: House): Hero[] => world.heroes.filter((h) => h.houseId === house.id);
 
 /** Brasão sorteado: metal sobre cor ou cor sobre metal, como manda a heráldica. */
-function rollCrest(world: World, seq: number): House['crest'] {
-  const field = Math.floor(stableRoll(world.seed, seq, 701) * CREST_TINCTURES.length);
+export function rollCrest(world: World, seq: number, salt = 700): Crest {
+  const field = Math.floor(stableRoll(world.seed, seq, salt + 1) * CREST_TINCTURES.length);
   const fieldMetal = CREST_TINCTURES[field]!.metal;
   const charges = CREST_TINCTURES.map((t, i) => (t.metal !== fieldMetal ? i : -1)).filter((i) => i >= 0);
-  const charge = charges[Math.floor(stableRoll(world.seed, seq, 702) * charges.length)]!;
-  const symbol = Math.floor(stableRoll(world.seed, seq, 703) * CREST_SYMBOLS.length);
+  const charge = charges[Math.floor(stableRoll(world.seed, seq, salt + 2) * charges.length)]!;
+  const symbol = Math.floor(stableRoll(world.seed, seq, salt + 3) * CREST_SYMBOLS.length);
   return { field, charge, symbol };
 }
+
+/** Metal sobre cor ou cor sobre metal (a regra da heráldica, que o prefeito também segue). */
+export const crestReadable = (c: Crest): boolean =>
+  !!CREST_TINCTURES[c.field] && !!CREST_TINCTURES[c.charge] && CREST_TINCTURES[c.field]!.metal !== CREST_TINCTURES[c.charge]!.metal && c.symbol >= 0 && c.symbol < CREST_SYMBOLS.length;
 
 function foundHouse(world: World, a: Hero, b: Hero, tick: number): House {
   const seq = (world.houseSeq ?? 0) + 1;

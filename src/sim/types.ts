@@ -111,7 +111,9 @@ export type SpendKind =
   | 'funeral'
   | 'evento'
   /** Respostas das audiências e lápides dos desejos (M6 F1): valores simbólicos. */
-  | 'audiencia';
+  | 'audiencia'
+  /** Enfeites da vila (M6 F6): ouro simbólico. */
+  | 'enfeite';
 
 export interface RaidHit {
   id: BuildingId;
@@ -757,6 +759,11 @@ export interface Town {
   posts?: Partial<Record<PostId, number>>;
   /** O torneio da estação (o de agora ou o último). */
   tournament?: Tournament | null;
+  /** Cosmética da vila (M6 F6): estandarte, enfeite de cada ponto, nomes de ruas e o busto do memorial. */
+  banner?: Crest;
+  decor?: (DecorId | null)[];
+  streets?: Partial<Record<StreetId, string>>;
+  bust?: number | null;
 }
 
 export type ChronicleKind =
@@ -948,6 +955,36 @@ export interface Codex {
 
 export type HouseDeedId = 'tresGeracoes' | 'senhorPorGeracao' | 'vinteAnos';
 
+/** Brasão ou estandarte: índices das cores e do símbolo em src/data/houses.ts. */
+export interface Crest {
+  field: number;
+  charge: number;
+  symbol: number;
+}
+
+export type DecorId =
+  | 'banco'
+  | 'lampiao'
+  | 'canteiro'
+  | 'poco'
+  | 'bandeirola'
+  | 'arco'
+  | 'trofeuNemesis'
+  | 'taca'
+  | 'estandarteSenhor'
+  | 'urna'
+  | 'vagonete'
+  | 'cogumelo'
+  | 'sino'
+  | 'bigorna'
+  | 'cristal'
+  | 'favo'
+  | 'concha'
+  | 'engrenagem'
+  | 'cranio';
+
+export type StreetId = 'praca' | 'estradaCima' | 'estradaBaixo' | 'ruaPortao' | 'ruaTermas';
+
 export interface House {
   id: number;
   /** Sobrenome da família ("Valente"); o prefeito pode trocar. */
@@ -955,7 +992,6 @@ export interface House {
   foundedTick: number;
   /** O casal que fundou a casa. */
   founders: [number, number];
-  /** Brasão: índices das cores e do símbolo em src/data/houses.ts. */
-  crest: { field: number; charge: number; symbol: number };
+  crest: Crest;
   deeds: { id: HouseDeedId; tick: number }[];
 }

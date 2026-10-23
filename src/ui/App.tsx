@@ -17,7 +17,7 @@ import { HeroPanel } from './panels/HeroPanel.tsx';
 import { VillagePanel } from './panels/VillagePanel.tsx';
 import { CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { AmuletPanel, LordEndPanel } from './panels/AmuletPanels.tsx';
-import { AudiencesPanel } from './panels/AudiencesPanel.tsx';
+import { PacoPanel } from './panels/PacoPanel.tsx';
 import { TournamentPanel } from './panels/TournamentPanel.tsx';
 import { HallPanel } from './panels/HallPanel.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
@@ -420,10 +420,12 @@ function PanelContent(props: { panel: Panel }) {
     case 'lordEnd':
       return <LordEndPanel level={p.level} />;
     case 'audiences':
-      return <AudiencesPanel />;
+      return <PacoPanel key="audiencias" tab="audiencias" />;
     case 'tournament':
       return <TournamentPanel />;
     case 'hall':
       return <HallPanel tab={p.tab} houseId={p.houseId} />;
+    case 'paco':
+      return <PacoPanel key={p.tab ?? 'paco'} tab={p.tab} />;
   }
 }

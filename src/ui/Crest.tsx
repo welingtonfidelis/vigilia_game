@@ -2,7 +2,7 @@
 // por feito da casa, no alto. Tudo em SVG, para servir em qualquer tamanho.
 
 import { CREST_SYMBOLS, CREST_TINCTURES } from '../data/houses.ts';
-import type { House } from '../sim/index.ts';
+import type { Crest as CrestValue, House } from '../sim/index.ts';
 
 const SYMBOLS: Record<string, preact.JSX.Element> = {
   torre: <path d="M7.5 7h2v1.5h1.5V7h2v1.5h1.5V7h2v3.5h-9z M8.5 10.5h7V18h-7z" fill="currentColor" />,
@@ -41,14 +41,16 @@ const SYMBOLS: Record<string, preact.JSX.Element> = {
 
 const SHIELD = 'M4 3h16v8.5c0 5.6-3.8 8.9-8 10.5-4.2-1.6-8-4.9-8-10.5z';
 
-export function Crest(props: { house: House; size?: number }) {
-  const { field, charge, symbol } = props.house.crest;
+/** Brasão de uma casa (`house`) ou um estandarte avulso (`crest` e `label`), como o da vila. */
+export function Crest(props: { house?: House; crest?: CrestValue; label?: string; size?: number }) {
+  const { field, charge, symbol } = props.house?.crest ?? props.crest ?? { field: 0, charge: 6, symbol: 0 };
   const size = props.size ?? 28;
   const fieldColor = CREST_TINCTURES[field]?.color ?? '#333';
   const chargeColor = CREST_TINCTURES[charge]?.color ?? '#ddd';
-  const deeds = props.house.deeds.length;
+  const deeds = props.house?.deeds.length ?? 0;
+  const name = props.house ? `Brasão da casa ${props.house.name}` : (props.label ?? 'Estandarte');
   return (
-    <svg class="crest" viewBox="0 0 24 24" width={size} height={size} role="img" aria-label={`Brasão da casa ${props.house.name}`}>
+    <svg class="crest" viewBox="0 0 24 24" width={size} height={size} role="img" aria-label={name}>
       <path d={SHIELD} fill={fieldColor} stroke="#0d0b09" stroke-width="1" />
       <path d={SHIELD} fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.6" transform="translate(12 12) scale(0.86) translate(-12 -12)" />
       <g style={{ color: chargeColor }} transform="translate(12 12.6) scale(0.82) translate(-12 -12)">

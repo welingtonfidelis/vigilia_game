@@ -18,10 +18,15 @@ import {
   hallLevel,
   hallStatues,
   housesOf,
+  DECOR_BY_ID,
+  decorOf,
+  STREETS,
+  streetName,
+  villageBanner,
 } from '../sim/index.ts';
 import { CREST_TINCTURES } from '../data/houses.ts';
 import { statueTexture } from './statue.ts';
-import type { BuildingId, ChronicleEntry, Hero, World } from '../sim/index.ts';
+import type { BuildingId, ChronicleEntry, Crest, Hero, StreetId, World } from '../sim/index.ts';
 import type { Session, SessionEvent } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { makeTextures } from './art.ts';
@@ -37,6 +42,12 @@ import {
   EXPANSION_LOTS,
   HALL,
   HALL_TILES,
+  PACO,
+  PACO_TILES,
+  FLAG_POLES,
+  BUST_SPOT,
+  STREET_SIGNS,
+  DECOR_SPOTS,
   citizenSpot,
   door,
   gravePoint,
@@ -148,6 +159,17 @@ const SMOKE_DEPTH = 9000;
 /** Meio da grelha da fornalha (x da arte 112×96, linha 85) em cada nível do ferreiro. */
 const FORGE_COALS_X: Record<number, number> = { 1: 84, 2: 91, 3: 97 };
 
+interface CosmeticsView {
+  paco: { base: Phaser.GameObjects.Image; lights: Phaser.GameObjects.Image; sign: Phaser.GameObjects.Text } | null;
+  /** Panos nas cores da vila (sacada do Paço, flâmulas, bandeirolas), cada um na profundidade do que o segura. */
+  cloth: Phaser.GameObjects.Graphics[];
+  decor: Phaser.GameObjects.Image[];
+  decorLights: Phaser.GameObjects.Image[];
+  signs: Map<StreetId, Phaser.GameObjects.Text>;
+  bust: Phaser.GameObjects.Image[];
+  state: string;
+}
+
 interface HallView {
   base: Phaser.GameObjects.Image;
   lights: Phaser.GameObjects.Image;
@@ -164,6 +186,8 @@ interface HallView {
 /** Arte do Salão (16-bit): 112 × 96, com o pé no meio de baixo. */
 const HALL_SIZE: [number, number] = [112, 96];
 const PEDESTAL = 'prop/salao/pedestal';
+const MASTRO = 'prop/vila/mastro';
+const BUST = 'prop/vila/busto';
 /**
  * Pedestais: x em tiles a partir do meio da porta e o pé abaixo do pé do prédio (px do mundo).
  * Os dois primeiros ladeiam a escada, por fora dos braseiros, e o segundo par vai para os
@@ -193,6 +217,17 @@ const HALL_BANNERS: Record<number, [number, number][]> = {
     [95, 64],
   ],
 };
+/** Paço do prefeito (M6 F6): tamanho da arte 16-bit e onde o estandarte pende da sacada. */
+const PACO_SIZE: [number, number] = [96, 80];
+const PACO_BANNER: [number, number] = [48, 51];
+/** Ponto de amarra da flâmula no mastro, das pontas da bandeirola e o tampo da coluna do busto (px da arte 16-bit). */
+const MASTRO_TIP: [number, number] = [5, 4];
+const BUNTING_TIPS: [[number, number], [number, number]] = [
+  [2, 2],
+  [26, 2],
+];
+const BUST_TOP = 2;
+
 /** Braseiros acesos dos dois lados da escada (meio da chama, px da arte 16-bit). */
 const HALL_BRAZIERS: Record<number, [number, number][]> = {
   1: [],
@@ -205,6 +240,48 @@ const HALL_BRAZIERS: Record<number, [number, number][]> = {
     [83, 83],
   ],
 };
+
+const tincture = (i: number, fallback: string): number => Phaser.Display.Color.HexStringToColor(CREST_TINCTURES[i]?.color ?? fallback).color;
+const CLOTH_EDGE = 0x17120f;
+
+/** Estandarte pendurado (M6 F5/F6): pano na cor do campo, faixa da figura e ponta de andorinha. Tamanho em px da arte. */
+function hangingBanner(g: Phaser.GameObjects.Graphics, left: number, top: number, w16: number, h16: number, crest: Crest): void {
+  const w = w16 * ART_SCALE;
+  const h = h16 * ART_SCALE;
+  g.fillStyle(CLOTH_EDGE, 1).fillRect(left - 1, top - 1, w + 2, h + 1);
+  g.fillStyle(tincture(crest.field, '#5a2a2a'), 1).fillRect(left, top, w, h);
+  g.fillStyle(CLOTH_EDGE, 1).fillTriangle(left + w / 2 - ART_SCALE * 1.5, top + h, left + w / 2 + ART_SCALE * 1.5, top + h, left + w / 2, top + h - ART_SCALE * 2);
+  g.fillStyle(tincture(crest.charge, '#d8a842'), 1).fillRect(left + w / 2 - ART_SCALE, top + ART_SCALE * 2, ART_SCALE * 2, h - ART_SCALE * 6);
+}
+
+/** Flâmula de mastro: sai do ponto de amarra para a direita, com a ponta cortada. Tamanho em px da arte. */
+function pennant(g: Phaser.GameObjects.Graphics, x: number, y: number, crest: Crest): void {
+  const w = 10 * ART_SCALE;
+  const h = 7 * ART_SCALE;
+  g.fillStyle(CLOTH_EDGE, 1).fillRect(x, y - 1, w + 1, h + 2);
+  g.fillStyle(tincture(crest.field, '#5a2a2a'), 1).fillRect(x + 1, y, w - 1, h);
+  g.fillStyle(CLOTH_EDGE, 1).fillTriangle(x + w + 1, y - 1, x + w + 1, y + h + 1, x + w - ART_SCALE * 3, y + h / 2);
+  g.fillStyle(tincture(crest.charge, '#d8a842'), 1).fillRect(x + ART_SCALE * 2, y + h / 2 - ART_SCALE, ART_SCALE * 4, ART_SCALE * 2);
+}
+
+/** Bandeirola: o cordão entre as duas pontas e as bandeirinhas alternando as cores. */
+function bunting(g: Phaser.GameObjects.Graphics, a: Point, b: Point, crest: Crest): void {
+  const sag = 3 * ART_SCALE;
+  const at = (t: number): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t + Math.sin(Math.PI * t) * sag });
+  g.lineStyle(1, CLOTH_EDGE, 1);
+  g.beginPath();
+  for (let i = 0; i <= 12; i++) {
+    const p = at(i / 12);
+    if (i === 0) g.moveTo(p.x, p.y);
+    else g.lineTo(p.x, p.y);
+  }
+  g.strokePath();
+  const flags = 5;
+  for (let i = 0; i < flags; i++) {
+    const p = at((i + 0.5) / (flags + 0.5) + 0.05);
+    g.fillStyle(tincture(i % 2 ? crest.charge : crest.field, '#5a2a2a'), 1).fillTriangle(p.x - ART_SCALE * 2, p.y, p.x + ART_SCALE * 2, p.y, p.x, p.y + ART_SCALE * 4);
+  }
+}
 
 /** Altura do pedestal na arte 16-bit; o pé da estátua fica na linha 2 do tampo (3 px abaixo do alto). */
 const pedestalHeight = (scene: Phaser.Scene): number => scene.textures.getFrame(PEDESTAL)?.height ?? 10;
@@ -252,6 +329,8 @@ export class VillageScene extends Phaser.Scene {
   private buildings = new Map<BuildingId, BuildingView>();
   /** Salão das Lendas (M6 F5): prédio só de aparência, pedestais com estátuas e estandartes. */
   private hall: HallView | null = null;
+  /** Cosmética da vila (M6 F6): Paço, mastros, enfeites, placas e busto. */
+  private cosmetics: CosmeticsView | null = null;
   private houseLights: Phaser.GameObjects.Image[] = [];
   private propLights: Phaser.GameObjects.Image[] = [];
   /** Fogo da fornalha do ferreiro (arte nova não traz a brasa acesa). */
@@ -355,6 +434,7 @@ export class VillageScene extends Phaser.Scene {
     this.foreground = buildForeground(this);
     for (const id of BUILDING_IDS) this.createBuilding(id);
     this.createHall();
+    this.createCosmetics();
     this.createInteractables();
     this.layoutSigns();
 
@@ -512,6 +592,126 @@ export class VillageScene extends Phaser.Scene {
     this.layoutSigns();
   }
 
+  // ── Cosmética da vila (M6 F6) ─────────────────────────────────────────
+
+  private createCosmetics(): void {
+    let paco: CosmeticsView['paco'] = null;
+    if (this.textures.exists('building/paco')) {
+      const base = showArt(this.add.image(PACO.x, PACO.bottom, 'building/paco'), 'building/paco').setOrigin(0.5, 1).setDepth(PACO.bottom - 2);
+      const lit = lightsTexture('building/paco');
+      const lights = showArt(this.add.image(PACO.x, PACO.bottom, lit), lit).setOrigin(0.5, 1).setDepth(DEPTH.lights).setAlpha(0);
+      const sign = label(this, PACO.x, this.roofTop('building/paco', PACO.bottom) - 4, 'Paço do prefeito', 14).setOrigin(0.5, 1);
+      this.nav.setLayer('predio:paco', this.cellsOf([{ key: 'building/paco', x: PACO.x, y: PACO.bottom }]));
+      this.shadows.set('predio:paco', [this.caster({ key: 'building/paco', x: PACO.x, y: PACO.bottom }, true)]);
+      this.lighting.setGroup('janelas:paco', this.windowLights(lit, PACO.x, PACO.bottom));
+      paco = { base, lights, sign };
+    }
+    // Mastros: o pau é arte; a flâmula, pano nas cores da vila.
+    const poles: Solid[] = [];
+    if (this.textures.exists(MASTRO)) {
+      for (const p of FLAG_POLES) {
+        const x = p.x * TILE;
+        const y = p.y * TILE;
+        showArt(this.add.image(x, y, MASTRO), MASTRO).setOrigin(0.5, 1).setDepth(y);
+        poles.push({ key: MASTRO, x, y });
+      }
+    }
+    this.nav.setLayer('mastros', this.cellsOf(poles));
+    const signs = new Map<StreetId, Phaser.GameObjects.Text>();
+    for (const street of STREETS) {
+      const at = STREET_SIGNS[street.id];
+      signs.set(street.id, label(this, at.x * TILE, at.y * TILE, '', 11, '#d8cba8').setAlpha(0.85));
+    }
+    this.cosmetics = { paco, cloth: [], decor: [], decorLights: [], signs, bust: [], state: '' };
+    this.syncCosmetics();
+  }
+
+  /** Estandarte, enfeites, placas e busto: refaz só quando algo muda. */
+  private syncCosmetics(): void {
+    const view = this.cosmetics;
+    if (!view) return;
+    const town = this.world.town;
+    const banner = villageBanner(this.world);
+    const decor = decorOf(this.world);
+    const names = STREETS.map((st) => streetName(this.world, st.id));
+    const bust = town.bust ?? null;
+    const bustHero = bust === null ? undefined : this.world.heroes.find((h) => h.id === bust);
+    const state = `${banner.field}:${banner.charge}:${banner.symbol}|${decor.join(',')}|${names.join('|')}|${bust}:${bustHero?.classId}`;
+    if (state === view.state) return;
+    view.state = state;
+    STREETS.forEach((st, i) => view.signs.get(st.id)?.setText(names[i]!));
+    // Panos nas cores da vila: cada um logo à frente do que o segura.
+    for (const g of view.cloth) g.destroy();
+    view.cloth = [];
+    const cloth = (depth: number): Phaser.GameObjects.Graphics => {
+      const g = this.add.graphics().setDepth(depth);
+      view.cloth.push(g);
+      return g;
+    };
+    if (view.paco) {
+      const left = PACO.x - (PACO_SIZE[0] / 2) * ART_SCALE + (PACO_BANNER[0] - 4) * ART_SCALE;
+      hangingBanner(cloth(PACO.bottom - 1), left, PACO.bottom - PACO_SIZE[1] * ART_SCALE + PACO_BANNER[1] * ART_SCALE, 8, 12, banner);
+    }
+    if (this.textures.exists(MASTRO)) {
+      const h = this.textures.getFrame(MASTRO)?.height ?? 44;
+      const w = this.textures.getFrame(MASTRO)?.width ?? 8;
+      for (const p of FLAG_POLES) {
+        const x = p.x * TILE - (w / 2) * ART_SCALE + MASTRO_TIP[0] * ART_SCALE;
+        const y = p.y * TILE - h * ART_SCALE + MASTRO_TIP[1] * ART_SCALE;
+        pennant(cloth(p.y * TILE + 0.1), x, y, banner);
+      }
+    }
+    // Enfeites dos 12 pontos.
+    for (const img of [...view.decor, ...view.decorLights]) img.destroy();
+    view.decor = [];
+    view.decorLights = [];
+    const solids: Solid[] = [];
+    const lamps: LightSpec[] = [];
+    decor.forEach((id, i) => {
+      const def = id ? DECOR_BY_ID.get(id) : undefined;
+      const spot = DECOR_SPOTS[i];
+      if (!def || !spot || !this.textures.exists(def.art)) return;
+      const x = spot.x * TILE;
+      const y = spot.y * TILE;
+      view.decor.push(showArt(this.add.image(x, y, def.art), def.art).setOrigin(0.5, 1).setDepth(y));
+      solids.push({ key: def.art, x, y, opts: { fromBottom: 6, minCover: 0.2 } });
+      if (def.light && this.textures.exists(`${def.art}-lights`)) {
+        view.decorLights.push(showArt(this.add.image(x, y, `${def.art}-lights`), `${def.art}-lights`).setOrigin(0.5, 1).setDepth(DEPTH.lights).setAlpha(0));
+        lamps.push({ x: x + 6, y: y - 36, color: 0xffb04a, radius: 120, intensity: 0.55, flicker: 0.1, halo: { scaleX: 1.2, scaleY: 1.2, day: 0, night: 0.5 } });
+      }
+      if (id === 'bandeirola') {
+        const w = this.textures.getFrame(def.art)?.width ?? 28;
+        const h = this.textures.getFrame(def.art)?.height ?? 22;
+        const tip = ([tx, ty]: [number, number]): Point => ({ x: x - (w / 2) * ART_SCALE + tx * ART_SCALE, y: y - h * ART_SCALE + ty * ART_SCALE });
+        bunting(cloth(y + 0.1), tip(BUNTING_TIPS[0]), tip(BUNTING_TIPS[1]), banner);
+      }
+    });
+    this.nav.setLayer('enfeites', this.cellsOf(solids));
+    this.shadows.set('enfeites', solids.map((sol) => this.caster(sol)));
+    this.lighting.setGroup('enfeites', lamps);
+    // Busto: a coluna e o herói em pedra, do peito para cima.
+    for (const img of view.bust) img.destroy();
+    view.bust = [];
+    if (this.textures.exists(BUST)) {
+      const x = BUST_SPOT.x * TILE;
+      const y = BUST_SPOT.y * TILE;
+      view.bust.push(showArt(this.add.image(x, y, BUST), BUST).setOrigin(0.5, 1).setDepth(y));
+      if (bustHero) {
+        const look = statueTexture(this, heroSpriteId(bustHero.classId, bustHero.gender), ART_SCALE);
+        const frame = this.textures.getFrame(look.key);
+        const top = y - ((this.textures.getFrame(BUST)?.height ?? 18) - BUST_TOP) * ART_SCALE;
+        if (frame) {
+          // Só a metade de cima do herói: cabeça e ombros.
+          const cut = Math.round(frame.height * 0.55);
+          const head = this.add.image(x, top, look.key).setOrigin(0.5, 1).setScale(look.scale * 0.9).setDepth(y + 0.1);
+          head.setCrop(0, 0, frame.width, cut);
+          head.setY(top + (frame.height - cut) * look.scale * 0.9);
+          view.bust.push(head);
+        }
+      }
+    }
+  }
+
   // ── Salão das Lendas (M6 F5) ──────────────────────────────────────────
 
   private createHall(): void {
@@ -591,17 +791,7 @@ export class VillageScene extends Phaser.Scene {
     const imgTop = bottom - HALL_SIZE[1] * ART_SCALE;
     banners.forEach((house, i) => {
       const [bx, by] = slotsAt[i]!;
-      const left = imgLeft + (bx - 3) * ART_SCALE;
-      const top = imgTop + by * ART_SCALE;
-      const field = Phaser.Display.Color.HexStringToColor(CREST_TINCTURES[house.crest.field]?.color ?? '#5a2a2a').color;
-      const charge = Phaser.Display.Color.HexStringToColor(CREST_TINCTURES[house.crest.charge]?.color ?? '#d8a842').color;
-      const w = 6 * ART_SCALE;
-      const h = 10 * ART_SCALE;
-      hall.banners.fillStyle(0x17120f, 1).fillRect(left - 1, top - 1, w + 2, h + 1);
-      hall.banners.fillStyle(field, 1).fillRect(left, top, w, h);
-      // Ponta de andorinha embaixo e a faixa da figura no meio.
-      hall.banners.fillStyle(0x17120f, 1).fillTriangle(left + w / 2 - ART_SCALE * 1.5, top + h, left + w / 2 + ART_SCALE * 1.5, top + h, left + w / 2, top + h - ART_SCALE * 2);
-      hall.banners.fillStyle(charge, 1).fillRect(left + ART_SCALE * 2, top + ART_SCALE * 2, ART_SCALE * 2, ART_SCALE * 4);
+      hangingBanner(hall.banners, imgLeft + (bx - 3) * ART_SCALE, imgTop + by * ART_SCALE, 6, 10, house.crest);
     });
   }
 
@@ -944,6 +1134,13 @@ export class VillageScene extends Phaser.Scene {
         open: open({ kind: 'thermal' }),
       },
       {
+        id: 'paco',
+        point: LANDMARKS.paco,
+        hit: { x: PACO_TILES.tx * TILE, y: PACO_TILES.ty * TILE, w: PACO_TILES.tw * TILE, h: PACO_TILES.th * TILE },
+        label: () => 'Paço do prefeito',
+        open: open({ kind: 'paco' }),
+      },
+      {
         id: 'salao',
         point: LANDMARKS.salao,
         hit: { x: HALL_TILES.tx * TILE, y: HALL_TILES.ty * TILE, w: HALL_TILES.tw * TILE, h: HALL_TILES.th * TILE },
@@ -1252,6 +1449,7 @@ export class VillageScene extends Phaser.Scene {
     const world = this.world;
     for (const id of BUILDING_IDS) this.syncBuilding(id, !initial);
     this.syncHall(!initial);
+    this.syncCosmetics();
     this.syncGraves(initial);
     this.syncHeroes(initial, dt);
     this.syncChildren(dt);
@@ -1271,6 +1469,8 @@ export class VillageScene extends Phaser.Scene {
     const lightAlpha = Phaser.Math.Clamp((night - 0.1) / 0.5, 0, 1);
     for (const b of this.buildings.values()) b.lights.setAlpha(lightAlpha);
     this.hall?.lights.setAlpha(lightAlpha);
+    this.cosmetics?.paco?.lights.setAlpha(lightAlpha);
+    for (const light of this.cosmetics?.decorLights ?? []) light.setAlpha(lightAlpha);
     for (const light of this.houseLights) light.setAlpha(lightAlpha);
     for (const light of this.propLights) light.setAlpha(lightAlpha);
     for (const light of this.expansionLights) light?.setAlpha(lightAlpha);

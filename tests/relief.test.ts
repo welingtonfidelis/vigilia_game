@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BUILDING_IDS } from '../src/sim/index.ts';
 import { CELL, NavGrid } from '../src/render/nav.ts';
-import { door, gravePoint, GRAVE_SLOTS, HOMES, LANDMARKS, PLAZA, WORLD_H, WORLD_W, type Point } from '../src/render/layout.ts';
+import { DECOR_SPOTS, door, gravePoint, GRAVE_SLOTS, HOMES, LANDMARKS, PLAZA, WORLD_H, WORLD_W, type Point } from '../src/render/layout.ts';
 import { CLIFFS, cliffTop, faceCells, inCliff, onFace } from '../src/render/relief.ts';
 
 function reliefNav(): NavGrid {
@@ -35,6 +35,9 @@ describe('relevo da vila', () => {
       ['portao', LANDMARKS.portao],
       ['cemiterio', LANDMARKS.cemiterio],
       ['termas', LANDMARKS.termas],
+      ['salao', LANDMARKS.salao],
+      ['paco', LANDMARKS.paco],
+      ...DECOR_SPOTS.map((d, i): [string, Point] => [`enfeite ${i}`, { x: d.x * 32, y: d.y * 32 + 12 }]),
       ['abismo', LANDMARKS.abismo],
       ['fogueira', { x: LANDMARKS.fogueira.x, y: LANDMARKS.fogueira.y + 30 }],
       ['quadro', { x: LANDMARKS.quadro.x, y: LANDMARKS.quadro.y + 40 }],
