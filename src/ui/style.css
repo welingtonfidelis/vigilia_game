@@ -2882,7 +2882,8 @@ kbd {
 }
 
 /* Materiais no topo: ícone de cada um e a dica (passar o mouse ou tocar). */
-button.hud-item.mat {
+button.hud-item.mat,
+button.hud-item.hud-tipped {
   position: relative;
   background: none;
   border: none;
@@ -2937,6 +2938,183 @@ button.hud-item.mat {
   color: var(--muted);
 }
 button.hud-item.mat:hover .hud-tip,
-button.hud-item.mat:focus .hud-tip {
+button.hud-item.mat:focus .hud-tip,
+button.hud-item.hud-tipped:hover .hud-tip,
+button.hud-item.hud-tipped:focus .hud-tip {
   display: block;
+}
+
+/* Cargos, títulos e torneio (M6 F4). */
+.post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0;
+}
+.post-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.post-list li > div:first-child {
+  flex: 1 1 16rem;
+}
+.post-list li strong {
+  font-family: var(--serif);
+  font-weight: normal;
+  color: #e8d6a8;
+}
+.post-list li small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+.post-pick {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+.post-pick select {
+  max-width: 13rem;
+  background: #1d1914;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.3rem;
+  font: inherit;
+  font-size: 0.82rem;
+}
+.hero-titles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0;
+}
+.tournament-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.3rem 0 0.6rem;
+}
+.tournament-pick .btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.tournament-champion {
+  font-size: 1.05rem;
+  text-align: center;
+  margin: 0.6rem 0;
+}
+.tournament-champion small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.duel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.6rem;
+  background: linear-gradient(180deg, rgba(60, 50, 34, 0.35), rgba(24, 20, 16, 0.6));
+}
+.duel-fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  transition: transform 0.12s;
+}
+.duel-fighter.b .pixel-sprite,
+.duel-fighter.b canvas,
+.duel-fighter.b img {
+  transform: scaleX(-1);
+}
+.duel-fighter.hit {
+  transform: translateX(-3px);
+}
+.duel-fighter.b.hit {
+  transform: translateX(3px);
+}
+.duel-fighter.won strong {
+  color: var(--gold);
+}
+.duel-fighter.lost {
+  opacity: 0.6;
+}
+.duel-bar {
+  position: relative;
+  width: 100%;
+  max-width: 11rem;
+  height: 0.8rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 0.2rem;
+  overflow: hidden;
+}
+.duel-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #5fae5a;
+  transition: width 0.15s;
+}
+.duel-bar em {
+  position: absolute;
+  inset: 0;
+  font-style: normal;
+  font-size: 0.68rem;
+  line-height: 0.8rem;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 1px #000;
+}
+.duel-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 9rem;
+  text-align: center;
+}
+.duel-vs {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+.duel-mid small {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.bracket {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+}
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 0.4rem;
+  min-width: 9rem;
+}
+.bracket-round > small {
+  color: var(--muted);
+}
+.bracket-duel {
+  border: 1px solid var(--line-soft);
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.85rem;
+}
+.bracket-duel span {
+  display: block;
+}
+.bracket-duel span.win {
+  color: var(--gold);
 }

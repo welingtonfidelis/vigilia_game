@@ -8,6 +8,8 @@ import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPri
 import { autoAnswer } from './audiences.ts';
 import { livingNemeses } from './nemesis.ts';
 import { adviseEncounter, encounterOf } from './encounters.ts';
+import { appoint, holderOf, postBlocker } from './posts.ts';
+import { guessTournament, todaysTournament } from './tournament.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
@@ -122,6 +124,20 @@ export function autoMayor(world: World): void {
  */
 function tendAudiences(world: World): void {
   autoAnswer(world);
+  // Cargos (M6 F4): preenche o que está vago, de preferência com aposentados (não descem).
+  for (const post of ['capitao', 'mestre'] as const) {
+    if (holderOf(world, post)) continue;
+    const pick = world.heroes
+      .filter((h) => postBlocker(world, post, h) === null)
+      .sort((a, b) => Number(b.status === 'retired') - Number(a.status === 'retired') || b.level - a.level || a.id - b.id)[0];
+    if (pick) appoint(world, post, pick.id);
+  }
+  // Torneio: o palpite vai no herói de nível mais alto da chave.
+  const t = todaysTournament(world);
+  if (t && t.duels.length === 0 && t.favorite === null) {
+    const best = t.entrants.map((id) => world.heroes.find((h) => h.id === id)).filter((h) => !!h).sort((a, b) => b!.level - a!.level)[0];
+    if (best) guessTournament(world, best.id);
+  }
   for (const hero of world.heroes) {
     if (hero.wish?.id !== 'lapide' || hero.wish.targetId === null) continue;
     if (world.town.treasury >= graveCost(world) + hornCost(world) * 2) honorGrave(world, hero.wish.targetId);

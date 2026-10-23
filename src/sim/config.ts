@@ -430,4 +430,34 @@ export const BALANCE = {
   encounterFollowBase: 0.35,
   /** Energia do prefeito que o conselho pelo corvo custa. */
   encounterAdviceEnergy: 1,
+
+  // Cargos e torneio (M6 F4)
+  /** Defesa a mais nas incursões com o capitão da guarda na vila. */
+  captainDefense: 0.15,
+  /** Lealdade a mais dos recrutas que chegam com um mestre da guilda. */
+  masterLoyalty: 10,
+  /** Ânimo do campeão quando ele é coroado. O +5 de humor dos moradores da spec saiu no balanço da F4. */
+  championMorale: 15,
+  /** Laço que quem ficou de fora (de rank igual ou maior) perde com o nomeado; lealdade de quem foi trocado. */
+  postJealousy: 8,
+  postReplacedLoyalty: 10,
+  /** Torneio: quantos lutam, a hora da chave e a das lutas, e onde a luta para. */
+  tournamentSize: 8,
+  tournamentAnnounceHour: 8,
+  tournamentFightHour: 16,
+  tournamentYield: 0.2,
+  /** Golpes guardados por duelo (para a tela rever) e o teto de uma luta, em ticks. */
+  tournamentMaxEvents: 150,
+  tournamentMaxTicks: 900,
+  /** Reputação quando o palpite do prefeito acerta. */
+  tournamentGuessReputation: 3,
+  /** Laço de quem perde com quem venceu: respeito, ou raiva se já eram rivais. */
+  tournamentRespect: 5,
+  tournamentGrudge: 8,
+  /** Visita por lembrança: o intervalo mínimo, a chance por dia depois dele e o ânimo que dá. */
+  memoryVisitCooldownDays: 60,
+  memoryVisitChance: 0.05,
+  memoryVisitMorale: 6,
+  /** Laço com o morto para lembrar dele (família e cônjuge sempre lembram). */
+  memoryVisitBond: 40,
 } as const;

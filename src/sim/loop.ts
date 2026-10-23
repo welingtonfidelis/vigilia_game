@@ -9,6 +9,8 @@ import { morningAudiences } from './audiences.ts';
 import { dayOf, hourOf } from './calendar.ts';
 import { dailyWishes, weeklyWishes } from './wishes.ts';
 import { dailyNemeses } from './nemesis.ts';
+import { dailyPosts } from './posts.ts';
+import { hourlyTournament } from './tournament.ts';
 import { formParties } from './party.ts';
 import { processForge, raiseLegendaries } from './items.ts';
 import { dailyPatronage } from './patronage.ts';
@@ -17,7 +19,7 @@ import { dailyPeople } from './people.ts';
 import { dailyCitizens } from './citizens.ts';
 import { maybeRaid } from './raids.ts';
 import { int } from './rng.ts';
-import { activeHeroes, dailyTown, hourlyTown, processArrivals, townHeroes, updateTownHeroes } from './town.ts';
+import { activeHeroes, dailyMemories, dailyTown, hourlyTown, processArrivals, townHeroes, updateTownHeroes } from './town.ts';
 import type { World } from './types.ts';
 
 export interface Hooks {
@@ -35,6 +37,8 @@ export function step(world: World, hooks: Hooks = {}): void {
     processForge(world);
     // A incursão acontece antes de os grupos partirem: quem está em casa defende.
     maybeRaid(world);
+    // O torneio da estação (M6 F4): a chave sai antes de os grupos se formarem.
+    hourlyTournament(world);
     formParties(world);
   }
   if (world.tick % TICKS_PER_DAY === 0) daily(world);
@@ -57,7 +61,9 @@ function daily(world: World): void {
   raiseLegendaries(world);
   dailyPressure(world);
   dailyNemeses(world);
+  dailyPosts(world);
   dailyTown(world);
+  dailyMemories(world);
   dailyPatronage(world);
   dailyPets(world);
   dailyPeople(world);

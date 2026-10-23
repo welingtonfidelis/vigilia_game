@@ -1546,7 +1546,7 @@ O M6 traz onze sistemas para o jogador ter o que decidir, acompanhar e coleciona
   |---|---|---|
   | Capitão da guarda | Herói na vila ou aposentado | +15% na defesa das incursões; os guardas ficam mais contentes |
   | Mestre da guilda | Herói de rank B ou acima, ou aposentado | Recrutas chegam com +10 de lealdade |
-  | Campeão da vila | O vencedor do torneio (ou alguém nomeado, se não houve torneio) | +5 de humor dos moradores e ânimo para o campeão |
+  | Campeão da vila | O vencedor do torneio (ou alguém nomeado, se não houve torneio) | Cargo de honra: ânimo para o campeão (o +5 de humor dos moradores saiu no balanço da F4, item 19) |
 
 - **Ciúme:** quem tinha rank igual ou maior e ficou de fora perde laço com o escolhido. Trocar alguém do cargo tira lealdade dele.
 - O capitão que desce ao abismo deixa o cargo vago até voltar. Nenhum cargo dá poder na masmorra.
@@ -1629,6 +1629,15 @@ O M6 traz onze sistemas para o jogador ter o que decidir, acompanhar e coleciona
 - **Como se liberam:** pelos feitos, não pelo ouro: Senhores vencidos, páginas do bestiário, torneios, feitos das casas e nêmesis caídas. Alguns custam ouro simbólico (até 50).
 - **Nomes:** o prefeito dá nome às ruas e à praça ("Rua do Bram"), e a placa aparece no mapa.
 - **Busto no memorial:** o prefeito escolhe um herói caído para o busto da entrada do cemitério e troca quando quiser. A estátua da praça continua sendo do mecenato.
+- **Clima das estações** (pedido de 2026-10-23): a vila muda com a estação. Hoje ela tem a mesma cara o ano todo, com as árvores e a grama de outono do pack misturadas de vez.
+  - **Primavera:** verde mais forte, flores espalhadas pelos gramados, pétalas soltas e uma garoa leve de vez em quando.
+  - **Verão:** dias de sol alternando com tempestades fortes: chuva em diagonal, respingos no chão, céu mais escuro e relâmpagos. O evento da tempestade, que já existe, vira o dia mais forte.
+  - **Outono:** árvores e grama em laranja e marrom, e folhas caindo e voando com o vento.
+  - **Inverno:** dias de nevasca, com a neve acumulando no chão e nas árvores ao longo dos dias e derretendo no começo da primavera. O evento da geada vira um dia branco.
+  - O clima do dia sai da semente e do dia: o mesmo dia tem sempre o mesmo clima, e o save não muda. A troca entra aos poucos no começo de cada estação, e os corredores da masmorra não mudam.
+  - Como fazer: o chão já é pintado pixel a pixel e pode trocar a cor da grama por estação; as árvores passam pelo shader do vento, que recebe a cor da estação; chuva, neve, folhas e pétalas saem do sistema de partículas; a iluminação escurece nos dias de tempestade. O som ganha chuva e vento.
+  - O menu ganha uma opção para desligar ou reduzir o clima no celular.
+  - **Incerto:** neve nos telhados. Os prédios são imagens prontas; dá para tentar um shader que clareia a borda de cima. Se ficar feio, a saída é pedir peças ao pack (ficha no §3.2.4).
 - Tudo é só aparência.
 
 ##### 12. Lugares novos e o mapa
@@ -1664,7 +1673,7 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
 | **F3** Encontros e destaques | Sala de encontro (24 encontros), conselho pelo corvo, modo destaque, chamadas e melhores momentos | Testes dos resultados (nada de fragmento nem sala a mais); balanceador dentro do item 13 |
 | **F4** Cargos e torneio | Três cargos com a revisão da primavera, títulos, torneio com a aba no Acompanhar e o palpite | Testes de ciúme, defesa e duelo sem morte; balanceador dentro do item 13 |
 | **F5** Bestiário e dinastias | Códex (cerca de 80 entradas com texto), sobrenomes e casas, árvore da família, feitos da casa e o painel do Salão | Testes de contagem e de herança do nome; save 11 abre |
-| **F6** Cosmética e lugares | Estandarte, enfeites e o catálogo, nomes de ruas, busto, Paço e Salão no mapa (com a planta maior, se precisar) e a arte nova | Arte nos dois modos; `relief.test.ts` passa; tudo alcançável |
+| **F6** Cosmética e lugares | Estandarte, enfeites e o catálogo, nomes de ruas, busto, clima das estações, Paço e Salão no mapa (com a planta maior, se precisar) e a arte nova | Arte nos dois modos; `relief.test.ts` passa; tudo alcançável |
 
 ##### 15. Escolhas feitas por padrão (fáceis de trocar)
 
@@ -1804,6 +1813,66 @@ No branch `m6-historias`, sem ir para o `main` antes do teste do jogador.
 
   - Por campanha: 15 encontros por ano (quase todos com o conselho prudente do prefeito automático) e 12 nêmesis.
   - O caminho até aqui, em 40 sementes: a F3 como saiu atrasava o chefe máximo para o ano 79,0. Com 5 velas, foi para 76,5. O material 8 vezes em todos os níveis levou a 79,2; o material escalonado, a 77,9; e o relógio em 0,54, a 76,3.
+
+##### 19. Como ficou a F4
+
+- **Cargos** (`src/sim/posts.ts`): capitão da guarda, mestre da guilda e campeão da vila, no painel Vila (seção "Cargos da vila"), com a escolha do herói e o botão Nomear ou Trocar.
+  - Ninguém acumula cargos, e o titular precisa estar na vila ou aposentado. O mestre pede rank B ou acima (o aposentado pode qualquer rank).
+  - O cargo vale com o titular na vila ou aposentado. Quem desce deixa o efeito parado até voltar.
+  - **Revisão da primavera:** a troca de quem está no cargo só acontece na primavera; nas outras estações, só dá para preencher um cargo vago. No primeiro dia da primavera, a crônica lembra a revisão. O campeão foge à regra: cada torneio troca o campeão.
+  - **Ciúme:** quem está na vila com rank igual ou maior perde 8 de laço com o nomeado. Quem sai do cargo perde 10 de lealdade. Vencer o torneio não dá ciúme.
+  - Efeitos: o capitão soma 15% na defesa das incursões e dá +1 de humor aos guardas por dia. Com o mestre, os recrutas chegam com +10 de lealdade. O campeão é um cargo de honra: a coroação dá +15 de ânimo a quem venceu.
+  - O prefeito automático preenche o capitão e o mestre quando estão vagos, primeiro com aposentados (que não descem) e depois pelo nível.
+- **Títulos** (sem efeito no jogo, na ficha e no epitáfio):
+  - Mata-Senhor: estava no grupo que derrotou um Senhor. O golpe final num guardião não conta.
+  - Vingador ou Vingadora: derrubou uma nêmesis.
+  - Último ou Última de Pé: único sobrevivente do grupo.
+  - Campeão ou Campeã do torneio, com "×n" a partir da segunda vitória.
+  - Escudo da Vila: estava na vila em 3 incursões repelidas.
+  - O epitáfio fecha com "Chamavam o/a de …".
+- **Torneio da estação** (`src/sim/tournament.ts`):
+  - No último dia de cada estação, às 8h, a chave sai com os heróis da vila que não estão feridos nem são Covardes. O Bravo entra primeiro; depois, os de nível mais alto.
+  - A chave é de 8 quando há 8 heróis aptos, e de 4 quando há de 4 a 7. Com menos de 4, não há torneio. A spec pedia sempre 8, mas a vila raramente tem 8 heróis em casa ao mesmo tempo.
+  - Às 16h, os duelos: melhor contra pior, até um cair a 20% da vida, com no máximo 90 segundos de luta. Quem sair da vila nesse meio-tempo fica de fora.
+  - O duelo usa a conta de golpe do combate (ataque, defesa, perfuração, crítico e ritmo), sem as habilidades. Os sorteios saem de um RNG do dia, fora do RNG do mundo.
+  - Quem está na chave não desce até as lutas. Ninguém se fere e não há ouro em jogo.
+  - Laços: quem perde para um rival perde 8 de laço com o vencedor. Nos outros casos, ganha 5.
+  - O campeão ganha o feito, a vitória na conta do título e o cargo de campeão da vila.
+  - **Palpite:** nas Audiências, até as 16h. Acertar dá +3 de reputação. O prefeito automático aposta no herói de nível mais alto.
+- **Telas do torneio:**
+  - O painel Torneio mostra a chave por rodada e rodam os duelos, golpe a golpe no ritmo em que aconteceram, com retrato e barra de vida. Há "Próximo duelo" e "Ver o resultado". A chave só mostra quem passou de fase depois que o jogador assiste o duelo.
+  - O painel abre pelo botão "Torneio" no Acompanhar (no dia do torneio), pelas Audiências e pela chamada.
+  - Duas chamadas, que o menu liga e desliga: de manhã, "Hoje tem torneio", que leva às Audiências; à tarde, "Os duelos começaram", que leva ao painel, sem dizer quem venceu.
+  - A spec pedia a luta na arena do campo, no corredor do Acompanhar. Ela ficou num painel próprio, e a arena desenhada vai para a F6 junto com a arte nova.
+- **Pedidos durante a F4 (2026-10-23):**
+  - **Dica nas velas do prefeito:** como nos materiais, passar o mouse (ou tocar) nas velas mostra quantas restam, que voltam à meia-noite e quanto custa cada ação.
+  - **Visita por lembrança:** de vez em quando, um herói sem luto vai ao cemitério levar flores a um velho companheiro.
+    - O companheiro é o morto com quem ele tinha mais laço, de pelo menos 40. Cônjuge, pai, mãe e filho contam como laço máximo.
+    - Chance de 5% por dia, com intervalo de 60 dias entre as visitas. A visita dá +6 de ânimo.
+    - A crônica registra: "Fulano levou flores ao túmulo de Beltrano, que caiu há N anos."
+  - **Clima das estações:** chuva no verão, neve no inverno, folhas no outono e flores na primavera. Ficou para a F6 (item 11).
+- **Conserto:** o feito do golpe final num guardião também é do tipo "chefe". O título Mata-Senhor passou a olhar só o Senhor vencido.
+- **Balanço:** a F4 como saiu adiantava o Senhor do nível 5 para o ano 30,3, 2 anos antes do retrato de 15.9 e fora da margem de 1,5 ano.
+  - Rodadas de 40 sementes, desligando uma peça por vez: sem o capitão, 30,3; sem a lembrança, 30,6; sem o torneio inteiro, 32,4; sem o mestre, 31,7.
+  - Dentro do torneio: a reputação do palpite e o ânimo do campeão não mudaram nada. Este último porque o herói na vila volta à linha de base em poucas horas. Os laços dos duelos deram 30,8, e o humor dos moradores na coroação, 31,6.
+  - **Ajuste:** a coroação deixou de dar +5 de humor aos moradores (o humor mexe nos impostos). O campeão virou um cargo de honra. Com isso, tudo ficou dentro das metas.
+  - O ruído entre rodadas de 40 sementes que deviam dar quase o mesmo resultado chega a 1 ano no Senhor 5 e a 2 anos no chefe máximo (o sorteio de um morador que vai embora muda a campanha inteira). A atribuição de cada peça é aproximada.
+  - Por campanha: 1,7 torneio por ano (das 4 estações, só nas que têm 4 heróis aptos na vila), e o palpite do prefeito automático acerta 37%.
+- **Testes:** 9 novos (`tests/posts.test.ts`), 250 no total.
+- **Retrato (Normal, 40 sementes × 100 anos de cada lado):**
+
+  | | `main` | F3 | F4 como saiu | F4 |
+  |---|---|---|---|---|
+  | Senhor do nível 1 | ano 6,8 | ano 6,6 | ano 6,5 | ano 6,5 |
+  | Senhor do nível 5 | ano 31,9 | ano 31,9 | ano 30,3 | ano 31,6 |
+  | Chefe máximo | ano 75,0 | ano 76,3 | ano 74,6 | ano 75,3 |
+  | Ouro dos heróis no fim | 90,8 mil | 89,0 mil | 91,9 mil | 86,7 mil |
+  | Tesouro médio no fim | 12,1 mil | 12,1 mil | 12,9 mil | 12,2 mil |
+  | Mortes por ano | 4,8 | 4,7 | 4,9 | 4,9 |
+  | Contratos do Senhor perdidos | 19% | 20% | 20% | 21% |
+  | Nível médio dos prédios (anos 10, 40 e 75) | 2,6 · 5,9 · 7,3 | 2,9 · 5,9 · 7,2 | 2,8 · 5,9 · 7,3 | 2,8 · 5,9 · 7,3 |
+
+  - Por campanha: 15 encontros por ano e 12 nêmesis, como na F3.
 
 ### 10. Decisões em aberto
 

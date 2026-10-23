@@ -24,6 +24,8 @@ import {
   wishText,
   wishTextFor,
   WISHES,
+  heroTitles,
+  postsOf,
 } from '../../sim/index.ts';
 import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
@@ -288,6 +290,20 @@ export function HeroPanel(props: { heroId: number }) {
           <HeroPortrait hero={hero} variant="detail" scale={2} />
         </span>
         <p class={`status status-${hero.status}`}>{activityText(world, hero)}</p>
+        {(postsOf(world, hero).length > 0 || heroTitles(hero).length > 0) && (
+          <p class="hero-titles">
+            {postsOf(world, hero).map((p) => (
+              <span key={p} class="tag gold">
+                {p}
+              </span>
+            ))}
+            {heroTitles(hero).map((t) => (
+              <span key={t} class="tag">
+                {t}
+              </span>
+            ))}
+          </p>
+        )}
       </div>
       {hero.vengeful && <p class="tag bad">Em fúria vingativa: ignora o sino de retirada.</p>}
       {griefFor && hero.grief > 0 && (

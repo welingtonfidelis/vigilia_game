@@ -17,6 +17,7 @@ import { heroStrength } from './hero.ts';
 import { maybeInjure } from './people.ts';
 import { chance, int } from './rng.ts';
 import { townHeroes } from './town.ts';
+import { postActive } from './posts.ts';
 import type { Citizen, Raid, RaidHit, RaidOutcome, World } from './types.ts';
 
 export interface Threat {
@@ -45,7 +46,9 @@ export function defensePower(world: World): number {
     const s = heroStrength(world, hero);
     power += Math.sqrt(s.ehp * s.dps) * 0.3;
   }
-  return Math.round(power * decreeDefenseMultiplier(world));
+  // O capitão da guarda na vila (M6 F4) organiza a defesa.
+  const captain = postActive(world, 'capitao') ? 1 + B.captainDefense : 1;
+  return Math.round(power * decreeDefenseMultiplier(world) * captain);
 }
 
 export function raidPower(level: number, pressure: number): number {
@@ -106,6 +109,8 @@ export function resolveRaid(world: World, threat: Threat): Raid {
     }
   }
 
+  // Quem estava na vila quando a incursão foi repelida conta para o título Escudo da Vila.
+  if (outcome === 'repelido') for (const h of townHeroes(world)) h.stats.defended = (h.stats.defended ?? 0) + 1;
   const mood = outcome === 'repelido' ? 4 : outcome === 'custoso' ? -6 : -12;
   for (const citizen of world.citizens) citizen.happiness = Math.max(0, Math.min(100, citizen.happiness + mood));
 

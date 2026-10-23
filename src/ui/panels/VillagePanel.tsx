@@ -18,9 +18,16 @@ import {
   populationCap,
   threatOf,
   TICKS_PER_DAY,
+  holderOf,
+  POST_IDS,
+  POSTS,
+  postActive,
+  postBlocker,
+  reviewOpen,
 } from '../../sim/index.ts';
-import type { CitizenJob, Raid, World } from '../../sim/index.ts';
-import { Bar, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
+import type { CitizenJob, PostId, Raid, World } from '../../sim/index.ts';
+import { useState } from 'preact/hooks';
+import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { fmt } from '../format.ts';
 import { EXPANSION_LOTS } from '../../render/layout.ts';
 
@@ -52,6 +59,66 @@ function RaidLine(props: { world: World; raid: Raid }) {
       <strong class={outcomeTone[raid.outcome]}>{OUTCOMES[raid.outcome]}</strong> · {formatDate(raid.day * TICKS_PER_DAY)} · {BIOMES[raid.biome]?.name ?? 'abismo'}, nível {raid.level}
       <small>{details.join(' · ')}</small>
     </li>
+  );
+}
+
+/** Cargos da vila (M6 F4): quem está em cada um, o que ele faz e a nomeação. */
+function PostsSection() {
+  const { world } = useGame();
+  const command = useCommand();
+  const [pick, setPick] = useState<Partial<Record<PostId, number>>>({});
+  const review = reviewOpen(world);
+  return (
+    <>
+      <h3>
+        Cargos da vila <span class="sub">{review ? '(primavera: a revisão está aberta)' : '(as trocas são na primavera)'}</span>
+      </h3>
+      <ul class="post-list">
+        {POST_IDS.map((post) => {
+          const holder = holderOf(world, post);
+          const active = postActive(world, post);
+          const candidates = world.heroes
+            .filter((h) => h.id !== holder?.id && postBlocker(world, post, h) === null)
+            .sort((a, b) => b.level - a.level);
+          const canChange = !holder || review || post === 'campeao';
+          const chosen = pick[post] ?? candidates[0]?.id;
+          return (
+            <li key={post}>
+              <div>
+                <strong>{POSTS[post].name(holder)}</strong>{' '}
+                {holder ? (
+                  <>
+                    <HeroLink id={holder.id} />
+                    {!active && <span class="sub"> (no abismo: o cargo fica sem efeito até voltar)</span>}
+                  </>
+                ) : (
+                  <span class="sub">vago</span>
+                )}
+                <small>
+                  {POSTS[post].effect} {POSTS[post].who}
+                </small>
+              </div>
+              {canChange && candidates.length > 0 && (
+                <div class="post-pick">
+                  <select value={chosen} onChange={(e) => setPick({ ...pick, [post]: Number((e.target as HTMLSelectElement).value) })}>
+                    {candidates.map((h) => (
+                      <option key={h.id} value={h.id}>
+                        {h.name} · nível {h.level} · rank {h.rank}
+                        {h.status === 'retired' ? ' · aposentado' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <button class="btn small" onClick={() => chosen !== undefined && command(commands.appoint, post, chosen)}>
+                    {holder ? 'Trocar' : 'Nomear'}
+                  </button>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <p class="sub">Quem tinha rank igual ou maior e ficou de fora perde laço com o nomeado; quem é trocado perde lealdade.</p>
+    </>
   );
 }
 
@@ -89,6 +156,7 @@ export function VillagePanel() {
         </p>
       )}
 
+      <PostsSection />
       <h3>Distrito Sul <span class="sub">({builtHouses}/3 casas)</span></h3>
       <p class="sub">
         A floresta ao sul esconde três lotes de moradia. Limpar a área custa {fmt(expansionClearCost(world))} de ouro; cada casa custa{' '}

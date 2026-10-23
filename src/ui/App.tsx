@@ -1,7 +1,7 @@
 // Raízes da UI: o HUD (acima do mapa) e a camada sobre o mapa (painéis, avisos, objetivos).
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { abyssPressure, activeHeroes, BIOMES, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText } from '../sim/index.ts';
+import { abyssPressure, activeHeroes, BALANCE, BIOMES, dayOf, formatDate, heroCapacity, isNight, MATERIAL_NAMES, petitionText } from '../sim/index.ts';
 import type { MaterialId } from '../sim/index.ts';
 import { SPEEDS, type Session } from '../game/session.ts';
 import { GameContext, LinkedText, useGame } from './components.tsx';
@@ -18,6 +18,7 @@ import { VillagePanel } from './panels/VillagePanel.tsx';
 import { CampaignEndPanel, MemorialPanel, MenuPanel, RosterPanel, WelcomePanel } from './panels/PeoplePanels.tsx';
 import { AmuletPanel, LordEndPanel } from './panels/AmuletPanels.tsx';
 import { AudiencesPanel } from './panels/AudiencesPanel.tsx';
+import { TournamentPanel } from './panels/TournamentPanel.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
@@ -92,9 +93,7 @@ function Hud() {
       <span class="hud-item" title="Heróis na vila / vagas">
         <PackIcon name="resource-heroes" /> {activeHeroes(world).length}/{heroCapacity(world)}
       </span>
-      <span class="hud-item energy">
-        <EnergyCandles energy={town.mayorEnergy} />
-      </span>
+      <EnergyCount energy={town.mayorEnergy} />
       {mats.map((m) => (
         <MaterialCount key={m} id={m} count={town.materials[m]} />
       ))}
@@ -117,6 +116,27 @@ function Hud() {
         ))}
       </span>
     </div>
+  );
+}
+
+/** As velas do prefeito no topo, com a dica do que a energia faz (passar o mouse ou tocar). */
+function EnergyCount(props: { energy: number }) {
+  const max = BALANCE.mayorEnergy;
+  const left = Math.max(0, Math.floor(props.energy));
+  return (
+    <button type="button" class="hud-item energy hud-tipped" aria-label={`Energia do prefeito: ${left} de ${max}`}>
+      <EnergyCandles energy={props.energy} />
+      <span class="hud-tip" role="tooltip">
+        <strong>Energia do prefeito</strong>
+        <span>
+          {left} de {max} velas hoje. Voltam todas à meia-noite.
+        </span>
+        <span>
+          Conversar, presentear e consolar: 1. Discursar na praça: 2. Aconselhar um grupo pelo corvo: {BALANCE.encounterAdviceEnergy}. Algumas respostas das
+          audiências também gastam.
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -171,7 +191,7 @@ function Toasts() {
     if (ui.toasts.length === 0) return;
     const oldest = ui.toasts[ui.toasts.length - 1]!;
     // Chamadas do abismo (com "Assistir") ficam mais tempo na tela.
-    const wait = Math.max(200, oldest.at + (oldest.partyId !== undefined ? 12000 : 6000) - Date.now());
+    const wait = Math.max(200, oldest.at + (oldest.watch ? 12000 : 6000) - Date.now());
     const t = window.setTimeout(() => ui.dismissToast(oldest.id), wait);
     return () => window.clearTimeout(t);
   }, [ui.toasts]);
@@ -180,16 +200,16 @@ function Toasts() {
       {ui.toasts.map((t) => (
         <div key={t.id} class={`toast ${t.tone}`} onClick={() => ui.dismissToast(t.id)}>
           <LinkedText text={t.text} heroIds={t.heroIds} />
-          {t.partyId !== undefined && (
+          {t.watch && (
             <button
               class="btn small toast-watch"
               onClick={(e) => {
                 e.stopPropagation();
                 ui.dismissToast(t.id);
-                ui.open({ kind: 'battle', partyId: t.partyId! });
+                ui.open(t.watch!);
               }}
             >
-              Assistir
+              {t.watch.kind === 'battle' || t.watch.kind === 'tournament' ? 'Assistir' : 'Abrir'}
             </button>
           )}
         </div>
@@ -328,5 +348,7 @@ function PanelContent(props: { panel: Panel }) {
       return <LordEndPanel level={p.level} />;
     case 'audiences':
       return <AudiencesPanel />;
+    case 'tournament':
+      return <TournamentPanel />;
   }
 }

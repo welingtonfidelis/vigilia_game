@@ -3,7 +3,7 @@
 // em tempos e avisa uma vez por acontecimento. O jogador escolhe no menu o que quer ouvir.
 
 import type { Session } from '../game/session.ts';
-import { floorLabel } from '../sim/index.ts';
+import { floorLabel, todaysTournament } from '../sim/index.ts';
 import type { Party, World } from '../sim/index.ts';
 import type { UiStore } from './store.ts';
 
@@ -45,7 +45,20 @@ export function startCalls(session: Session, ui: UiStore): void {
         if (seen.has(call.key)) continue;
         seen.add(call.key);
         if (fresh || !ui.prefs.calls[call.kind]) continue;
-        ui.toast(call.text, call.kind === 'encontro' ? 'info' : 'warn', [], party.id);
+        ui.toast(call.text, call.kind === 'encontro' ? 'info' : 'warn', [], { kind: 'battle', partyId: party.id });
+      }
+    }
+    // Torneio da estação (M6 F4): a chave de manhã (com o palpite) e os duelos à tarde, sem contar quem venceu.
+    const t = todaysTournament(world);
+    if (t) {
+      const key = `torneio:${t.day}:${t.duels.length > 0 ? 'lutas' : 'chave'}`;
+      alive.add(key);
+      if (!seen.has(key)) {
+        seen.add(key);
+        if (!fresh && ui.prefs.calls.torneio !== false) {
+          if (t.duels.length === 0) ui.toast('Hoje tem torneio no campo de treino. Dê o seu palpite nas Audiências.', 'gold', [], { kind: 'audiences' });
+          else ui.toast('Os duelos do torneio começaram no campo de treino.', 'gold', [], { kind: 'tournament' });
+        }
       }
     }
     // Esquece o que já passou (o mesmo grupo pode voltar a chamar noutra descida).

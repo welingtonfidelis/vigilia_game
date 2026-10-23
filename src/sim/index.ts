@@ -100,6 +100,8 @@ export { WISHES, type WishDef, type WishText } from '../data/wishes.ts';
 export { livingNemeses, nemesisStep, nemesisWhere, victimNames } from './nemesis.ts';
 export { rumorBoard } from './rumors.ts';
 export { encounterOf, waitingAdvice } from './encounters.ts';
+export { heroTitles, holderOf, POST_IDS, POSTS, postActive, postBlocker, postsOf, reviewOpen } from './posts.ts';
+export { inTournament, todaysTournament } from './tournament.ts';
 export { ENCOUNTERS, ENCOUNTER_BY_ID, type EncounterDef, type EncounterOption } from '../data/encounters.ts';
 export { PET_LOOKS, PET_NAMES, PET_SPECIES_NAME, type PetLookDef } from '../data/pets.ts';
 export { childAge, defaultRole, forgePrice, honorFuneral, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';

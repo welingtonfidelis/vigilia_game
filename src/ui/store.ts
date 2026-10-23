@@ -26,6 +26,8 @@ export type Panel =
   | { kind: 'amulet' }
   /** Um Senhor caiu: o abismo desceu um nível. */
   | { kind: 'lordEnd'; level: number }
+  /** O torneio da estação: a chave e os duelos para rever (M6 F4). */
+  | { kind: 'tournament' }
   /** Pedidos da manhã e desejos dos heróis (M6 F1). */
   | { kind: 'audiences' };
 
@@ -46,6 +48,7 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'memorial',
   'amulet',
   'audiences',
+  'tournament',
   'menu',
 ]);
 
@@ -57,8 +60,8 @@ export interface Toast {
   tone: Tone;
   heroIds: number[];
   at: number;
-  /** Chamada do abismo (M6 F3): o aviso ganha o botão "Assistir" para este grupo. */
-  partyId?: number;
+  /** Chamada (M6 F3/F4): o aviso ganha o botão "Assistir", que abre este painel. */
+  watch?: Panel;
 }
 
 export interface Prompt {
@@ -112,8 +115,8 @@ export class UiStore {
     this.changed();
   }
 
-  toast(text: string, tone: Tone = 'info', heroIds: number[] = [], partyId?: number): void {
-    this.toasts = [{ id: this.nextToast++, text, tone, heroIds, at: Date.now(), ...(partyId !== undefined ? { partyId } : {}) }, ...this.toasts].slice(0, 3);
+  toast(text: string, tone: Tone = 'info', heroIds: number[] = [], watch?: Panel): void {
+    this.toasts = [{ id: this.nextToast++, text, tone, heroIds, at: Date.now(), ...(watch ? { watch } : {}) }, ...this.toasts].slice(0, 3);
     this.changed();
   }
 

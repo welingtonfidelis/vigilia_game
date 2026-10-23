@@ -13,6 +13,7 @@ import { buyProvisions } from './patronage.ts';
 import { noteWish, wishPairBonus } from './wishes.ts';
 import { huntSpot, nemesisMigrate } from './nemesis.ts';
 import { takeRumorSeed } from './rumors.ts';
+import { inTournament } from './tournament.ts';
 import type { Hero, Party, Spot, World } from './types.ts';
 
 export const busyParties = (world: World): Party[] => world.parties.filter((p) => p.phase !== 'voltando');
@@ -41,7 +42,7 @@ export function formParties(world: World): void {
   let slots = maxParties(world) - busyParties(world).length;
   if (slots <= 0) return;
   let pool = townHeroes(world)
-    .filter((h) => h.activity?.kind === 'aguardar' && h.lfgSince !== null)
+    .filter((h) => h.activity?.kind === 'aguardar' && h.lfgSince !== null && !inTournament(world, h.id))
     .sort((a, b) => a.lfgSince! - b.lfgSince! || a.id - b.id);
   const size = maxPartySize(world);
   while (slots > 0 && pool.length > 0) {

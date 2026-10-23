@@ -12,6 +12,7 @@ import { EFFECTS, gearPrice, grade, hasSpec, level, spend } from './economy.ts';
 import { equip, heirloomFor, stash, takeItems } from './items.ts';
 import { addBond, addTrait, ageYears, createHero, getBond, heroStats, rollRank, WOUNDS } from './hero.ts';
 import { chance, int, pick } from './rng.ts';
+import { heroTitles } from './posts.ts';
 import type { Child, Hero, InjuryKind, RetiredRole, World } from './types.ts';
 
 const alive = (h: Hero) => h.status === 'town' || h.status === 'expedition';
@@ -301,6 +302,9 @@ export function epitaph(world: World, hero: Hero): string {
   else if (hero.stats.expeditions > 0) {
     parts.push(`${plural(hero.stats.expeditions, 'descida', 'descidas')}, ${plural(hero.stats.kills, 'inimigo abatido', 'inimigos abatidos')}.`);
   } else parts.push('Caiu antes de ter tempo de virar lenda.');
+  // Títulos honoríficos (M6 F4).
+  const titles = heroTitles(hero);
+  if (titles.length > 0) parts.push(`Chamavam ${g(hero, 'o', 'a')} de ${titles.length > 1 ? `${titles.slice(0, -1).join(', ')} e ${titles.at(-1)}` : titles[0]}.`);
   if (hero.death?.by === 'velhice') parts.push(`Morreu de velhice, aos ${ageYears(world, hero)} anos.`);
   else if (hero.death) parts.push(`Caiu no ${hero.death.where}.`);
   const traits = hero.traits.filter((t) => t.revealed && TRAIT_EPITAPH[t.id]);

@@ -134,7 +134,8 @@ export function activityText(world: World, hero: Hero): string {
     case 'treinar':
       return 'Treinando no campo';
     case 'tumulo': {
-      const lost = hero.griefFor === null ? undefined : heroById(world, hero.griefFor);
+      const id = a.targetId ?? hero.griefFor;
+      const lost = id === null ? undefined : heroById(world, id);
       return lost ? `No túmulo de ${lost.name}` : 'No cemitério';
     }
     case 'socializar': {

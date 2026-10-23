@@ -294,12 +294,13 @@ export function MenuPanel() {
           ['guardiao', 'Um grupo chega ao guardião da passagem'],
           ['nemesis', 'Uma nêmesis aparece'],
           ['encontro', 'Um grupo acha um encontro e pede conselho'],
+          ['torneio', 'O torneio da estação (a chave e os duelos)'],
         ] as const
       ).map(([kind, label]) => (
         <label key={kind} class="check">
           <input
             type="checkbox"
-            checked={prefs.calls[kind]}
+            checked={prefs.calls[kind] !== false}
             onChange={(e) => ui.setPrefs({ calls: { ...prefs.calls, [kind]: (e.target as HTMLInputElement).checked } })}
           />{' '}
           {label}

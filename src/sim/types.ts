@@ -244,7 +244,7 @@ export interface HeroTrait {
 
 export interface Deed {
   tick: number;
-  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador' | 'desejo' | 'nemesis';
+  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador' | 'desejo' | 'nemesis' | 'torneio';
   text: string;
 }
 
@@ -286,6 +286,10 @@ export interface Hero {
     alliesLost: number;
     /** Descidas em que comprou provisões (opcional: saves antigos não têm). */
     provisions?: number;
+    /** Torneios vencidos (M6 F4). */
+    tournaments?: number;
+    /** Incursões repelidas com ele na vila (título Escudo da Vila, M6 F4). */
+    defended?: number;
   };
   death: { tick: number; where: string; by: string } | null;
   /** Lesão em tratamento (não desce enquanto houver). */
@@ -304,6 +308,10 @@ export interface Hero {
   wish?: Wish | null;
   /** Lápide melhor, paga pelo prefeito a pedido de quem ficou (M6 F1). */
   honoredGrave?: boolean;
+  /** Vontade de visitar o túmulo de um velho companheiro, sem luto (o id do morto). */
+  visitGrave?: number | null;
+  /** Último dia em que visitou um túmulo por lembrança. */
+  lastGraveVisit?: number;
 }
 
 export type WishId = 'herdeiro' | 'lapide' | 'juntos' | 'padrinho' | 'festa' | 'peca' | 'selar' | 'veterano' | 'superar';
@@ -320,6 +328,34 @@ export interface Wish {
   talkedId?: number;
   /** O prefeito conversou com os dois no mesmo dia: eles se procuram para formar grupo. */
   paired?: boolean;
+}
+
+export type PostId = 'capitao' | 'mestre' | 'campeao';
+
+/** Torneio da estação (M6 F4): a chave sai de manhã, as lutas acontecem à tarde. */
+export interface Tournament {
+  day: number;
+  /** Tick em que as lutas acontecem (o palpite vale até lá). */
+  startTick: number;
+  /** Os heróis na ordem da chave (1 contra 2, 3 contra 4…). */
+  entrants: number[];
+  /** O palpite do prefeito. */
+  favorite: number | null;
+  /** As lutas, na ordem em que aconteceram (vazio antes da tarde). */
+  duels: Duel[];
+  championId: number | null;
+}
+
+/** Um duelo do torneio: os golpes ficam guardados para a tela rever. */
+export interface Duel {
+  round: number;
+  a: number;
+  b: number;
+  winner: number;
+  maxA: number;
+  maxB: number;
+  /** Golpes no formato do registro de combate: uid 1 é `a`, uid 2 é `b`. */
+  events: CombatEvent[];
 }
 
 /** Petição de uma audiência da manhã (M6 F1). */
@@ -711,6 +747,10 @@ export interface Town {
   petitionLog?: PetitionRecord[];
   /** Dia de folga dado a um guarda numa audiência: ele não defende naquela noite. */
   guardLeaveDay?: number;
+  /** Cargos da vila (M6 F4): o herói (ou aposentado) em cada um. */
+  posts?: Partial<Record<PostId, number>>;
+  /** O torneio da estação (o de agora ou o último). */
+  tournament?: Tournament | null;
 }
 
 export type ChronicleKind =
@@ -764,6 +804,9 @@ export type ChronicleKind =
   | 'nemesis'
   /** Encontros nas salas e o corvo do grupo (M6 F3). */
   | 'encontro'
+  /** Cargos da vila e torneio da estação (M6 F4). */
+  | 'cargo'
+  | 'torneio'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -823,6 +866,8 @@ export interface Metrics {
   nemeses?: { born: number; met: number; kills: number; fallen: number };
   /** Encontros nas salas (M6 F3): achados, com conselho do prefeito e conselhos seguidos. */
   encounters?: { met: number; advised: number; followed: number };
+  /** Torneios (M6 F4): feitos e palpites certos do prefeito. */
+  tournaments?: { held: number; guessed: number };
   /** Material do abismo que entrou no Cofre e o que saiu em obras, consertos e encomendas. */
   materialsIn?: Partial<Record<MaterialId, number>>;
   materialsOut?: Partial<Record<MaterialId, number>>;

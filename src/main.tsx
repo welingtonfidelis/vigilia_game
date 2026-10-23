@@ -65,6 +65,8 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   desejo: 'info',
   nemesis: 'bad',
   encontro: 'info',
+  // O torneio avisa pelas chamadas (sem contar quem venceu); os cargos, pela crônica.
+  cargo: 'info',
 };
 
 // Um Senhor caiu: pausa e mostra a tela (o último fecha a campanha).

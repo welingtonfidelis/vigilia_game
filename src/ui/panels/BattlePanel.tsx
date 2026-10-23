@@ -1,7 +1,7 @@
 // Visualizador de dungeon do M4: várias expedições empilhadas (cada uma um corredor
 // lateral, em LaneCard) e o relatório ao fim.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { floorLabel, formatDate, itemName, MATERIAL_NAMES, passageOf, TICKS_PER_DAY } from '../../sim/index.ts';
+import { floorLabel, formatDate, itemName, MATERIAL_NAMES, passageOf, TICKS_PER_DAY, todaysTournament } from '../../sim/index.ts';
 import type { Hero, MaterialId, Party, Rarity, World } from '../../sim/index.ts';
 import { fmt, heroById } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
@@ -416,6 +416,11 @@ export function BattlePanel(props: { partyId: number }) {
             {highlight.id !== null ? <span class="highlight-why"> · destaque: {highlight.why}</span> : world.parties.length > 3 ? ` · mostrando 3` : ''}
           </p>
         </div>
+        {(todaysTournament(world)?.duels.length ?? 0) > 0 && (
+          <button class="btn small" onClick={() => ui.open({ kind: 'tournament' })} title="Os duelos do torneio de hoje, no campo de treino">
+            Torneio
+          </button>
+        )}
         <button
           class={`btn small highlight-toggle${ui.prefs.highlight ? ' active' : ''}`}
           aria-pressed={ui.prefs.highlight}

@@ -13,6 +13,7 @@ import {
   PETITION_BY_ID,
   petitionText,
   TICKS_PER_DAY,
+  todaysTournament,
   wishText,
   WISHES,
 } from '../../sim/index.ts';
@@ -97,12 +98,50 @@ function WishLine(props: { hero: Hero }) {
   );
 }
 
+/** Torneio de hoje (M6 F4): a chave com o palpite, ou o convite para ver os duelos. */
+function TournamentSection() {
+  const { world, ui } = useGame();
+  const command = useCommand();
+  const t = todaysTournament(world)!;
+  return (
+    <>
+      <h3>Torneio da estação</h3>
+      {t.duels.length === 0 ? (
+        <>
+          <p class="sub">As lutas começam às 16h no campo de treino. Quem acertar o campeão dá reputação à vila; errar não custa nada.</p>
+          <div class="tournament-pick">
+            {t.entrants.map((id) => {
+              const h = world.heroes.find((x) => x.id === id);
+              if (!h) return null;
+              const mine = t.favorite === id;
+              return (
+                <button key={id} class={`btn small${mine ? ' active' : ''}`} aria-pressed={mine} onClick={() => command(commands.guessTournament, id)}>
+                  {h.name} · nível {h.level}
+                  {mine ? ' (seu palpite)' : ''}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <p>
+          Os duelos já aconteceram.{' '}
+          <button class="btn small" onClick={() => ui.open({ kind: 'tournament' })}>
+            Assistir aos duelos
+          </button>
+        </p>
+      )}
+    </>
+  );
+}
+
 export function AudiencesPanel() {
   const { world } = useGame();
   const petitions = world.town.petitions ?? [];
   const wishes = world.heroes.filter((h) => h.wish && (h.status === 'town' || h.status === 'expedition'));
   const log = world.town.petitionLog ?? [];
   const crows = world.parties.filter((p) => p.encounter && p.phase !== 'voltando');
+  const tournament = todaysTournament(world);
   return (
     <PanelShell title="Audiências" subtitle={`Os pedidos da manhã e os desejos dos heróis. O jogo não para: quem não for ouvido em ${BALANCE.petitionDays} dias desiste.`}>
       {crows.length > 0 && (
@@ -113,6 +152,7 @@ export function AudiencesPanel() {
           ))}
         </>
       )}
+      {tournament && <TournamentSection />}
       <h3>Na mesa</h3>
       {petitions.length === 0 ? (
         <p class="sub">Ninguém esperando agora. Às 8h da manhã chega gente nova à mesa da praça.</p>

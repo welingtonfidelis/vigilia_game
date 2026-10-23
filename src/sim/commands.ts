@@ -46,8 +46,10 @@ import { answerPetition as answerPetitionImpl } from './audiences.ts';
 import { markRumor as markRumorImpl } from './rumors.ts';
 import { livingNemeses } from './nemesis.ts';
 import { adviseEncounter as adviseEncounterImpl } from './encounters.ts';
+import { appoint as appointImpl } from './posts.ts';
+import { guessTournament as guessTournamentImpl } from './tournament.ts';
 import { chance, int } from './rng.ts';
-import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
+import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, PostId, RetiredRole, SpecId, World } from './types.ts';
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
@@ -559,6 +561,12 @@ export function holdFestival(world: World): CommandResult {
   noteWish(world, { kind: 'festa' });
   return OK;
 }
+
+/** O prefeito nomeia alguém para um cargo da vila (M6 F4). */
+export const appoint = (world: World, post: PostId, heroId: number): CommandResult => appointImpl(world, post, heroId);
+
+/** O palpite do prefeito no torneio da estação (M6 F4). */
+export const guessTournament = (world: World, heroId: number): CommandResult => guessTournamentImpl(world, heroId);
 
 /** O conselho do prefeito a um grupo que achou um encontro e mandou um corvo (M6 F3). */
 export const adviseEncounter = (world: World, partyId: number, optionId: string): CommandResult => adviseEncounterImpl(world, partyId, optionId);

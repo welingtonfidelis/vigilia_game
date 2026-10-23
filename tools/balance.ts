@@ -165,6 +165,7 @@ console.log(`  consertos por campanha ${per((w) => w.metrics.repairs)} · conser
 console.log('\n── Audiências, desejos e nêmesis (M6) ──');
 console.log(`  petições por ano ${perYear((w) => w.metrics.audiences?.asked ?? 0)} · respondidas ${perYear((w) => w.metrics.audiences?.answered ?? 0)} · vencidas ${perYear((w) => w.metrics.audiences?.expired ?? 0)}`);
 console.log(`  desejos por campanha ${per((w) => w.metrics.wishes?.made ?? 0)} · cumpridos ${per((w) => w.metrics.wishes?.done ?? 0)} · esquecidos ${per((w) => w.metrics.wishes?.failed ?? 0)}`);
+console.log(`  torneios por campanha ${per((w) => w.metrics.tournaments?.held ?? 0)} · palpites certos ${per((w) => w.metrics.tournaments?.guessed ?? 0)}`);
 console.log(
   `  encontros por ano ${perYear((w) => w.metrics.encounters?.met ?? 0)} · com conselho ${perYear((w) => w.metrics.encounters?.advised ?? 0)} · conselhos seguidos ${perYear((w) => w.metrics.encounters?.followed ?? 0)}`,
 );

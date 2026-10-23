@@ -290,7 +290,8 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
     case 'aguardar':
       return at('quadro', 'quadro', { x: LANDMARKS.quadro.x, y: LANDMARKS.quadro.y + 40 });
     case 'tumulo': {
-      const idx = hero.griefFor === null ? null : graveIndex(hero.griefFor);
+      const lost = activity.targetId ?? hero.griefFor;
+      const idx = lost === null ? null : graveIndex(lost);
       if (idx === null) return at('cemiterio', 'cemiterio', LANDMARKS.cemiterio);
       const grave = gravePoint(idx);
       return at(`cova:${idx}`, 'cova', { x: grave.x, y: grave.y + 24 });
