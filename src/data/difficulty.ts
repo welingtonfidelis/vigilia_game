@@ -62,7 +62,7 @@ export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
     xp: 0.9,
     gold: 0.85,
     rarity: 0.8,
-    fragments: 1,
+    fragments: 0.9,
     costs: 1.25,
     enemy: 1,
     corruption: 1.15,

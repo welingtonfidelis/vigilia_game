@@ -477,7 +477,7 @@ export function useBench(world: World, hero: Hero, offer: BenchOffer): void {
   if (!item || hero.gold < offer.price) return;
   hero.gold -= offer.price;
   // A forja fica com uma parte (o resto é o trabalho do joalheiro).
-  earn(world, offer.price * B.benchTreasuryShare);
+  earn(world, offer.price * B.benchTreasuryShare, 'bancada');
   const year = yearOf(dayOf(world.tick));
   const before = item.rarity;
   const statsBefore = heroStats(world, hero).maxHp;

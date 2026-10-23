@@ -85,7 +85,7 @@ export function createWorld(seed: number, difficulty: Difficulty = 'normal'): Wo
       care: Object.fromEntries(Object.keys(buildings).map((id) => [id, 100])) as Record<BuildingId, number>,
       repairs: {},
     },
-    abyss: { level: 1, passages: [], fragments: 0, amulet: null },
+    abyss: { level: 1, passages: [], fragments: 0, amulet: null, bought: 0 },
     bonds: {},
     remains: [],
     chronicle: [],

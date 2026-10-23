@@ -127,7 +127,7 @@ export function makeEnemy(world: World, combat: Combat, def: EnemyUnitDef, spot:
     poisonTicks: 0,
     poisonDps: 0,
     xp: B.xpPerEnemy * Math.pow(lp, 1.2) * floorMult * (opts.boss ? 30 : opts.guardian ? 10 : opts.elite ? 3 : 1),
-    gold: B.goldPerEnemy * Math.pow(lp, 0.9) * floorMult * rewardMult * range(world.rng, 0.8, 1.2) * (spot.rules.includes('calor') ? 1.3 : 1),
+    gold: B.goldPerEnemy * B.goldPace * Math.pow(lp, 0.9) * floorMult * rewardMult * range(world.rng, 0.8, 1.2) * (spot.rules.includes('calor') ? 1.3 : 1),
     material: opts.boss || opts.guardian || chance(world.rng, opts.elite ? 0.8 : B.materialChance) ? BIOMES[spot.biome]!.material : null,
   };
 }

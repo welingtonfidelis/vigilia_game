@@ -88,6 +88,9 @@ export interface Citizen {
 export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
 
 /** Relatório de uma incursão noturna. */
+/** De onde vem o ouro do tesouro (métrica do balanceador). */
+export type EarnKind = 'saque' | 'imposto' | 'taverna' | 'descanso' | 'oferenda' | 'forja' | 'treino' | 'cura' | 'venda' | 'bancada' | 'provisao' | 'reliquia';
+
 /** Para onde vai o ouro do tesouro (métrica do balanceador). */
 export type SpendKind =
   | 'predio'
@@ -100,6 +103,7 @@ export type SpendKind =
   | 'forja'
   | 'contrato'
   | 'amuleto'
+  | 'fragmento'
   | 'expansao'
   | 'mecenato'
   | 'presente'
@@ -494,6 +498,8 @@ export interface AbyssState {
   /** Fragmentos do nível atual guardados no Cofre. */
   fragments: number;
   amulet: Amulet | null;
+  /** Fragmentos do nível atual comprados dos mercadores do abismo (no máximo fragmentBuyMax). */
+  bought: number;
 }
 
 export interface Remains {
@@ -668,8 +674,9 @@ export interface Metrics {
   treasuryIn: number;
   maintenance: number;
   repairs: number;
-  /** Ouro gasto pelo tesouro, por destino. */
+  /** Ouro gasto pelo tesouro, por destino, e o que entrou, por origem. */
   spent: Partial<Record<SpendKind, number>>;
+  earned?: Partial<Record<EarnKind, number>>;
   passagesSealed: number;
   idleDays: number;
   longestIdleStreak: number;

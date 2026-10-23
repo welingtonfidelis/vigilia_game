@@ -193,8 +193,14 @@ export const BALANCE = {
   // Ritmo 5× (M5 F5): a campanha é 5× mais longa, e os heróis sobem no ritmo dela.
   /** Multiplica toda a experiência dos heróis (abismo e treino). */
   xpPace: 0.4,
+  /** Multiplica o ouro de todo monstro (o saque dos heróis e, por ele, o imposto e o que eles gastam na vila). */
+  goldPace: 0.5,
   /** Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. */
   fragmentPace: 0.52,
+  /** Fragmento comprado dos mercadores do abismo: tantas vezes o preço do amuleto, mais caro a cada compra no nível, até o limite. */
+  fragmentBuyMult: 6,
+  fragmentBuyGrowth: 1.5,
+  fragmentBuyMax: 3,
   /** Monstros (menos o Senhor) com ataque × isto e vida ÷ isto: mesma ameaça, lutas mais letais. */
   enemyLethality: 2.8,
   /** Força do Senhor (vida e ataque) e afixos sorteados a cada desafio: 1 até este nível, 2 depois. */

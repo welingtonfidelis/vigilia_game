@@ -337,7 +337,7 @@ function deliverFragments(world: World, party: Party, heroes: Hero[]): void {
     record(world, 'amuleto', party.memberIds, `${listNames(heroes)} trouxeram ${what} de amuleto do nível ${party.level} (${abyss.fragments}/${B.fragmentsPerAmulet} no Cofre).`);
   } else {
     const gold = n * B.oldFragmentGold;
-    earn(world, gold);
+    earn(world, gold, 'reliquia');
     record(world, 'amuleto', party.memberIds, `${cap(what)} de um nível já vencido virou relíquia de museu e rendeu ${gold} de ouro.`);
   }
 }
@@ -362,11 +362,14 @@ function lordVictory(world: World, party: Party): void {
   // Os fragmentos que sobraram do nível vencido viram relíquia de museu.
   if (abyss.fragments > 0) {
     const gold = abyss.fragments * B.oldFragmentGold;
-    earn(world, gold);
+    earn(world, gold, 'reliquia');
     record(world, 'amuleto', [], `Os ${abyss.fragments} fragmentos que sobraram do nível ${level} viraram relíquia de museu: ${gold} de ouro.`);
     abyss.fragments = 0;
   }
-  if (abyss.level <= level) abyss.level = level + 1;
+  if (abyss.level <= level) {
+    abyss.level = level + 1;
+    abyss.bought = 0;
+  }
   record(world, 'chefe', party.memberIds, `${listNames(heroes)} derrotaram ${midName(lord.name)}. O abismo desce ao nível ${abyss.level}.`);
   // A vila festeja por conta da vitória (sem custo para o tesouro).
   for (const h of activeHeroes(world)) {
@@ -501,7 +504,7 @@ function arrive(world: World, party: Party): void {
   party.loot.gold *= (1 + B.affixGold * lucky) * difficultyOf(world).gold;
   // Ouro: o imposto vai para o tesouro, o resto é dividido por fatias.
   const tax = party.loot.gold * town.lootTax;
-  earn(world, tax);
+  earn(world, tax, 'saque');
   world.metrics.goldLooted += party.loot.gold;
   const shares = heroes.map((h) => 1 + (traitSum(h, 'lootShares') > 0 ? traitSum(h, 'lootShares') - 1 : 0));
   const totalShares = shares.reduce((a, b) => a + b, 0);

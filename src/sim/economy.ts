@@ -6,7 +6,7 @@ import { record } from './chronicle.ts';
 import { citizenMood } from './citizens.ts';
 import { BALANCE as B } from './config.ts';
 import { decreeDailyCost, decreeTaxMultiplier } from './decrees.ts';
-import type { BuildingId, ItemSlot, MaterialId, SpecId, SpendKind, World } from './types.ts';
+import type { BuildingId, EarnKind, ItemSlot, MaterialId, SpecId, SpendKind, World } from './types.ts';
 import { scaledCost } from './difficulty.ts';
 
 /** O nível construído (o do painel, da arte e do custo). Os efeitos usam o nível efetivo, `level`. */
@@ -107,10 +107,12 @@ export function pay(world: World, cost: LevelCost, kind: SpendKind): void {
   }
 }
 
-/** Ouro que entra no tesouro (o balanceador mede a parte que sai em manutenção e consertos). */
-export function earn(world: World, gold: number): void {
+/** Ouro que entra no tesouro, por origem (o balanceador mede o que entra e de onde vem). */
+export function earn(world: World, gold: number, kind: EarnKind): void {
   world.town.treasury += gold;
   world.metrics.treasuryIn += gold;
+  const earned = (world.metrics.earned ??= {});
+  earned[kind] = (earned[kind] ?? 0) + gold;
 }
 
 /** Ouro que sai do tesouro, por destino (o balanceador mostra para onde vai). */
@@ -234,13 +236,13 @@ export function dailyEconomy(world: World): void {
     }
   }
   // O humor dos moradores regula quanto eles pagam; a taxa de guerra soma.
-  earn(world, citizenTaxesPerDay(world));
+  earn(world, citizenTaxesPerDay(world), 'imposto');
   spend(world, 'manutencao', totalBuildingLevels(world) * B.upkeepPerLevelPerDay);
   spend(world, 'pensao', pensionPerDay(world));
   spend(world, 'guarda', guardSalaryPerDay(world));
   spend(world, 'decreto', decreeDailyCost(world));
   // Casa de apostas: a mesa rende pelo número de heróis na vila.
-  if (hasSpec(world, 'apostas')) earn(world, B.specApostasGoldPerHero * world.heroes.filter((h) => h.status === 'town').length);
+  if (hasSpec(world, 'apostas')) earn(world, B.specApostasGoldPerHero * world.heroes.filter((h) => h.status === 'town').length, 'taverna');
   if (town.treasury < 0) town.treasury = 0;
 }
 

@@ -170,7 +170,7 @@ export function sellItem(world: World, itemId: number): CommandResult {
   const item = arsenal.find((i) => i.id === itemId);
   if (!item) return fail('Essa peça não está no cofre.');
   arsenal.splice(arsenal.indexOf(item), 1);
-  earn(world, sellPrice(item));
+  earn(world, sellPrice(item), 'venda');
   return OK;
 }
 
@@ -199,6 +199,31 @@ export function postContract(world: World, passageId: number | null, floor: numb
 }
 
 // ── Amuleto e contrato do Senhor (M5 F2) ─────────────────────────────────
+
+/**
+ * Preço do próximo fragmento dos mercadores do abismo: várias vezes o do amuleto do nível,
+ * mais caro a cada compra no mesmo nível (null = já comprou o limite do nível).
+ */
+export function fragmentPriceFor(world: World): number | null {
+  const abyss = world.abyss;
+  if (abyss.bought >= B.fragmentBuyMax) return null;
+  return Math.round(amuletCostFor(world, abyss.level) * B.fragmentBuyMult * Math.pow(B.fragmentBuyGrowth, abyss.bought));
+}
+
+/** O joalheiro compra um fragmento do nível atual de mercadores do abismo. */
+export function buyFragment(world: World): CommandResult {
+  const abyss = world.abyss;
+  if (abyss.amulet) return fail('Já há um amuleto montado para este nível.');
+  if (abyss.fragments >= B.fragmentsPerAmulet) return fail('Os fragmentos para o amuleto já estão no Cofre.');
+  const price = fragmentPriceFor(world);
+  if (price === null) return fail(`Os mercadores só têm ${B.fragmentBuyMax} fragmentos por nível; o resto vem do abismo.`);
+  if (world.town.treasury < price) return fail(`Faltam ${Math.ceil(price - world.town.treasury)} de ouro.`);
+  spend(world, 'fragmento', price);
+  abyss.fragments++;
+  abyss.bought++;
+  record(world, 'amuleto', [], `O joalheiro comprou um fragmento do nível ${abyss.level} de mercadores do abismo por ${price} de ouro (${abyss.fragments}/${B.fragmentsPerAmulet} no Cofre).`);
+  return OK;
+}
 
 /** Monta o amuleto com 5 fragmentos do nível atual. Fica pronto em alguns dias. */
 export function forgeAmulet(world: World): CommandResult {

@@ -28,6 +28,7 @@ export function AmuletSection() {
   const lord = lordOf(amulet?.level ?? abyss.level);
   const need = BALANCE.fragmentsPerAmulet;
   const cost = commands.amuletCostFor(world, abyss.level);
+  const fragmentPrice = commands.fragmentPriceFor(world);
   const max = maxPartySize(world);
   const candidates = lordCandidates(world);
   const [picked, setPicked] = useState<number[] | null>(null);
@@ -62,6 +63,21 @@ export function AmuletSection() {
           >
             Montar o amuleto ({fmt(cost)} de ouro)
           </button>
+          {abyss.fragments < need && (
+            <>
+              <p class="sub">
+                Mercadores do abismo vendem fragmentos ao joalheiro, cada vez mais caro: no máximo {BALANCE.fragmentBuyMax} por nível, e os outros
+                vêm das lutas. Comprados neste nível: {abyss.bought} de {BALANCE.fragmentBuyMax}.
+              </p>
+              <button
+                class="btn"
+                disabled={fragmentPrice === null || world.town.treasury < fragmentPrice}
+                onClick={() => command(commands.buyFragment)}
+              >
+                {fragmentPrice === null ? 'Os mercadores não têm mais fragmentos deste nível' : `Comprar um fragmento (${fmt(fragmentPrice)} de ouro)`}
+              </button>
+            </>
+          )}
         </>
       )}
       {amulet && world.tick < amulet.readyTick && <p class="tag">O joalheiro termina o amuleto em {waitText(world, amulet.readyTick)}.</p>}

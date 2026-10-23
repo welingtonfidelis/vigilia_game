@@ -4,7 +4,7 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { amuletCostFor, blowHorn, build, challengeLord, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
@@ -60,9 +60,18 @@ export function autoMayor(world: World): void {
   // Conserto primeiro; depois, a próxima obra da lista. O ouro que ela pede fica guardado:
   // festas, contratos, encomendas e mecenato só usam o que sobra.
   let fund = tendBuildings(world, reserve);
+  // Fragmentos prontos: o ouro do joalheiro fica guardado antes de obra nova.
+  const saving = !world.abyss.amulet && world.abyss.fragments >= B.fragmentsPerAmulet ? amuletCostFor(world, world.abyss.level) : 0;
   const next = fund > 0 ? null : nextBuild(world);
-  if (next && town.treasury - next.cost.gold >= reserve) build(world, next.id, next.lvl === B.specLevel ? BOT_SPECS[next.id] : undefined);
+  if (next && town.treasury - next.cost.gold >= reserve + saving) build(world, next.id, next.lvl === B.specLevel ? BOT_SPECS[next.id] : undefined);
   else if (next) fund = next.cost.gold;
+  fund += saving;
+
+  // Ouro sobrando vira fragmento: compra dos mercadores quando sobra o dobro do preço.
+  if (hourOf(world.tick) === 15 && !world.abyss.amulet && world.abyss.fragments < B.fragmentsPerAmulet) {
+    const price = fragmentPriceFor(world);
+    if (price !== null && town.treasury >= reserve + fund + 2 * price) buyFragment(world);
+  }
 
   // Fim de jogo sem ouro morto: quando o tesouro sobra, a vila faz festa.
   if (hourOf(world.tick) === 14) {

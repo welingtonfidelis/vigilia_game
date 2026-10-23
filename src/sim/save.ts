@@ -37,6 +37,7 @@ function fillDefaults(world: World): void {
   town.repairs ??= {};
   world.abyss.fragments ??= 0;
   world.abyss.amulet ??= null;
+  world.abyss.bought ??= 0;
   const m = world.metrics;
   m.bossKills ??= [];
   m.lordFailures ??= 0;

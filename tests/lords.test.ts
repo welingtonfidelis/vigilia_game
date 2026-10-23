@@ -89,6 +89,7 @@ describe('Senhores do abismo', () => {
     const world = createWorld(6);
     readyAmulet(world);
     world.abyss.fragments = 2;
+    world.abyss.bought = 2;
     const team = strongHeroes(world, 4);
     const treasury = world.town.treasury;
     expect(commands.challengeLord(world, team.map((h) => h.id))).toEqual({ ok: true });
@@ -97,6 +98,7 @@ describe('Senhores do abismo', () => {
     expect(world.abyss.level).toBe(2);
     expect(world.abyss.amulet).toBeNull();
     expect(world.abyss.fragments).toBe(0);
+    expect(world.abyss.bought).toBe(0);
     expect(world.town.treasury).toBeGreaterThan(treasury);
     expect(world.chronicle.some((e) => e.kind === 'chefe' && e.text.includes('O abismo desce ao nível 2'))).toBe(true);
   });

@@ -1212,7 +1212,7 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
 | Contratos do Senhor perdidos | 20% a 35% (tem que haver tensão) |
 | Mortes por ano | 3 a 6 |
 | Impasses e ócio | 0 impasses; ócio de no máximo 4 dias |
-| Nível médio dos prédios | ~3 no ano 10, ~6 no ano 40, ~9 no ano 75 |
+| Nível médio dos prédios | ~3 no ano 10, ~6 no ano 40, ~8 no ano 75 (era ~9 antes do ajuste do ouro, 15.9) |
 | Manutenção e consertos | de 15% a 30% do que entra no tesouro |
 | Ouro dos heróis no fim | 50 a 150 mil em 100 anos (definido na F5, com o primeiro retrato) |
 | Tesouro no fim | até 60 mil em 100 anos (o antigo "até 20 mil" era da campanha de 16 anos) |
@@ -1426,6 +1426,48 @@ Quatro dimensões mais fundas, uma por Senhor dos níveis 6 a 9. Os Senhores man
   - O quadro passou de 136 para 160 px. O nome subiu de 0,72 para 0,86 rem, o nível de 0,6 para 0,72 rem, a barra de vida de 9 para 12 px (números de 8 para 10 px) e a de experiência de 4 para 5 px. Os cinco quadros seguem numa linha no desktop.
   - O aviso de volta à vila desceu para não encostar nos quadros.
   - No celular, a lista de corredores rola, e cada corredor tem 220 px. Antes, três corredores espremidos cortavam a faixa do grupo, e só a primeira linha de heróis aparecia.
+- ✅ **Ouro rápido demais no Normal** (pedido em 2026-10-23, numa campanha nova). Feito: ver 15.9.
+
+##### 15.9 Ajuste do ouro: menos saque e a compra de fragmentos
+
+- **Diagnóstico** (prefeito "humano" simulado, que só toca o berrante, constrói, conserta e manda o grupo ao Senhor):
+  - O tesouro junta cerca de 30 mil no ano 10 e 118 mil no ano 20.
+  - A vila trava anos esperando material do abismo: fica no nível 5 do ano 13 ao 30, até as brasas do abismo 5.
+  - Nesse tempo, o ouro não tem onde ser gasto. O prefeito automático não mostrava isso porque gasta tudo em contratos, festas e mecenato.
+  - O que entra no tesouro: o imposto sobre o saque (cerca de 40%), as oferendas dos heróis ricos no templo, a margem da forja, o imposto dos moradores e o descanso. Quase tudo nasce do ouro dos monstros, que ainda estava no ritmo da campanha antiga.
+- **Decisão do usuário (2026-10-23):** menos ouro e um gasto novo que vira progresso.
+- **Menos ouro:** o ouro de todo monstro cai pela metade (`goldPace` 0,5). Os heróis ganham menos, e o tesouro também (pelo imposto e pelo que eles gastam na vila).
+- **Compra de fragmentos:** no Cofre, o joalheiro compra fragmentos de amuleto do nível atual de mercadores do abismo.
+  - **Preço:** 6 vezes o preço de montar o amuleto do nível, e 1,5 vez mais caro a cada compra no mesmo nível. A dificuldade ajusta o preço. No nível 1, saem 1.800, 2.700 e 4.050 de ouro.
+  - **Limite:** no máximo 3 por nível. Os outros 2 do amuleto têm de vir do abismo. A contagem volta a zero quando o abismo desce.
+  - O prefeito automático compra quando o tesouro sobra (duas vezes o preço, além da reserva e da próxima obra).
+- **Metas:** as da seção 11 continuam valendo. O prefeito humano não pode passar de 30 mil no ano 20.
+
+**Feito (2026-10-23):**
+
+- **Prefeito automático:** com os fragmentos prontos, ele guarda o ouro do joalheiro antes de obra nova (e contratos, festas e mecenato só usam o que sobra).
+  - Antes, contratos e mecenato comiam o tesouro e o amuleto ficava décadas sem sair. Com o ouro pela metade, 2 de 10 sementes paravam no nível 4 com 10 fragmentos no Cofre e um grupo com confiança 2.
+  - Era o mesmo defeito por trás da cauda do Difícil que "empacava no nível 5" (15.5).
+- **Difícil:** com o defeito corrigido, o Difícil ficou só 5 anos atrás do Normal no meio da campanha (Senhor do nível 5 no ano 36,7). A chance de fragmento do Difícil foi de 1 para 0,9.
+- **Vila:** com menos ouro, a meta do ano 75 passou de ~9 para ~8. Testado e descartado: guardar a obra inteira antes dos contratos leva a vila ao 9, mas o tesouro volta a juntar 35 a 81 mil no fim (esperando prédios de 25 a 40 mil) e a manutenção passa de 30% do que entra.
+- **Prefeito humano simulado** (3 sementes, 75 anos; constrói o mais barato, conserta e compra fragmento quando não há obra):
+  - Tesouro de 1,9 a 17 mil no ano 20 (era 118 mil) e no máximo 21 mil no ano 75.
+  - A vila fica perto do 8 no ano 75.
+- **Retrato:**
+
+  | | Fácil (10 × 90 anos) | Normal (20 × 100 anos) | Difícil (10 × 130 anos) |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 4,8 | ano 6,5 (2,5–10,7) | ano 8,0 |
+  | Senhor do nível 5 | ano 24,0 | ano 32,3 (22,9–43,5), em todas | ano 41,3, em todas |
+  | Chefe máximo | ano 62,5, em todas | ano 75,7 (58–99), em 90% | ano 101,9, em todas |
+  | Contratos do Senhor perdidos | 19% | 21% | 22% |
+  | Mortes por ano | 2,5 | 4,8 | 5,3 |
+  | Nível médio dos prédios (anos 10, 40 e 75) | 3,3 · 7,1 · 8,4 | 2,6 · 5,9 · 7,3 | 2,1 · 4,4 · 6,0 |
+  | Manutenção e consertos | 15% | 19% | 21% |
+  | Ouro dos heróis no fim | 115 mil | 86,5 mil (60–107 mil) | 80 mil |
+  | Maior tesouro no fim | 28 mil | 17,4 mil | 17,4 mil |
+
+  - No Normal, todas as metas ficam verdes, menos o ócio: uma semente de 20 ficou 6 dias sem expedição no primeiro mês, com 4 dos 5 heróis tratando lesão. Com o ouro de antes, a mesma semente parava 4 dias no mesmo ponto, então é sorte de lesões, não o ajuste.
 
 ##### 16. Escolhas feitas por padrão (fáceis de trocar)
 

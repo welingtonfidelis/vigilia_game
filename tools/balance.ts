@@ -147,10 +147,11 @@ const buildingsAt = (year: number) => {
   const samples = all.map((w) => w.metrics.daily[year * DAYS_PER_YEAR - 1]).filter((s) => s !== undefined);
   return samples.length ? mean(samples.map((s) => s.buildings)) : NaN;
 };
+// Com o ouro do abismo pela metade (§15.9), a vila fecha o fim de jogo perto do 8, não do 9.
 const villageTargets: [number, number][] = [
   [10, 3],
   [40, 6],
-  [75, 9],
+  [75, 8],
 ];
 for (const [year, target] of villageTargets) {
   if (year > years) continue;

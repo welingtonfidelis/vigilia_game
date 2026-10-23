@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLASSES, commands, createWorld, heroStats, lordCandidates, lordConfidence, maxLevel, runTicks, TICKS_PER_DAY } from '../src/sim/index.ts';
+import { autoMayor, CLASSES, commands, createWorld, heroStats, hornCost, lordCandidates, lordConfidence, maxLevel, nextLevelCost, runTicks, TICKS_PER_DAY, TICKS_PER_HOUR } from '../src/sim/index.ts';
 import type { ClassId, Combat, Hero, Spot, World } from '../src/sim/index.ts';
 import { BALANCE as B } from '../src/sim/config.ts';
 import { BIOMES } from '../src/data/biomes.ts';
@@ -109,5 +109,59 @@ describe('ritmo 5× (M5 F5): monstros e heróis', () => {
     hero.xp = 0;
     gainXp(world, hero, 1);
     expect(hero.xp).toBeCloseTo(B.xpPace);
+  });
+});
+
+describe('ritmo 5× (ajuste do ouro): fragmentos dos mercadores', () => {
+  it('o joalheiro compra até 3 fragmentos por nível, cada um 1,5 vez mais caro', () => {
+    const world = createWorld(21);
+    world.town.treasury = 1e6;
+    const base = commands.amuletCostFor(world, 1) * B.fragmentBuyMult;
+    const prices: number[] = [];
+    for (let i = 0; i < B.fragmentBuyMax; i++) {
+      prices.push(commands.fragmentPriceFor(world)!);
+      expect(commands.buyFragment(world).ok).toBe(true);
+    }
+    expect(prices[0]).toBe(Math.round(base));
+    expect(prices[1]! / prices[0]!).toBeCloseTo(B.fragmentBuyGrowth, 2);
+    expect(world.abyss.fragments).toBe(3);
+    expect(commands.fragmentPriceFor(world)).toBeNull();
+    expect(commands.buyFragment(world).ok).toBe(false);
+    expect(world.metrics.spent.fragmento).toBeGreaterThan(0);
+  });
+
+  it('não compra com o amuleto montado nem sem ouro; no Difícil custa mais', () => {
+    const world = createWorld(22);
+    world.town.treasury = 10;
+    expect(commands.buyFragment(world).ok).toBe(false);
+    world.town.treasury = 1e6;
+    world.abyss.amulet = { level: 1, readyTick: 0, inUse: false };
+    expect(commands.buyFragment(world).ok).toBe(false);
+    world.abyss.amulet = null;
+    commands.buyFragment(world);
+    expect(world.abyss.bought).toBe(1);
+    const dear = createWorld(22, 'dificil');
+    expect(commands.fragmentPriceFor(dear)!).toBeGreaterThan(commands.fragmentPriceFor(createWorld(22, 'normal'))!);
+  });
+
+  it('com os fragmentos prontos, o prefeito automático guarda o ouro do joalheiro antes de obra nova', () => {
+    // Antes, contratos e obras comiam o tesouro e o amuleto ficava anos sem sair (semente 2, nível 4).
+    const guildAfter = (fragments: number) => {
+      const world = createWorld(7);
+      world.tick = 16 * TICKS_PER_HOUR;
+      world.abyss.fragments = fragments;
+      world.town.treasury = nextLevelCost(world, 'guilda')!.gold + 3 * hornCost(world) + commands.amuletCostFor(world, 1) / 2;
+      autoMayor(world);
+      return world.town.buildings.guilda;
+    };
+    expect(guildAfter(0)).toBe(1);
+    expect(guildAfter(B.fragmentsPerAmulet)).toBe(0);
+  });
+
+  it('o ouro dos monstros segue o ritmo da campanha', () => {
+    const world = createWorld(23);
+    const spot = { passageId: -1, level: 1, biome: 0, rules: [], floor: 0 };
+    const unit = makeEnemy(world, combat(), BIOMES[0]!.enemies[0]!, spot);
+    expect(unit.gold).toBeLessThanOrEqual(B.goldPerEnemy * B.goldPace * 1.2 + 1e-9);
   });
 });

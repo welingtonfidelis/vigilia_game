@@ -29,7 +29,7 @@ export function buyProvisions(world: World, party: Party, members: Hero[]): void
   for (const h of members) {
     if (h.gold >= ration * B.provisionReserve) {
       h.gold -= ration;
-      earn(world, ration * B.provisionTreasuryShare);
+      earn(world, ration * B.provisionTreasuryShare, 'provisao');
       (party.provisioned ??= []).push(h.id);
       h.stats.provisions = (h.stats.provisions ?? 0) + 1;
     }
@@ -37,7 +37,7 @@ export function buyProvisions(world: World, party: Party, members: Hero[]): void
     const fearful = hasTrait(h, 'supersticioso') || hasTrait(h, 'covarde');
     if (h.gold >= ration * (fearful ? B.provisionReserve / 2 : B.provisionReserve)) {
       h.gold -= relic;
-      earn(world, relic * B.provisionTreasuryShare);
+      earn(world, relic * B.provisionTreasuryShare, 'provisao');
       (party.relics ??= []).push(h.id);
     }
   }
