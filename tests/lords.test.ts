@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BALANCE, commands, createWorld, lordOf, maxLevel, runTicks, TICKS_PER_DAY } from '../src/sim/index.ts';
+import { BALANCE, commands, createWorld, lordConfidence, lordOf, maxLevel, runTicks, TICKS_PER_DAY } from '../src/sim/index.ts';
 import type { Hero, Party, World } from '../src/sim/index.ts';
 import { createHero } from '../src/sim/hero.ts';
 import { rollFragment } from '../src/sim/expedition.ts';
@@ -118,8 +118,12 @@ describe('Senhores do abismo', () => {
   it('o Vigia no nível 10 fecha a campanha, e o jogo segue no 11', () => {
     const world = createWorld(8);
     world.abyss.level = 10;
+    world.town.buildings.guilda = 3;
     readyAmulet(world);
-    const team = strongHeroes(world, 4, 60);
+    // Um grupo que dá conta com folga (o Vigia é calibrado para ~metade de chance em 1).
+    const team = strongHeroes(world, 5, 70);
+    (['guardiao', 'clerigo', 'arqueiro', 'piromante', 'guardiao'] as const).forEach((id, i) => (team[i]!.classId = id));
+    expect(lordConfidence(world, team, 10)).toBeGreaterThan(1.4);
     expect(commands.challengeLord(world, team.map((h) => h.id))).toEqual({ ok: true });
     runLair(world);
     expect(world.endedTick).not.toBeNull();

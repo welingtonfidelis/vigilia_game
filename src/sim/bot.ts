@@ -208,7 +208,9 @@ function tendAmulet(world: World, reserve: number): void {
   if (amulet.inUse || world.tick < amulet.readyTick) return;
   const team = lordCandidates(world).slice(0, maxPartySize(world));
   if (team.length < Math.min(3, maxPartySize(world))) return;
+  // A confiança contra o Senhor é honesta (1 ≈ metade de chance): o prefeito médio desce com
+  // uns 2/3 de chance ("acha que dá conta"), aceita menos depois de esperar e, se o grupo para de crescer, arrisca.
   const conf = lordConfidence(world, team, amulet.level);
   const waited = dayOf(world.tick - amulet.readyTick);
-  if (conf >= 1.1 || (waited >= 60 && conf >= 0.85)) challengeLord(world, team.map((h) => h.id));
+  if (conf >= 1.2 || (waited >= 90 && conf >= 1) || (waited >= 240 && conf >= 0.85)) challengeLord(world, team.map((h) => h.id));
 }

@@ -317,7 +317,7 @@ export type FragmentSource = 'matilha' | 'elite' | 'guardiao' | 'volta';
 export function rollFragment(world: World, party: Party, source: FragmentSource): void {
   if (party.lord || party.level !== world.abyss.level) return;
   const p = { matilha: B.fragmentMatilha, elite: B.fragmentElite, guardiao: B.fragmentGuardian, volta: B.fragmentReturn }[source];
-  if (!chance(world.rng, p * difficultyOf(world).rarity)) return;
+  if (!chance(world.rng, p * B.fragmentPace * difficultyOf(world).fragments)) return;
   party.loot.fragments = (party.loot.fragments ?? 0) + 1;
   const heroes = members(world, party);
   const finder = heroes.length > 0 ? pick(world.rng, heroes) : null;

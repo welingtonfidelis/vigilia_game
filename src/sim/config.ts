@@ -190,13 +190,28 @@ export const BALANCE = {
   recruitLevelsPerAbyssLevel: 3,
   recruitGearFraction: 0.5,
 
+  // Ritmo 5× (M5 F5): a campanha é 5× mais longa, e os heróis sobem no ritmo dela.
+  /** Multiplica toda a experiência dos heróis (abismo e treino). */
+  xpPace: 0.4,
+  /** Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. */
+  fragmentPace: 0.52,
+  /** Monstros (menos o Senhor) com ataque × isto e vida ÷ isto: mesma ameaça, lutas mais letais. */
+  enemyLethality: 2.8,
+  /** Força do Senhor (vida e ataque) e afixos sorteados a cada desafio: 1 até este nível, 2 depois. */
+  lordPower: 0.95,
+  lordAffixOneUntil: 3,
+  /** Acerta a confiança contra o Senhor com a chance real de vitória (1 ≈ metade). */
+  lordConfidenceScale: 1.6,
+  /** A confiança contra o Senhor se o grupo não tem tanque (e de novo se não tem curandeiro). */
+  lordMissingRole: 0.85,
+
   // Vila longa (M5 F4): prédios até o 10, efeitos em curva e conservação.
   /** Teto dos prédios na campanha; no pós-jogo não há teto. */
   buildingMaxLevel: 10,
   /** Cada nível acima do 1 vale isto em efeito (o antigo nível 3 fica entre o 4 e o 5). */
   buildingGradeStep: 0.55,
   /** Do nível 4 em diante, o ouro de cada nível é o do 3 vezes isto a cada nível. */
-  buildingCostGrowth: 1.75,
+  buildingCostGrowth: 1.65,
   /** Material dos níveis 4 em diante: base no 4, mais o passo a cada nível. */
   buildingMaterialBase: 20,
   buildingMaterialStep: 8,
@@ -233,7 +248,7 @@ export const BALANCE = {
   levelPower: [1, 2, 3.4, 5.3, 7.6, 9.2] as readonly number[],
   /** Defesa somada aos monstros por nível do abismo acima do 1. */
   defBonusPerLevel: 10,
-  floorPowerGrowth: 0.18,
+  floorPowerGrowth: 0.25,
   /** Andares de uma passagem: 3 no nível 1, um a mais a cada 3 níveis, até 6. */
   passageFloorsBase: 3,
   passageFloorsEvery: 3,

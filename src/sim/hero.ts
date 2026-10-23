@@ -229,8 +229,8 @@ function levelUp(world: World, hero: Hero, announce: boolean): void {
 
 export function gainXp(world: World, hero: Hero, amount: number): void {
   if (hero.level >= maxLevel(world, hero)) return;
-  // A dificuldade acelera ou atrasa a subida de nível (abismo e treino).
-  hero.xp += amount * difficultyOf(world).xp;
+  // A dificuldade acelera ou atrasa a subida de nível (abismo e treino); o ritmo da campanha também.
+  hero.xp += amount * difficultyOf(world).xp * B.xpPace;
   while (hero.level < maxLevel(world, hero) && hero.xp >= xpToNext(hero.level)) {
     hero.xp -= xpToNext(hero.level);
     const before = heroStats(world, hero).maxHp;

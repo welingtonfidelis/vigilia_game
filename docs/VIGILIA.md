@@ -262,7 +262,7 @@ Especificação na seção 9.1 do GDD (neste documento).
 
 ### Próximo: playtest guiado e M5
 
-O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`. As fases F1 a F4 estão prontas no branch; faltam a F5 (balanceamento 5×) e a F6 (biomas e Senhores novos).
+O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que aparecer vira ajuste. O próximo marco é o **M5: O Abismo das Dimensões** (seção 9.5 do GDD): fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção, no branch `abismo-procedural`. As fases F1 a F5 estão prontas no branch; falta a F6 (biomas e Senhores novos).
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -283,12 +283,13 @@ O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que ap
 
   | | Fácil | Normal | Difícil |
   |---|---|---|---|
-  | Experiência dos heróis (abismo e treino) | 1,4× | 1× | 0,85× |
+  | Experiência dos heróis (abismo e treino) | 1,4× | 1× | 0,9× (era 0,85× antes do M5) |
   | Ouro do saque de cada expedição | 1,3× | 1× | 0,85× |
-  | Chance de peça rara e épica (baús e elites) | 1,5× | 1× | 0,65× |
+  | Chance de peça rara e épica (baús e elites) | 1,5× | 1× | 0,8× (era 0,65× antes do M5) |
+  | Chance de fragmento de amuleto (M5) | 1,15× | 1× | 1× |
   | Custos do prefeito (prédios, berrante, festa, decretos, eventos, encomendas, lotes) | 0,8× | 1× | 1,25× |
   | Força dos monstros nos andares | 0,9× | 1× | 1× |
-  | Corrupção por dia | 0,8× | 1× | 1,15× |
+  | Pressão do abismo por dia | 0,8× | 1× | 1,15× |
   | Força das incursões | 0,8× | 1× | 1,25× |
 
   O save antigo abre em Normal. Retrato com o prefeito automático, já com os tiers novos (10 sementes × 30 anos, `npm run balance -- --difficulty <id>`):
@@ -299,7 +300,7 @@ O M4 está fechado. O playtest guiado está em andamento (seção 9.4); o que ap
   | Mortes por ano | 4,2 | 5,0 | 5,0 |
   | Ouro dos heróis no fim | 29 mil | 21,5 mil | 13,5 mil |
 
-  No Difícil, o que segura é a economia e a corrupção. Com os monstros 10% mais fortes, só 20% das campanhas fechavam em 30 anos, então a força dos monstros ficou igual à do Normal.
+  No Difícil, o que segura é a economia e a corrupção. Com os monstros 10% mais fortes, só 20% das campanhas fechavam em 30 anos, então a força dos monstros ficou igual à do Normal. O retrato da campanha 5× do M5 está na seção 9.5 (item 15.5).
 - **Segundo plano em 1×.** Com a aba em segundo plano, o jogo segue sempre em 1×, qualquer que seja a velocidade escolhida. Os 2× e 4× ficam só para quem está olhando, e a vila não avança horas de jogo sozinha a 4×.
 
 **Arte própria em 32-bit e opção 16/32 (branch `arte-32bit`, só entra no main depois do teste):**
@@ -1206,9 +1207,11 @@ Hoje a força dos heróis é **linear** no nível e no tier, e os atos sobem de 
 | Impasses e ócio | 0 impasses; ócio de no máximo 4 dias |
 | Nível médio dos prédios | ~3 no ano 10, ~6 no ano 40, ~9 no ano 75 |
 | Manutenção e consertos | de 15% a 30% do que entra no tesouro |
-| Ouro dos heróis no fim | faixa a definir com o primeiro retrato |
+| Ouro dos heróis no fim | 50 a 150 mil em 100 anos (definido na F5, com o primeiro retrato) |
+| Tesouro no fim | até 60 mil em 100 anos (o antigo "até 20 mil" era da campanha de 16 anos) |
+| Fácil e Difícil | chefe máximo entre os anos 45 e 65 no Fácil (80% das sementes) e entre 85 e 115 no Difícil (2/3 das sementes, em 130 anos) |
 
-O prefeito automático aprende a montar amuletos, abrir o contrato do Senhor e mandar consertar.
+O prefeito automático aprende a montar amuletos, abrir o contrato do Senhor e mandar consertar. O balanceador marca ✔/✘ em cada meta (no Fácil e no Difícil valem as faixas de ano dos Senhores).
 
 ##### 12. Save
 
@@ -1248,7 +1251,7 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
 | **F2** Amuletos e Senhores ✅ | Fragmentos, montagem, contrato do Senhor com a escolha do grupo, Senhores 1–5, provisórios nos níveis 6–9 e o Vigia no 10, fim e pós-jogo com os retornos | Os Senhores caem em ordem pelo prefeito automático. A campanha inteira até o Vigia depende da escala da F3 |
 | **F3** Escala sem fim ✅ | Tetos de nível por nível do abismo, tier sem teto, curvas novas e números compactos | Nível 30 do pós-jogo sem número estourado e com a mesma chance de vitória do nível 1 |
 | **F4** Vila longa ✅ | Prédios até 10 (e além), custos, segunda especialização, conservação, conserto, andaime e arte por faixa | Metas da vila e da manutenção no balanceador |
-| **F5** Balanceamento 5× | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
+| **F5** Balanceamento 5× ✅ | Metas da seção 11 em 10 sementes × 100 anos; ajuste da dificuldade (Fácil/Normal/Difícil) | Todas as metas verdes no Normal; Fácil e Difícil com o chefe máximo na faixa deles |
 | **F6** Biomas e Senhores novos | Os quatro biomas dos níveis 6 a 9, com arte própria (16 e 32-bit, pelos geradores de `art32/`), monstros e Senhores com mecânicas novas | Cada bioma com a arte completa, no gerador, e o Senhor dele no seu nível; os provisórios saem |
 
 ##### 15.1 Como ficou a F1
@@ -1341,7 +1344,45 @@ Tudo no branch `abismo-procedural`, sem ir para o `main` até o teste do jogador
   - **Com a vila forte, o abismo andou mais rápido:** o Vigia caiu no ano 44 (era 55 na F3). A forja presa ao nível do abismo segurou só um pouco.
   - **Fica para a F5:** desacelerar o abismo até as metas (Senhor do 1 nos anos 4 a 7, Vigia de 70 a 90). Isso também atrasa as pérolas e deve trazer a vila para ~3 no ano 10. Continuam fora das metas: mortalidade (1,2 por ano), contratos do Senhor perdidos (6%) e ouro dos heróis (214 mil).
 
-##### 15.5 Fila de ajustes pedidos durante o M5
+##### 15.5 Como ficou a F5
+
+- **O diagnóstico:** o ritmo é o relógio dos fragmentos, e com 5× mais tempo em cada nível os heróis subiam no ritmo antigo e chegavam ao teto muito antes do Senhor. A confiança mediana dos grupos era 3,4 no nível 1, quase ninguém morria e o Senhor caía até com 0,85. Quatro alavancas, todas em `src/sim/config.ts`:
+
+  | Alavanca | Valor | O que faz |
+  |---|---|---|
+  | `xpPace` | 0,4 | Toda a experiência (abismo e treino) segue o ritmo da campanha. |
+  | `fragmentPace` | 0,52 | A chance de cada fragmento: é o relógio dos Senhores. |
+  | `enemyLethality` | 2,8 | Monstros (menos o Senhor) com ataque × 2,8 e vida ÷ 2,8: a ameaça e a confiança ficam iguais, mas a luta fica curta e perigosa. O viés de confiança e andares mais íngremes quase não mexiam nas mortes; esta alavanca mexe, e muito (2 dá ~2 mortes por ano, 3 dá ~5, 4 dá 14). |
+  | `floorPowerGrowth` | 0,25 | Cada andar 25% mais forte (era 18%). Com 35%, o guardião do 6º andar ficava fora de alcance nos níveis 8 a 10. |
+
+- **Senhores:**
+  - Cada desafio sorteia afixos para o Senhor: 1 até o nível 3 e 2 depois. **Explosivo não entra**, porque 8% da vida do Senhor em cada herói matava o grupo na hora da vitória.
+  - A confiança contra o Senhor passou a contar a defesa do nível (até +50, que ficava de fora) e a composição: −15% sem tanque e −15% sem curandeiro. A guilda propõe um tanque e um curandeiro à altura (pelo menos metade da força do melhor) antes dos outros.
+  - Cada Senhor ganhou `power` e `threat` em `src/data/lords.ts`, medidos com `npm run lords` (grupos sintéticos contra cada Senhor, pela expedição de verdade). `threat` corrige a mecânica que a conta não vê, para a confiança 1 dar metade de chance. `power` põe em ~1,15 o grupo que vence o guardião mais fundo do nível com 1,5. A conta antiga errava muito de um Senhor para outro: o do nível 1 quase não perdia, e o do nível 9 só caía com confiança 1,6.
+  - **Grupos reais vencem mais que os sintéticos** (itens com afixos, lendárias, traços, provisões): a metade de chance deles fica em 0,61, com a curva mais suave (inclinação 3,7). A escala `lordConfidenceScale` = 1,6 deixa a confiança mostrada honesta para eles: 1 ≈ metade, 1,2 ≈ dois terços ("O grupo acha que dá conta"), 1,5 ≈ 80%.
+  - O prefeito automático desafia com 1,2; depois de 90 dias, com 1; depois de 240, com 0,85.
+- **Vila:** o ouro do nível 4 em diante cresce 1,65× por nível (era 1,75×), para a vila chegar perto do 9 no ano 75 com o abismo mais lento.
+- **Dificuldade:**
+  - Os fragmentos ganharam multiplicador próprio (`fragments`): Fácil 1,15, Normal e Difícil 1. Antes seguiam a sorte das peças raras (1,5× e 0,65×), forte demais para um relógio de 80 anos.
+  - No Difícil, a experiência foi de 0,85 para 0,9 e as peças raras de 0,65 para 0,8, para a cauda das campanhas que empacavam no nível 5.
+- **Retrato (10 sementes; 100 anos no Normal e no Fácil, 130 no Difícil):**
+
+  | | Fácil | Normal | Difícil |
+  |---|---|---|---|
+  | Senhor do nível 1 | ano 4,7 | ano 5,5 (4,5–7) | ano 6,9 |
+  | Senhor do nível 5 | ano 23 | ano 32,6 (24–44) | ano 56 (em 90%) |
+  | Chefe máximo | ano 54 (47–70), em todas | ano 73 (62–92), em 90% | ano 90 (67–112), em 70% |
+  | Contratos do Senhor perdidos | 18% | 23% | 22% |
+  | Mortes por ano | 3,1 | 4,8 | 4,5 |
+  | Nível médio dos prédios (anos 10, 40 e 75) | 3,8 · 8,4 · 10,6 | 3,1 · 6,9 · 8,4 | 3,0 · 5,6 · 6,3 |
+  | Manutenção e consertos | 17% | 18% | 20% |
+  | Ouro dos heróis no fim | 223 mil | 105 mil (79–130) | 85 mil |
+
+  No Normal todas as metas ficam verdes: 0 impasses, ócio de no máximo 1 dia, tesouro de até 44 mil no fim e save idêntico em 200 de 200. No Difícil, uma semente teve 5 dias de ócio seguidos.
+- **Em tempo de jogo:** o Vigia cai por volta de 39 horas em 1× no Normal (cerca de 29 no Fácil e 48 no Difícil).
+- **Para a F6:** os Senhores novos dos níveis 6 a 9 saem com `power` e `threat` medidos por `npm run lords`. Depois, uma rodada do balanceador confere as faixas.
+
+##### 15.6 Fila de ajustes pedidos durante o M5
 
 - **Tela de dungeon** ("Dungeons em andamento", os cartões de cada grupo): aumentar um pouco os detalhes de cada herói (nome, nível, vida e o resto da plaquinha), que hoje estão pequenos demais para ler. Pedido em 2026-10-23.
 

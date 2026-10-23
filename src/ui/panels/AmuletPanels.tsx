@@ -77,8 +77,9 @@ export function AmuletSection() {
         <>
           <h3>Contrato do Senhor</h3>
           <p class="sub">
-            A guilda propõe os {max} mais fortes que estão na vila; troque quem quiser. Se o grupo cair, fugir ou recuar, o amuleto se desfaz, e
-            os mortos ficam no covil, sem resgate.
+            A guilda propõe os {max} mais fortes que estão na vila, com um tanque e um curandeiro quando há; troque quem quiser. O Senhor nunca
+            luta igual: cada desafio traz afixos novos. Se o grupo cair, fugir ou recuar, o amuleto se desfaz, e os mortos ficam no covil, sem
+            resgate.
           </p>
           <ul class="lord-team">
             {candidates.slice(0, Math.max(max + 4, 8)).map((h) => (

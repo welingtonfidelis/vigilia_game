@@ -1,6 +1,6 @@
 // Balanceador headless: roda várias campanhas com o prefeito automático e resume
 // ritmo, mortalidade e economia. Uso: npm run balance -- --seeds 20 --years 10 [--json] [--saves]
-// [--difficulty facil|normal|dificil]
+// [--difficulty facil|normal|dificil] [--set chave=valor,...]
 // Com --saves (o playtest automático: npm run playtest), a cada 5 anos salva e carrega o
 // mundo e segue jogando com o carregado; o save tem que voltar idêntico.
 // Com --level-every N (atalho de teste do M5 F1, antes dos amuletos), o nível do abismo
@@ -9,6 +9,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { abyssPressure, autoMayor, checksum, createWorld, deserialize, runDays, serialize, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_SECOND } from '../src/sim/index.ts';
 import type { Difficulty, World } from '../src/sim/index.ts';
+import { BALANCE } from '../src/sim/config.ts';
 import { parseArgs, num } from './args.ts';
 
 const args = parseArgs(process.argv.slice(2));
@@ -18,6 +19,12 @@ const firstSeed = num(args.from, 1);
 const checkSaves = !!args.saves;
 const difficulty = (typeof args.difficulty === 'string' ? args.difficulty : 'normal') as Difficulty;
 const levelEvery = num(args['level-every'], 0);
+// --set chave=valor,chave=valor muda o BALANCE só nesta rodada (para testar ajustes).
+for (const kv of (typeof args.set === 'string' ? args.set : '').split(',').filter(Boolean)) {
+  const [key, value] = kv.split('=');
+  if (!key || !(key in BALANCE)) throw new Error(`--set: chave desconhecida ${key}`);
+  (BALANCE as Record<string, unknown>)[key] = Number(value);
+}
 /** De quantos em quantos anos o playtest salva e carrega. */
 const SAVE_EVERY = 5;
 let saveChecks = 0;
@@ -89,7 +96,8 @@ console.log(`  passagens abertas por ano: ${perYear((w) => w.metrics.passagesOpe
 console.log(`  nível do abismo no fim: ${fmt(mean(all.map((w) => w.abyss.level)))} · pressão no fim: ${fmt(mean(all.map((w) => abyssPressure(w))), 0)}`);
 const kills = all.reduce((s, w) => s + w.metrics.bossKills.length, 0);
 const fails = all.reduce((s, w) => s + w.metrics.lordFailures, 0);
-console.log(`  contratos do Senhor: ${kills + fails} · perdidos ${pct(fails / Math.max(1, kills + fails))} (meta da F5: 20% a 35%)`);
+const pctLost = fails / Math.max(1, kills + fails);
+console.log(`  contratos do Senhor: ${kills + fails} · perdidos ${pct(pctLost)} (meta: 20% a 35%)`);
 // Ano em que cada nível de Senhor caiu (M5 F2), média · faixa · % das sementes.
 const lordLevels = [...new Set(all.flatMap((w) => w.metrics.bossKills.map((b) => b.level)))].sort((a, b) => a - b);
 for (const level of lordLevels) {
@@ -186,23 +194,52 @@ const stalemates = sum((w) => w.metrics.stalemates);
 const idleMax = Math.max(...all.map((w) => w.metrics.longestIdleStreak));
 const emptyTown = all.filter((w) => w.metrics.daily.some((d, i) => i > 30 && d.roster === 0)).length;
 console.log('\n── Saúde ──');
+if (difficulty !== 'normal') console.log('  (fora do Normal, as metas são as faixas de ano dos Senhores; o resto é referência)');
 console.log(`  ${stalemates === 0 ? '✔' : '✘'} sem impasses de combate (${stalemates})`);
 console.log(`  ${idleMax <= 4 ? '✔' : '✘'} sem ócio prolongado: maior sequência de dias sem expedição = ${idleMax}`);
 console.log(`  ${emptyTown === 0 ? '✔' : '✘'} vila nunca fica sem heróis depois do 1º mês (${emptyTown} sementes)`);
 
-// Critérios do M4 (playtest amplo): ritmo, mortalidade e o ouro do fim de jogo.
+// Metas do M5 (seção 11 do doc, ritmo 5×): mortalidade, Senhores e o ouro do fim.
 const deathsPerYear = sum((w) => w.metrics.deaths) / all.length / years;
 const heroGold = all.map((w) => w.metrics.daily[w.metrics.daily.length - 1]!.heroGold);
 const goldMean = mean(heroGold);
 const treasuryMax = Math.max(...all.map((w) => w.metrics.daily[w.metrics.daily.length - 1]!.treasury));
 console.log(`  ${deathsPerYear >= 3 && deathsPerYear <= 6 ? '✔' : '✘'} mortalidade entre 3 e 6 por ano (${fmt(deathsPerYear)})`);
-// M5 F1: sem amuletos ainda, o abismo tem de girar (passagens abertas e seladas todo ano).
 const sealedPerYear = sum((w) => w.metrics.passagesSealed) / all.length / years;
 console.log(`  ${sealedPerYear >= 1 ? '✔' : '✘'} passagens seladas: pelo menos 1 por ano (${fmt(sealedPerYear)})`);
-console.log(
-  `  ${goldMean >= 15000 && goldMean <= 40000 ? '✔' : '✘'} ouro dos heróis no fim entre 15 e 40 mil (média ${fmt(goldMean / 1000)} mil · ${fmt(Math.min(...heroGold) / 1000)}–${fmt(Math.max(...heroGold) / 1000)} mil)`,
-);
-console.log(`  ${treasuryMax <= 20000 ? '✔' : '✘'} tesouro sem estourar no fim (máximo ${fmt(treasuryMax / 1000)} mil)`);
+console.log(`  ${pctLost >= 0.2 && pctLost <= 0.35 ? '✔' : '✘'} contratos do Senhor perdidos entre 20% e 35% (${pct(pctLost)})`);
+// Faixas de ano por dificuldade: [Senhor do 1, Senhor do 5, chefe máximo (média), parte das sementes].
+const PACE: Record<Difficulty, { lord1: [number, number]; lord5: [number, number]; final: [number, number]; share: number }> = {
+  facil: { lord1: [3, 6], lord5: [18, 30], final: [45, 65], share: 0.8 },
+  normal: { lord1: [4, 7], lord5: [30, 40], final: [70, 90], share: 0.8 },
+  dificil: { lord1: [5, 9], lord5: [40, 65], final: [85, 115], share: 2 / 3 },
+};
+const pace = PACE[difficulty];
+const lordYear = (level: number) => {
+  const ys = all.map((w) => w.metrics.bossKills.find((b) => b.level === level)?.day).filter((d): d is number => d !== undefined).map(yearOfDay);
+  return { mean: mean(ys), share: ys.length / all.length };
+};
+const inRange = (x: number, [lo, hi]: [number, number]) => x >= lo && x <= hi;
+for (const [level, range, label] of [
+  [1, pace.lord1, 'Senhor do nível 1'],
+  [5, pace.lord5, 'Senhor do nível 5'],
+] as const) {
+  const y = lordYear(level);
+  if (years >= range[1]) console.log(`  ${y.share === 1 && inRange(y.mean, range) ? '✔' : '✘'} ${label} entre os anos ${range[0]} e ${range[1]} (ano ${fmt(y.mean)}, ${pct(y.share)})`);
+}
+const finalLord = lordYear(10);
+if (years >= pace.final[1]) {
+  console.log(
+    `  ${finalLord.share >= pace.share && inRange(finalLord.mean, pace.final) ? '✔' : '✘'} chefe máximo entre os anos ${pace.final[0]} e ${pace.final[1]}, em ${pct(pace.share)} das sementes (ano ${fmt(finalLord.mean)}, ${pct(finalLord.share)})`,
+  );
+}
+// O ouro do fim só tem meta na campanha inteira (100 anos): heróis entre 50 e 150 mil, tesouro até 60 mil.
+if (years >= 90) {
+  console.log(
+    `  ${goldMean >= 50000 && goldMean <= 150000 ? '✔' : '✘'} ouro dos heróis no fim entre 50 e 150 mil (média ${fmt(goldMean / 1000)} mil · ${fmt(Math.min(...heroGold) / 1000)}–${fmt(Math.max(...heroGold) / 1000)} mil)`,
+  );
+  console.log(`  ${treasuryMax <= 60000 ? '✔' : '✘'} tesouro sem estourar no fim: até 60 mil (máximo ${fmt(treasuryMax / 1000)} mil)`);
+}
 if (checkSaves) console.log(`  ${saveFailures === 0 ? '✔' : '✘'} salvar e carregar volta idêntico (${saveChecks - saveFailures}/${saveChecks})`);
 console.log(`  tempo médio por campanha: ${fmt(mean(runs.map((r) => r.ms)), 0)} ms\n`);
 

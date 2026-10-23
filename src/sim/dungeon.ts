@@ -2,6 +2,7 @@
 // cada sala, a pressão do abismo e a estimativa de dificuldade que os grupos fazem.
 
 import { BIOMES } from '../data/biomes.ts';
+import { CLASSES } from '../data/classes.ts';
 import { lordOf } from '../data/lords.ts';
 import { DIM_RULE_IDS, rulesLabel } from '../data/rules.ts';
 import { dayOf } from './calendar.ts';
@@ -85,7 +86,7 @@ interface SpawnOpts {
 
 export function makeEnemy(world: World, combat: Combat, def: EnemyUnitDef, spot: Spot, opts: SpawnOpts = {}): Unit {
   const home = BIOME_OF_ENEMY.get(def.id) ?? spot.biome;
-  const power = floorPower(world, spot) * (opts.boss ? 1 : (BIOME_NORM[home] ?? 1));
+  const power = floorPower(world, spot) * (opts.boss ? B.lordPower * lordOf(spot.lord ?? spot.level).power : (BIOME_NORM[home] ?? 1));
   const eliteMult = opts.guardian ? B.guardianHp : opts.elite ? 2.5 : 1;
   const affixes = opts.affixes ?? [];
   const rewardMult = opts.boss ? 40 : opts.guardian ? B.sealGoldPacks : opts.elite ? 3 : 1;
@@ -94,11 +95,14 @@ export function makeEnemy(world: World, combat: Combat, def: EnemyUnitDef, spot:
   let atk = def.atk * power * (opts.elite || opts.guardian ? 1.3 : 1) * (spot.rules.includes('calor') ? 1.2 : 1);
   let defense = def.def + levelDefBonus(spot.level) + (opts.elite || opts.guardian ? 10 : 0);
   let interval = def.interval * (spot.rules.includes('mare') ? 1.15 : 1);
+  // Letalidade: fora o Senhor, mais ataque e menos vida na mesma proporção. A ameaça
+  // (vida × dano) e a confiança ficam iguais; a luta fica mais curta e mais perigosa.
+  if (!opts.boss) atk *= B.enemyLethality;
   if (affixes.includes('feroz')) atk *= 1.4;
   if (affixes.includes('couracado')) defense *= 1.5;
   if (affixes.includes('veloz')) interval *= 0.7;
   interval = Math.max(5, Math.round(interval));
-  const hp = def.hp * power * eliteMult;
+  const hp = (def.hp * power * eliteMult) / (opts.boss ? 1 : B.enemyLethality);
   const affixLabel = affixes.length ? ` ${affixes.map((a) => a[0]!.toUpperCase() + a.slice(1)).join(' ')}` : '';
   const title = opts.guardian ? `${def.name} Guardião` : def.name;
   return {
@@ -128,14 +132,20 @@ export function makeEnemy(world: World, combat: Combat, def: EnemyUnitDef, spot:
   };
 }
 
+/** Afixos do Senhor por desafio: 1 até o nível 3, 2 depois (M5 F5). */
+export const lordAffixCount = (level: number): number => (level <= B.lordAffixOneUntil ? 1 : 2);
+
 /** Afixos de elite pelo nível: 1 até o nível 2, 2 até o 5 e 3 depois. */
 export const eliteAffixCount = (level: number): number => (level <= 2 ? 1 : level <= 5 ? 2 : 3);
 
-function rollAffixes(world: World, spot: Spot, n: number): Affix[] {
+/** O Senhor não explode: 8% da vida dele em cada herói mataria o grupo na hora da vitória. */
+const LORD_AFFIXES: Affix[] = AFFIXES.filter((a) => a !== 'explosivo');
+
+function rollAffixes(world: World, spot: Spot, n: number, pool: Affix[] = AFFIXES): Affix[] {
   const blood = spot.rules.includes('luaSangue') ? 2 : 1;
   const affixes: Affix[] = [];
-  while (affixes.length < Math.min(n, AFFIXES.length)) {
-    const a = weighted<Affix>(world.rng, AFFIXES.map((x) => [x, x === 'vampirico' ? blood : 1] as const));
+  while (affixes.length < Math.min(n, pool.length)) {
+    const a = weighted<Affix>(world.rng, pool.map((x) => [x, x === 'vampirico' ? blood : 1] as const));
     if (!affixes.includes(a)) affixes.push(a);
   }
   return affixes;
@@ -152,8 +162,9 @@ export function spawnRoom(world: World, combat: Combat, room: Room, spot: Spot):
   const biome = BIOMES[spot.biome]!;
   const units: Unit[] = [];
   if (room.kind === 'chefe') {
+    // O Senhor nunca luta igual: cada desafio sorteia os afixos dele (a confiança não sabe quais).
     const lord = lordOf(spot.lord ?? spot.level);
-    units.push(makeEnemy(world, combat, lord, spot, { boss: true }));
+    units.push(makeEnemy(world, combat, lord, spot, { boss: true, affixes: rollAffixes(world, spot, lordAffixCount(spot.lord ?? spot.level), LORD_AFFIXES) }));
     for (let i = 0; i < lord.adds; i++) units.push(makeEnemy(world, combat, BIOMES[lord.biome]!.enemies[0]!, spot));
     return units;
   }
@@ -477,19 +488,31 @@ export function lordConfidence(world: World, heroes: Hero[], level: number): num
   const biome = BIOMES[lord.biome]!;
   const power = floorPower(world, spot);
   const defBonus = levelDefBonus(level);
-  const boss = enemyStrength(lord, power, 0);
+  const boss = enemyStrength(lord, power * B.lordPower * lord.power, defBonus);
   const add = enemyStrength(biome.enemies[0]!, power * BIOME_NORM[lord.biome]!, defBonus);
   const fight = (boss.ehp + add.ehp * lord.adds) * (boss.dps + add.dps * lord.adds) * 2;
   // As guardas cansam o grupo antes: a confiança cai um pouco por sala.
   const guards = 1 + 0.1 * B.lordGuards;
-  return (Math.sqrt(party / fight) / guards) * Math.sqrt(weakest) * B.confidenceBias;
+  // Sem quem segure a linha ou sem quem cure, o covil pesa mais do que os números dizem.
+  const roles = new Set(heroes.map((h) => CLASSES[h.classId].role));
+  const lineup = (roles.has('tank') ? 1 : B.lordMissingRole) * (roles.has('healer') ? 1 : B.lordMissingRole);
+  // A escala acerta a conta com a luta de verdade: confiança 1 é perto de metade de chance.
+  return (Math.sqrt(party / fight) / guards / lord.threat) * lineup * Math.sqrt(weakest) * B.confidenceBias * B.lordConfidenceScale;
 }
 
-/** Quem a guilda propõe para o contrato do Senhor: os mais fortes disponíveis, até o tamanho do grupo. */
+/**
+ * Quem a guilda propõe para o contrato do Senhor: os mais fortes disponíveis, com um tanque e
+ * um curandeiro na frente da lista quando há um à altura (pelo menos metade da força do melhor).
+ */
 export function lordCandidates(world: World): Hero[] {
-  return world.heroes
+  const ranked = world.heroes
     .filter((h) => h.status === 'town' && !h.injury && h.activity?.kind !== 'chegando')
-    .map((h) => ({ h, s: heroStrength(world, h) }))
-    .sort((a, b) => Math.sqrt(b.s.ehp * b.s.dps) - Math.sqrt(a.s.ehp * a.s.dps) || a.h.id - b.h.id)
-    .map((x) => x.h);
+    .map((h) => {
+      const s = heroStrength(world, h);
+      return { h, power: Math.sqrt(s.ehp * s.dps) };
+    })
+    .sort((a, b) => b.power - a.power || a.h.id - b.h.id);
+  const top = ranked[0]?.power ?? 0;
+  const lead = (['tank', 'healer'] as const).flatMap((r) => ranked.find((x) => CLASSES[x.h.classId].role === r && x.power >= top * 0.5) ?? []);
+  return [...lead, ...ranked.filter((x) => !lead.includes(x))].map((x) => x.h);
 }

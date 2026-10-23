@@ -14,22 +14,31 @@ export interface LordDef extends BossDef {
   final: boolean;
   /** Senhor novo ainda com arte emprestada (sai na F6). */
   provisional: boolean;
+  /** Força da luta (vida e ataque), acertada para um grupo que domina o nível ter ~80% (M5 F5). */
+  power: number;
+  /** O peso da mecânica dele além dos números: a confiança da guilda divide por isto. */
+  threat: number;
 }
 
 /** Quantos níveis até o chefe máximo; depois o ciclo recomeça. */
 export const LORD_LEVELS = 10;
 
-const BASE: { biome: number; name?: string }[] = [
-  { biome: 0 },
-  { biome: 1 },
-  { biome: 2 },
-  { biome: 3 },
-  { biome: 4 },
-  { biome: 2, name: 'A Rainha dos Esporos' },
-  { biome: 3, name: 'O Coro Submerso' },
-  { biome: 1, name: 'O Colosso de Ferro-negro' },
-  { biome: 0, name: 'O Rei dos Ossuários' },
-  { biome: 5 },
+/**
+ * `power` e `threat` saem da varredura do balanceador (grupos sintéticos contra cada Senhor,
+ * seção 15.5 do doc): `threat` deixa a confiança 1 perto de metade de chance, e `power` põe o
+ * grupo que domina o nível (rank A no teto, equipamento do nível) em ~80%.
+ */
+const BASE: { biome: number; name?: string; power: number; threat: number }[] = [
+  { biome: 0, power: 1.73, threat: 0.63 },
+  { biome: 1, power: 2.21, threat: 0.55 },
+  { biome: 2, power: 2.29, threat: 0.63 },
+  { biome: 3, power: 1.9, threat: 0.53 },
+  { biome: 4, power: 1.34, threat: 0.63 },
+  { biome: 2, name: 'A Rainha dos Esporos', power: 1.62, threat: 0.66 },
+  { biome: 3, name: 'O Coro Submerso', power: 1.92, threat: 0.62 },
+  { biome: 1, name: 'O Colosso de Ferro-negro', power: 1.26, threat: 0.63 },
+  { biome: 0, name: 'O Rei dos Ossuários', power: 0.89, threat: 0.81 },
+  { biome: 5, power: 1.36, threat: 0.66 },
 ];
 
 /** O Senhor do nível (no pós-jogo, o do ciclo, com o número do retorno no nome). */
@@ -47,5 +56,7 @@ export function lordOf(level: number): LordDef {
     biome: base.biome,
     final: i === LORD_LEVELS - 1,
     provisional: base.name !== undefined,
+    power: base.power,
+    threat: base.threat,
   };
 }
