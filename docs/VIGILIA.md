@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) está no `main`. Próximo: o M6 (Histórias sem fim, seção 9.6 do GDD), no branch `m6-historias`.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) e o M6 (Histórias sem fim, seção 9.6 do GDD) estão no `main`. O próximo marco ainda não foi definido.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -260,9 +260,9 @@ Especificação na seção 9.1 do GDD (neste documento).
 - [x] **Playtest automático:** `npm run playtest` roda 30 sementes × 30 anos salvando e carregando a cada 5 anos e confere ritmo, mortalidade, ouro, tesouro e saves. Todos os critérios passam.
 - [x] **Playtest guiado** (roteiro na seção 9.4): o jogo até o ano 2 trouxe os ajustes da seção seguinte (famílias, bichos, tiers e dificuldade). O resto do roteiro seguiu junto com o teste do M5.
 
-### Próximo: M6
+### Próximo marco
 
-O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes abaixo. O **M5: O Abismo das Dimensões** (seção 9.5 do GDD) foi testado e está no `main`: fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção. O próximo marco é o **M6: Histórias sem fim** (seção 9.6), para o jogador ter o que decidir na vila e ver um abismo que varia, sem mudar a economia nem a duração das dungeons. Ele sai em seis fases no branch `m6-historias`.
+O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes abaixo. O **M5: O Abismo das Dimensões** (seção 9.5 do GDD) foi testado e está no `main`: fases procedurais, amuletos e Senhores, pós-jogo sem fim e uma vila longa com manutenção. O **M6: Histórias sem fim** (seção 9.6) foi para o `main` em 2026-10-23 (PR #5): o jogador tem o que decidir na vila e vê um abismo que varia, sem mudar a economia nem a duração das dungeons. O próximo marco ainda não foi definido.
 
 **Ajustes do playtest guiado (ano 2):**
 
@@ -783,7 +783,7 @@ vigilia/
 | **M3: Vila viva** ✅ | Cidadãos, incursões noturnas, lotes e expansão sul, impostos e decretos, eventos sazonais | O ouro nunca fica parado; existe tensão fora da masmorra |
 | **M4: Profundidade** ✅ | Atos II–IV, materiais, fabricação, especializações, itens nomeados, chefes com mecânica | 12+ h sem repetir decisões |
 | **M5: O Abismo das Dimensões** ✅ | Fases procedurais (dimensões e passagens), amuletos e Senhores 1–10, chefe máximo e pós-jogo sem fim, escala sem teto, vila longa com manutenção (ver 9.5) | Campanha ~5× mais longa, com o chefe máximo perto do ano 80, e pós-jogo jogável |
-| **M6: Histórias sem fim** | Audiências e desejos, cargos e torneio, nêmesis, rumores, encontros nas salas, modo destaque, bestiário, dinastias e cosmética da vila (ver 9.6) | O jogador tem o que decidir todo dia e o abismo varia, sem mudar a economia nem a duração das dungeons |
+| **M6: Histórias sem fim** ✅ | Audiências e desejos, cargos e torneio, nêmesis, rumores, encontros nas salas, modo destaque, bestiário, dinastias e cosmética da vila (ver 9.6) | O jogador tem o que decidir todo dia e o abismo varia, sem mudar a economia nem a duração das dungeons |
 
 #### 9.1 Especificação do M2: Pessoas
 
