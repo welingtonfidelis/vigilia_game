@@ -2011,6 +2011,7 @@ kbd {
 .battle-title { flex: 1; min-width: 0; }
 .battle-title h2 { margin: 0; font-family: var(--serif); font-weight: normal; color: var(--gold); font-size: 1.1rem; }
 .battle-title p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.82rem; }
+.battle-actions { display: flex; align-items: center; gap: 0.8rem; flex: none; }
 .battle-loot { position: relative; text-align: right; flex: none; }
 .battle-loot span { display: block; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .battle-loot strong { display: block; color: var(--gold); font-size: 1rem; }
@@ -2122,9 +2123,14 @@ kbd {
   .battle-teams { padding: 0.8rem 0.6rem 3rem; gap: 0.4rem; }
   .battle-team { gap: 0.45rem; }
   .battle-vs { display: none; }
-  .battle-top { flex-wrap: wrap; }
-  .battle-loot { text-align: left; }
   .battle-bottom span:nth-child(2) { display: none; }
+  /* O × e o título na primeira linha; os botões descem, alinhados com o título. O "Em campo"
+     repete o "N grupos no abismo" e sai. */
+  .battle-top { flex-wrap: wrap; gap: 0.45rem 0.6rem; padding: 0.5rem 0.7rem; }
+  .battle-title { flex: 1 1 0; }
+  .battle-title h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .battle-actions { flex: 1 1 100%; flex-wrap: wrap; gap: 0.45rem; padding-left: 2.6rem; }
+  .battle-loot { display: none; }
 }
 
 .battle-unit-floats { position: absolute; top: -0.3rem; left: 50%; transform: translateX(-50%); z-index: 4; pointer-events: none; }
@@ -2231,11 +2237,6 @@ kbd {
 .arena-room.cleared { color: #bfa77a; }
 .arena-room.current { border-color: #e0c080; color: #e0c080; }
 .arena-room .ico { width: 6px; height: 6px; }
-@media (max-width: 720px) {
-  .battle-top { flex-wrap: wrap; }
-  .battle-loot { text-align: left; }
-  .battle-bottom span:nth-child(2) { display: none; }
-}
 
 /* Até três dungeons empilhadas, cada uma com escala própria. */
 .battle-multi {
@@ -2323,8 +2324,14 @@ kbd {
 @media (max-width: 620px) {
   .report-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .report-card { padding: 0.8rem; }
-  .arena-card-head { font-size: 0.6rem; gap: 0.35rem; }
-  .arena-card-loot { display: none; }
+  /* Duas linhas: o andar (cortado com reticências) e o sino em cima; o que o grupo faz e o saque
+     embaixo. O ::after quebra a linha. */
+  .arena-card-head { font-size: 0.6rem; gap: 0 0.35rem; flex-wrap: wrap; align-items: center; padding: 2px 6px 3px; }
+  .arena-card-head::after { content: ''; order: 1; flex-basis: 100%; height: 0; }
+  .arena-card-head strong { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .arena-card-head > span { order: 2; min-width: 0; }
+  .arena-card-head > span:not(.arena-card-loot) { padding-left: 19px; }
+  .arena-card-loot { order: 3; flex: none; }
   .battle-report { padding: 0.5rem; }
 }
 
@@ -2342,7 +2349,7 @@ kbd {
   line-height: 1.2;
 }
 @media (max-width: 620px) {
-  .arena-bell { font-size: 0.58rem; padding: 0.12rem 0.3rem; }
+  .arena-bell { font-size: 0.58rem; padding: 0.12rem 0.3rem; margin-left: auto; }
 }
 
 .arena-room-node {
@@ -2401,7 +2408,6 @@ kbd {
 .history-card li span { color: #cdbb9a; font-size: 0.82rem; }
 .history-card li small { color: var(--muted); font-size: 0.72rem; }
 @media (max-width: 620px) {
-  .battle-top { flex-wrap: wrap; }
   .history-card li button { grid-template-columns: 1fr; }
   .history-card li strong { grid-row: auto; }
   .battle-history { padding: 0.5rem; }
@@ -3520,3 +3526,9 @@ button.hud-item.hud-tipped:focus .hud-tip {
   border: 1px solid var(--line-soft);
   border-radius: 0.5rem;
 }
+
+/* A história da vila (Menu e boas-vindas): página de livro, com capitular e o fecho em dourado. */
+.story { max-width: 34rem; margin: 0.2rem 0 1rem; }
+.panel-body .story p { font-family: var(--serif); font-size: 1rem; line-height: 1.6; color: #e2d6bf; margin: 0 0 0.85rem; }
+.story p:first-child::first-letter { float: left; font-size: 2.9rem; line-height: 0.9; padding: 0.2rem 0.4rem 0 0; color: var(--gold); }
+.panel-body .story p.story-end { color: var(--gold); font-style: italic; margin-top: 1.2rem; }

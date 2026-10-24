@@ -416,21 +416,23 @@ export function BattlePanel(props: { partyId: number }) {
             {highlight.id !== null ? <span class="highlight-why"> · destaque: {highlight.why}</span> : world.parties.length > 3 ? ` · mostrando 3` : ''}
           </p>
         </div>
-        {(todaysTournament(world)?.duels.length ?? 0) > 0 && (
-          <button class="btn small" onClick={() => ui.open({ kind: 'tournament' })} title="Os duelos do torneio de hoje, no campo de treino">
-            Torneio
+        <div class="battle-actions">
+          {(todaysTournament(world)?.duels.length ?? 0) > 0 && (
+            <button class="btn small" onClick={() => ui.open({ kind: 'tournament' })} title="Os duelos do torneio de hoje, no campo de treino">
+              Torneio
+            </button>
+          )}
+          <button
+            class={`btn small highlight-toggle${ui.prefs.highlight ? ' active' : ''}`}
+            aria-pressed={ui.prefs.highlight}
+            onClick={() => ui.setPrefs({ highlight: !ui.prefs.highlight })}
+            title="Um corredor só, que troca sozinho para o grupo onde algo vai acontecer"
+          >
+            Destaques
           </button>
-        )}
-        <button
-          class={`btn small highlight-toggle${ui.prefs.highlight ? ' active' : ''}`}
-          aria-pressed={ui.prefs.highlight}
-          onClick={() => ui.setPrefs({ highlight: !ui.prefs.highlight })}
-          title="Um corredor só, que troca sozinho para o grupo onde algo vai acontecer"
-        >
-          Destaques
-        </button>
-        <div class="battle-loot"><span>Em campo</span><strong>{world.parties.length}</strong></div>
-        {history.length > 0 && <button class="btn small history-button" onClick={() => setHistoryOpen(true)}>Relatórios ({history.length})</button>}
+          <div class="battle-loot"><span>Em campo</span><strong>{world.parties.length}</strong></div>
+          {history.length > 0 && <button class="btn small history-button" onClick={() => setHistoryOpen(true)}>Relatórios ({history.length})</button>}
+        </div>
       </header>
 
       {report ? (

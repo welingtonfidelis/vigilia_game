@@ -495,6 +495,14 @@ flowchart LR
 - **Luto, sim; crueldade gratuita, não.** A perda dói e fica (crônica, epitáfio, laços), mas o jogo não pune o jogador com tortura, gore ou dilemas sádicos.
 - **Na prática:** feature nova da vila puxa para o quente (luz, gente reunida, música); feature nova do abismo puxa para o opressivo. A taxa de mortes fica na faixa de hoje. Arte e som seguem o mesmo contraste: paleta quente e tons maiores na vila, roxo e verde doentios, drones e silêncio no abismo.
 
+**A história contada ao jogador** (2026-10-24). O resumo do mundo, do jeito que se conta a quem chega, fica em `src/data/story.ts`:
+- **O mundo:** a abadia da Ordem da Candeia caiu no escuro e deixou o abismo, e a vila tem o nome de Aquilo que Vigia.
+- **O papel do jogador:** é o prefeito, e os heróis agem sozinhos.
+- **O abismo:** passagens para outros mundos, Senhores e amuleto, incursões à noite.
+- **A vida dos heróis:** eles envelhecem e morrem; voltam como ecos, e os monstros que os matam ganham nome de nêmesis.
+
+O texto se lê pelo Menu ("A história") e pela boas-vindas ("Ler a história da vila"). Junta o que o códex conta aos pedaços e guarda o segredo do Vigia (o que se vê quando ele cai sem baixas). Futuro: um prólogo animado no jogo novo, contado a partir desse texto.
+
 #### 3.2 Loops em três escalas
 
 ```mermaid

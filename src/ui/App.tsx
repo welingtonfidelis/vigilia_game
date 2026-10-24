@@ -20,6 +20,7 @@ import { AmuletPanel, LordEndPanel } from './panels/AmuletPanels.tsx';
 import { PacoPanel } from './panels/PacoPanel.tsx';
 import { TournamentPanel } from './panels/TournamentPanel.tsx';
 import { HallPanel } from './panels/HallPanel.tsx';
+import { StoryPanel } from './panels/StoryPanel.tsx';
 import { BoardPanel, BuildingPanel, CofferPanel, HornPanel, ThermalPanel } from './panels/TownPanels.tsx';
 import { DISMISSIBLE, type Panel, type UiStore } from './store.ts';
 
@@ -413,6 +414,8 @@ function PanelContent(props: { panel: Panel }) {
       return <MemorialPanel />;
     case 'menu':
       return <MenuPanel />;
+    case 'story':
+      return <StoryPanel />;
     case 'welcome':
       return <WelcomePanel oldSave={p.oldSave} />;
     case 'campaignEnd':

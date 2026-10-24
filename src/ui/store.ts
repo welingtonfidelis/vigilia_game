@@ -31,7 +31,9 @@ export type Panel =
   | { kind: 'hall'; tab?: HallTab; houseId?: number }
   | { kind: 'paco'; tab?: PacoTab }
   /** Pedidos da manhã e desejos dos heróis (M6 F1). */
-  | { kind: 'audiences' };
+  | { kind: 'audiences' }
+  /** A história da vila, para ler (Menu e boas-vindas). */
+  | { kind: 'story' };
 
 export type PanelKind = Panel['kind'];
 
@@ -101,7 +103,8 @@ export class UiStore {
 
   open(panel: Panel): void {
     const current = this.panel;
-    const fromList = current && current.kind !== 'hero' && panel.kind === 'hero';
+    // A ficha do herói e a história voltam para o painel de onde foram abertas.
+    const fromList = current && current.kind !== panel.kind && (panel.kind === 'hero' || panel.kind === 'story');
     this.back = fromList ? current : panel.kind === 'hero' ? this.back : null;
     this.panel = panel;
     this.changed();

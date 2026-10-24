@@ -304,6 +304,12 @@ export function MenuPanel() {
           Ver o fim da campanha
         </button>
       )}
+
+      <h3>A história</h3>
+      <p class="sub">O que os velhos contam a quem chega: a abadia, o abismo e Aquilo que Vigia.</p>
+      <button class="btn" onClick={() => ui.open({ kind: 'story' })}>
+        Ler a história da vila
+      </button>
       <label class="check">
         <input type="checkbox" checked={prefs.autosave} onChange={(e) => ui.setPrefs({ autosave: (e.target as HTMLInputElement).checked })} /> Salvar sozinho a cada dia do jogo
       </label>
@@ -512,9 +518,14 @@ export function WelcomePanel(props: { oldSave?: boolean }) {
         <li>WASD/setas ou clique para andar · E para interagir</li>
         <li>Espaço pausa · 1/2/3 mudam a velocidade</li>
       </ul>
-      <button class="btn primary big" onClick={() => ui.close()}>
-        Começar
-      </button>
+      <div class="row">
+        <button class="btn primary big" onClick={() => ui.close()}>
+          Começar
+        </button>
+        <button class="btn ghost" onClick={() => ui.open({ kind: 'story' })}>
+          Ler a história da vila
+        </button>
+      </div>
     </PanelShell>
   );
 }
