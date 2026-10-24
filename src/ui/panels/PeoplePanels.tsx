@@ -307,9 +307,14 @@ export function MenuPanel() {
 
       <h3>A história</h3>
       <p class="sub">O que os velhos contam a quem chega: a abadia, o abismo e Aquilo que Vigia.</p>
-      <button class="btn" onClick={() => ui.open({ kind: 'story' })}>
-        Ler a história da vila
-      </button>
+      <div class="row">
+        <button class="btn" onClick={() => ui.open({ kind: 'story' })}>
+          Ler a história da vila
+        </button>
+        <button class="btn" onClick={() => ui.playPrologue('menu')}>
+          Ver o prólogo
+        </button>
+      </div>
       <label class="check">
         <input type="checkbox" checked={prefs.autosave} onChange={(e) => ui.setPrefs({ autosave: (e.target as HTMLInputElement).checked })} /> Salvar sozinho a cada dia do jogo
       </label>
@@ -374,7 +379,7 @@ export function MenuPanel() {
                 session.replace(createWorld(seed, newDifficulty));
                 session.setPaused(false);
                 setConfirmNew(false);
-                ui.open({ kind: 'welcome' });
+                ui.playPrologue('novo');
               }}
             >
               Começar do zero

@@ -2,6 +2,7 @@
 
 import { PACK_DIMENSOES } from './pack-dimensoes.ts';
 import { PACK_HISTORIAS } from './pack-historias.ts';
+import { PACK_PROLOGO } from './pack-prologo.ts';
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -14749,6 +14750,7 @@ export const PACK_TILES: Record<string, [number, number]> = {
 // Dimensões fundas (M5 F6): as peças dos biomas VII a X saem de art32/dimensoes32.py.
 PACK_ASSETS.push(...PACK_DIMENSOES);
 PACK_ASSETS.push(...PACK_HISTORIAS);
+PACK_ASSETS.push(...PACK_PROLOGO);
 
 export const PACK_TERRAIN_COLUMNS = 8;
 

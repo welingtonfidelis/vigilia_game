@@ -9,6 +9,7 @@ import { EnergyCandles } from './Energy.tsx';
 import { clockOf, fmt, knownMaterials } from './format.ts';
 import { IconAbyss, IconBook, IconClose, IconHouse, IconMenu, IconMoon, IconMute, IconPanels, IconPause, IconScroll, IconShield, IconSound, IconSun, MaterialIcon, PackIcon } from './icons.tsx';
 import { objectives } from './objectives.ts';
+import { Prologue } from './Prologue.tsx';
 import { ChroniclePanel } from './panels/ChroniclePanel.tsx';
 import { EventPanel } from './panels/EventPanel.tsx';
 import { BattlePanel } from './panels/BattlePanel.tsx';
@@ -45,6 +46,8 @@ function useLive(session: Session, ui: UiStore): void {
 
 export function HudRoot(props: { session: Session; ui: UiStore }) {
   useLive(props.session, props.ui);
+  // No prólogo animado o topo some (o #hud fica escondido pela classe do body, ver main.tsx).
+  if (props.ui.prologue) return null;
   return (
     <GameContext.Provider value={{ session: props.session, ui: props.ui }}>
       <Hud />
@@ -56,13 +59,21 @@ export function OverlayRoot(props: { session: Session; ui: UiStore }) {
   useLive(props.session, props.ui);
   return (
     <GameContext.Provider value={{ session: props.session, ui: props.ui }}>
+      {props.ui.prologue ? <Prologue /> : <Overlay />}
+    </GameContext.Provider>
+  );
+}
+
+function Overlay() {
+  return (
+    <>
       <Objectives />
       <Toasts />
       <Prompt />
       <WatchButton />
       <Nav />
       <PanelHost />
-    </GameContext.Provider>
+    </>
   );
 }
 

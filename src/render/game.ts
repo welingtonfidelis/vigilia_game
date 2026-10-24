@@ -3,6 +3,7 @@ import type { Session } from '../game/session.ts';
 import type { UiStore } from '../ui/store.ts';
 import { setArtMode, type ArtMode } from './art32.ts';
 import { installKeys } from './keys.ts';
+import { PROLOGUE_SCENE, PrologueScene } from './PrologueScene.ts';
 import { VillageScene } from './VillageScene.ts';
 
 export interface Renderer {
@@ -76,4 +77,23 @@ export function switchArt(handle: Renderer, session: Session, ui: UiStore, art: 
   game.scene.stop('village');
   game.scene.remove('village');
   game.scene.add('village', new VillageScene(session, ui), true);
+}
+
+/**
+ * Abre o prólogo animado por cima da vila (§9.7 do doc). Espera a vila terminar de carregar:
+ * a cena do prólogo usa as texturas e as animações dela.
+ */
+export function launchPrologue(handle: Renderer, ui: UiStore): void {
+  const run = (): boolean => {
+    const game = handle.game;
+    const village = game?.scene.getScene('village');
+    if (!game || !village || !village.sys.isActive()) return false;
+    if (game.scene.getScene(PROLOGUE_SCENE)) game.scene.start(PROLOGUE_SCENE);
+    else game.scene.add(PROLOGUE_SCENE, new PrologueScene(ui), true);
+    return true;
+  };
+  if (run()) return;
+  const timer = window.setInterval(() => {
+    if (run()) window.clearInterval(timer);
+  }, 100);
 }

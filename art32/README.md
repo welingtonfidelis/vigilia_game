@@ -43,6 +43,7 @@ Um gerador por categoria (os arquivos `<categoria>32_*.py` são as partes dele):
 | `interface32.py` | ícones de equipamento e de rank; moeda, baú e flecha (estes também em 16-bit) |
 | `dimensoes32.py` | os quatro biomas das dimensões fundas (M5 F6) **em 16 e 32-bit**: monstros e Senhores com variantes e retratos, corredor VII a X, objetos, efeitos e o índice `src/render/pack-dimensoes.ts` (`--dry` só gera prévias) |
 | `historias32.py` | as peças do M6 (Histórias sem fim) **em 16 e 32-bit**: mesa de audiências, balão de desejo e flores da lápide nova (F1), e o índice `src/render/pack-historias.ts` (`--dry` só gera prévias) |
+| `prologo32.py` | as peças do prólogo animado **em 16 e 32-bit**: a abadia da Ordem da Candeia (com o overlay `-lights`) e a mesma abadia em ruína, o penhasco que se repete de lado e a borda quebrada, o olho do abismo (4 quadros), o monge com a vela (2 quadros) e a lua, e o índice `src/render/pack-prologo.ts` (usa o `Piece` e os traços de `historias32.py`; `--dry` só gera prévias) |
 
 ```bash
 python3 -I art32/vila32.py [pasta-de-prévias]

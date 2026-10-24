@@ -7,7 +7,7 @@ import type { Session } from '../game/session.ts';
 import type { LaneSound } from '../render/lane/renderer.ts';
 import type { UiStore } from '../ui/store.ts';
 import { AmbiencePlayer } from './ambience.ts';
-import { CuePlanner, cuesFor, cuesInScene, dungeonMood, moodOf } from './director.ts';
+import { CuePlanner, cuesFor, cuesInScene, dungeonMood, moodOf, prologueMood } from './director.ts';
 import { AudioEngine, type Levels } from './engine.ts';
 import { MusicPlayer } from './music.ts';
 import { SFX, type SfxName } from './sfx.ts';
@@ -120,7 +120,7 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
     if (now - lastMood >= MOOD_MS) {
       lastMood = now;
       const panel = ui.panel;
-      const mood = panel?.kind === 'battle' ? dungeonMood(session.world, session.world.parties.slice(0, 3).map((p) => p.id)) : moodOf(session.world);
+      const mood = ui.prologue ? prologueMood(session.world, ui.prologue.shot) : panel?.kind === 'battle' ? dungeonMood(session.world, session.world.parties.slice(0, 3).map((p) => p.id)) : moodOf(session.world);
       // Clima desligado no Menu: sem chuva nem trovão no ambiente.
       if (ui.prefs.weather === 'desligado') mood.weather = 'limpo';
       music.setMode(mood.mode);

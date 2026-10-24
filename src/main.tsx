@@ -6,7 +6,7 @@ import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game
 import { startAudio } from './audio/index.ts';
 import { startCalls } from './ui/calls.ts';
 import { lanes } from './render/lane/lanes.ts';
-import { startRenderer, switchArt } from './render/game.ts';
+import { launchPrologue, startRenderer, switchArt } from './render/game.ts';
 import { setArtMode } from './render/art32.ts';
 import { isTyping } from './render/keys.ts';
 import { HudRoot, OverlayRoot } from './ui/App.tsx';
@@ -20,7 +20,8 @@ setArtMode(ui.prefs.art);
 
 const loaded = loadWorld(store);
 const session = new Session(loaded.ok ? loaded.world : createWorld(Math.floor(Math.random() * 1_000_000)));
-if (!loaded.ok) ui.open({ kind: 'welcome', oldSave: loaded.old === true });
+// Jogo novo: o prólogo animado conta a história e abre a boas-vindas no fim.
+if (!loaded.ok) ui.playPrologue('novo', loaded.old === true);
 if (!loaded.ok && loaded.broken) ui.toast(loaded.reason, 'bad');
 
 // ── Avisos a partir da crônica ─────────────────────────────────────────────
@@ -151,6 +152,20 @@ window.addEventListener(
   'keydown',
   (e) => {
     if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+    // Prólogo animado: Espaço, Enter e → passam a cena; Esc pula.
+    if (ui.prologue) {
+      const title = ui.prologue.shot < 0;
+      if (e.code === 'Escape') {
+        e.preventDefault();
+        if (title) ui.finishPrologue();
+        else ui.prologueControl?.skip();
+      } else if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        if (title) ui.launchPrologue();
+        else ui.prologueControl?.next();
+      }
+      return;
+    }
     // Decisão pendente: o diálogo exige uma escolha; nada de trocar de painel por atalho.
     const deciding = ui.panel?.kind === 'event';
     const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village' | 'audiences' | 'hall') => {
@@ -215,6 +230,11 @@ render(<HudRoot session={session} ui={ui} />, document.getElementById('hud')!);
 render(<OverlayRoot session={session} ui={ui} />, document.getElementById('overlay')!);
 const renderer = startRenderer(document.getElementById('game')!, session, ui);
 const audio = startAudio(session, ui);
+ui.launchPrologue = () => launchPrologue(renderer, ui);
+ui.sfx = (name) => audio.play(name);
+// No prólogo o topo some e a cena ocupa a tela toda.
+ui.subscribe(() => document.body.classList.toggle('prologo', ui.prologue !== null));
+document.body.classList.toggle('prologo', ui.prologue !== null);
 lanes.start({ world: () => session.world, speed: () => session.speed, paused: () => session.paused, sound: (name) => audio.combat(name) });
 startCalls(session, ui);
 

@@ -3,6 +3,7 @@
 
 import type { BuildingId, World } from '../sim/index.ts';
 import { DEFAULT_PREFS, type Prefs } from '../game/storage.ts';
+import type { SfxName } from '../audio/sfx.ts';
 
 export type Panel =
   | { kind: 'hero'; heroId: number }
@@ -83,6 +84,21 @@ export interface Prompt {
 
 type Listener = () => void;
 
+/** Prólogo animado (§9.7 do doc) na tela: de onde veio e qual cena está passando. */
+export interface PrologueState {
+  /** 'novo': jogo novo (a boas-vindas abre no fim); 'menu': revisto pelo Menu. */
+  from: 'novo' | 'menu';
+  /** Para a boas-vindas do fim: havia um save de antes do M5. */
+  oldSave?: boolean;
+  /** -1: o título, esperando o toque; 0 a 5: a cena que está passando. */
+  shot: number;
+}
+
+export interface PrologueControl {
+  next: () => void;
+  skip: () => void;
+}
+
 export class UiStore {
   panel: Panel | null = null;
   /** Painel anterior, para "voltar" do herói para a lista de onde ele foi aberto. */
@@ -93,6 +109,12 @@ export class UiStore {
   rev = 0;
   /** A cena registra aqui como interagir com o que estiver perto do prefeito. */
   interact: (id: string) => void = () => {};
+  /** Prólogo animado: o estado (null fora dele), o lançador (ligado pelo main) e o controle (da cena). */
+  prologue: PrologueState | null = null;
+  launchPrologue: () => void = () => {};
+  prologueControl: PrologueControl | null = null;
+  /** Efeitos de som para quem não fala com o áudio direto (a cena do prólogo). */
+  sfx: (name: SfxName) => void = () => {};
   private nextToast = 1;
   private listeners = new Set<Listener>();
 
@@ -114,6 +136,29 @@ export class UiStore {
     this.panel = null;
     this.back = null;
     this.changed();
+  }
+
+  /** Abre o prólogo: no jogo novo, com o título esperando o toque; pelo Menu, já começa. */
+  playPrologue(from: PrologueState['from'], oldSave?: boolean): void {
+    this.panel = null;
+    this.back = null;
+    this.prologue = { from, oldSave, shot: -1 };
+    this.changed();
+    if (from === 'menu') this.launchPrologue();
+  }
+
+  setPrologue(state: PrologueState | null): void {
+    this.prologue = state;
+    this.changed();
+  }
+
+  /** Fim do prólogo (ou pulado no título): no jogo novo, a boas-vindas abre em seguida. */
+  finishPrologue(): void {
+    const p = this.prologue;
+    this.prologue = null;
+    this.prologueControl = null;
+    if (p?.from === 'novo') this.open({ kind: 'welcome', oldSave: p.oldSave });
+    else this.changed();
   }
 
   goBack(): void {

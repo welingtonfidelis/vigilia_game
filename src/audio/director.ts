@@ -5,6 +5,7 @@ import { abyssPressure, BARD_HOURS, bardNight, commands, dayOf, hourOf, isNight,
 import type { ChronicleKind, WeatherKind, World } from '../sim/index.ts';
 import type { SessionEvent } from '../game/session.ts';
 import type { SfxName } from './sfx.ts';
+import { PROLOGUE } from '../data/prologue.ts';
 
 export interface Cue {
   sfx: SfxName;
@@ -179,6 +180,13 @@ export function moodOf(world: World): Mood {
   const hour = hourOf(world.tick);
   const bard = bardNight(world, day) && hour >= BARD_HOURS[0] && hour < BARD_HOURS[1];
   return { mode, night, hour, corruption, fighting, weather: weatherOn(world, day), bard };
+}
+
+/** O prólogo animado (§9.7): a música de cada cena, de noite, sem chuva nem bardo. */
+export function prologueMood(world: World, shot: number): Mood {
+  const music = PROLOGUE[Math.max(0, shot)]?.music ?? 'noite';
+  const abyss = music === 'masmorra';
+  return { ...moodOf(world), mode: music, night: true, hour: 22, corruption: abyss ? 0.8 : 0.1, fighting: 0, scene: abyss ? 'masmorra' : 'vila', weather: 'limpo', bard: false };
 }
 
 /**

@@ -197,6 +197,8 @@ button {
 
 .objectives {
   position: absolute;
+  /* Aberto e sem espaço, passa por cima do "Acompanhar" (fica abaixo dos painéis e do botão flutuante). */
+  z-index: 2;
   top: 0.6rem;
   left: 0.6rem;
   max-width: min(22rem, calc(100% - 1.2rem));
@@ -3532,3 +3534,68 @@ button.hud-item.hud-tipped:focus .hud-tip {
 .panel-body .story p { font-family: var(--serif); font-size: 1rem; line-height: 1.6; color: #e2d6bf; margin: 0 0 0.85rem; }
 .story p:first-child::first-letter { float: left; font-size: 2.9rem; line-height: 0.9; padding: 0.2rem 0.4rem 0 0; color: var(--gold); }
 .panel-body .story p.story-end { color: var(--gold); font-style: italic; margin-top: 1.2rem; }
+
+/* Prólogo animado (§9.7): o topo some, a narração fica embaixo e o Pular no canto. */
+body.prologo #hud { display: none; }
+.prologue {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1.2rem max(1.2rem, env(safe-area-inset-right)) max(1.4rem, env(safe-area-inset-bottom)) max(1.2rem, env(safe-area-inset-left));
+  background: linear-gradient(transparent 60%, rgba(0, 0, 0, 0.6));
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.prologue.title { background: #05060a; justify-content: center; gap: 0.7rem; }
+.prologue.title h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: normal;
+  font-size: clamp(2.6rem, 9vw, 4.4rem);
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  animation: prologue-in 2.4s ease both;
+}
+.prologue.title p { margin: 0; color: var(--muted); animation: prologue-pulse 2.4s ease-in-out 1.4s infinite both; }
+.prologue-caption {
+  max-width: 34rem;
+  margin: 0 0 0.9rem;
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 3.8vw, 1.6rem);
+  line-height: 1.4;
+  text-align: center;
+  color: #efe3c8;
+  text-shadow: 0 2px 6px #000, 0 0 2px #000;
+  animation: prologue-in 1.6s ease 0.5s both;
+}
+.prologue-skip {
+  position: absolute;
+  top: max(0.8rem, env(safe-area-inset-top));
+  right: max(0.8rem, env(safe-area-inset-right));
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(233, 185, 73, 0.35);
+  border-radius: 2rem;
+  background: rgba(10, 9, 8, 0.55);
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.prologue-skip:hover { color: var(--text); border-color: var(--gold); }
+.prologue-dots { display: flex; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+.prologue-dots li { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: rgba(240, 230, 208, 0.2); }
+.prologue-dots li.seen { background: rgba(233, 185, 73, 0.45); }
+.prologue-dots li.on { background: var(--gold); }
+@keyframes prologue-in {
+  from { opacity: 0; transform: translateY(0.4rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes prologue-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}

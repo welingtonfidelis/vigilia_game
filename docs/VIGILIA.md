@@ -2098,6 +2098,59 @@ A F6 ficou em duas partes, cada uma com seu commit: **F6a** (Paço, estandarte, 
     - as três barracas, que ficaram com 34×40 em vez de 34×30 para o toldo não esconder o rosto do vendedor;
     - o bardo, com 6 quadros: parado e tocando.
 - **Testes:** 4 novos (`tests/weather.test.ts`: o clima do mesmo dia, os dias dos eventos, a neve que acumula e derrete, a agenda da praça). `relief.test.ts` alcança o cofre na nova posição. São 268 no total.
+
+#### 9.7 Prólogo animado (depois do M6)
+
+Pedido de 2026-10-24. Um resumo animado da história da vila (§3.1, `src/data/story.ts`), contado em seis cenas de pixel art com uma frase de narração cada. Toca no jogo novo e pode ser revisto pelo Menu, como a história escrita. Não mexe na simulação nem no save.
+
+**Quando toca:**
+- **No jogo novo** (primeira visita, ou depois de "Começar outra vila"): antes da boas-vindas. Abre com o título "Vigília" e "Toque para começar"; o toque libera o som do navegador e começa a primeira cena. Ao fim, abre a boas-vindas.
+- **Pelo Menu**, na seção "A história": "Ver o prólogo". Ao fim, volta para a vila.
+- Durante o prólogo o jogo fica pausado e a interface some (topo, painéis, botão flutuante). Ao fim, volta o estado de pausa de antes.
+
+**Controles:** tocar ou clicar na tela, Espaço ou → passam para a próxima cena; "Pular" (ou Esc) encerra na hora.
+
+**As cenas** (cerca de 9 s cada, uns 55 s no total):
+
+| # | Narração | Imagem | Som |
+|---|---|---|---|
+| 1 | "Antes da vila, havia a abadia." | Noite estrelada com lua; a abadia da Ordem da Candeia no alto do penhasco, com as janelas acesas. A câmera chega devagar. | Sino ao longe; música da noite |
+| 2 | "Uma noite, ela caiu no escuro." | O chão treme, a abadia afunda atrás da borda do penhasco, poeira sobe e as janelas apagam; fica a fenda. Um monge desce com uma vela atrás dela. | Estrondo; música de tensão |
+| 3 | "Os velhos dizem que o abismo é uma pálpebra." | A câmera desce pela fenda: névoa, as ruínas da abadia lá no fundo e, no escuro, um olho enorme que se abre. | Drone do abismo e o som do olho |
+| 4 | "Quem sobreviveu ficou, e acendeu uma fogueira." | Casas em ruína, a fogueira acesa e moradores em volta, na luz quente. | Fogo e música da noite |
+| 5 | "Os heróis vêm quando o berrante toca. Alguns não voltam." | O portão com o berrante; heróis entram correndo. No fim, uma lápide com flores. | Berrante e luto |
+| 6 | "Você é o prefeito. Seu trabalho é manter a luz acesa." | O prefeito ao lado da fogueira; a câmera se afasta e a tela escurece para a vila de verdade. | Alvorada |
+
+**Como é feito:**
+- **Cena própria no Phaser** (`src/render/PrologueScene.ts`), aberta por cima da vila. A vila dorme enquanto isso, e as texturas carregadas por ela servem às duas.
+- **Palco com área segura:** cada cena é montada num palco de 640×360 do mundo, com o que importa numa área central de 260×260. O zoom cobre a tela sem cortar a área segura e fica inteiro, para o pixel não tremer, como na vila. No celular em pé, as laterais do palco ficam de fora.
+- **Narração em DOM** (`src/ui/Prologue.tsx`), com fonte serifada, entrando e saindo devagar, e o botão Pular. A cena diz ao `UiStore` qual cena e frase estão na tela (`ui.prologue`).
+- **Som:** a cena pede o clima da música por cena (noite, tensão, masmorra, alvorada) pelo diretor de som, e toca os efeitos que já existem (sino, berrante, luto, revelação).
+
+**Arte:**
+- **Nova** (gerador `art32/prologo32.py`, em 16 e 32-bit, índice `src/render/pack-prologo.ts`):
+  - a abadia inteira, com o overlay de janelas acesas;
+  - a abadia em ruína;
+  - o penhasco, que emenda na horizontal, e a borda quebrada da fenda;
+  - o olho, com 4 quadros;
+  - o monge com a vela, com 2 quadros;
+  - a lua.
+- **Reaproveitada:**
+  - prédios em ruína e casinhas;
+  - fogueira, fogo e faíscas;
+  - moradores, heróis e o prefeito;
+  - o portão com o berrante;
+  - a lápide e as flores;
+  - os pinheiros.
+
+**Como ficou (2026-10-24):**
+- Tudo como na spec, com 54 s nas seis cenas (8 a 10 s cada). Toque, Espaço, Enter e → passam a cena; Pular e Esc encerram; no título do jogo novo, Pular vai direto para a boas-vindas.
+- **Queda:** o chão abre de verdade. Os quatro blocos do meio do penhasco viram duas bordas quebradas frente a frente, e a abadia cai pela fenda, escurecendo. O monge chega à beira com a vela e desce atrás; a câmera vai até a beira com ele, para o celular em pé ver.
+- **Olho:** a câmera desce pela fenda entre paredes com a borda roxa; o olho aparece fechado, abre em dois quadros e estreita a pupila no fim.
+- **Vila:** fogueira, ruínas e casinhas mais escuras que a abadia (a luz é do fogo); os heróis descem a estrada do portão e a câmera os segue até as covas na beira dela.
+- **Estado:** `ui.prologue` (cena atual e de onde veio), `ui.launchPrologue` (ligado pelo `main.tsx`), `ui.prologueControl` (da cena) e `ui.sfx` (para a cena tocar efeitos). Fora do Phaser, o `body` ganha a classe `prologo` e o topo some.
+- **Arte nova:** `art32/prologo32.py`, com prévias da abadia de dia, de noite e em ruína, do olho e do monge.
+- **Testado** no navegador: computador (1024×768) e celular em pé (390×844); pelo Menu, no jogo novo (título → toque → Esc → boas-vindas) e até o fim (a vila volta, o topo reaparece e o jogo despausa). O som não foi ouvido (o painel do navegador não tem áudio).
 - **Retrato:** o balanço de 40 sementes deu igual ao da F6a, porque nada da F6b mexe no jogo.
 - **Conserto pedido no meio da fase (2026-10-23):** no celular, a barra de fragmentos do amuleto mostrava "0/5" cortado embaixo, porque a barra fina não tem altura para texto.
   - A barra fina não desenha mais texto; ele vira a dica do mouse.

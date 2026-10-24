@@ -30,7 +30,7 @@ interface Emitter {
 }
 
 /** Bolinha de fumaça borrada (as fagulhas usam o 'spark' de pixel). */
-function puffTexture(scene: Phaser.Scene): string {
+export function puffTexture(scene: Phaser.Scene): string {
   const key = 'fx/puff';
   if (scene.textures.exists(key)) return key;
   const canvas = document.createElement('canvas');
