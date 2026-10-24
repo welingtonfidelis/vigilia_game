@@ -3,17 +3,21 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 
 /**
- * Versão do jogo no menu: 0.<número de commits>.0 (39 commits → 0.39.0). Sem o
- * histórico do git (cópia rasa, pasta solta), cai na versão do package.json.
+ * Versão do jogo no menu: o maior e o menor do package.json, e o último número contando os
+ * commits desde a tag dessa versão (v1.0.0 e mais 5 commits → 1.0.5). Para lançar a 1.1.0:
+ * subir o package.json e criar a tag v1.1.0. Sem a tag ou sem o histórico do git (cópia rasa,
+ * pasta solta), fica a versão do package.json.
  */
 function gameVersion(): string {
+  const base = (JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }).version;
   try {
-    const commits = Number(execSync('git rev-list --count HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim());
-    if (Number.isInteger(commits) && commits > 0) return `0.${commits}.0`;
+    const since = Number(execSync(`git rev-list --count v${base}..HEAD`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim());
+    const [major, minor] = base.split('.');
+    if (Number.isInteger(since)) return `${major}.${minor}.${since}`;
   } catch {
-    // sem git: segue para o package.json
+    // sem a tag ou sem git: a versão do package.json
   }
-  return (JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }).version;
+  return base;
 }
 
 const version = gameVersion();

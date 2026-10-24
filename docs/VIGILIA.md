@@ -27,7 +27,7 @@ O README da raiz é apenas uma porta de entrada.
 
 Jogo de gestão em que você é o prefeito de uma vila à beira de um abismo e os heróis agem sozinhos. Design completo na seção 2 deste documento.
 
-**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) e o M6 (Histórias sem fim, seção 9.6 do GDD) estão no `main`. O próximo marco ainda não foi definido.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
+**Estado atual: M4 concluído (corredor da dungeon com arte própria nos seis atos, itens nomeados, forja, especializações de nível 3, bancada do joalheiro, salas novas, chefes em duas fases, provisões e mecenato) e pack de arte Vigília 1.9 integrado no cenário, prédios, moradores, heróis e retratos. O M5 (O Abismo das Dimensões) e o M6 (Histórias sem fim, seção 9.6 do GDD) estão no `main`, com a história da vila e o prólogo animado (9.7). É a versão 1.0.0 (2026-10-24), o primeiro jogo completo. O próximo marco ainda não foi definido.** A vila roda no navegador (Phaser + Preact) por cima do núcleo de simulação headless. Dá para jogar do Ato I ao Coração do Abismo, com heróis que se ferem, casam, têm filhos, se aposentam com uma função e ganham epitáfio; moradores nomeados que trabalham, pagam imposto pelo humor e podem morrer; e incursões que descem do abismo quando a corrupção sobe.
 
 ### Jogar
 
@@ -270,7 +270,7 @@ O M4 está fechado, e o playtest guiado dele (seção 9.4) trouxe os ajustes aba
 - Cães e gatos (`src/sim/pets.ts`): dois no primeiro ano, três depois. Chegam pelo portão, ficam de 3 a 5 anos e vão embora, e outro, de outra pelagem, chega no lugar. O prefeito faz carinho clicando ou com E, um por dia por bicho. O sorteio é um hash da semente e do dia, sem mexer no RNG do núcleo.
 - Fornalha do ferreiro acesa (fogo e halo) e lampiões com halo à noite, como a lanterna do prefeito.
 - A floresta do distrito sul cobre os lotes até o prefeito mandar limpar.
-- Menu: sem a dica de zoom (que saiu do jogo), com uma seção sobre as velas do prefeito. A versão é `0.<commits>.0`.
+- Menu: sem a dica de zoom (que saiu do jogo), com uma seção sobre as velas do prefeito. A versão era `0.<commits>.0` até a 1.0.0 (2026-10-24); desde então é `1.0.<commits desde a tag v1.0.0>`, e a próxima linha sobe pelo package.json e por uma tag nova.
 - A área de clique do portão estava na praça, ao lado do quadro; voltou para a passagem do portão.
 
 **Dificuldade, tiers de equipamento e segundo plano (feedback do playtest):**
