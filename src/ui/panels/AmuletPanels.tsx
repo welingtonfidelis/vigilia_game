@@ -50,7 +50,7 @@ export function AmuletSection() {
           <label>
             Fragmentos do nível {abyss.level}: {abyss.fragments} de {need}
           </label>
-          <Bar kind="xp" value={Math.min(abyss.fragments, need)} max={need} text={`${abyss.fragments}/${need}`} slim />
+          <Bar kind="xp" value={Math.min(abyss.fragments, need)} max={need} slim />
           <p class="sub">
             Os fragmentos aparecem de vez em quando nas lutas e nas voltas triunfais, só nas passagens do nível atual. Quem morre com um
             fragmento deixa ele com os restos.

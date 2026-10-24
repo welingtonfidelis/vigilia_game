@@ -61,6 +61,9 @@ import {
   openPassages,
   passageCapacity,
   passageOf,
+  BIOMES,
+  livingNemeses,
+  rumorBoard,
 } from '../../sim/index.ts';
 import type { ActivityKind, BuildingId, Contract, Doctrine, Item, ItemSlot, LevelCost, MaterialId, SpecId, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
@@ -130,7 +133,7 @@ function CareSection(props: { world: World; id: BuildingId }) {
   return (
     <>
       <h3>Conservação</h3>
-      <Bar kind={kind} value={care} max={100} text={`${Math.floor(care)} de 100`} slim />
+      <Bar kind={kind} value={care} max={100} text={`${Math.floor(care)} de 100`} />
       <p class="sub">{state}</p>
       {ready !== undefined && <p class="tag">O conserto termina em {hoursText(ready - world.tick)}.</p>}
       {ready === undefined && cost && care < 95 && (
@@ -336,12 +339,22 @@ interface BoardTarget {
 function frontier(world: World): BoardTarget[] {
   const out: BoardTarget[] = [];
   if (openPassages(world).length < passageCapacity(world)) {
-    out.push({ passageId: null, floor: 0, level: world.abyss.level, label: 'abrir uma passagem nova' });
+    const board = rumorBoard(world);
+    const rumor = board.list[board.marked];
+    const label = rumor ? `abrir a passagem do rumor marcado (${BIOMES[rumor.biome]!.name})` : 'abrir uma passagem nova';
+    out.push({ passageId: null, floor: 0, level: world.abyss.level, label });
   }
   for (const p of openPassages(world)) {
     if (!p.discovered) continue;
     const f = p.conquered.findIndex((c) => !c);
     if (f >= 0) out.push({ passageId: p.id, floor: f, level: p.level, label: `conquistar o ${floorLabel({ biome: p.biome, floor: f })}` });
+  }
+  // Caçada (M6 F2): o andar onde uma nêmesis foi vista, se o grupo chega lá.
+  for (const n of livingNemeses(world)) {
+    const p = openPassages(world).find((x) => x.id === n.passageId);
+    if (!p || !p.discovered || (n.floor > 0 && !p.conquered[n.floor - 1])) continue;
+    if (out.some((t) => t.passageId === p.id && t.floor === n.floor)) continue;
+    out.push({ passageId: p.id, floor: n.floor, level: p.level, label: `caçar ${n.name} no ${floorLabel({ biome: p.biome, floor: n.floor })}` });
   }
   return out;
 }
@@ -350,7 +363,9 @@ function frontier(world: World): BoardTarget[] {
 function contractGoal(world: World, c: Contract): string {
   if (c.passageId === null) return 'abrir uma passagem nova';
   const p = passageOf(world, c.passageId);
-  return p ? `conquistar o ${floorLabel({ biome: p.biome, floor: c.floor })}` : 'uma passagem que já se fechou';
+  if (!p) return 'uma passagem que já se fechou';
+  const prey = c.nemesisId === undefined ? undefined : world.abyss.nemeses?.find((n) => n.id === c.nemesisId);
+  return prey ? `caçar ${prey.name} no ${floorLabel({ biome: p.biome, floor: c.floor })}` : `conquistar o ${floorLabel({ biome: p.biome, floor: c.floor })}`;
 }
 
 export function BoardPanel() {

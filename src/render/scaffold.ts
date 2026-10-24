@@ -170,3 +170,38 @@ export function wearTexture(scene: Phaser.Scene, artKey: string, level: 1 | 2): 
   canvas.refresh();
   return key;
 }
+
+const SNOW_TOP = '#eef3f8';
+const SNOW_SHADE = '#c9d5e3';
+
+/**
+ * Neve no telhado (M6 F6): onde a arte tem o céu logo acima (a borda de cima do telhado, os
+ * beirais e os peitoris), uma camada branca de dois pixels, a de baixo na sombra. Fica sobre a
+ * arte, com a mesma origem; a cena acerta a transparência pela neve do dia.
+ */
+export function snowTexture(scene: Phaser.Scene, artKey: string): string {
+  const key = `snow:${artKey}`;
+  if (scene.textures.exists(key)) return key;
+  const b = boundsOf(scene, artKey);
+  const canvas = scene.textures.createCanvas(key, b.w, b.h)!;
+  const ctx = canvas.context;
+  for (let y = 1; y < b.h - 4; y++) {
+    for (let x = b.left; x <= b.right; x++) {
+      if (!b.opaque(x, y) || b.opaque(x, y - 1)) continue;
+      // Só nas metades de cima (telhado e beirais), não no chão da arte.
+      if (y > b.top + (b.h - b.top) * 0.7) continue;
+      ctx.fillStyle = SNOW_TOP;
+      ctx.fillRect(x, y, 1, 1);
+      if (b.opaque(x, y + 1)) {
+        ctx.fillStyle = noise(x, y, 31) < 0.5 ? SNOW_TOP : SNOW_SHADE;
+        ctx.fillRect(x, y + 1, 1, 1);
+      }
+      if (b.opaque(x, y + 2) && noise(x, y, 37) < 0.35) {
+        ctx.fillStyle = SNOW_SHADE;
+        ctx.fillRect(x, y + 2, 1, 1);
+      }
+    }
+  }
+  canvas.refresh();
+  return key;
+}

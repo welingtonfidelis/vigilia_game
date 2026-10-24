@@ -25,7 +25,13 @@ export type Panel =
   /** Fragmentos, amuleto e contrato do Senhor (M5). */
   | { kind: 'amulet' }
   /** Um Senhor caiu: o abismo desceu um nível. */
-  | { kind: 'lordEnd'; level: number };
+  | { kind: 'lordEnd'; level: number }
+  /** O torneio da estação: a chave e os duelos para rever (M6 F4). */
+  | { kind: 'tournament' }
+  | { kind: 'hall'; tab?: HallTab; houseId?: number }
+  | { kind: 'paco'; tab?: PacoTab }
+  /** Pedidos da manhã e desejos dos heróis (M6 F1). */
+  | { kind: 'audiences' };
 
 export type PanelKind = Panel['kind'];
 
@@ -43,8 +49,18 @@ export const DISMISSIBLE: ReadonlySet<PanelKind> = new Set<PanelKind>([
   'roster',
   'memorial',
   'amulet',
+  'audiences',
+  'tournament',
+  'hall',
+  'paco',
   'menu',
 ]);
+
+/** Abas do Paço do prefeito (M6 F6). */
+export type PacoTab = 'audiencias' | 'cargos' | 'estandarte' | 'enfeites' | 'nomes';
+
+/** Abas do Salão das Lendas (M6 F5). */
+export type HallTab = 'codex' | 'houses' | 'trophies' | 'statues';
 
 export type Tone = 'info' | 'good' | 'gold' | 'bad' | 'grief' | 'warn';
 
@@ -54,6 +70,8 @@ export interface Toast {
   tone: Tone;
   heroIds: number[];
   at: number;
+  /** Chamada (M6 F3/F4): o aviso ganha o botão "Assistir", que abre este painel. */
+  watch?: Panel;
 }
 
 export interface Prompt {
@@ -107,8 +125,8 @@ export class UiStore {
     this.changed();
   }
 
-  toast(text: string, tone: Tone = 'info', heroIds: number[] = []): void {
-    this.toasts = [{ id: this.nextToast++, text, tone, heroIds, at: Date.now() }, ...this.toasts].slice(0, 3);
+  toast(text: string, tone: Tone = 'info', heroIds: number[] = [], watch?: Panel): void {
+    this.toasts = [{ id: this.nextToast++, text, tone, heroIds, at: Date.now(), ...(watch ? { watch } : {}) }, ...this.toasts].slice(0, 3);
     this.changed();
   }
 

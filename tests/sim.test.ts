@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BALANCE as B } from '../src/sim/config.ts';
 import {
   autoMayor,
   BALANCE,
@@ -263,17 +264,17 @@ describe('pessoas (M2)', () => {
 
   it('energia do prefeito: uma conversa por herói por dia, e ela acaba e recarrega', () => {
     const world = createWorld(21);
-    const heroes = [createHero(world), createHero(world), createHero(world), createHero(world), createHero(world)];
+    const heroes = Array.from({ length: B.mayorEnergy + 1 }, () => createHero(world));
     const before = heroes[0]!.loyalty;
     expect(commands.talk(world, heroes[0]!.id)).toEqual({ ok: true });
     expect(heroes[0]!.loyalty).toBeGreaterThan(before);
     expect(commands.talk(world, heroes[0]!.id).ok).toBe(false); // mesmo dia
-    for (const h of heroes.slice(1, 4)) commands.talk(world, h.id);
+    for (const h of heroes.slice(1, B.mayorEnergy)) commands.talk(world, h.id);
     expect(world.town.mayorEnergy).toBe(0);
-    expect(commands.talk(world, heroes[4]!.id).ok).toBe(false); // sem energia
+    expect(commands.talk(world, heroes[B.mayorEnergy]!.id).ok).toBe(false); // sem energia
     dayStart(world, dayOf(world.tick) + 1);
     dailyPeople(world);
-    expect(world.town.mayorEnergy).toBe(4);
+    expect(world.town.mayorEnergy).toBe(B.mayorEnergy);
   });
 
   it('presentes custam ouro e agradam mais a quem gosta; arma respeita o ferreiro', () => {

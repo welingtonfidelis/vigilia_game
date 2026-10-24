@@ -17,6 +17,7 @@ import {
 import { dayOf, yearOf } from './calendar.ts';
 import { floorLabel, ofWhom, record } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_DAY } from './config.ts';
+import { noteLegendary } from './codex.ts';
 import { earn, hasSpec, level, maxGearTier } from './economy.ts';
 import { heroStats } from './hero.ts';
 import { levelTier } from './dungeon.ts';
@@ -75,7 +76,7 @@ export function itemName(item: Item, classId: ClassId | null): string {
 }
 
 /** Todas as peças que existem agora (equipadas, no cofre, com mortos, a caminho). */
-function allItems(world: World): Item[] {
+export function allItems(world: World): Item[] {
   const out: Item[] = [];
   for (const h of world.heroes) for (const slot of ITEM_SLOTS) if (h.items?.[slot]) out.push(h.items[slot]!);
   out.push(...(world.town.arsenal ?? []));
@@ -107,7 +108,7 @@ export function newItem(world: World, o: NewItem): Item {
     const free = LEGENDARY_TITLES.filter((t) => !used.has(t));
     title = free.length > 0 ? pick(world.rng, free) : `${pick(world.rng, LEGENDARY_TITLES)} ${['II', 'III', 'IV'][used.size % 3]}`;
   }
-  return {
+  const item: Item = {
     id: world.nextId++,
     slot: o.slot,
     rarity: o.rarity,
@@ -119,6 +120,8 @@ export function newItem(world: World, o: NewItem): Item {
     owners: [],
     createdTick: world.tick,
   };
+  noteLegendary(world, item);
+  return item;
 }
 
 /** Peça comum de um tier (o que a forja vende aos heróis). */

@@ -88,6 +88,7 @@ export function monsterBase(world: World, unit: Unit, biome: number): MonsterLoo
     if (!lost) return { asset: 'char/monster/sombra', ghost: true };
     return { asset: heroSpriteId(lost.classId, lost.gender), ghost: true, portrait: heroPortraitUrl(lost.classId, lost.gender, true) };
   }
-  const enemy = ALL_ENEMIES.find((e) => unit.name.startsWith(e.name));
+  // Pelo id do monstro (a nêmesis tem nome próprio, M6 F2); unidades antigas, pelo nome.
+  const enemy = ALL_ENEMIES.find((e) => e.id === unit.defId) ?? ALL_ENEMIES.find((e) => unit.name.startsWith(e.name));
   return (enemy && MONSTERS[enemy.id]) || MONSTERS.esqueleto!;
 }

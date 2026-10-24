@@ -138,6 +138,33 @@ export function RosterPanel() {
   );
 }
 
+/** Busto da entrada do cemitério (M6 F6): o prefeito escolhe o herói caído e troca quando quiser. */
+function BustSection(props: { dead: Hero[] }) {
+  const { world } = useGame();
+  const command = useCommand();
+  const current = world.town.bust ?? null;
+  const [pick, setPick] = useState<number>(current ?? props.dead[0]!.id);
+  const bust = current === null ? undefined : world.heroes.find((h) => h.id === current);
+  return (
+    <>
+      <h3>Busto da entrada</h3>
+      <p class="sub">{bust ? <>O busto ao lado do portãozinho lembra <HeroLink id={bust.id} cross />.</> : 'A coluna ao lado do portãozinho ainda espera um busto.'}</p>
+      <div class="post-pick">
+        <select value={pick} onChange={(e) => setPick(Number((e.target as HTMLSelectElement).value))}>
+          {props.dead.map((h) => (
+            <option key={h.id} value={h.id}>
+              {h.name} · {className(h)} {h.rank}, nível {h.level}
+            </option>
+          ))}
+        </select>
+        <button class="btn small" disabled={pick === current} onClick={() => command(commands.setBust, pick)}>
+          {bust ? 'Trocar o busto' : 'Erguer o busto'}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function MemorialPanel() {
   const { world } = useGame();
   const dead = graveOrder(world).reverse();
@@ -156,6 +183,7 @@ export function MemorialPanel() {
           </ul>
         </>
       )}
+      {dead.length > 0 && <BustSection dead={dead} />}
       {dead.length > GRAVE_SLOTS && (
         <p class="sub">Cabem {GRAVE_SLOTS} covas dentro da cerca; as mais antigas foram para o ossário, mas os nomes ficam aqui.</p>
       )}
@@ -286,6 +314,27 @@ export function MenuPanel() {
         <input type="checkbox" checked={prefs.runInBackground} onChange={(e) => ui.setPrefs({ runInBackground: (e.target as HTMLInputElement).checked })} /> Continuar o jogo com a aba em segundo plano (sempre em 1×)
       </label>
 
+      <h3>Chamadas do abismo</h3>
+      <p class="sub">Um aviso com o botão Assistir quando algo vai acontecer lá embaixo.</p>
+      {(
+        [
+          ['senhor', 'Começa a luta contra o Senhor'],
+          ['guardiao', 'Um grupo chega ao guardião da passagem'],
+          ['nemesis', 'Uma nêmesis aparece'],
+          ['encontro', 'Um grupo acha um encontro e pede conselho'],
+          ['torneio', 'O torneio da estação (a chave e os duelos)'],
+        ] as const
+      ).map(([kind, label]) => (
+        <label key={kind} class="check">
+          <input
+            type="checkbox"
+            checked={prefs.calls[kind] !== false}
+            onChange={(e) => ui.setPrefs({ calls: { ...prefs.calls, [kind]: (e.target as HTMLInputElement).checked } })}
+          />{' '}
+          {label}
+        </label>
+      ))}
+
       <h3>Dificuldade</h3>
       <div class="seg" role="radiogroup" aria-label="Dificuldade da campanha">
         {DIFFICULTY_IDS.map((d) => (
@@ -382,13 +431,31 @@ export function MenuPanel() {
           A+
         </button>
       </div>
+      <label class="check">
+        <input type="checkbox" checked={prefs.fabLeft} onChange={(e) => ui.setPrefs({ fabLeft: (e.target as HTMLInputElement).checked })} /> No celular, botão dos painéis no canto esquerdo (para canhotos)
+      </label>
+      <h3>Clima</h3>
+      <div class="seg" role="radiogroup" aria-label="Clima das estações">
+        {(
+          [
+            ['completo', 'Completo'],
+            ['leve', 'Leve'],
+            ['desligado', 'Desligado'],
+          ] as const
+        ).map(([id, label]) => (
+          <button key={id} class={`btn small${prefs.weather === id ? ' active' : ''}`} role="radio" aria-checked={prefs.weather === id} onClick={() => ui.setPrefs({ weather: id })}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <p class="sub">Chuva, neve, folhas e relâmpagos na vila. O leve corta as partículas pela metade e tira os relâmpagos; desligado deixa só as cores da estação.</p>
 
       <h3>Controles</h3>
       <ul class="effects">
         <li>WASD ou setas: andar com o prefeito. Clique ou toque no chão para andar até lá.</li>
         <li>Clique num prédio, no berrante, no quadro ou no cofre: o prefeito vai até lá e interage. Perto de algo, E interage.</li>
         <li>Clique num herói para ver a ficha.</li>
-        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · G: acompanhar as masmorras · M: abismo · H: heróis · C: crônica · N: som · Esc: fechar.</li>
+        <li>Espaço: pausa · 1, 2, 3: velocidade 1×, 2×, 4× · G: acompanhar as masmorras · M: abismo · H: heróis · C: crônica · L: Salão das Lendas · N: som · Esc: fechar.</li>
       </ul>
 
       <h3>As velas do prefeito</h3>

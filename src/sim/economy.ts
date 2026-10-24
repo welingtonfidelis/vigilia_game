@@ -64,10 +64,24 @@ function bandMaterials(n: number, qty: number): Partial<Record<MaterialId, numbe
 /** O custo base (sem a dificuldade) para chegar ao nível n. Os três primeiros vêm da tabela do prédio. */
 export function levelCost(id: BuildingId, n: number): LevelCost {
   const table = BUILDINGS[id].costs;
-  if (n <= table.length) return table[n - 1]!;
+  if (n <= table.length) return scaleMaterials(table[n - 1]!, n);
   const last = table[table.length - 1]!;
   const gold = Math.round(last.gold * Math.pow(B.buildingCostGrowth, n - table.length));
-  return { gold, materials: bandMaterials(n, B.buildingMaterialBase + B.buildingMaterialStep * (n - 4)) };
+  return scaleMaterials({ gold, materials: bandMaterials(n, B.buildingMaterialBase + B.buildingMaterialStep * (n - 4)) }, n);
+}
+
+/** Quantas vezes o material da tabela e da faixa o nível n pede (pedido de 2026-10-23). */
+export const buildingMaterialMult = (n: number): number =>
+  n <= 3 ? B.buildingMaterialMult[0] : n <= 5 ? B.buildingMaterialMult[1] : B.buildingMaterialMult[2];
+
+/** O material das obras pesa como o ouro: a tabela e a faixa vezes o multiplicador do nível. */
+function scaleMaterials(cost: LevelCost, n: number): LevelCost {
+  if (!cost.materials) return cost;
+  const mult = buildingMaterialMult(n);
+  const materials = Object.fromEntries(
+    (Object.entries(cost.materials) as [MaterialId, number][]).map(([m, q]) => [m, Math.round(q * mult)]),
+  ) as Partial<Record<MaterialId, number>>;
+  return { ...cost, materials };
 }
 
 /** O material que o conserto pede, o da faixa do nível do prédio. */
@@ -104,6 +118,8 @@ export function pay(world: World, cost: LevelCost, kind: SpendKind): void {
   spend(world, kind, cost.gold);
   for (const [mat, qty] of Object.entries(cost.materials ?? {}) as [MaterialId, number][]) {
     world.town.materials[mat] -= qty;
+    const out = (world.metrics.materialsOut ??= {});
+    out[mat] = (out[mat] ?? 0) + qty;
   }
 }
 

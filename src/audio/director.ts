@@ -1,8 +1,8 @@
 // Decide o que soa: traduz eventos da sessão em efeitos (com prioridade e intervalo
 // mínimo) e lê o clima do mundo para a música e o ambiente. Puro: testável no Node.
 
-import { abyssPressure, commands, hourOf, isNight, TICKS_PER_DAY } from '../sim/index.ts';
-import type { ChronicleKind, World } from '../sim/index.ts';
+import { abyssPressure, BARD_HOURS, bardNight, commands, dayOf, hourOf, isNight, TICKS_PER_DAY, weatherOn } from '../sim/index.ts';
+import type { ChronicleKind, WeatherKind, World } from '../sim/index.ts';
 import type { SessionEvent } from '../game/session.ts';
 import type { SfxName } from './sfx.ts';
 
@@ -157,6 +157,10 @@ export interface Mood {
   /** Grupos lutando agora no abismo. */
   fighting: number;
   scene?: Scene;
+  /** Clima do dia na vila (M6 F6): chuva e trovão no ambiente. */
+  weather?: WeatherKind;
+  /** O bardo está tocando na praça (M6 F6). */
+  bard?: boolean;
 }
 
 /** Quanto tempo a música fica de luto depois de uma morte. */
@@ -171,7 +175,10 @@ export function moodOf(world: World): Mood {
   const mourning = !!lastDeath && world.tick - lastDeath.tick < MOURNING_TICKS;
   const mode: MusicMode =
     world.endedTick !== null ? 'alvorada' : bossFight ? 'tensao' : mourning ? 'luto' : night ? 'noite' : 'dia';
-  return { mode, night, hour: hourOf(world.tick), corruption, fighting };
+  const day = dayOf(world.tick);
+  const hour = hourOf(world.tick);
+  const bard = bardNight(world, day) && hour >= BARD_HOURS[0] && hour < BARD_HOURS[1];
+  return { mode, night, hour, corruption, fighting, weather: weatherOn(world, day), bard };
 }
 
 /**

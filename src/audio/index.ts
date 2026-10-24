@@ -121,6 +121,8 @@ export function startAudio(session: Session, ui: UiStore): AudioHandle {
       lastMood = now;
       const panel = ui.panel;
       const mood = panel?.kind === 'battle' ? dungeonMood(session.world, session.world.parties.slice(0, 3).map((p) => p.id)) : moodOf(session.world);
+      // Clima desligado no Menu: sem chuva nem trovão no ambiente.
+      if (ui.prefs.weather === 'desligado') mood.weather = 'limpo';
       music.setMode(mood.mode);
       ambience.setMood(mood);
     }

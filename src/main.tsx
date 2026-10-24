@@ -4,6 +4,7 @@ import type { ChronicleEntry } from './sim/index.ts';
 import { Session } from './game/session.ts';
 import { browserStore, loadPrefs, loadWorld, saveWorld, savePrefs } from './game/storage.ts';
 import { startAudio } from './audio/index.ts';
+import { startCalls } from './ui/calls.ts';
 import { lanes } from './render/lane/lanes.ts';
 import { startRenderer, switchArt } from './render/game.ts';
 import { setArtMode } from './render/art32.ts';
@@ -20,6 +21,7 @@ setArtMode(ui.prefs.art);
 const loaded = loadWorld(store);
 const session = new Session(loaded.ok ? loaded.world : createWorld(Math.floor(Math.random() * 1_000_000)));
 if (!loaded.ok) ui.open({ kind: 'welcome', oldSave: loaded.old === true });
+if (!loaded.ok && loaded.broken) ui.toast(loaded.reason, 'bad');
 
 // ── Avisos a partir da crônica ─────────────────────────────────────────────
 
@@ -61,6 +63,12 @@ const TOAST_TONES: Partial<Record<ChronicleEntry['kind'], Tone>> = {
   doacao: 'gold',
   cidadao: 'info',
   incursao: 'bad',
+  desejo: 'info',
+  nemesis: 'bad',
+  encontro: 'info',
+  // O torneio avisa pelas chamadas (sem contar quem venceu); os cargos, pela crônica.
+  cargo: 'info',
+  casa: 'gold',
 };
 
 // Um Senhor caiu: pausa e mostra a tela (o último fecha a campanha).
@@ -145,7 +153,7 @@ window.addEventListener(
     if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
     // Decisão pendente: o diálogo exige uma escolha; nada de trocar de painel por atalho.
     const deciding = ui.panel?.kind === 'event';
-    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village') => {
+    const toggle = (kind: 'dungeon' | 'roster' | 'chronicle' | 'village' | 'audiences' | 'hall') => {
       if (!deciding) ui.panel?.kind === kind ? ui.close() : ui.open({ kind });
     };
     switch (e.code) {
@@ -184,8 +192,14 @@ window.addEventListener(
       case 'KeyC':
         toggle('chronicle');
         break;
+      case 'KeyL':
+        toggle('hall');
+        break;
       case 'KeyV':
         toggle('village');
+        break;
+      case 'KeyP':
+        toggle('audiences');
         break;
       case 'KeyN':
         ui.setPrefs({ muted: !ui.prefs.muted });
@@ -202,6 +216,7 @@ render(<OverlayRoot session={session} ui={ui} />, document.getElementById('overl
 const renderer = startRenderer(document.getElementById('game')!, session, ui);
 const audio = startAudio(session, ui);
 lanes.start({ world: () => session.world, speed: () => session.speed, paused: () => session.paused, sound: (name) => audio.combat(name) });
+startCalls(session, ui);
 
 // Atalhos de depuração para testar sem esperar (só em desenvolvimento).
 if (import.meta.env.DEV) {

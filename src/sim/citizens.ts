@@ -157,7 +157,7 @@ export function festivalCitizens(world: World, amount = 12): void {
   for (const citizen of world.citizens) citizen.happiness = clamp(citizen.happiness + amount);
 }
 
-function leaveCitizen(world: World, citizen: Citizen, why: string): void {
+export function leaveCitizen(world: World, citizen: Citizen, why: string): void {
   world.citizens = world.citizens.filter((c) => c.id !== citizen.id);
   world.town.population = Math.max(0, world.town.population - 1);
   world.metrics.citizensLeft++;
@@ -177,7 +177,12 @@ export function raidCitizenLoss(world: World, count: number): Citizen[] {
 }
 
 /** Poder dos guardas da milícia na defesa da vila. */
-export const guardDefense = (world: World): number => world.citizens.filter((c) => c.job === 'guarda').length * 8;
+export const guardDefense = (world: World): number => {
+  const guards = world.citizens.filter((c) => c.job === 'guarda').length;
+  // O guarda de folga (audiência) não defende naquela noite.
+  const leave = world.town.guardLeaveDay === dayOf(world.tick) && guards > 0 ? 1 : 0;
+  return (guards - leave) * 8;
+};
 
 /** Lista "Fulano, ofício" para a crônica. */
 export function citizenNames(citizens: Citizen[]): string {

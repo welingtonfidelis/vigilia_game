@@ -3,7 +3,8 @@
 // grupo por cima do corredor (embaixo no celular), as salas e o aviso de volta à vila.
 
 import { useEffect, useRef } from 'preact/hooks';
-import { BIOMES, commands, fleeLimit, floorLabel, isGuardianFloor, maxLevel, partyRooms, passageOf, rulesLabel, xpToNext } from '../../sim/index.ts';
+import { BIOMES, commands, fleeLimit, floorLabel, isGuardianFloor, maxLevel, partyRooms, passageOf, rulesLabel, villageBanner, xpToNext } from '../../sim/index.ts';
+import { Crest } from '../Crest.tsx';
 import type { Hero, Party } from '../../sim/index.ts';
 import { lanes } from '../../render/lane/lanes.ts';
 import { hiUrl } from '../../render/art32.ts';
@@ -11,6 +12,7 @@ import { packUrl } from '../../render/pack.ts';
 import { useCommand, useGame } from '../components.tsx';
 import { fmt, heroById, liveHp, OUTCOME_LABELS, phaseText, ROOM_LABELS } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
+import { CrowCard } from './CrowCard.tsx';
 
 function RoomNode(props: { state: 'normal' | 'current' | 'cleared' }) {
   return <span class={`arena-room-node ${props.state}`} style={{ backgroundImage: `url(${hiUrl(packUrl('export/ui/ui-room-node.png'))})` }} aria-hidden="true" />;
@@ -109,6 +111,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
   return (
     <section class={`arena-card lane-card${props.selected ? ' selected' : ''}`}>
       <header class="arena-card-head">
+        <Crest crest={villageBanner(world)} label="Estandarte da vila" size={18} />
         <strong title={`Esta passagem tem ${floors} andares; o guardião fica no último e, vencido, sela a passagem. Um andar só abre depois que o de cima for conquistado. Regras: ${rulesLabel(party.rules)}.`}>
           {party.lord ? (
             <>Nível {party.level} · {floorLabel(party)}</>
@@ -151,6 +154,7 @@ export function LaneCard(props: { party: Party; selected: boolean }) {
               ))}
             </div>
           )}
+          {party.encounter && !returning && <CrowCard party={party} />}
           {returning && (
             <div class="lane-exit" role="status">
               <strong>{party.outcome ? OUTCOME_LABELS[party.outcome] : 'Volta'}</strong>

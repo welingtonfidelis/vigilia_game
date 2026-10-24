@@ -89,7 +89,7 @@ export type RaidOutcome = 'repelido' | 'custoso' | 'saque';
 
 /** Relatório de uma incursão noturna. */
 /** De onde vem o ouro do tesouro (métrica do balanceador). */
-export type EarnKind = 'saque' | 'imposto' | 'taverna' | 'descanso' | 'oferenda' | 'forja' | 'treino' | 'cura' | 'venda' | 'bancada' | 'provisao' | 'reliquia';
+export type EarnKind = 'saque' | 'imposto' | 'taverna' | 'descanso' | 'oferenda' | 'forja' | 'treino' | 'cura' | 'venda' | 'bancada' | 'provisao' | 'reliquia' | 'audiencia';
 
 /** Para onde vai o ouro do tesouro (métrica do balanceador). */
 export type SpendKind =
@@ -109,7 +109,11 @@ export type SpendKind =
   | 'presente'
   | 'festa'
   | 'funeral'
-  | 'evento';
+  | 'evento'
+  /** Respostas das audiências e lápides dos desejos (M6 F1): valores simbólicos. */
+  | 'audiencia'
+  /** Enfeites da vila (M6 F6): ouro simbólico. */
+  | 'enfeite';
 
 export interface RaidHit {
   id: BuildingId;
@@ -224,6 +228,10 @@ export interface Child {
   classId: ClassId;
   /** Peça herdada dos pais (null = nenhuma). */
   heirloom: Item | null;
+  /** Treinou no campo por decisão do prefeito (audiência): chega à maioridade com um nível a mais. */
+  apprentice?: boolean;
+  /** Casa (M6 F5) em que nasceu: leva o nome dela quando pega em armas. */
+  houseId?: number;
 }
 
 export interface Activity {
@@ -240,7 +248,7 @@ export interface HeroTrait {
 
 export interface Deed {
   tick: number;
-  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador';
+  kind: 'chefe' | 'ultimoDePe' | 'conquista' | 'matador' | 'desejo' | 'nemesis' | 'torneio';
   text: string;
 }
 
@@ -282,6 +290,10 @@ export interface Hero {
     alliesLost: number;
     /** Descidas em que comprou provisões (opcional: saves antigos não têm). */
     provisions?: number;
+    /** Torneios vencidos (M6 F4). */
+    tournaments?: number;
+    /** Incursões repelidas com ele na vila (título Escudo da Vila, M6 F4). */
+    defended?: number;
   };
   death: { tick: number; where: string; by: string } | null;
   /** Lesão em tratamento (não desce enquanto houver). */
@@ -291,11 +303,90 @@ export interface Hero {
   partnerId: number | null;
   /** Pais, quando o herói nasceu na vila. */
   parents: number[];
+  /** Casa da família (M6 F5): quem casa e tem filho funda uma, e os filhos herdam o nome. */
+  houseId?: number | null;
   retiredRole: RetiredRole | null;
   /** Último dia em que conversou com o prefeito (uma conversa por dia). */
   lastTalkDay: number;
   /** Escrito na lápide quando morre. */
   epitaph: string | null;
+  /** Desejo pessoal em aberto (M6 F1). */
+  wish?: Wish | null;
+  /** Lápide melhor, paga pelo prefeito a pedido de quem ficou (M6 F1). */
+  honoredGrave?: boolean;
+  /** Vontade de visitar o túmulo de um velho companheiro, sem luto (o id do morto). */
+  visitGrave?: number | null;
+  /** Último dia em que visitou um túmulo por lembrança. */
+  lastGraveVisit?: number;
+}
+
+export type WishId = 'herdeiro' | 'lapide' | 'juntos' | 'padrinho' | 'festa' | 'peca' | 'selar' | 'veterano' | 'superar';
+
+/** Desejo de um herói (M6 F1): o prefeito atende pelo que já existe no jogo. */
+export interface Wish {
+  id: WishId;
+  /** O outro personagem do desejo: o morto, o amigo, o rival, o veterano ou o afilhado. */
+  targetId: number | null;
+  sinceDay: number;
+  untilDay: number;
+  /** Desejos de par: o prefeito já conversou com um dos dois neste dia. */
+  talkedDay?: number;
+  talkedId?: number;
+  /** O prefeito conversou com os dois no mesmo dia: eles se procuram para formar grupo. */
+  paired?: boolean;
+}
+
+export type PostId = 'capitao' | 'mestre' | 'campeao';
+
+/** Torneio da estação (M6 F4): a chave sai de manhã, as lutas acontecem à tarde. */
+export interface Tournament {
+  day: number;
+  /** Tick em que as lutas acontecem (o palpite vale até lá). */
+  startTick: number;
+  /** Os heróis na ordem da chave (1 contra 2, 3 contra 4…). */
+  entrants: number[];
+  /** O palpite do prefeito. */
+  favorite: number | null;
+  /** As lutas, na ordem em que aconteceram (vazio antes da tarde). */
+  duels: Duel[];
+  championId: number | null;
+}
+
+/** Um duelo do torneio: os golpes ficam guardados para a tela rever. */
+export interface Duel {
+  round: number;
+  a: number;
+  b: number;
+  winner: number;
+  maxA: number;
+  maxB: number;
+  /** Golpes no formato do registro de combate: uid 1 é `a`, uid 2 é `b`. */
+  events: CombatEvent[];
+}
+
+/** Petição de uma audiência da manhã (M6 F1). */
+export interface Petition {
+  id: number;
+  /** Modelo em src/data/petitions.ts. */
+  defId: string;
+  /** Quem pede e quem mais aparece: morador, herói (vivo ou morto) ou criança. */
+  asker: PetitionPerson;
+  other: PetitionPerson | null;
+  building: BuildingId | null;
+  day: number;
+  /** Último dia em que ainda dá para responder. */
+  untilDay: number;
+}
+
+export interface PetitionPerson {
+  kind: 'morador' | 'heroi' | 'crianca';
+  id: number;
+}
+
+/** O que a vila lembra de uma audiência (para o painel). */
+export interface PetitionRecord {
+  day: number;
+  text: string;
 }
 
 export interface EnemyUnitDef {
@@ -308,7 +399,8 @@ export interface EnemyUnitDef {
   tags: EnemyTag[];
 }
 
-export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen';
+/** `duelo`: o outro herói no duelo do torneio (M6 F6), desenhado como herói do lado de lá. */
+export type EnemyTag = 'backline' | 'swarm' | 'boss' | 'guardian' | 'risen' | 'nemesis' | 'duelo';
 export type Affix = 'veloz' | 'vampirico' | 'explosivo' | 'couracado' | 'feroz';
 export type BossMech = 'invocar' | 'couraca' | 'veneno' | 'maldicao' | 'retaguarda' | 'ecos' | 'colmeia' | 'canto' | 'placas' | 'exercito';
 
@@ -340,6 +432,14 @@ export interface Unit {
   lifesteal?: number;
   /** Até este tick o herói fica parado, encantado pelo canto do Coro Submerso. */
   charmedUntil?: number;
+  /** O monstro de src/data/biomes.ts por trás da unidade. */
+  defId?: string;
+  /** Heróis que este monstro matou nesta luta (para virar nêmesis, M6 F2). */
+  kills?: number[];
+  /** Já tentou fugir na névoa nesta luta. */
+  fleeTried?: boolean;
+  /** Esta unidade é a nêmesis com este id. */
+  nemesisId?: number;
 }
 
 export interface Combat {
@@ -397,12 +497,16 @@ export type RoomKind =
   /** Mercador errante: vende uma peça a quem pagar (ouro do herói). */
   | 'mercador'
   /** Dardos ou espinhos: ferem o grupo se ninguém perceber antes. */
-  | 'armadilha';
+  | 'armadilha'
+  /** Encontro (M6 F3): o grupo acha algo, manda um corvo e decide. */
+  | 'encontro';
 
 export interface Room {
   kind: RoomKind;
   cleared: boolean;
   remainsOf: number | null;
+  /** Sala de encontro (M6 F6): qual foi, para o corredor desenhar o objeto dele. */
+  encounter?: string;
 }
 
 export type PartyPhase = 'descendo' | 'explorando' | 'combate' | 'voltando';
@@ -450,11 +554,19 @@ export interface Party extends Spot {
   rescued: number;
   dead: number[];
   recallRequested: boolean;
+  /** Quem deu o golpe final no Senhor nesta descida (M6 F5, para a estátua do Salão). */
+  lordSlayerId?: number;
   outcome: PartyOutcome | null;
   startedTick: number;
   /** O quanto o grupo se achava capaz ao descer (1 = no limite). */
   confidence: number;
   moments: string[];
+  /** Nêmesis que este grupo já encontrou nesta descida (aparece uma vez por descida). */
+  nemesisMet?: number[];
+  /** Encontro em andamento (M6 F3): o grupo espera o conselho do prefeito até `untilTick`. */
+  encounter?: { defId: string; untilTick: number; advice: string | null } | null;
+  /** Bênçãos e maldições dos encontros até o fim da descida (multiplicam ataque e defesa). */
+  boons?: { atk: number; def: number };
   /** Quem levou ração e tochas nesta descida (gasta metade da energia entre as salas). */
   provisioned?: number[];
   /** Quem levou relíquia do templo (foge menos nesta descida). */
@@ -500,6 +612,47 @@ export interface AbyssState {
   amulet: Amulet | null;
   /** Fragmentos do nível atual comprados dos mercadores do abismo (no máximo fragmentBuyMax). */
   bought: number;
+  /** Monstros que levaram heróis e fugiram (M6 F2), vivos e caídos, e o contador próprio. */
+  nemeses?: Nemesis[];
+  nemesisSeq?: number;
+  /** O que a guilda ouve sobre a próxima passagem (M6 F2). */
+  rumors?: RumorBoard;
+}
+
+/** Monstro que levou heróis e saiu vivo da luta (M6 F2). */
+export interface Nemesis {
+  id: number;
+  /** Epíteto que a vila deu ("Garra-Fria"). */
+  name: string;
+  /** O monstro de sempre por baixo (id e nome do tipo em src/data/biomes.ts). */
+  enemyId: string;
+  enemyName: string;
+  bornDay: number;
+  /** Heróis que ela matou: cada um é um degrau (até nemesisMaxStep). */
+  victims: number[];
+  /** Onde está agora (null = sumiu na névoa até uma passagem nova abrir). */
+  passageId: number | null;
+  floor: number;
+  /** Último dia em que um grupo deu de cara com ela. */
+  seenDay: number | null;
+  fallen: { day: number; by: number | null } | null;
+}
+
+/** Os rumores sobre a próxima passagem; `key` muda a cada passagem aberta (M6 F2). */
+export interface RumorBoard {
+  key: number;
+  level: number;
+  list: Rumor[];
+  /** O rumor que o prefeito marcou no mapa da guilda (o primeiro, sem escolha). */
+  marked: number;
+}
+
+export interface Rumor {
+  seed: number;
+  biome: number;
+  /** A regra que o rumor revela (null = nenhuma). */
+  rule: DimRuleId | null;
+  text: string;
 }
 
 export interface Remains {
@@ -521,6 +674,8 @@ export interface Contract {
   reward: number;
   postedTick: number;
   takenBy: number | null;
+  /** Caçada (M6 F2) num andar já conquistado: cumpre quando esta nêmesis cai. */
+  nemesisId?: number;
 }
 
 export interface ExpansionState {
@@ -597,6 +752,21 @@ export interface Town {
   pets?: Pet[];
   /** Último id de bicho dado (contador próprio, fora do nextId do mundo). */
   petSeq?: number;
+  /** Audiências da manhã em aberto, o contador próprio delas e as últimas resolvidas (M6 F1). */
+  petitions?: Petition[];
+  petitionSeq?: number;
+  petitionLog?: PetitionRecord[];
+  /** Dia de folga dado a um guarda numa audiência: ele não defende naquela noite. */
+  guardLeaveDay?: number;
+  /** Cargos da vila (M6 F4): o herói (ou aposentado) em cada um. */
+  posts?: Partial<Record<PostId, number>>;
+  /** O torneio da estação (o de agora ou o último). */
+  tournament?: Tournament | null;
+  /** Cosmética da vila (M6 F6): estandarte, enfeite de cada ponto, nomes de ruas e o busto do memorial. */
+  banner?: Crest;
+  decor?: (DecorId | null)[];
+  streets?: Partial<Record<StreetId, string>>;
+  bust?: number | null;
 }
 
 export type ChronicleKind =
@@ -643,6 +813,18 @@ export type ChronicleKind =
   | 'incursao'
   | 'item'
   | 'bicho'
+  /** Audiências da manhã e desejos dos heróis (M6 F1). */
+  | 'audiencia'
+  | 'desejo'
+  /** Nêmesis que nasce, aparece e cai (M6 F2). */
+  | 'nemesis'
+  /** Encontros nas salas e o corvo do grupo (M6 F3). */
+  | 'encontro'
+  /** Cargos da vila e torneio da estação (M6 F4). */
+  | 'cargo'
+  | 'torneio'
+  /** Casas das famílias (M6 F5): fundação, nome novo e feitos. */
+  | 'casa'
   | 'fim';
 
 export interface ChronicleEntry {
@@ -666,7 +848,8 @@ export interface Metrics {
   floorsConquered: number;
   rankUps: number;
   /** Senhores vencidos (M5 F2). */
-  bossKills: { level: number; day: number }[];
+  /** Senhores vencidos; quem deu o golpe final e se o grupo voltou inteiro (M6 F5, para as estátuas e o códex). */
+  bossKills: { level: number; day: number; slayerId?: number; flawless?: boolean }[];
   /** Contratos do Senhor perdidos (o grupo caiu, fugiu ou recuou e o amuleto se desfez). */
   lordFailures: number;
   passagesOpened: number;
@@ -694,6 +877,19 @@ export interface Metrics {
   /** Desfecho das expedições por faixa de confiança (0,25 em 0,25). Calibra a escolha de andar. */
   byConfidence: Record<string, { n: number; deaths: number; wipes: number; conquests: number }>;
   daily: DailySample[];
+  /** Audiências da manhã (M6 F1): petições que chegaram, respondidas e vencidas. */
+  audiences?: { asked: number; answered: number; expired: number };
+  /** Desejos dos heróis (M6 F1): dados, cumpridos e esquecidos. */
+  wishes?: { made: number; done: number; failed: number };
+  /** Nêmesis (M6 F2): nascidas, encontros, heróis que mataram e caídas. */
+  nemeses?: { born: number; met: number; kills: number; fallen: number };
+  /** Encontros nas salas (M6 F3): achados, com conselho do prefeito e conselhos seguidos. */
+  encounters?: { met: number; advised: number; followed: number };
+  /** Torneios (M6 F4): feitos e palpites certos do prefeito. */
+  tournaments?: { held: number; guessed: number };
+  /** Material do abismo que entrou no Cofre e o que saiu em obras, consertos e encomendas. */
+  materialsIn?: Partial<Record<MaterialId, number>>;
+  materialsOut?: Partial<Record<MaterialId, number>>;
 }
 
 export interface DailySample {
@@ -735,4 +931,70 @@ export interface World {
   pendingFugitives: { heroId: number; spot: Spot }[];
   metrics: Metrics;
   endedTick: number | null;
+  /** O que a guilda já viu e abateu, para o bestiário do Salão das Lendas (M6 F5). */
+  codex?: Codex;
+  /** As casas das famílias de heróis (M6 F5) e o contador próprio. */
+  houses?: House[];
+  houseSeq?: number;
+  /** Estátuas do Salão que o prefeito fixou (ids de herói). */
+  pinnedStatues?: number[];
+}
+
+/** Mistérios do códex: o que não é monstro nem lugar (src/data/codex.ts tem os textos). */
+export type MysteryId = 'ecos' | 'nemesis' | 'elites' | 'calmaria' | 'passagens' | 'fragmentos' | 'contrato' | 'retorno';
+
+export interface Codex {
+  /** Monstros pelo id: presente = visto; o número é quantos a guilda abateu. */
+  monsters: Record<string, number>;
+  /** Senhores pelo id do chefe: 1 visto, 2 vencido, 3 vencido sem baixas. */
+  lords: Record<string, number>;
+  /** Biomas (índice de BIOMES) por onde a guilda já desceu. */
+  biomes: number[];
+  rules: DimRuleId[];
+  /** Nomes próprios das lendárias que já existiram na vila. */
+  legendaries: string[];
+  mysteries: MysteryId[];
+}
+
+export type HouseDeedId = 'tresGeracoes' | 'senhorPorGeracao' | 'vinteAnos';
+
+/** Brasão ou estandarte: índices das cores e do símbolo em src/data/houses.ts. */
+export interface Crest {
+  field: number;
+  charge: number;
+  symbol: number;
+}
+
+export type DecorId =
+  | 'banco'
+  | 'lampiao'
+  | 'canteiro'
+  | 'poco'
+  | 'bandeirola'
+  | 'arco'
+  | 'trofeuNemesis'
+  | 'taca'
+  | 'estandarteSenhor'
+  | 'urna'
+  | 'vagonete'
+  | 'cogumelo'
+  | 'sino'
+  | 'bigorna'
+  | 'cristal'
+  | 'favo'
+  | 'concha'
+  | 'engrenagem'
+  | 'cranio';
+
+export type StreetId = 'praca' | 'estradaCima' | 'estradaBaixo' | 'ruaPortao' | 'ruaTermas';
+
+export interface House {
+  id: number;
+  /** Sobrenome da família ("Valente"); o prefeito pode trocar. */
+  name: string;
+  foundedTick: number;
+  /** O casal que fundou a casa. */
+  founders: [number, number];
+  crest: Crest;
+  deeds: { id: HouseDeedId; tick: number }[];
 }

@@ -2,7 +2,7 @@
 
 import { record, g, heroLabel } from './chronicle.ts';
 import { dayOf, isNight } from './calendar.ts';
-import { BALANCE as B, DAYS_PER_YEAR, TICKS_PER_HOUR } from './config.ts';
+import { BALANCE as B, DAYS_PER_YEAR, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
 import {
   drinkPrice,
   earn,
@@ -21,6 +21,7 @@ import {
   ageYears,
   createHero,
   gainXp,
+  getBond,
   hasTrait,
   heroStats,
   moraleBaseline,
@@ -32,7 +33,8 @@ import {
 import { forgePrice, retireHero, roleCount } from './people.ts';
 import { benchOffer, nextTierWorth, upgradeTier, useBench } from './items.ts';
 import { workEffectLevel } from './patronage.ts';
-import { chance, pick, range } from './rng.ts';
+import { chance, pick, range, stableRoll } from './rng.ts';
+import { postActive } from './posts.ts';
 import type { ActivityKind, Hero, World } from './types.ts';
 
 const DURATION_HOURS: Record<ActivityKind, number> = {
@@ -69,6 +71,8 @@ export function processArrivals(world: World): void {
     if (activeHeroes(world).length >= heroCapacity(world)) continue;
     const hero = createHero(world, arrival.free ? { rankCap: 'C' } : {});
     hero.activity = { kind: 'chegando', startedAt: world.tick, endsAt: world.tick + TICKS_PER_HOUR };
+    // O mestre da guilda (M6 F4) recebe quem chega.
+    if (postActive(world, 'mestre')) hero.loyalty = Math.min(100, hero.loyalty + B.masterLoyalty);
     world.metrics.recruits++;
     const how = arrival.free ? 'chegou sem ser chamad' + g(hero, 'o', 'a') + ', procurando abrigo' : 'atendeu ao berrante';
     record(world, 'chegada', [hero.id], `${heroLabel(hero)} ${how}.`);
@@ -191,6 +195,8 @@ export function scoreActivities(world: World, hero: Hero): [ActivityKind, number
     scores.push(['treinar', 0.35]);
   }
   if (hero.grief > 10 && hero.griefFor !== null) scores.push(['tumulo', (hero.grief / 100) * 1.4]);
+  // Lembrança: vez ou outra, a visita ao túmulo de um velho companheiro, sem luto.
+  else if (hero.visitGrave != null) scores.push(['tumulo', 0.6]);
   if (idlePartners(world, hero).length > 0) scores.push(['socializar', hasTrait(hero, 'sociavel') ? 0.6 : 0.3]);
   scores.push(['vagar', 0.15]);
   if (!hero.injury && hpFrac >= 0.75 && e >= 0.5 && hero.morale >= 35) {
@@ -215,6 +221,7 @@ function chooseActivity(world: World, hero: Hero): void {
   }
   let targetId: number | undefined;
   if (best === 'socializar') targetId = pick(world.rng, idlePartners(world, hero)).id;
+  if (best === 'tumulo') targetId = (hero.grief > 10 && hero.griefFor !== null ? hero.griefFor : hero.visitGrave) ?? undefined;
   hero.activity = {
     kind: best,
     startedAt: world.tick,
@@ -223,6 +230,44 @@ function chooseActivity(world: World, hero: Hero): void {
   };
   if (best === 'aguardar') hero.lfgSince ??= world.tick;
   else hero.lfgSince = null;
+}
+
+/** A visita por lembrança: ânimo, e uma linha na crônica contando há quanto tempo foi. */
+function remember(world: World, hero: Hero, deadId: number): void {
+  const lost = world.heroes.find((h) => h.id === deadId);
+  hero.visitGrave = null;
+  hero.lastGraveVisit = dayOf(world.tick);
+  hero.morale = clamp(hero.morale + B.memoryVisitMorale);
+  if (!lost?.death) return;
+  const years = Math.floor((world.tick - lost.death.tick) / TICKS_PER_DAY / DAYS_PER_YEAR);
+  const when = years < 1 ? 'há menos de um ano' : years === 1 ? 'há um ano' : `há ${years} anos`;
+  record(world, 'tumulo', [hero.id, lost.id], `${hero.name} levou flores ao túmulo de ${lost.name}, que caiu ${when}.`);
+}
+
+/**
+ * Uma vez por dia: quem não está de luto e tem um velho companheiro no cemitério (laço forte,
+ * cônjuge, pai, mãe ou filho) às vezes sente vontade de visitar o túmulo dele.
+ */
+export function dailyMemories(world: World): void {
+  const today = dayOf(world.tick);
+  let dead: Hero[] | null = null;
+  for (const hero of townHeroes(world)) {
+    if (hero.visitGrave != null || hero.grief > 10) continue;
+    if (today - (hero.lastGraveVisit ?? -Infinity) < B.memoryVisitCooldownDays) continue;
+    if (stableRoll(world.seed, today, 1500 + hero.id) >= B.memoryVisitChance) continue;
+    dead ??= world.heroes.filter((h) => h.status === 'dead');
+    let best: Hero | null = null;
+    let bestBond = B.memoryVisitBond - 1;
+    for (const d of dead) {
+      const family = hero.partnerId === d.id || hero.parents.includes(d.id) || d.parents.includes(hero.id);
+      const bond = family ? 100 : getBond(world, hero.id, d.id);
+      if (bond > bestBond) {
+        bestBond = bond;
+        best = d;
+      }
+    }
+    if (best) hero.visitGrave = best.id;
+  }
 }
 
 function finishActivity(world: World, hero: Hero): void {
@@ -303,6 +348,10 @@ function finishActivity(world: World, hero: Hero): void {
       break;
     }
     case 'tumulo': {
+      if (act.targetId !== undefined && act.targetId === hero.visitGrave) {
+        remember(world, hero, act.targetId);
+        break;
+      }
       const lost = world.heroes.find((h) => h.id === hero.griefFor);
       if (lost && hero.grief >= 40) {
         record(

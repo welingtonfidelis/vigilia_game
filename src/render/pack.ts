@@ -1,6 +1,7 @@
 // Gerado a partir do manifest do pack vigilia-art 1.9.0 (+ corredor dos 6 atos e caminhada de perfil dos 12 heróis + estilo novo 24×32: heróis, prefeito, moradores, crianças, monstros e bichos da vila + enfeites de transição do visual 2.5D). Não editar à mão.
 
 import { PACK_DIMENSOES } from './pack-dimensoes.ts';
+import { PACK_HISTORIAS } from './pack-historias.ts';
 
 export interface PackAnim { frames: number[]; fps: number; }
 export interface PackAsset {
@@ -14747,6 +14748,7 @@ export const PACK_TILES: Record<string, [number, number]> = {
 
 // Dimensões fundas (M5 F6): as peças dos biomas VII a X saem de art32/dimensoes32.py.
 PACK_ASSETS.push(...PACK_DIMENSOES);
+PACK_ASSETS.push(...PACK_HISTORIAS);
 
 export const PACK_TERRAIN_COLUMNS = 8;
 

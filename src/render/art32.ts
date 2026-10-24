@@ -10,7 +10,7 @@ import { FILES32, PACK32 } from './pack32.ts';
 
 export type ArtMode = '16' | '32';
 
-let mode: ArtMode = '16';
+let mode: ArtMode = '32';
 export const artMode = (): ArtMode => mode;
 export const setArtMode = (m: ArtMode): void => {
   mode = m;

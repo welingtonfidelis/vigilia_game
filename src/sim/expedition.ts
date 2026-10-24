@@ -7,6 +7,7 @@ import { festivalCitizens } from './citizens.ts';
 import { record, floorLabel, g, heroLabel, listNames } from './chronicle.ts';
 import { combatTick, startCombat, syncHeroes } from './combat.ts';
 import { BALANCE as B } from './config.ts';
+import { noteLordDefeat, noteMystery } from './codex.ts';
 import { enterFloor, isGuardianFloor, levelPower, partyRooms, passageOf, reducePressure, travelTicks } from './dungeon.ts';
 import { earn, hasSpec, heroCapacity } from './economy.ts';
 import { affixCount, merchantVisit, rollDrop, shareLoot } from './items.ts';
@@ -25,6 +26,9 @@ import {
 } from './hero.ts';
 import { honorFuneral, maybeInjure } from './people.ts';
 import { activeHeroes } from './town.ts';
+import { noteWish } from './wishes.ts';
+import { nemesisAfterCombat, nemesisById } from './nemesis.ts';
+import { resolveEncounter, startEncounter, waitingAdvice } from './encounters.ts';
 import { chance, int, pick, range } from './rng.ts';
 import type { Hero, MaterialId, Party, PartyOutcome, Room, Spot, World } from './types.ts';
 import { difficultyOf } from './difficulty.ts';
@@ -52,6 +56,12 @@ function stepParty(world: World, party: Party): void {
     }
     case 'explorando': {
       if (party.recallRequested) return startReturn(world, party, 'chamado');
+      // Encontro (M6 F3): espera o corvo voltar ou o tempo acabar, e decide.
+      if (party.encounter) {
+        if (waitingAdvice(world, party)) return;
+        resolveEncounter(world, party, members(world, party));
+        return afterRoom(world, party, true);
+      }
       if (world.tick < party.phaseEndsAt) return;
       const rooms = partyRooms(world, party);
       const room = rooms[party.roomIndex];
@@ -63,6 +73,7 @@ function stepParty(world: World, party: Party): void {
     case 'combate': {
       const result = combatTick(world, party);
       if (result === 'andamento') return;
+      nemesisAfterCombat(world, party.combat!, result);
       syncHeroes(world, party.combat!);
       party.combat = null;
       for (const h of members(world, party)) maybeInjure(world, h, h.hp / heroStats(world, h).maxHp, `do ${floorLabel(party)}`);
@@ -142,6 +153,7 @@ function enterRoom(world: World, party: Party, room: Room): void {
       const lost = world.heroes.find((h) => h.id === room.remainsOf);
       if (idx >= 0 && lost) {
         const rem = world.remains.splice(idx, 1)[0]!;
+        noteWish(world, { kind: 'restos', deadId: rem.heroId });
         party.loot.gold += rem.gold;
         // As peças do morto voltam com o grupo, e os fragmentos de amuleto que ele carregava.
         if (rem.items?.length) (party.loot.items ??= []).push(...rem.items);
@@ -173,6 +185,9 @@ function enterRoom(world: World, party: Party, room: Room): void {
       break;
     case 'vazia':
       break;
+    case 'encontro':
+      startEncounter(world, party, heroes);
+      return;
   }
   afterRoom(world, party, true);
 }
@@ -307,6 +322,7 @@ function conquer(world: World, party: Party): void {
   world.town.reputation = Math.min(100, world.town.reputation + 5);
   addMaterial(party, BIOMES[party.biome]!.material, B.sealMaterial);
   record(world, 'passagem', party.memberIds, `${listNames(heroes)} venceram o guardião e selaram a passagem para ${BIOMES[party.biome]!.name}.`);
+  noteWish(world, { kind: 'selou', heroIds: heroes.map((h) => h.id) });
 }
 
 // ── Fragmentos e Senhores (M5 F2) ────────────────────────────────────────
@@ -319,6 +335,7 @@ export function rollFragment(world: World, party: Party, source: FragmentSource)
   const p = { matilha: B.fragmentMatilha, elite: B.fragmentElite, guardiao: B.fragmentGuardian, volta: B.fragmentReturn }[source];
   if (!chance(world.rng, p * B.fragmentPace * difficultyOf(world).fragments)) return;
   party.loot.fragments = (party.loot.fragments ?? 0) + 1;
+  noteMystery(world, 'fragmentos');
   const heroes = members(world, party);
   const finder = heroes.length > 0 ? pick(world.rng, heroes) : null;
   party.moments.push(finder ? `${finder.name} achou um fragmento de amuleto.` : 'Acharam um fragmento de amuleto.');
@@ -353,7 +370,9 @@ function lordVictory(world: World, party: Party): void {
   const lord = lordOf(level);
   const heroes = members(world, party);
   if (abyss.amulet?.level === level) abyss.amulet = null;
-  world.metrics.bossKills.push({ level, day: dayOf(world.tick) });
+  const flawless = party.dead.length === 0;
+  world.metrics.bossKills.push({ level, day: dayOf(world.tick), slayerId: party.lordSlayerId, flawless });
+  noteLordDefeat(world, level, flawless);
   world.town.reputation = Math.min(100, world.town.reputation + 10);
   for (const h of heroes) {
     h.deeds.push({ tick: world.tick, kind: 'chefe', text: `derrotou ${midName(lord.name)}` });
@@ -402,6 +421,7 @@ function lordDefeat(world: World, party: Party): void {
 // ── Retorno ───────────────────────────────────────────────────────────────
 
 function startReturn(world: World, party: Party, outcome: PartyOutcome): void {
+  party.encounter = null;
   if (party.memberIds.length === 0) return finish(world, party, 'massacre');
   party.outcome = outcome;
   party.phase = 'voltando';
@@ -509,7 +529,11 @@ function arrive(world: World, party: Party): void {
   const shares = heroes.map((h) => 1 + (traitSum(h, 'lootShares') > 0 ? traitSum(h, 'lootShares') - 1 : 0));
   const totalShares = shares.reduce((a, b) => a + b, 0);
   heroes.forEach((h, i) => (h.gold += ((party.loot.gold - tax) * shares[i]!) / Math.max(1, totalShares)));
-  for (const [mat, qty] of Object.entries(party.loot.materials) as [MaterialId, number][]) town.materials[mat] += qty;
+  const gained = (world.metrics.materialsIn ??= {});
+  for (const [mat, qty] of Object.entries(party.loot.materials) as [MaterialId, number][]) {
+    town.materials[mat] += qty;
+    gained[mat] = (gained[mat] ?? 0) + qty;
+  }
   for (const h of heroes) gainXp(world, h, party.loot.xp / Math.max(1, heroes.length));
   shareLoot(world, party, heroes);
   // Volta triunfal (todos inteiros, tendo feito o que foram fazer): mais uma chance de fragmento.
@@ -519,8 +543,14 @@ function arrive(world: World, party: Party): void {
   // Contrato
   const contract = town.contracts.find((c) => c.id === party.contractId);
   // Passagem nova: vale ter aberto a passagem. Andar: vale o andar estar conquistado.
+  // Caçada (M6 F2): vale a nêmesis ter caído.
   const done =
-    !!contract && (contract.passageId === null ? party.opened === true : passageOf(world, contract.passageId)?.conquered[contract.floor] === true);
+    !!contract &&
+    (contract.nemesisId !== undefined
+      ? !!nemesisById(world, contract.nemesisId)?.fallen
+      : contract.passageId === null
+        ? party.opened === true
+        : passageOf(world, contract.passageId)?.conquered[contract.floor] === true);
   if (contract && done && heroes.length > 0) {
     // A guilda Mercenária completa a recompensa do bolso dela.
     const reward = Math.round(contract.reward * (hasSpec(world, 'mercenaria') ? B.specMercenariaReward : 1));
@@ -565,6 +595,7 @@ function arrive(world: World, party: Party): void {
     if (outcome === 'fuga') h.morale = Math.max(0, h.morale - 10);
     if (hasSpec(world, 'ordem') && outcome !== 'fuga') h.loyalty = Math.min(100, h.loyalty + B.specOrdemLoyalty);
   }
+  noteWish(world, { kind: 'volta', heroIds: heroes.map((h) => h.id) });
   for (let i = 0; i < heroes.length; i++) {
     for (let j = i + 1; j < heroes.length; j++) {
       const a = heroes[i]!;

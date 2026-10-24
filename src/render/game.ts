@@ -10,6 +10,14 @@ export interface Renderer {
 }
 
 /**
+ * Densidade da tela (de 1 a 2): o canvas da vila tem esse tanto de pixels por pixel de CSS e
+ * aparece no tamanho de CSS. Na tela Retina, o pixel da arte 32-bit cai em pixels inteiros da
+ * tela em vez de 1,5 (as linhas finas ficavam com espessura irregular). Acima de 2, o custo de
+ * preencher o canvas no celular não compensa.
+ */
+export const screenDensity = (): number => Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+
+/**
  * Sobe o Phaser quando o contêiner tiver tamanho. Com a aba oculta ou o layout
  * ainda sem altura, o WebGL falha ao criar os framebuffers de tamanho zero.
  */
@@ -18,11 +26,13 @@ export function startRenderer(parent: HTMLElement, session: Session, ui: UiStore
   const handle: Renderer = { game: null };
   const boot = () => {
     if (handle.game || parent.clientWidth === 0 || parent.clientHeight === 0) return false;
-    handle.game = new Phaser.Game({
+    const density = screenDensity();
+    const game = new Phaser.Game({
       type: Phaser.AUTO,
       parent,
       backgroundColor: '#0b0a0c',
-      scale: { mode: Phaser.Scale.RESIZE, width: parent.clientWidth, height: parent.clientHeight },
+      // Sem o modo RESIZE (ele iguala o canvas ao CSS): o tamanho acompanha o contêiner aqui embaixo.
+      scale: { mode: Phaser.Scale.NONE, width: Math.round(parent.clientWidth * density), height: Math.round(parent.clientHeight * density), zoom: 1 / density },
       render: { pixelArt: true, roundPixels: true, antialias: false },
       input: { activePointers: 2 },
       // O som é nosso (src/audio); sem isto o Phaser abriria um segundo AudioContext.
@@ -31,6 +41,17 @@ export function startRenderer(parent: HTMLElement, session: Session, ui: UiStore
       disableContextMenu: true,
       scene: [new VillageScene(session, ui)],
     });
+    handle.game = game;
+    game.events.once(Phaser.Core.Events.READY, () => game.scale.setZoom(1 / density));
+    // Contêiner mudou de tamanho (ou a janela foi para outra tela): canvas novo, na densidade de agora.
+    new ResizeObserver(() => {
+      if (parent.clientWidth === 0 || parent.clientHeight === 0) return;
+      const d = screenDensity();
+      const w = Math.round(parent.clientWidth * d);
+      const h = Math.round(parent.clientHeight * d);
+      if (game.scale.width !== w || game.scale.height !== h) game.scale.resize(w, h);
+      if (game.scale.zoom !== 1 / d) game.scale.setZoom(1 / d);
+    }).observe(parent);
     return true;
   };
   if (!boot()) {

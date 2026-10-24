@@ -1,13 +1,14 @@
 // Visualizador de dungeon do M4: várias expedições empilhadas (cada uma um corredor
 // lateral, em LaneCard) e o relatório ao fim.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { floorLabel, formatDate, itemName, MATERIAL_NAMES, passageOf, TICKS_PER_DAY } from '../../sim/index.ts';
-import type { Hero, MaterialId, Party, Rarity } from '../../sim/index.ts';
+import { floorLabel, formatDate, itemName, MATERIAL_NAMES, passageOf, TICKS_PER_DAY, todaysTournament } from '../../sim/index.ts';
+import type { Hero, MaterialId, Party, Rarity, World } from '../../sim/index.ts';
 import { fmt, heroById } from '../format.ts';
 import { HeroPortrait } from '../PixelSprite.tsx';
 import { useGame } from '../components.tsx';
 import { addReportToHistory, clearReportHistory, loadReportHistory } from '../report-history.ts';
 import { LaneCard } from './LaneCard.tsx';
+import { highlightsFor, playHighlight, type Highlight } from '../../render/lane/replay.ts';
 
 const OUTCOMES: Record<string, string> = {
   conquista: 'Conquista',
@@ -76,6 +77,8 @@ export interface DungeonReport {
   survivors: string[];
   rescued: number;
   contract: number | null;
+  /** O grupo (para achar os melhores momentos gravados nesta sessão, M6 F3). */
+  partyId?: number;
 }
 
 function snapshot(party: Party, endTick: number): PartySnapshot {
@@ -153,17 +156,90 @@ function buildReport(world: ReturnType<typeof useGame>['world'], track: Track): 
   };
 }
 
+/**
+ * Modo destaque (M6 F3): quanto vale olhar este grupo agora. Senhor, guardião, nêmesis,
+ * herói por um fio, encontro, elite, luta comum, nesta ordem.
+ */
+function interest(party: Party): { score: number; why: string } {
+  const c = party.phase === 'combate' ? party.combat : null;
+  if (c?.bossMech) return { score: 60, why: 'luta contra o Senhor' };
+  if (c?.isBoss) return { score: 50, why: 'luta contra o guardião' };
+  if (c?.units.some((u) => u.nemesisId !== undefined && u.alive)) return { score: 40, why: 'uma nêmesis na sala' };
+  if (c?.units.some((u) => u.side === 'hero' && u.alive && u.hp < u.maxHp * 0.2)) return { score: 30, why: 'um herói por um fio' };
+  if (party.encounter && party.phase !== 'voltando') return { score: 20, why: 'um encontro esperando conselho' };
+  if (c?.units.some((u) => u.side === 'enemy' && u.elite && u.alive)) return { score: 15, why: 'luta contra um elite' };
+  if (c) return { score: 10, why: 'luta' };
+  return { score: party.phase === 'voltando' ? 0 : 2, why: party.phase === 'voltando' ? 'voltando à vila' : 'explorando' };
+}
+
+/** Fica pelo menos este tempo num grupo antes de trocar (ms de relógio). */
+const HIGHLIGHT_DWELL = 8000;
+
+function useHighlight(world: World, on: boolean, preferred: number): { id: number | null; why: string } {
+  const current = useRef<{ id: number | null; since: number }>({ id: null, since: 0 });
+  if (!on || world.parties.length === 0) return { id: null, why: '' };
+  const now = Date.now();
+  const best = world.parties.reduce((a, b) => (interest(b).score > interest(a).score ? b : a));
+  const cur = world.parties.find((p) => p.id === current.current.id);
+  if (!cur) {
+    // Primeira vez (ou o grupo voltou à vila): começa no grupo escolhido, se nada melhor acontece.
+    const start = world.parties.find((p) => p.id === preferred);
+    const pick = current.current.id === null && start && interest(start).score >= interest(best).score ? start : best;
+    current.current = { id: pick.id, since: now };
+  } else if (best.id !== cur.id && interest(best).score > interest(cur).score && now - current.current.since >= HIGHLIGHT_DWELL) {
+    current.current = { id: best.id, since: now };
+  }
+  const shown = world.parties.find((p) => p.id === current.current.id)!;
+  return { id: shown.id, why: interest(shown).why };
+}
+
 function durationLabel(ticks: number): string {
   const hours = Math.round(ticks / (TICKS_PER_DAY / 24));
   if (hours < 24) return `${hours}h`;
   return `${Math.floor(hours / 24)}d ${hours % 24}h`;
 }
 
+/** O replay de uma luta marcante no corredor de sempre (M6 F3). */
+function ReplayView(props: { highlight: Highlight; onClose: () => void }) {
+  const stage = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [run, setRun] = useState(0);
+  const [ended, setEnded] = useState(false);
+  useEffect(() => {
+    if (!stage.current || !canvas.current) return;
+    setEnded(false);
+    return playHighlight(props.highlight, canvas.current, () => setEnded(true));
+  }, [props.highlight, run]);
+  return (
+    <div class="replay-view">
+      <header>
+        <strong>{props.highlight.title}</strong>
+        <span>
+          {ended && (
+            <button class="btn small" onClick={() => setRun((r) => r + 1)}>
+              Ver de novo
+            </button>
+          )}
+          <button class="btn small" onClick={props.onClose}>
+            Fechar
+          </button>
+        </span>
+      </header>
+      <div class="lane-view replay-stage" ref={stage}>
+        <canvas ref={canvas} class="lane-canvas" aria-label={`Replay: ${props.highlight.title}`} />
+      </div>
+    </div>
+  );
+}
+
 function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof useGame>['world']; total: number; onClose: () => void; onAbismo: () => void }) {
   const { report, world, total, onClose, onAbismo } = props;
   const outcome = report.outcome ? OUTCOMES[report.outcome] ?? report.outcome : 'Retorno';
+  const best = report.partyId !== undefined ? highlightsFor(report.partyId) : [];
+  const [replay, setReplay] = useState<Highlight | null>(null);
   return (
     <div class="battle-report">
+      {replay && <ReplayView highlight={replay} onClose={() => setReplay(null)} />}
       <section class="report-card">
         <header>
           <small>Relatório de expedição{total > 1 ? ' · 1 de ' + total : ''}</small>
@@ -204,6 +280,20 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
             <ul class="report-moments">
               {report.moments.map((m, i) => (
                 <li key={i}>{m}</li>
+              ))}
+            </ul>
+          </>
+        )}
+        {best.length > 0 && (
+          <>
+            <h3>Melhores momentos</h3>
+            <ul class="report-best">
+              {best.map((h, i) => (
+                <li key={i}>
+                  <button class="btn small" onClick={() => setReplay(h)}>
+                    ▶ {h.title}
+                  </button>
+                </li>
               ))}
             </ul>
           </>
@@ -279,7 +369,8 @@ export function BattlePanel(props: { partyId: number }) {
     if (b.id === props.partyId) return 1;
     return a.id - b.id;
   });
-  const visible = ordered.slice(0, 3);
+  const highlight = useHighlight(world, ui.prefs.highlight, props.partyId);
+  const visible = highlight.id !== null ? world.parties.filter((p) => p.id === highlight.id) : ordered.slice(0, 3);
 
   useEffect(() => {
     const active = new Map(world.parties.map((p) => [p.id, p]));
@@ -299,7 +390,7 @@ export function BattlePanel(props: { partyId: number }) {
     const finished: DungeonReport[] = [];
     for (const [id, t] of [...tracked.current]) {
       if (!active.has(id)) {
-        finished.push(buildReport(world, t));
+        finished.push({ ...buildReport(world, t), partyId: id });
         tracked.current.delete(id);
       }
     }
@@ -320,8 +411,24 @@ export function BattlePanel(props: { partyId: number }) {
         <button class="battle-close" onClick={() => ui.close()} aria-label="Fechar">×</button>
         <div class="battle-title">
           <h2>Dungeons em andamento</h2>
-          <p>{world.parties.length} grupo{world.parties.length === 1 ? '' : 's'} no abismo{world.parties.length > 3 ? ` · mostrando 3` : ''}</p>
+          <p>
+            {world.parties.length} grupo{world.parties.length === 1 ? '' : 's'} no abismo
+            {highlight.id !== null ? <span class="highlight-why"> · destaque: {highlight.why}</span> : world.parties.length > 3 ? ` · mostrando 3` : ''}
+          </p>
         </div>
+        {(todaysTournament(world)?.duels.length ?? 0) > 0 && (
+          <button class="btn small" onClick={() => ui.open({ kind: 'tournament' })} title="Os duelos do torneio de hoje, no campo de treino">
+            Torneio
+          </button>
+        )}
+        <button
+          class={`btn small highlight-toggle${ui.prefs.highlight ? ' active' : ''}`}
+          aria-pressed={ui.prefs.highlight}
+          onClick={() => ui.setPrefs({ highlight: !ui.prefs.highlight })}
+          title="Um corredor só, que troca sozinho para o grupo onde algo vai acontecer"
+        >
+          Destaques
+        </button>
         <div class="battle-loot"><span>Em campo</span><strong>{world.parties.length}</strong></div>
         {history.length > 0 && <button class="btn small history-button" onClick={() => setHistoryOpen(true)}>Relatórios ({history.length})</button>}
       </header>
@@ -346,7 +453,7 @@ export function BattlePanel(props: { partyId: number }) {
       ) : visible.length === 0 ? (
         <div class="battle-empty">Nenhuma dungeon em andamento.</div>
       ) : (
-        <div class="battle-multi">
+        <div class={`battle-multi${highlight.id !== null ? ' focus' : ''}`}>
           {visible.map((party) => <LaneCard key={party.id} party={party} selected={party.id === props.partyId} />)}
         </div>
       )}

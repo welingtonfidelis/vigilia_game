@@ -12,6 +12,7 @@ import { resolveSeasonalEvent as resolveSeasonalEventImpl } from './events.ts';
 import { levelPower, passageOf } from './dungeon.ts';
 import { scaledCost } from './difficulty.ts';
 import { BALANCE as B, TICKS_PER_DAY, TICKS_PER_HOUR } from './config.ts';
+import { noteMystery } from './codex.ts';
 import { lordOf } from '../data/lords.ts';
 import { departLord } from './party.ts';
 import {
@@ -41,8 +42,18 @@ import { commissionBlocker, commissionCost, commissionReadyTick, equip, itemName
 import { defaultRole, forgePrice, retireHero, ROLE_NAMES } from './people.ts';
 import { festivalCitizens, refreshJobs, syncCitizenRoster } from './citizens.ts';
 import { activeHeroes, townHeroes } from './town.ts';
+import { noteWish } from './wishes.ts';
+import { answerPetition as answerPetitionImpl } from './audiences.ts';
+import { markRumor as markRumorImpl } from './rumors.ts';
+import { livingNemeses } from './nemesis.ts';
+import { adviseEncounter as adviseEncounterImpl } from './encounters.ts';
+import { appoint as appointImpl } from './posts.ts';
+import { guessTournament as guessTournamentImpl } from './tournament.ts';
+import { renameHouse as renameHouseImpl } from './houses.ts';
+import { togglePinStatue as togglePinStatueImpl } from './hall.ts';
+import { placeDecor as placeDecorImpl, renameStreet as renameStreetImpl, setBanner as setBannerImpl, setBust as setBustImpl } from './cosmetics.ts';
 import { chance, int } from './rng.ts';
-import type { BuildingId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, RetiredRole, SpecId, World } from './types.ts';
+import type { BuildingId, Crest, DecorId, DecreeId, Difficulty, Doctrine, GiftKind, Hero, ItemSlot, MaterialId, PostId, RetiredRole, SpecId, StreetId, World } from './types.ts';
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
 
@@ -142,6 +153,8 @@ export function commission(world: World, slot: ItemSlot, material: MaterialId, r
   if (world.town.materials[material] < cost.material) return fail(`Faltam ${cost.material - world.town.materials[material]} de ${MATERIAL_NAMES[material].toLowerCase()}.`);
   spend(world, 'forja', cost.gold);
   world.town.materials[material] -= cost.material;
+  const out = (world.metrics.materialsOut ??= {});
+  out[material] = (out[material] ?? 0) + cost.material;
   (world.town.forge ??= []).push({ id: world.nextId++, slot, material, rarity, tier: cost.tier, readyTick: commissionReadyTick(world, cost.days) });
   const what = slot === 'weapon' ? 'uma arma' : slot === 'armor' ? 'uma armadura' : 'um amuleto';
   record(world, 'prefeito', [], `O prefeito encomendou ${what} ${rarity === 'epica' ? 'épica' : 'rara'} de ${MATERIAL_NAMES[material].toLowerCase()} ao ferreiro.`);
@@ -161,6 +174,7 @@ export function giftItem(world: World, itemId: number, heroId: number): CommandR
   stash(world, equip(world, hero, item));
   hero.loyalty = Math.min(100, hero.loyalty + (hasTrait(hero, 'ganancioso') ? 15 : 10));
   record(world, 'prefeito', [hero.id], `O prefeito entregou ${itemName(item, hero.classId).toLowerCase()} a ${hero.name}.`);
+  noteWish(world, { kind: 'presente', heroId: hero.id });
   return OK;
 }
 
@@ -185,15 +199,20 @@ export function postContract(world: World, passageId: number | null, floor: numb
     if (!passage || passage.sealed) return fail('Essa passagem não está mais aberta.');
     if (!passage.discovered) return fail('Ninguém entrou nessa passagem ainda.');
     if (floor < 0 || floor >= passage.floors) return fail('Esse andar não existe nessa passagem.');
-    if (passage.conquered[floor]) return fail('Esse andar já foi conquistado.');
+    if (passage.conquered[floor] && !livingNemeses(world).some((n) => n.passageId === passageId && n.floor === floor)) {
+      return fail('Esse andar já foi conquistado.');
+    }
   } else if (world.town.contracts.some((c) => c.passageId === null)) {
     return fail('Já há um contrato de passagem nova no quadro.');
   }
   if (world.town.contracts.length >= maxContracts(world)) return fail('O quadro está cheio.');
   if (world.town.treasury < reward) return fail('O tesouro não cobre a recompensa.');
   spend(world, 'contrato', reward);
-  world.town.contracts.push({ id: world.nextId++, passageId, floor, reward, postedTick: world.tick, takenBy: null });
-  const goal = passage ? `conquistar o ${floorLabel({ biome: passage.biome, floor })}` : 'abrir uma passagem nova';
+  // Andar já conquistado com uma nêmesis: o contrato é a caçada a ela (M6 F2).
+  const prey = passage?.conquered[floor] ? livingNemeses(world).find((n) => n.passageId === passageId && n.floor === floor) : undefined;
+  world.town.contracts.push({ id: world.nextId++, passageId, floor, reward, postedTick: world.tick, takenBy: null, ...(prey ? { nemesisId: prey.id } : {}) });
+  const where = passage ? floorLabel({ biome: passage.biome, floor }) : '';
+  const goal = prey ? `caçar ${prey.name} no ${where}` : passage ? `conquistar o ${where}` : 'abrir uma passagem nova';
   record(world, 'contrato', [], `Novo contrato no quadro: ${goal} por ${reward} de ouro.`);
   return OK;
 }
@@ -221,6 +240,7 @@ export function buyFragment(world: World): CommandResult {
   spend(world, 'fragmento', price);
   abyss.fragments++;
   abyss.bought++;
+  noteMystery(world, 'fragmentos');
   record(world, 'amuleto', [], `O joalheiro comprou um fragmento do nível ${abyss.level} de mercadores do abismo por ${price} de ouro (${abyss.fragments}/${B.fragmentsPerAmulet} no Cofre).`);
   return OK;
 }
@@ -410,6 +430,7 @@ export function talk(world: World, heroId: number): CommandResult {
   hero.morale = Math.min(100, hero.morale + 5);
   const hidden = hero.traits.find((t) => !t.revealed);
   if (hidden && chance(world.rng, 0.25)) revealTrait(world, hero, hidden.id, `Conversando com o prefeito, ${hero.name} se abriu.`);
+  noteWish(world, { kind: 'conversa', heroId: hero.id });
   return OK;
 }
 
@@ -542,6 +563,49 @@ export function holdFestival(world: World): CommandResult {
     listeners.map((h) => h.id),
     `A vila fechou as portas e abriu as mesas: a festa na praça custou ${cost} de ouro e levantou o ânimo de ${listeners.length} heróis.`,
   );
+  noteWish(world, { kind: 'festa' });
+  return OK;
+}
+
+/** O prefeito nomeia alguém para um cargo da vila (M6 F4). */
+export const appoint = (world: World, post: PostId, heroId: number): CommandResult => appointImpl(world, post, heroId);
+
+/** O palpite do prefeito no torneio da estação (M6 F4). */
+export const guessTournament = (world: World, heroId: number): CommandResult => guessTournamentImpl(world, heroId);
+
+/** Salão das Lendas (M6 F5): o prefeito dá nome a uma casa e fixa as estátuas da frente. */
+export const renameHouse = (world: World, houseId: number, name: string): CommandResult => renameHouseImpl(world, houseId, name);
+export const togglePinStatue = (world: World, heroId: number): CommandResult => togglePinStatueImpl(world, heroId);
+
+/** Cosmética da vila (M6 F6): estandarte, enfeites, nomes de ruas e o busto do memorial. */
+export const setBanner = (world: World, banner: Crest): CommandResult => setBannerImpl(world, banner);
+export const placeDecor = (world: World, point: number, id: DecorId | null): CommandResult => placeDecorImpl(world, point, id);
+export const renameStreet = (world: World, id: StreetId, name: string): CommandResult => renameStreetImpl(world, id, name);
+export const setBust = (world: World, heroId: number | null): CommandResult => setBustImpl(world, heroId);
+
+/** O conselho do prefeito a um grupo que achou um encontro e mandou um corvo (M6 F3). */
+export const adviseEncounter = (world: World, partyId: number, optionId: string): CommandResult => adviseEncounterImpl(world, partyId, optionId);
+
+/** O prefeito marca no mapa da guilda o rumor que a próxima passagem segue (M6 F2). */
+export const markRumor = (world: World, index: number): CommandResult => markRumorImpl(world, index);
+
+/** Resposta do prefeito a uma petição da audiência da manhã (M6 F1). */
+export const answerPetition = (world: World, petitionId: number, choiceId: string): CommandResult => answerPetitionImpl(world, petitionId, choiceId);
+
+/** Preço da lápide nova (desejo de quem ficou): ouro simbólico, com a dificuldade. */
+export const graveCost = (world: World): number => scaledCost(world, B.wishGraveCost);
+
+/** Lápide nova para um herói morto, a pedido de quem ficou (M6 F1). */
+export function honorGrave(world: World, deadId: number): CommandResult {
+  const dead = world.heroes.find((h) => h.id === deadId && h.status === 'dead');
+  if (!dead) return fail('Essa cova não existe.');
+  if (dead.honoredGrave) return fail(`A lápide de ${dead.name} já foi refeita.`);
+  const cost = graveCost(world);
+  if (world.town.treasury < cost) return fail(`Faltam ${Math.ceil(cost - world.town.treasury)} de ouro.`);
+  spend(world, 'audiencia', cost);
+  dead.honoredGrave = true;
+  record(world, 'tumulo', [dead.id], `O prefeito mandou fazer uma lápide nova para ${dead.name}.`);
+  noteWish(world, { kind: 'lapide', deadId: dead.id });
   return OK;
 }
 

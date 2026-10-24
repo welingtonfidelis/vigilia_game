@@ -95,6 +95,8 @@ export function createWorld(seed: number, difficulty: Difficulty = 'normal'): Wo
     pendingFugitives: [],
     metrics: emptyMetrics(),
     endedTick: null,
+    codex: { monsters: {}, lords: {}, biomes: [], rules: [], legendaries: [], mysteries: [] },
+    houses: [],
   };
   seedCitizens(world);
   return world;

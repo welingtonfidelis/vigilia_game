@@ -8,7 +8,7 @@ import { citizenLook, ICON_KINDS } from './art.ts';
 import { ART_SCALE } from './assets.ts';
 import { heroSpriteId, packAsset } from './pack.ts';
 import { softFootShadowTexture } from './fx/shadows.ts';
-import { charVisual } from './art32.ts';
+import { charVisual, showArt } from './art32.ts';
 import { Route } from './nav.ts';
 import { DEPTH, pill, smooth } from './town.ts';
 import type { Point } from './layout.ts';
@@ -157,6 +157,8 @@ export class HeroSprite extends Walker {
   private readonly icon: Phaser.GameObjects.Image;
   private readonly ring: Phaser.GameObjects.Image;
   private readonly bandage: Phaser.GameObjects.Image;
+  /** Balão de desejo (M6 F1): o herói quer algo do prefeito. */
+  private readonly wish: Phaser.GameObjects.Image;
   private rank = '';
   private labelColor = '';
   /** Altura da cabeça deste herói (o estilo novo tem 32 px de quadro, não 28). */
@@ -175,7 +177,8 @@ export class HeroSprite extends Walker {
     this.root.addAt(this.ring, 0);
     this.icon = scene.add.image(0, this.headY - 10, 'icon-aguardar').setOrigin(0.5, 1).setScale(ART_SCALE).setVisible(false);
     this.bandage = scene.add.image(-5, this.headY + 10, 'bandage').setScale(ART_SCALE).setVisible(false);
-    this.root.add([this.bandage, this.icon]);
+    this.wish = showArt(scene.add.image(-14, this.headY + 4, 'ui/desejo'), 'ui/desejo').setOrigin(0.5, 1).setVisible(false);
+    this.root.add([this.bandage, this.icon, this.wish]);
     this.label = pill(smooth(scene.add.text(at.x, at.y + 6, hero.name, LABEL_STYLE)), 'rgba(14, 12, 10, 0.5)').setOrigin(0.5, 0).setDepth(DEPTH.labels);
     this.badgeDot = scene.add.circle(0, 0, 7, 0xffffff).setStrokeStyle(2, 0x0b0a08);
     this.badgeText = smooth(scene.add.text(0, 0, '', { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#0b0a08', fontStyle: 'bold' })).setOrigin(0.5);
@@ -198,6 +201,7 @@ export class HeroSprite extends Walker {
       this.label.setColor(color);
     }
     this.bandage.setVisible(hero.injury !== null);
+    this.wish.setVisible(!!hero.wish && hero.status === 'town');
   }
 
   setActivityIcon(kind: ActivityKind | null): void {

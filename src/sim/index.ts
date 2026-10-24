@@ -93,6 +93,25 @@ export {
 export { byWhom, floorLabel, heroLabel } from './chronicle.ts';
 // Pessoas (M2): funções dos aposentados, recuperação, filhos e penalidades de lesão.
 export { petCap, petCoat } from './pets.ts';
+export { answerPetition, choiceBlocker, choiceGold, effectSummary, petitionDayTax, textOf as petitionText } from './audiences.ts';
+export { PETITIONS, PETITION_BY_ID, type PetitionChoiceDef, type PetitionDef, type PetitionEffect, type PetitionText } from '../data/petitions.ts';
+export { wishPairBonus, wishText, wishTextFor } from './wishes.ts';
+export { WISHES, type WishDef, type WishText } from '../data/wishes.ts';
+export { livingNemeses, nemesisStep, nemesisWhere, victimNames } from './nemesis.ts';
+export { rumorBoard } from './rumors.ts';
+export { encounterOf, waitingAdvice } from './encounters.ts';
+export { heroTitles, holderOf, POST_IDS, POSTS, postActive, postBlocker, postsOf, reviewOpen } from './posts.ts';
+export { inTournament, todaysTournament } from './tournament.ts';
+export { biomePageComplete, codexOf, codexProgress, legendaryBase, monsterStage } from './codex.ts';
+export { fullName, generations, houseAge, houseById, houseMembers, houseOfHero, housesOf } from './houses.ts';
+export { hallLevel, hallStatues, legendsOf, lordSlayers, pedestalsOf } from './hall.ts';
+export { allItems } from './items.ts';
+export { decorBlocker, decorOf, streetName, villageBanner } from './cosmetics.ts';
+export { BARD_HOURS, bardNight, MARKET_HOURS, marketDay, snowCover, WEATHER_NAMES, weatherOn, type WeatherKind } from './weather.ts';
+export { crestReadable } from './houses.ts';
+export { DECOR, DECOR_BY_ID, DECOR_POINTS, STREETS, type DecorDef } from '../data/decor.ts';
+export { LEGENDARY_TITLES } from '../data/items.ts';
+export { ENCOUNTERS, ENCOUNTER_BY_ID, type EncounterDef, type EncounterOption } from '../data/encounters.ts';
 export { PET_LOOKS, PET_NAMES, PET_SPECIES_NAME, type PetLookDef } from '../data/pets.ts';
 export { childAge, defaultRole, forgePrice, honorFuneral, recoveryPerDay, roleCount, ROLE_NAMES } from './people.ts';
 export { WOUNDS, woundEffects } from './hero.ts';

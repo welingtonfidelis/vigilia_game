@@ -5,10 +5,12 @@ import { lordOf } from '../data/lords.ts';
 import { CLASSES } from '../data/classes.ts';
 import { byWhom, record, floorLabel, g, heroLabel } from './chronicle.ts';
 import { BALANCE as B, TICKS_PER_SECOND } from './config.ts';
+import { noteCombat, noteKill } from './codex.ts';
 import { makeEnemy, spawnRoom } from './dungeon.ts';
 import { epitaph, maybeInjure, widow } from './people.ts';
 import { addBond, fleeLimit, getBond, hasTrait, heroStats, promote, revealTrait } from './hero.ts';
 import { affixCount, takeItems } from './items.ts';
+import { bringNemesis, maybeFlee, nemesisFalls } from './nemesis.ts';
 import { chance, int, pick, range, shuffle, weighted } from './rng.ts';
 import type { BossMech, Combat, CombatEvent, Hero, Party, Room, Unit, World } from './types.ts';
 
@@ -66,12 +68,22 @@ export function startCombat(world: World, party: Party, room: Room): Combat {
     const hero = world.heroes.find((h) => h.id === id);
     if (hero && hero.status === 'expedition') combat.units.push(heroUnit(world, combat, hero));
   }
+  // Bênçãos e maldições dos encontros (M6 F3) até o fim da descida.
+  if (party.boons) {
+    for (const u of combat.units) {
+      u.atk *= party.boons.atk;
+      u.def *= party.boons.def;
+    }
+  }
   // Regras da dimensão que pesam nos heróis: névoa corta o crítico, maré deixa todos lentos.
   for (const u of combat.units) {
     if (party.rules.includes('nevoa')) u.crit *= 0.5;
     if (party.rules.includes('mare')) u.interval = Math.round(u.interval * 1.15);
   }
   combat.units.push(...spawnRoom(world, combat, room, party));
+  // A nêmesis do andar entra no lugar de um monstro do bando (M6 F2).
+  bringNemesis(world, party, combat, room);
+  noteCombat(world, party, combat);
   return combat;
 }
 
@@ -111,6 +123,8 @@ export function combatTick(world: World, party: Party): CombatResult {
     if (u.side === 'hero') heroAct(world, party, c, u);
     else enemyAct(world, party, c, u);
   }
+  // Quem matou alguém e ficou por um fio pode fugir na névoa (e virar nêmesis).
+  for (const u of c.units) if (u.side === 'enemy') maybeFlee(world, party, u);
 
   if (c.enraged && c.ticks % TICKS_PER_SECOND === 0) {
     for (const u of activeHeroUnits(c)) {
@@ -293,6 +307,8 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
       party.loot.materials[unit.material] = (party.loot.materials[unit.material] ?? 0) + qty;
     }
     const slayer = killer ? heroOf(world, killer) : undefined;
+    noteKill(world, unit);
+    if (unit.nemesisId !== undefined) nemesisFalls(world, party, unit, slayer);
     if (slayer) {
       slayer.stats.kills++;
       if (slayer.stats.kills === 100) {
@@ -306,6 +322,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
     }
     if (unit.tags.includes('boss') && slayer) {
       slayer.stats.bossKills++;
+      party.lordSlayerId = slayer.id;
       const text = `deu o golpe final n${unit.name.startsWith('A ') ? 'a' : 'o'} ${unit.name.replace(/^(O|A) /, '')}`;
       slayer.deeds.push({ tick: world.tick, kind: 'chefe', text });
       party.moments.push(`${slayer.name} ${text}.`);
@@ -325,6 +342,7 @@ function kill(world: World, party: Party, c: Combat, unit: Unit, killer: Unit | 
   }
 
   const hero = heroOf(world, unit)!;
+  if (killer?.side === 'enemy') (killer.kills ??= []).push(hero.id);
   heroDies(world, party, hero, by);
   for (const ally of activeHeroUnits(c)) {
     const other = heroOf(world, ally)!;
@@ -621,4 +639,5 @@ function spawnEchoes(world: World, party: Party, c: Combat): void {
     party.moments.push(`Aquilo que Vigia ergueu o eco de ${lost.name}.`);
     record(world, 'eco', [lost.id, ...party.memberIds], `No fundo do abismo, o eco de ${lost.name} se ergueu contra os próprios amigos.`);
   }
+  noteCombat(world, party, c);
 }

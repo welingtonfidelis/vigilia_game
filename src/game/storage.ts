@@ -15,6 +15,8 @@ export const META_KEY = 'vigilia:save:meta';
 export const PREFS_KEY = 'vigilia:prefs';
 /** Save de antes do M5, guardado para exportar quando a campanha nova começa. */
 export const OLD_SAVE_KEY = 'vigilia:save:antigo';
+/** Save que não abriu por erro (não por versão): fica guardado aqui antes que a vila nova grave por cima. */
+export const BROKEN_SAVE_KEY = 'vigilia:save:quebrado';
 
 export interface SaveMeta {
   savedAt: number;
@@ -25,7 +27,7 @@ export interface SaveMeta {
 }
 
 export type StoreResult = { ok: true } | { ok: false; reason: string };
-export type LoadResult = { ok: true; world: World } | { ok: false; reason: string; old?: boolean };
+export type LoadResult = { ok: true; world: World } | { ok: false; reason: string; old?: boolean; broken?: boolean };
 
 export function browserStore(): KeyValueStore | null {
   try {
@@ -72,7 +74,19 @@ export function loadWorld(store: KeyValueStore | null): LoadResult {
       return { ok: false, reason: err.message, old: true };
     }
   } catch (err) {
-    return { ok: false, reason: `O save não abriu: ${errorText(err)}` };
+    // Não abriu por erro: o save vai para o lado antes que o salvar sozinho da vila nova grave por cima.
+    console.error('O save não abriu', err);
+    let kept = false;
+    try {
+      const json = store.getItem(SAVE_KEY);
+      if (json) {
+        store.setItem(BROKEN_SAVE_KEY, json);
+        kept = true;
+      }
+    } catch {
+      // Sem espaço para a cópia: o aviso conta.
+    }
+    return { ok: false, reason: `O save não abriu: ${errorText(err)}.${kept ? ' Uma cópia ficou guardada à parte no navegador.' : ''}`, broken: kept };
   }
 }
 
@@ -120,19 +134,32 @@ export interface Prefs {
   musicVolume: number;
   ambientVolume: number;
   sfxVolume: number;
+  /** Chamadas do abismo (M6 F3): avisos com "Assistir" quando algo vai acontecer. */
+  calls: { guardiao: boolean; senhor: boolean; nemesis: boolean; encontro: boolean; torneio?: boolean };
+  /** Modo destaque do Acompanhar: um corredor só, que troca sozinho para onde algo acontece. */
+  highlight: boolean;
+  /** No celular, o botão flutuante dos painéis fica no canto esquerdo (para canhotos). */
+  fabLeft: boolean;
+  /** Clima das estações (M6 F6): chuva, neve, folhas e relâmpagos; leve corta pela metade. */
+  weather: 'completo' | 'leve' | 'desligado';
 }
 
 export const DEFAULT_PREFS: Prefs = {
   uiScale: 1,
   pauseOnDeath: false,
   runInBackground: false,
-  art: '16',
+  // 32-bit desde o fechamento do M6: toda a arte nova tem par 32-bit e o canvas desenha na densidade da tela.
+  art: '32',
   autosave: true,
   muted: false,
   masterVolume: 0.8,
   musicVolume: 0.4,
   ambientVolume: 0.5,
   sfxVolume: 0.9,
+  calls: { guardiao: true, senhor: true, nemesis: true, encontro: true, torneio: true },
+  highlight: false,
+  fabLeft: false,
+  weather: 'completo',
 };
 
 export function loadPrefs(store: KeyValueStore | null): Prefs {

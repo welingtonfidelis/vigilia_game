@@ -195,8 +195,11 @@ export const BALANCE = {
   xpPace: 0.4,
   /** Multiplica o ouro de todo monstro (o saque dos heróis e, por ele, o imposto e o que eles gastam na vila). */
   goldPace: 0.5,
-  /** Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. */
-  fragmentPace: 0.52,
+  /**
+   * Multiplica a chance de todo fragmento de amuleto: é o relógio dos Senhores. Foi de 0,52 para
+   * 0,54 no M6 F3, para compensar o material das obras, que passou a segurar a vila.
+   */
+  fragmentPace: 0.54,
   /** Fragmento comprado dos mercadores do abismo: tantas vezes o preço do amuleto, mais caro a cada compra no nível, até o limite. */
   fragmentBuyMult: 6,
   fragmentBuyGrowth: 1.5,
@@ -236,6 +239,11 @@ export const BALANCE = {
   /** Material dos níveis 4 em diante: base no 4, mais o passo a cada nível. */
   buildingMaterialBase: 20,
   buildingMaterialStep: 8,
+  /**
+   * Multiplica o material dos níveis 2 e 3, 4 e 5, e 6 em diante (pedido de 2026-10-23). Com 1, o
+   * Cofre guardava de 15 a 100 vezes o que a próxima obra pedia e só o ouro segurava a vila.
+   */
+  buildingMaterialMult: [8, 6, 4] as [number, number, number],
   /** A primeira especialização chega no nível 3; no 7 o prédio ganha também o outro caminho. */
   specLevel: 3,
   secondSpecLevel: 7,
@@ -339,7 +347,11 @@ export const BALANCE = {
   critMult: 1.8,
 
   // Pessoas (M2)
-  mayorEnergy: 4,
+  /**
+   * Velas do prefeito por dia. Eram 4; o M6 trouxe usos novos (petições e o corvo dos encontros),
+   * e com 4 o conselho comia o discurso da manhã e a campanha atrasava (M6 F3).
+   */
+  mayorEnergy: 5,
   talkLoyalty: 6,
   speechMorale: 12,
   consoleGrief: 35,
@@ -360,4 +372,102 @@ export const BALANCE = {
   oldAgeYears: 70,
   oldAgeDeathChance: 0.25,
   roleCap: 2,
+
+  // Audiências e desejos (M6 F1)
+  /**
+   * Petições por manhã: 0, 1 ou 2, com estes pesos. Um dia dura 48 s em 1×: uma petição a cada
+   * 4 dias dá uma a cada ~3 minutos, sem virar uma fila sem fim.
+   */
+  petitionsPerMorning: [3, 1, 0] as [number, number, number],
+  /** Dias para responder (o dia em que chegou conta como o primeiro): ~4 minutos em 1×. */
+  petitionDays: 5,
+  /** Mais que isso em aberto, a mesa não recebe ninguém novo. */
+  petitionMaxOpen: 3,
+  /** Imposto de um dia dos moradores, mínimo: a medida do ouro simbólico das audiências. */
+  petitionDayTaxMin: 10,
+  /** Fatia dos heróis com desejo em aberto, mantida por um sorteio por semana. */
+  wishShare: 0.1,
+  wishDays: [30, 60] as [number, number],
+  wishLoyalty: 10,
+  wishMorale: 10,
+  wishFailMorale: 8,
+  /** Lápide nova (desejo): ouro simbólico, com a dificuldade por cima. */
+  wishGraveCost: 20,
+  /** Quanto o par apresentado pelo prefeito se procura na formação dos grupos. */
+  wishPairBonus: 1,
+  /** Experiência que o novato ganha ouvindo o veterano (fração do próximo nível). */
+  wishVeteranXp: 0.25,
+  /** Chance de quem desceu com o amigo perder o traço Traumatizado. */
+  wishHealTrauma: 0.5,
+
+  // Nêmesis e rumores (M6 F2)
+  /** Chance de o monstro que matou alguém e saiu vivo da luta virar nêmesis. */
+  nemesisBirthChance: 0.05,
+  /** Abaixo desta fração da vida, o monstro que matou alguém nesta luta pode fugir na névoa. */
+  nemesisFleeBelow: 0.25,
+  nemesisFleeChance: 0.5,
+  /** Nêmesis vivas ao mesmo tempo. */
+  nemesisMax: 3,
+  /** A nêmesis luta com o corpo de um elite (sem o ouro de elite), e cada herói que ela matou soma um degrau, até o teto. */
+  nemesisHp: 2.5,
+  nemesisAtk: 1.3,
+  nemesisStepBonus: 0.15,
+  nemesisMaxStep: 3,
+  /** Chance de uma nêmesis sem lugar se mudar para uma passagem que acabou de abrir. */
+  nemesisMigrateChance: 0.35,
+  /** Quanto de confiança a menos quem quer vingar alguém aceita para caçar a nêmesis. */
+  nemesisHuntSlack: 0.25,
+  /** Rumores que a guilda traz para cada vaga de passagem nova. */
+  rumorCount: 3,
+
+  // Encontros nas salas (M6 F3)
+  /** Peso das salas vazias e dos encontros no sorteio das salas (antes, vazia era 7). */
+  emptyRoomWeight: 4,
+  encounterRoomWeight: 3,
+  /** Quanto o grupo espera o corvo voltar: 150 ticks = 15 s em 1× (7,5 horas do jogo). */
+  encounterWaitTicks: 150,
+  /** Chance de seguir o conselho: base mais a lealdade média do grupo / 150. */
+  encounterFollowBase: 0.35,
+  /** Energia do prefeito que o conselho pelo corvo custa. */
+  encounterAdviceEnergy: 1,
+
+  // Cargos e torneio (M6 F4)
+  /** Defesa a mais nas incursões com o capitão da guarda na vila. */
+  captainDefense: 0.15,
+  /** Lealdade a mais dos recrutas que chegam com um mestre da guilda. */
+  masterLoyalty: 10,
+  /** Ânimo do campeão quando ele é coroado. O +5 de humor dos moradores da spec saiu no balanço da F4. */
+  championMorale: 15,
+  /** Laço que quem ficou de fora (de rank igual ou maior) perde com o nomeado; lealdade de quem foi trocado. */
+  postJealousy: 8,
+  postReplacedLoyalty: 10,
+  /** Torneio: quantos lutam, a hora da chave e a das lutas, e onde a luta para. */
+  tournamentSize: 8,
+  tournamentAnnounceHour: 8,
+  tournamentFightHour: 16,
+  tournamentYield: 0.2,
+  /** Golpes guardados por duelo (para a tela rever) e o teto de uma luta, em ticks. */
+  tournamentMaxEvents: 150,
+  tournamentMaxTicks: 900,
+  /** Reputação quando o palpite do prefeito acerta. */
+  tournamentGuessReputation: 3,
+  /** Laço de quem perde com quem venceu: respeito, ou raiva se já eram rivais. */
+  tournamentRespect: 5,
+  tournamentGrudge: 8,
+  /** Códex do Salão (M6 F5): abates para abrir o hábito do monstro e a história dele. */
+  codexHabitKills: 10,
+  codexStoryKills: 50,
+  /** Casas (M6 F5): reputação de cada feito de casa e os anos do feito "sem baixas". */
+  houseDeedReputation: 3,
+  houseQuietYears: 20,
+  /** Salão das Lendas (M6 F5): lendas para o nível 2 e o 3 (só aparência) e os pedestais de cada nível. */
+  hallLevel2Legends: 6,
+  hallLevel3Legends: 16,
+  hallPedestals: [2, 4, 6],
+  /** Visita por lembrança: o intervalo mínimo, a chance por dia depois dele e o ânimo que dá. */
+  memoryVisitCooldownDays: 60,
+  memoryVisitChance: 0.05,
+  memoryVisitMorale: 6,
+  /** Laço com o morto para lembrar dele (família e cônjuge sempre lembram). */
+  memoryVisitBond: 40,
 } as const;

@@ -1,7 +1,7 @@
 // Chão da vila em tiles: onde há terra (estradas e terreiros), florestas e a peça certa
 // de cada canto. Puro (sem Phaser) para dar para testar no Node.
 
-import { CAVE_PATH, CEMETERY_GROUND, COLS, EXPANSION_LOTS, HOME_PATHS, LOT_TILES, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, TILE, type TileRect } from './layout.ts';
+import { CAVE_PATH, CEMETERY_GROUND, COLS, EXPANSION_LOTS, HALL_PATH, HALL_YARD, HOME_PATHS, LOT_TILES, PACO_PATH, ROADS, ROWS, THERMAL_PATH, THERMAL_YARD, TILE, type TileRect } from './layout.ts';
 import { STAIR_PATHS } from './relief.ts';
 
 export const inRect = (r: TileRect, x: number, y: number): boolean => x >= r.tx && x < r.tx + r.tw && y >= r.ty && y < r.ty + r.th;
@@ -39,13 +39,13 @@ export function cemeteryGroundTiles(): TileRect {
 
 /** Tiles de terra. Sem `cemetery`, fica de fora a terra do cemitério (que o chão pinta à parte). */
 export function dirtMask(cemetery = true): boolean[][] {
-  const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, THERMAL_YARD, CAVE_PATH, ...HOME_PATHS, ...EXPANSION_LOTS, ...yards()];
+  const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, THERMAL_YARD, CAVE_PATH, ...HOME_PATHS, ...EXPANSION_LOTS, ...yards(), HALL_YARD, HALL_PATH, PACO_PATH];
   if (cemetery) areas.push(cemeteryGroundTiles());
   return Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => areas.some((r) => inRect(r, x, y))));
 }
 
 /** Estradas/trilhas (recebem o autotile de trilha; os terreiros ficam em terra). */
 export function pathMask(): boolean[][] {
-  const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, CAVE_PATH, ...HOME_PATHS];
+  const areas = [...ROADS, ...STAIR_PATHS, THERMAL_PATH, CAVE_PATH, ...HOME_PATHS, HALL_PATH, PACO_PATH];
   return Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => areas.some((r) => inRect(r, x, y))));
 }

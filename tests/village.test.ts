@@ -49,7 +49,9 @@ describe('vila longa (M5 F4): níveis e curvas', () => {
   });
 
   it('o custo cresce em progressão geométrica, com o material da faixa', () => {
-    expect(levelCost('ferreiro', 3)).toEqual({ gold: 1400, materials: { ferroNegro: 30 } });
+    // O material da tabela vem multiplicado (o material das obras pesa como o ouro).
+    expect(levelCost('ferreiro', 3)).toEqual({ gold: 1400, materials: { ferroNegro: 30 * B.buildingMaterialMult[0] } });
+    expect(levelCost('ferreiro', 5).materials!.perolas).toBe((B.buildingMaterialBase + B.buildingMaterialStep) * B.buildingMaterialMult[1]);
     expect(levelCost('ferreiro', 5).gold / levelCost('ferreiro', 4).gold).toBeCloseTo(B.buildingCostGrowth, 2);
     expect(Object.keys(levelCost('ferreiro', 4).materials!)).toEqual(['perolas']);
     expect(Object.keys(levelCost('ferreiro', 6).materials!)).toEqual(['brasas']);

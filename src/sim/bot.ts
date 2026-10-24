@@ -4,7 +4,12 @@
 import { dayOf, hourOf } from './calendar.ts';
 import { RANKS } from '../data/classes.ts';
 import { heroStrength, maxLevel } from './hero.ts';
-import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { amuletCostFor, blowHorn, build, buyFragment, challengeLord, fragmentPriceFor, graveCost, honorGrave, repair, comfort, commission, forgeAmulet, giftItem, holdFestival, postContract, retire, speech, sponsor, suggestedReward, talk } from './commands.ts';
+import { autoAnswer } from './audiences.ts';
+import { livingNemeses } from './nemesis.ts';
+import { adviseEncounter, encounterOf } from './encounters.ts';
+import { appoint, holderOf, postBlocker } from './posts.ts';
+import { guessTournament, todaysTournament } from './tournament.ts';
 import { commissionBlocker, commissionCost, itemValue, upgradeGain } from './items.ts';
 import { MATERIAL_AFFIX } from '../data/items.ts';
 import { builtLevel, canAfford, careOf, festivalCost, gearPrice, heroCapacity, hornCost, maxContracts, maxGearTier, maxParties, maxPartySize, nextLevelCost, repairOf, upgradeBlocker } from './economy.ts';
@@ -50,6 +55,15 @@ const CONTRACT_FUND = 0.5;
 export function autoMayor(world: World): void {
   const town = world.town;
   if (hourOf(world.tick) === 9 && dayOf(world.tick) % 10 === 0) makeRoom(world);
+  if (hourOf(world.tick) === 9) tendAudiences(world);
+  // Encontros (M6 F3): o corvo volta com o conselho prudente. Antes das 10h, só se ainda sobrar
+  // energia para o consolo e o discurso da manhã (é o que segura o ânimo da vila).
+  const spare = hourOf(world.tick) < 10 ? B.mayorEnergy : B.encounterAdviceEnergy;
+  for (const party of world.parties) {
+    const def = encounterOf(party);
+    const prudent = def?.options.find((o) => o.kind === 'prudente');
+    if (prudent && !party.encounter!.advice && world.town.mayorEnergy >= spare) adviseEncounter(world, party.id, prudent.id);
+  }
   if (hourOf(world.tick) === 10) tendPeople(world);
   const roster = activeHeroes(world).length + town.arrivals.length;
   const wanted = Math.min(heroCapacity(world), 4 * maxParties(world) + 2);
@@ -80,7 +94,7 @@ export function autoMayor(world: World): void {
     if (town.treasury > cost + fund + (lowMorale ? 300 : 900)) holdFestival(world);
   }
 
-  // Contratos para todos os andares da fronteira, até o limite do quadro.
+  // Contratos para todos os andares da fronteira (e a caçada às nêmesis), até o limite do quadro.
   for (const frontier of frontierFloors(world)) {
     if (town.contracts.length >= maxContracts(world)) break;
     if (town.contracts.some((c) => c.passageId === frontier.passageId && c.floor === frontier.floor)) continue;
@@ -101,6 +115,32 @@ export function autoMayor(world: World): void {
       const gift = Math.round(Math.min(next - hero.gold, town.treasury * 0.3));
       if (gift >= 30) sponsor(world, hero.id, gift);
     }
+  }
+}
+
+/**
+ * Audiências (M6 F1): responde as petições pela resposta mais segura e paga a lápide que
+ * alguém deseja, quando o tesouro sobra.
+ */
+function tendAudiences(world: World): void {
+  autoAnswer(world);
+  // Cargos (M6 F4): preenche o que está vago, de preferência com aposentados (não descem).
+  for (const post of ['capitao', 'mestre'] as const) {
+    if (holderOf(world, post)) continue;
+    const pick = world.heroes
+      .filter((h) => postBlocker(world, post, h) === null)
+      .sort((a, b) => Number(b.status === 'retired') - Number(a.status === 'retired') || b.level - a.level || a.id - b.id)[0];
+    if (pick) appoint(world, post, pick.id);
+  }
+  // Torneio: o palpite vai no herói de nível mais alto da chave.
+  const t = todaysTournament(world);
+  if (t && t.duels.length === 0 && t.favorite === null) {
+    const best = t.entrants.map((id) => world.heroes.find((h) => h.id === id)).filter((h) => !!h).sort((a, b) => b!.level - a!.level)[0];
+    if (best) guessTournament(world, best.id);
+  }
+  for (const hero of world.heroes) {
+    if (hero.wish?.id !== 'lapide' || hero.wish.targetId === null) continue;
+    if (world.town.treasury >= graveCost(world) + hornCost(world) * 2) honorGrave(world, hero.wish.targetId);
   }
 }
 
@@ -160,7 +200,10 @@ function orderFromForge(world: World, reserve: number): void {
   if (commissionBlocker(world, slot, rarity)) return;
   const cost = commissionCost(world, slot, rarity);
   if (world.town.treasury < reserve + cost.gold * 2) return;
-  const mats = (Object.keys(MATERIAL_AFFIX) as MaterialId[]).filter((m) => world.town.materials[m] >= cost.material + 20);
+  // Guarda o material que a próxima obra pede: com o material das obras pesando, a forja não pode levar tudo.
+  const keep = (m: MaterialId): number =>
+    Math.max(0, ...BUILDING_IDS.map((id) => nextLevelCost(world, id)?.materials?.[m] ?? 0));
+  const mats = (Object.keys(MATERIAL_AFFIX) as MaterialId[]).filter((m) => world.town.materials[m] >= cost.material + keep(m) + 20);
   if (mats.length === 0) return;
   const material = mats.reduce((best, m) => (world.town.materials[m] > world.town.materials[best] ? m : best));
   commission(world, slot, material, rarity);
@@ -174,7 +217,14 @@ function frontierFloors(world: World): { passageId: number; level: number; floor
     const f = p.conquered.findIndex((c) => !c);
     if (f >= 0) out.push({ passageId: p.id, level: p.level, floor: f });
   }
-  return out.sort((a, b) => b.level - a.level || b.floor - a.floor);
+  out.sort((a, b) => b.level - a.level || b.floor - a.floor);
+  // Caçada (M6 F2): o andar onde uma nêmesis foi vista vem primeiro, se o grupo chega lá.
+  for (const n of livingNemeses(world)) {
+    const p = openPassages(world).find((x) => x.id === n.passageId);
+    if (!p || !p.discovered || (n.floor > 0 && !p.conquered[n.floor - 1])) continue;
+    if (!out.some((t) => t.passageId === p.id && t.floor === n.floor)) out.unshift({ passageId: p.id, level: p.level, floor: n.floor });
+  }
+  return out;
 }
 
 /**

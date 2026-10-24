@@ -8,13 +8,13 @@ type Filter = 'tudo' | 'mortes' | 'gloria' | 'herois' | 'vila';
 
 const FILTERS: Record<Filter, { label: string; kinds: ChronicleKind[] | null }> = {
   tudo: { label: 'Tudo', kinds: null },
-  mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco', 'lesao', 'cicatriz'] },
-  gloria: { label: 'Glória', kinds: ['conquista', 'passagem', 'chefe', 'promocao', 'traco', 'nivel', 'fim'] },
+  mortes: { label: 'Perdas', kinds: ['morte', 'luto', 'tumulo', 'restos', 'vinganca', 'fuga', 'eco', 'lesao', 'cicatriz', 'nemesis'] },
+  gloria: { label: 'Glória', kinds: ['conquista', 'passagem', 'chefe', 'promocao', 'traco', 'nivel', 'fim', 'encontro'] },
   herois: {
     label: 'Heróis',
-    kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao'],
+    kinds: ['chegada', 'partida', 'retorno', 'resgate', 'vinculo', 'casamento', 'nascimento', 'maioridade', 'partiuDaVila', 'dispensa', 'aposentadoria', 'funcao', 'desejo', 'cargo', 'torneio', 'casa'],
   },
-  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito', 'festival', 'doacao', 'cidadao', 'incursao', 'decreto', 'evento', 'bicho'] },
+  vila: { label: 'Vila', kinds: ['construcao', 'berrante', 'contrato', 'corrupcao', 'prefeito', 'festival', 'doacao', 'cidadao', 'incursao', 'decreto', 'evento', 'bicho', 'audiencia'] },
 };
 
 const TONE: Partial<Record<ChronicleKind, string>> = {
@@ -42,12 +42,14 @@ const TONE: Partial<Record<ChronicleKind, string>> = {
   incursao: 'bad',
   decreto: 'info',
   evento: 'info',
+  desejo: 'info',
+  nemesis: 'bad',
 };
 
 const PAGE = 150;
 
 export function ChroniclePanel() {
-  const { world } = useGame();
+  const { world, ui } = useGame();
   const current = yearOf(dayOf(world.tick));
   const [year, setYear] = useState(current);
   const [filter, setFilter] = useState<Filter>('tudo');
@@ -66,7 +68,19 @@ export function ChroniclePanel() {
   const shown = entries.slice(0, limit);
   let lastSeason = -1;
   return (
-    <PanelShell title="Crônica da Vila" subtitle="Tudo o que aconteceu, ano a ano." wide>
+    <PanelShell
+      title="Crônica da Vila"
+      subtitle={
+        <>
+          Tudo o que aconteceu, ano a ano. Quem fez história fica no{' '}
+          <button class="link" onClick={() => ui.open({ kind: 'hall' })} title="Bestiário, casas, troféus e estátuas (L)">
+            Salão das Lendas
+          </button>
+          .
+        </>
+      }
+      wide
+    >
       <div class="row between">
         <button class="btn" disabled={year <= 1} onClick={() => { setYear(year - 1); setLimit(PAGE); }}>
           ‹ Ano {year - 1}

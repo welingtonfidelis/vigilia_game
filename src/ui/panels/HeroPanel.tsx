@@ -21,7 +21,15 @@ import {
   TRAITS,
   WOUNDS,
   xpToNext,
+  wishText,
+  wishTextFor,
+  WISHES,
+  heroTitles,
+  postsOf,
+  fullName,
+  houseOfHero,
 } from '../../sim/index.ts';
+import { Crest } from '../Crest.tsx';
 import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { ArmorIcon, HeroPortrait, WeaponIcon } from '../PixelSprite.tsx';
@@ -102,13 +110,24 @@ function InjuryBlock(props: { world: World; hero: Hero }) {
 
 function FamilyBlock(props: { world: World; hero: Hero }) {
   const { world, hero } = props;
+  const { ui } = useGame();
   const partner = hero.partnerId === null ? undefined : world.heroes.find((h) => h.id === hero.partnerId);
   const grown = world.heroes.filter((h) => h.parents.includes(hero.id));
   const kids = world.children.filter((c) => c.parents.includes(hero.id));
-  if (!partner && hero.parents.length === 0 && grown.length === 0 && kids.length === 0) return null;
+  const house = houseOfHero(world, hero);
+  if (!house && !partner && hero.parents.length === 0 && grown.length === 0 && kids.length === 0) return null;
   return (
     <>
       <h3>Família</h3>
+      {house && (
+        <button class="house-row" onClick={() => ui.open({ kind: 'hall', tab: 'houses', houseId: house.id })} title="Ver a casa no Salão das Lendas">
+          <Crest house={house} size={30} />
+          <span>
+            <strong>Casa {house.name}</strong>
+            <small class="muted"> · árvore e feitos no Salão das Lendas</small>
+          </span>
+        </button>
+      )}
       <ul class="bonds">
         {partner && (
           <li>
@@ -275,7 +294,7 @@ export function HeroPanel(props: { heroId: number }) {
     <PanelShell
       title={
         <>
-          {hero.name} <span class={`rank rank-${hero.rank}`}>{hero.rank}</span>
+          {fullName(world, hero)} <span class={`rank rank-${hero.rank}`}>{hero.rank}</span>
         </>
       }
       subtitle={`${className(hero)} · nível ${hero.level} · ${ageYears(world, hero)} anos`}
@@ -285,11 +304,30 @@ export function HeroPanel(props: { heroId: number }) {
           <HeroPortrait hero={hero} variant="detail" scale={2} />
         </span>
         <p class={`status status-${hero.status}`}>{activityText(world, hero)}</p>
+        {(postsOf(world, hero).length > 0 || heroTitles(hero).length > 0) && (
+          <p class="hero-titles">
+            {postsOf(world, hero).map((p) => (
+              <span key={p} class="tag gold">
+                {p}
+              </span>
+            ))}
+            {heroTitles(hero).map((t) => (
+              <span key={t} class="tag">
+                {t}
+              </span>
+            ))}
+          </p>
+        )}
       </div>
       {hero.vengeful && <p class="tag bad">Em fúria vingativa: ignora o sino de retirada.</p>}
       {griefFor && hero.grief > 0 && (
         <p class="tag grief">
           De luto por <HeroLink id={griefFor.id} /> ({Math.round(hero.grief)})
+        </p>
+      )}
+      {hero.wish && (
+        <p class="tag wish">
+          Deseja: {wishTextFor(world, hero, hero.wish)} <small>{WISHES[hero.wish.id].how(wishText(world, hero, hero.wish))}</small>
         </p>
       )}
 

@@ -180,7 +180,13 @@ const LIP: [RGB, RGB, RGB] = [
 const STONE = { nose: [172, 172, 170] as RGB, tread: [148, 148, 150] as RGB, tread2: [128, 128, 134] as RGB, riser: [96, 96, 104] as RGB, riser2: [76, 76, 86] as RGB, joint: [56, 56, 64] as RGB };
 const MOSS: RGB = [70, 98, 56];
 
-export function buildGround(scene: Phaser.Scene): boolean[][] {
+/** O chão por estação (M6 F6): repinta a grama e a neve sobre a pintura de sempre, com esmaecido. */
+export interface GroundSeasons {
+  /** Estação (0 a 3) e neve no chão (0 a 1); `fade` em ms (0 = na hora). */
+  paint(season: number, snow: number, fade?: number): void;
+}
+
+export function buildGround(scene: Phaser.Scene): { mask: boolean[][]; seasons: GroundSeasons } {
   const hires = artMode() === '32' && scene.textures.exists(hiKey('tile/town/terrain'));
   useScale(hires ? 2 : 1);
   const tex = (id: string): string => (hires && scene.textures.exists(hiKey(id)) ? hiKey(id) : id);
@@ -358,17 +364,163 @@ export function buildGround(scene: Phaser.Scene): boolean[][] {
     }
   }
 
-  const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d')!;
-  ctx.putImageData(new ImageData(c.data, W, H), 0, 0);
-  const key = 'ground/painted';
-  if (scene.textures.exists(key)) scene.textures.remove(key);
-  scene.textures.addCanvas(key, canvas);
-  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
-  scene.add.image(0, 0, key).setOrigin(0, 0).setScale(PX).setDepth(DEPTH.ground);
-  return mask;
+  // O que cada pixel é (grama, terra ou rocha), para a estação repintar só a grama (M6 F6).
+  const kind = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) kind[y * W + x] = isDirt[y * W + x] ? GROUND_DIRT : onRock(x, y) ? GROUND_ROCK : GROUND_GRASS;
+  return { mask, seasons: seasonalGround(scene, c.data.slice(), kind) };
+}
+
+const GROUND_GRASS = 0;
+const GROUND_DIRT = 1;
+const GROUND_ROCK = 2;
+
+/** Ruído de valor suave (0 a 1) para as manchas de neve. */
+function vnoise(x: number, y: number, cell: number, seed: number): number {
+  const gx = Math.floor(x / cell);
+  const gy = Math.floor(y / cell);
+  const fx = x / cell - gx;
+  const fy = y / cell - gy;
+  const sx = fx * fx * (3 - 2 * fx);
+  const sy = fy * fy * (3 - 2 * fy);
+  const a = h2(gx, gy, seed);
+  const b = h2(gx + 1, gy, seed);
+  const c = h2(gx, gy + 1, seed);
+  const d = h2(gx + 1, gy + 1, seed);
+  return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+}
+
+/** Folhas secas do outono: ocre, laranja, ferrugem e palha. */
+const AUTUMN_GRASS: RGB[] = [
+  [150, 112, 50],
+  [176, 124, 52],
+  [194, 150, 72],
+  [132, 116, 60],
+];
+const FLOWERS: RGB[] = [
+  [236, 214, 226],
+  [244, 228, 150],
+  [226, 150, 176],
+  [240, 240, 236],
+];
+
+function seasonalGround(scene: Phaser.Scene, base: Uint8ClampedArray, kind: Uint8Array): GroundSeasons {
+  // Duas camadas: a de baixo mostra a estação de agora, a de cima entra por cima no esmaecido.
+  const layers = [0, 1].map((i) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const key = `ground/painted-${i}`;
+    if (scene.textures.exists(key)) scene.textures.remove(key);
+    const tex = scene.textures.addCanvas(key, canvas)!;
+    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    const image = scene.add.image(0, 0, key).setOrigin(0, 0).setScale(PX).setDepth(DEPTH.ground).setVisible(i === 0);
+    return { canvas, tex, image };
+  });
+  let front = 0;
+  let tween: Phaser.Tweens.Tween | null = null;
+  // Até a cena pedir a estação, o chão é a pintura de sempre.
+  layers[0]!.canvas.getContext('2d')!.putImageData(new ImageData(new Uint8ClampedArray(base), W, H), 0, 0);
+  layers[0]!.tex.refresh();
+  // Flores da primavera: sempre nos mesmos pixels de grama.
+  const flowers: { i: number; c: RGB }[] = [];
+  const rnd = seeded(83);
+  for (let n = 0; n < 900 * S * S; n++) {
+    const x = Math.floor(rnd() * W);
+    const y = Math.floor(rnd() * H);
+    if (kind[y * W + x] !== GROUND_GRASS) continue;
+    flowers.push({ i: y * W + x, c: FLOWERS[Math.floor(rnd() * FLOWERS.length)]! });
+  }
+  // Ruído das manchas de neve, calculado uma vez.
+  const snowNoise = new Float32Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) snowNoise[y * W + x] = vnoise(x, y, 14 * S, 61) * 0.8 + vnoise(x, y, 3 * S, 62) * 0.2;
+
+  const render = (season: number, snow: number): ImageData => {
+    const out = new ImageData(new Uint8ClampedArray(base), W, H);
+    const d = out.data;
+    for (let i = 0, p = 0; i < kind.length; i++, p += 4) {
+      const r = d[p]!;
+      const g = d[p + 1]!;
+      const b = d[p + 2]!;
+      const lum = (r + g + b) / 3;
+      const k = kind[i];
+      if (season === 3 && snow > 0 && k !== GROUND_ROCK && snowNoise[i]! < snow * 1.15 - 0.05) {
+        // Neve: guarda a textura de baixo como luz e sombra.
+        const t = Math.min(1, Math.max(0, (lum - 40) / 110));
+        d[p] = 170 + t * 64;
+        d[p + 1] = 182 + t * 56;
+        d[p + 2] = 200 + t * 44;
+        continue;
+      }
+      if (k === GROUND_GRASS) {
+        if (season === 0) {
+          d[p] = r * 0.9;
+          d[p + 1] = g * 1.08 + 4;
+          d[p + 2] = b * 0.86;
+        } else if (season === 1) {
+          d[p] = r * 1.04 + 3;
+          d[p + 2] = b * 0.9;
+        } else if (season === 2) {
+          const pick = AUTUMN_GRASS[Math.floor(h2(Math.floor((i % W) / (2 * S)), Math.floor(i / W / (2 * S)), 9) * AUTUMN_GRASS.length)]!;
+          const shade = Math.min(1.25, Math.max(0.55, lum / 90));
+          d[p] = r + (pick[0] * shade - r) * 0.62;
+          d[p + 1] = g + (pick[1] * shade - g) * 0.62;
+          d[p + 2] = b + (pick[2] * shade - b) * 0.62;
+        } else {
+          // Grama queimada de geada onde a neve não cobre.
+          const grey = lum * 0.92;
+          d[p] = r + (grey - r) * 0.55;
+          d[p + 1] = g + (grey - g) * 0.55;
+          d[p + 2] = b + (grey + 10 - b) * 0.55;
+        }
+      } else if (k === GROUND_DIRT) {
+        if (season === 3) {
+          // Lama de neve nas estradas.
+          const a = snow * 0.4;
+          d[p] = r + (172 - r) * a;
+          d[p + 1] = g + (174 - g) * a;
+          d[p + 2] = b + (182 - b) * a;
+        } else if (season === 2) {
+          d[p] = r * 0.94;
+          d[p + 1] = g * 0.93;
+          d[p + 2] = b * 0.92;
+        }
+      }
+    }
+    if (season === 0) {
+      for (const f of flowers) {
+        const p = f.i * 4;
+        d[p] = f.c[0];
+        d[p + 1] = f.c[1];
+        d[p + 2] = f.c[2];
+      }
+    }
+    return out;
+  };
+
+  return {
+    paint(season, snow, fade = 0) {
+      const back = 1 - front;
+      const target = fade > 0 ? layers[back]! : layers[front]!;
+      target.canvas.getContext('2d')!.putImageData(render(season, snow), 0, 0);
+      target.tex.refresh();
+      if (fade <= 0) return;
+      tween?.complete();
+      const from = layers[front]!;
+      target.image.setVisible(true).setAlpha(0).setDepth(DEPTH.ground + 0.001);
+      from.image.setDepth(DEPTH.ground);
+      tween = scene.tweens.add({
+        targets: target.image,
+        alpha: 1,
+        duration: fade,
+        onComplete: () => {
+          from.image.setVisible(false);
+          target.image.setDepth(DEPTH.ground);
+          front = back;
+          tween = null;
+        },
+      });
+    },
+  };
 }
 
 /** Pixel do chão dentro da rocha de algum paredão (ou dos degraus). */

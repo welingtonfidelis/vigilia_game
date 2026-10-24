@@ -1,6 +1,6 @@
 // Ícones em SVG simples (traço em currentColor), para não depender de emoji nem de fonte.
 
-import type { RoomKind } from '../sim/index.ts';
+import type { MaterialId, RoomKind } from '../sim/index.ts';
 import { PACK_BASE } from '../render/pack.ts';
 
 const Svg = (props: { children: preact.ComponentChildren; label?: string }) => (
@@ -91,9 +91,81 @@ export const IconBook = () => (
   </Svg>
 );
 
+/** Ícone de cada material do abismo, na cor dele (HUD do topo). */
+const MATERIAL_PATHS: Record<MaterialId, preact.ComponentChildren> = {
+  ossos: (
+    <>
+      <path d="M7 17l10-10" />
+      <circle cx="5.5" cy="16" r="1.8" />
+      <circle cx="8" cy="18.5" r="1.8" />
+      <circle cx="16" cy="5.5" r="1.8" />
+      <circle cx="18.5" cy="8" r="1.8" />
+    </>
+  ),
+  ferroNegro: (
+    <>
+      <path d="M4 16l3-7h10l3 7z" />
+      <path d="M7 9l1.5-3h7L17 9" />
+    </>
+  ),
+  esporos: (
+    <>
+      <path d="M4 12a8 6 0 0116 0z" />
+      <path d="M10 12v6a2 2 0 004 0v-6" />
+      <circle cx="9" cy="9.5" r="0.6" />
+      <circle cx="14" cy="8.5" r="0.6" />
+    </>
+  ),
+  perolas: (
+    <>
+      <circle cx="12" cy="13" r="6" />
+      <path d="M9.5 10.5a3 3 0 012.5-1.2" />
+    </>
+  ),
+  brasas: <path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 01-10 0c0-2.5 1.5-3.5 2.5-5 .5 1.5 1.5 2.5 2.5 2.5-.5-2.5-.5-5 0-7.5z" />,
+  almas: (
+    <>
+      <path d="M12 3c3.5 0 6 2.8 6 6.5 0 4.5-3 6-3 9.5l-1.5-1.5-1.5 2-1.5-2L9 19c0-3.5-3-5-3-9.5C6 5.8 8.5 3 12 3z" />
+      <circle cx="10" cy="9.5" r="0.7" />
+      <circle cx="14" cy="9.5" r="0.7" />
+    </>
+  ),
+};
+
+export const MaterialIcon = (props: { id: MaterialId }) => (
+  <span class={`mat-icon mat-${props.id}`}>
+    <Svg>{MATERIAL_PATHS[props.id]}</Svg>
+  </span>
+);
+
+/** Pergaminho de petição (audiências). */
+export const IconScroll = () => (
+  <Svg>
+    <path d="M7 4h11a2 2 0 0 1 0 4h-1v10a2 2 0 0 1-2 2H6a2 2 0 0 1 0-4h1z" />
+    <path d="M7 16V4a2 2 0 0 0-2 2v1h2" />
+    <path d="M10 9h4M10 12h4" />
+  </Svg>
+);
+
 export const IconMenu = () => (
   <Svg>
     <path d="M4 7h16M4 12h16M4 17h16" />
+  </Svg>
+);
+
+/** Quatro quadrados: o botão flutuante que abre o leque dos painéis no celular. */
+export const IconPanels = () => (
+  <Svg>
+    <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+    <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+    <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+    <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+  </Svg>
+);
+
+export const IconClose = () => (
+  <Svg>
+    <path d="M6 6l12 12M18 6L6 18" />
   </Svg>
 );
 
@@ -164,6 +236,13 @@ const ROOM_PATHS: Record<RoomKind, preact.ComponentChildren> = {
     </>
   ),
   armadilha: <path d="M3 20h18M5 20l2-7 2 7M10 20l2-9 2 9M15 20l2-7 2 7" />,
+  // Encontro (M6 F3): um ponto de interrogação.
+  encontro: (
+    <>
+      <path d="M9 9a3 3 0 115 2.2c-1.2.8-2 1.6-2 3.3" />
+      <circle cx="12" cy="18.5" r="0.8" />
+    </>
+  ),
 };
 
 export const RoomIcon = (props: { kind: RoomKind | null }) => (

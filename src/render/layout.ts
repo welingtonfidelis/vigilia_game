@@ -1,8 +1,8 @@
 // Planta da vila e para onde cada herói anda. Puro (sem Phaser) para dar para testar.
 
-import { buildingLevel } from '../sim/index.ts';
+import { BARD_HOURS, bardNight, buildingLevel, dayOf, hourOf, MARKET_HOURS, marketDay } from '../sim/index.ts';
 import { JOB_BUILDING } from '../sim/citizens.ts';
-import type { BuildingId, Citizen, Hero, Pet, PetSpecies, RetiredRole, World } from '../sim/index.ts';
+import type { BuildingId, Citizen, Hero, Pet, PetSpecies, RetiredRole, StreetId, World } from '../sim/index.ts';
 
 /** Lado do tile no mundo: 16 px de arte × 2. */
 export const TILE = 32;
@@ -51,6 +51,10 @@ export const LOTS: Record<BuildingId, Lot> = Object.fromEntries(
 export const PLAZA_TILES: TileRect = { tx: 20, ty: 15, tw: 10, th: 6 };
 export const PLAZA = { x: 25 * TILE, y: 18 * TILE, r: 150 };
 
+/** Mesa das audiências da manhã (M6 F1), no canto leste da praça: o pé da arte. */
+/** Mesa de audiências: na frente do Paço, à esquerda da porta (M6 F6; antes ficava na praça). */
+export const AUDIENCE_TABLE: Point = { x: 34.3 * TILE, y: 7.9 * TILE };
+
 /** Lavradores se espalham pelo movimento da vila; o campo de treino é dos heróis. */
 const LAVOR_ROUNDS: Point[] = [
   { x: PLAZA.x - 110, y: PLAZA.y + 80 },
@@ -90,7 +94,72 @@ export const EXPANSION_LOTS: TileRect[] = [
   { tx: 15, ty: 35, tw: 4, th: 3 },
   { tx: 29, ty: 35, tw: 4, th: 3 },
 ];
-export const EXPANSION_TILES: TileRect = { tx: 6, ty: 32, tw: 38, th: 7 };
+export const EXPANSION_TILES: TileRect = { tx: 6, ty: 32, tw: 28, th: 7 };
+
+/**
+ * Salão das Lendas (M6 F5): no canto leste do distrito sul, ao lado da expansão. Na frente,
+ * o pátio dos pedestais; a trilha desce da estrada de baixo pelo lado leste do prédio.
+ */
+export const HALL_TILES: TileRect = { tx: 35, ty: 31, tw: 7, th: 6 };
+export const HALL_YARD: TileRect = { tx: 34, ty: 37, tw: 10, th: 2 };
+export const HALL_PATH: TileRect = { tx: 42, ty: 28, tw: 2, th: 9 };
+/** Centro do prédio em x e o pé dele (a porta), em px do mundo. */
+export const HALL = { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, bottom: (HALL_TILES.ty + HALL_TILES.th) * TILE };
+
+/**
+ * Paço do prefeito (M6 F6): no nível de cima, a leste da torrinha do berrante, com a porta para
+ * o sul. A trilha sai da rua do portão e passa por baixo do berrante.
+ */
+export const PACO_TILES: TileRect = { tx: 33, ty: 2, tw: 6, th: 5 };
+export const PACO_PATH: TileRect = { tx: 26, ty: 7, tw: 14, th: 2 };
+export const PACO = { x: (PACO_TILES.tx + PACO_TILES.tw / 2) * TILE, bottom: (PACO_TILES.ty + PACO_TILES.th) * TILE };
+
+/**
+ * Praça de encontro (M6 F6): o palanque do prefeito no centro (onde ficava o cofre), as barracas
+ * da feira e o lugar do bardo, ao lado da fogueira.
+ */
+export const PALANQUE: Point = { x: 25 * TILE, y: 18.6 * TILE };
+export const MARKET_STALLS: Point[] = [
+  { x: 22.7 * TILE, y: 17.4 * TILE },
+  { x: 27.3 * TILE, y: 17.4 * TILE },
+  { x: 28.4 * TILE, y: 20.1 * TILE },
+];
+export const BARD_SPOT: Point = { x: 23.4 * TILE, y: 20.5 * TILE };
+
+/** Mastros com o estandarte da vila (M6 F6): dois ao lado do portão e um no canto da praça (pé, em tiles). */
+export const FLAG_POLES: Point[] = [
+  { x: 21.6, y: 7.2 },
+  { x: 27.3, y: 6.8 },
+  { x: 20.2, y: 15.4 },
+];
+
+/** Busto do memorial (M6 F6): ao lado do caminho entre o portãozinho do cemitério e a escadaria (pé, em tiles). */
+export const BUST_SPOT: Point = { x: 8.6, y: 7.3 };
+
+/** Placas das ruas (M6 F6): onde o nome aparece no mapa (em tiles). */
+export const STREET_SIGNS: Record<StreetId, Point> = {
+  praca: { x: 25, y: 15.1 },
+  estradaCima: { x: 11, y: 17.2 },
+  estradaBaixo: { x: 33, y: 26.2 },
+  ruaPortao: { x: 24.5, y: 9.6 },
+  ruaTermas: { x: 24.5, y: 23 },
+};
+
+/** Pontos de enfeite (M6 F6): o pé do enfeite, em tiles, e o nome do lugar para o painel. */
+export const DECOR_SPOTS: { x: number; y: number; name: string }[] = [
+  { x: 19.4, y: 19.3, name: 'Praça, canto oeste' },
+  { x: 30.5, y: 19.3, name: 'Praça, canto leste' },
+  { x: 15.2, y: 16.9, name: 'Estrada de cima, entre o templo e a taverna' },
+  { x: 38.5, y: 16.9, name: 'Estrada de cima, entre a guilda e a caverna' },
+  { x: 4.5, y: 16.8, name: 'Estrada de cima, ponta oeste' },
+  { x: 46.5, y: 16.9, name: 'Estrada de cima, perto da caverna' },
+  { x: 13.5, y: 28.9, name: 'Estrada de baixo, em frente à estalagem' },
+  { x: 19.6, y: 28.9, name: 'Estrada de baixo, perto das termas' },
+  { x: 34.5, y: 28.9, name: 'Estrada de baixo, perto das casinhas' },
+  { x: 23, y: 24.3, name: 'Rua das termas, lado oeste' },
+  { x: 26.9, y: 24.3, name: 'Rua das termas, lado leste' },
+  { x: 26.8, y: 11.8, name: 'Rua do portão' },
+];
 export const EXPANSION_ROADS: TileRect[] = [
   { tx: 24, ty: 27, tw: 2, th: 9 },
   { tx: 8, ty: 33, tw: 23, th: 2 },
@@ -147,7 +216,7 @@ export const THERMAL_PATH: TileRect = { tx: 24, ty: 25, tw: 2, th: 2 };
 /** Terreiro e trilha da caverna no canto direito, no pé do paredão. */
 export const CAVE_PATH: TileRect = { tx: 43, ty: 15, tw: 2, th: 3 };
 
-export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas';
+export type Landmark = 'berrante' | 'quadro' | 'cofre' | 'abismo' | 'cemiterio' | 'portao' | 'fogueira' | 'termas' | 'salao' | 'paco';
 
 /** Portão de paliçada: é a entrada da vila, no alto do mapa (norte), ao centro. */
 export const HORN_TOWER: TileRect = { tx: 22, ty: 1, tw: 5, th: 6 };
@@ -158,13 +227,18 @@ export const LANDMARKS: Record<Landmark, Point> = {
   // Ao pé da torrinha (é onde o prefeito para para tocar).
   berrante: { x: (HORN_STAND.tx + HORN_STAND.tw / 2) * TILE, y: (HORN_STAND.ty + HORN_STAND.th) * TILE + 14 },
   quadro: { x: 28.5 * TILE, y: 16 * TILE },
-  cofre: { x: 25 * TILE, y: 18.5 * TILE },
+  // O baú do tesouro, à direita da porta do Paço (M6 F6; antes ficava no meio da praça).
+  cofre: { x: 37.9 * TILE, y: 8 * TILE },
   abismo: { x: 45 * TILE, y: 14.5 * TILE },
   // Logo depois do portãozinho, já dentro da cerca (o cemitério fica num platô acima da vila).
   cemiterio: { x: 5.5 * TILE, y: 5.4 * TILE },
   portao: { x: (HORN_TOWER.tx + HORN_TOWER.tw / 2) * TILE, y: (HORN_TOWER.ty + HORN_TOWER.th) * TILE - 10 },
   fogueira: { x: 21.5 * TILE, y: 20.5 * TILE },
   termas: { x: (THERMAL_TILES.tx + THERMAL_TILES.tw / 2) * TILE, y: (THERMAL_TILES.ty + THERMAL_TILES.th) * TILE + 8 },
+  // Na frente da porta do Salão das Lendas, entre os pedestais.
+  salao: { x: (HALL_TILES.tx + HALL_TILES.tw / 2) * TILE, y: (HALL_TILES.ty + HALL_TILES.th) * TILE + 16 },
+  // Na porta do Paço do prefeito, no nível de cima.
+  paco: { x: (PACO_TILES.tx + PACO_TILES.tw / 2) * TILE, y: (PACO_TILES.ty + PACO_TILES.th) * TILE + 16 },
 };
 
 export const door = (id: BuildingId): Point => {
@@ -263,8 +337,11 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
   switch (activity.kind) {
     case 'chegando':
       return at(`chegada:${hero.id}`, 'praca', wanderPoint(hero.id, activity.startedAt));
-    case 'vagar':
-      return at(`vagar:${hero.id}`, 'praca', wanderPoint(hero.id, activity.startedAt));
+    case 'vagar': {
+      // Feira ou bardo na praça (M6 F6): quem está à toa vai junto.
+      const crowd = gatheringPoint(world, hero.id + 1000, dayOf(world.tick), hourOf(world.tick));
+      return at(crowd ? `roda:${hero.id}` : `vagar:${hero.id}`, 'praca', crowd ?? wanderPoint(hero.id, activity.startedAt));
+    }
     case 'descansar':
       return buildingLevel(world, 'estalagem') >= 1
         ? at('estalagem', 'estalagem', door('estalagem'))
@@ -287,22 +364,50 @@ export function heroDestination(world: World, hero: Hero, graveIndex: (heroId: n
     case 'aguardar':
       return at('quadro', 'quadro', { x: LANDMARKS.quadro.x, y: LANDMARKS.quadro.y + 40 });
     case 'tumulo': {
-      const idx = hero.griefFor === null ? null : graveIndex(hero.griefFor);
+      const lost = activity.targetId ?? hero.griefFor;
+      const idx = lost === null ? null : graveIndex(lost);
       if (idx === null) return at('cemiterio', 'cemiterio', LANDMARKS.cemiterio);
       const grave = gravePoint(idx);
       return at(`cova:${idx}`, 'cova', { x: grave.x, y: grave.y + 24 });
     }
     case 'socializar': {
       const point = wanderPoint(hero.id, activity.startedAt);
-      return activity.targetId !== undefined
-        ? { ...at(`conversa:${hero.id}`, 'heroi', point), followHeroId: activity.targetId }
-        : at(`vagar:${hero.id}`, 'praca', point);
+      if (activity.targetId !== undefined) return { ...at(`conversa:${hero.id}`, 'heroi', point), followHeroId: activity.targetId };
+      const crowd = gatheringPoint(world, hero.id + 1000, dayOf(world.tick), hourOf(world.tick));
+      return at(crowd ? `roda:${hero.id}` : `vagar:${hero.id}`, 'praca', crowd ?? point);
     }
   }
 }
 
 /** Onde um morador passa o dia ou a noite (visual; o núcleo não guarda posição). */
+export const marketHours = (day: number, hour: number): boolean => marketDay(day) && hour >= MARKET_HOURS[0] && hour < MARKET_HOURS[1];
+export const bardHours = (world: World, day: number, hour: number): boolean => bardNight(world, day) && hour >= BARD_HOURS[0] && hour < BARD_HOURS[1];
+
+/** Ponto numa roda em volta de um centro (a gente da feira e quem escuta o bardo). */
+function crowdPoint(seed: number, center: Point, rMin: number, rMax: number): Point {
+  const h = hash(seed, 77);
+  const angle = ((h & 0xffff) / 0x10000) * Math.PI * 2;
+  const r = rMin + ((h >>> 16) / 0x10000) * (rMax - rMin);
+  return { x: Math.round(center.x + Math.cos(angle) * r), y: Math.round(center.y + Math.sin(angle) * r * 0.6) };
+}
+
+/** Onde quem está à toa vai quando a praça tem feira ou bardo (null = nada na praça agora). */
+export function gatheringPoint(world: World, seed: number, day: number, hour: number): Point | null {
+  if (marketHours(day, hour)) {
+    const stall = MARKET_STALLS[Math.abs(seed + hour) % MARKET_STALLS.length]!;
+    return crowdPoint(seed * 31 + hour, { x: stall.x, y: stall.y + 20 }, 16, 44);
+  }
+  if (bardHours(world, day, hour)) return crowdPoint(seed, BARD_SPOT, 38, 72);
+  return null;
+}
+
 export function citizenSpot(world: World, citizen: Citizen, hour: number, day: number): Point {
+  // Feira e bardo (M6 F6): dois de cada três moradores vão às barracas; os notívagos e metade dos outros, ao bardo.
+  if (citizen.job !== 'guarda') {
+    const goes = marketHours(day, hour) ? citizen.id % 3 !== 0 : bardHours(world, day, hour) ? isNightOwl(citizen) || citizen.id % 2 === 0 : false;
+    const crowd = goes ? gatheringPoint(world, citizen.id, day, hour) : null;
+    if (crowd) return crowd;
+  }
   const h = hash(citizen.id, day * 24 + hour);
   const ox = ((h & 0xff) / 255 - 0.5) * 90;
   const oy = (((h >>> 8) & 0xff) / 255 - 0.5) * 46;
