@@ -470,7 +470,7 @@ flowchart LR
 ### 2. Ponto de partida legal e de mercado
 
 - **Ideia e mecânicas são livres; expressão não é.** "Prefeito que gerencia heróis autônomos" pode ser usado à vontade. **Não** podemos usar nomes, arte, música, código ou textos do jam, nem nada de *Diablo* (Tristram, Catedral, Deckard Cain e afins são marcas da Blizzard).
-- **A Bippinbits vai lançar a versão oficial (~2027).** Se a ideia for publicar, precisamos de identidade própria forte para não parecer clone. Esse é o motivo da proposta de ambientação na seção 10.
+- **A Bippinbits vai lançar a versão oficial (~2027).** O Vigília não terá uso comercial (seção 10), mas mantém identidade própria forte para não parecer clone. Esse é o motivo da ambientação escolhida na seção 10.
 - **Diferenciais que o jam nem tocou:** gerações e legado, defesa da vila e cidade com cidadãos. São o nosso espaço.
 
 ---
@@ -743,7 +743,7 @@ Cada alavanca tem custo (ouro, reputação ou energia do prefeito) para que impo
 ### 7. Tecnologia (recomendação)
 
 **TypeScript + Vite + Phaser 3 (ou PixiJS)**, mesma família do *Rolê do Popinho*:
-- Roda no navegador (itch.io) e depois vai para desktop (Tauri/Electron → Steam) e celular (Capacitor).
+- Roda no navegador, de graça no GitHub Pages (sem uso comercial, seção 10).
 - Eu consigo testar tudo pelo navegador e por **simulação headless**.
 
 **Arquitetura-chave:** um **núcleo de simulação puro e determinístico**, separado da renderização.
@@ -768,7 +768,7 @@ vigilia/
 ### 8. Arte e áudio
 
 - Pixel art top-down em 3/4, com sprites de 16–32 px e paleta escura com luzes quentes (vila acolhedora × abismo).
-- **Protótipo com asset packs licenciados** (uso comercial) para validar o loop; artista dedicado para a identidade final.
+- **Arte própria**, de geradores Python (seção 3). Os asset packs de terceiros serviram só ao protótipo e saíram com a arte 32-bit.
 - Música e efeitos licenciados no começo e encomendados depois. O tema da vila muda conforme o estado (paz, luto, incursão).
 
 ---
@@ -2097,12 +2097,12 @@ A F6 ficou em duas partes, cada uma com seu commit: **F6a** (Paço, estandarte, 
 
 ### 10. Decisões em aberto
 
-1. **Stack:** web/TypeScript (recomendado) ou Godot 4?
-2. **Ambientação** (é o diferencial frente à versão oficial):
-   - **A. Fantasia sombria original:** vila "Vigília" na borda de um abismo sob uma abadia antiga.
-   - **B. Folclore brasileiro:** vila mineradora colonial cuja mina rompeu num mundo inferior. Inimigos como Corpo-seco, Mula-sem-cabeça, Boitatá e Mapinguari, com o **ouro** como recurso temático. É o diferencial mais forte, mas exige pesquisa cultural cuidadosa.
-3. **Objetivo:** projeto pessoal ou publicar (itch/Steam)? Isso muda o investimento em arte e o cuidado legal.
-4. **Arte:** asset packs licenciados ou artista dedicado?
+Todas decididas.
+
+1. **Stack:** decidido em 2026-10-19: **web/TypeScript** (Vite, Phaser e Preact), no lugar do Godot 4.
+2. **Ambientação** (é o diferencial frente à versão oficial): decidido em 2026-10-19: **fantasia sombria original**, a vila "Vigília" na borda de um abismo sob uma abadia antiga. A outra opção era o folclore brasileiro (vila mineradora colonial, com Corpo-seco, Mula-sem-cabeça, Boitatá e Mapinguari), que exigiria pesquisa cultural cuidadosa.
+3. **Objetivo:** decidido em 2026-10-23: **projeto pessoal, sem uso comercial**. O jogo fica de graça no GitHub Pages.
+4. **Arte:** **arte própria**, de geradores Python. Desde a arte 32-bit (PR #3) o jogo não usa asset de terceiros.
 5. **Tom:** decidido em 2026-10-23: **abrigo no escuro**, com o abismo cruel e a vila como abrigo quente (pilar 6, seção 3.1).
 
 ---
