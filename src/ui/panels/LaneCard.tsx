@@ -28,9 +28,13 @@ const pct = (v: number): string => `${Math.round(Math.max(0, Math.min(1, v)) * 1
 function PartyFrame(props: { hero: Hero; party: Party }) {
   const { world } = useGame();
   const { hero, party } = props;
-  const dead = party.dead.includes(hero.id) || hero.status === 'dead';
-  const fled = !dead && !party.memberIds.includes(hero.id);
-  const { hp, max } = liveHp(world, hero);
+  // Com o herói à vista, o quadro mostra a vida e a queda do corredor, que esperam o golpe chegar (§9.9).
+  const shown = lanes.shown(party.id, hero.id);
+  const dead = (party.dead.includes(hero.id) || hero.status === 'dead') && (shown === null || shown.down);
+  const fled = !dead && shown === null && !party.memberIds.includes(hero.id);
+  const live = liveHp(world, hero);
+  const max = live.max;
+  const hp = shown?.hp ?? live.hp;
   const capped = hero.level >= maxLevel(world, hero);
   const need = xpToNext(hero.level);
   const share = party.loot.xp / Math.max(1, party.memberIds.length);

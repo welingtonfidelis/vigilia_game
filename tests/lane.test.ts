@@ -177,6 +177,72 @@ describe('corredor em segundo plano', () => {
     expect(lane.counts.enemies).toBe(alive);
   });
 
+  /** Um golpe novo num herói: o dano já vale na simulação e o registro ganha o golpe. */
+  function hitHero(party: Party, amount: number, kill = false): { heroId: number; hp: number } {
+    const c = party.combat!;
+    const hero = c.units.find((u) => u.side === 'hero' && u.alive && u.heroId !== null && party.memberIds.includes(u.heroId))!;
+    const foes = c.units.filter((u) => u.side === 'enemy');
+    const foe = foes.find((u) => u.alive && !u.tags.includes('backline')) ?? foes[0]!;
+    hero.hp = kill ? 0 : hero.hp - amount;
+    if (kill) {
+      hero.alive = false;
+      party.memberIds = party.memberIds.filter((id) => id !== hero.heroId);
+      party.dead.push(hero.heroId!);
+    }
+    (c.log ??= []).push({ n: (c.seq = (c.seq ?? 0) + 1), t: c.ticks, kind: 'hit', from: foe.uid, to: hero.uid, amount, crit: false, kill });
+    return { heroId: hero.heroId!, hp: hero.hp };
+  }
+
+  /** Abre o corredor e deixa os golpes antigos chegarem. */
+  function settled(world: World, party: Party): { lane: LaneRenderer; run: (frames: number) => void } {
+    const lane = new LaneRenderer(host(world), party.id);
+    let t = 0;
+    const run = (frames: number): void => {
+      for (let i = 0; i < frames; i++) lane.frame((t += 16));
+    };
+    run(200);
+    return { lane, run };
+  }
+
+  it('a barra de vida espera o golpe chegar e depois segue a simulação (§9.9)', () => {
+    const { world, party } = worldInFight();
+    const { lane, run } = settled(world, party);
+    const target = party.combat!.units.find((u) => u.side === 'hero' && u.alive && party.memberIds.includes(u.heroId!))!;
+    const before = lane.shown(target.heroId!)!.hp;
+    expect(before).toBe(target.hp);
+    const hit = hitHero(party, 7);
+    run(3);
+    expect(lane.shown(hit.heroId)!.hp).toBe(before);
+    run(40);
+    expect(lane.shown(hit.heroId)!.hp).toBe(hit.hp);
+  });
+
+  it('o herói só cai quando chega o golpe que matou', () => {
+    const { world, party } = worldInFight();
+    const { lane, run } = settled(world, party);
+    const hit = hitHero(party, 9, true);
+    run(3);
+    expect(lane.shown(hit.heroId)).toMatchObject({ down: false });
+    run(40);
+    expect(lane.shown(hit.heroId)?.down ?? true).toBe(true);
+  });
+
+  it('um golpe que não chega em 3 s é esquecido, e a barra volta à simulação', () => {
+    const { world, party } = worldInFight();
+    const { lane, run } = settled(world, party);
+    const hit = hitHero(party, 7);
+    run(1);
+    const before = lane.shown(hit.heroId)!.hp;
+    expect(before).not.toBe(hit.hp);
+    // Some sem chegar (o que a segurança cobre): sai da fila, do acerto marcado e do voo.
+    const inner = lane as unknown as { queue: unknown[]; pending: unknown[]; projectiles: unknown[] };
+    inner.queue.length = inner.pending.length = inner.projectiles.length = 0;
+    run(150);
+    expect(lane.shown(hit.heroId)!.hp).toBe(before);
+    run(50);
+    expect(lane.shown(hit.heroId)!.hp).toBe(hit.hp);
+  });
+
   it('na volta para a vila o grupo sai de vista em vez de refazer o caminho', () => {
     const { world, party } = worldInFight();
     const lane = new LaneRenderer(host(world), party.id);

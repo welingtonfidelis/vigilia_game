@@ -47,6 +47,11 @@ export class LaneDirector {
     }
     return lane;
   }
+
+  /** Como o corredor mostra um herói agora (vida e queda, §9.9); null se ele não está à vista. */
+  shown(partyId: number, heroId: number): { hp: number; down: boolean } | null {
+    return this.lanes.get(partyId)?.shown(heroId) ?? null;
+  }
 }
 
 export const lanes = new LaneDirector();

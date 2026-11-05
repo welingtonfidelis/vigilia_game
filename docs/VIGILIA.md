@@ -2098,6 +2098,10 @@ A F6 ficou em duas partes, cada uma com seu commit: **F6a** (Paço, estandarte, 
     - as três barracas, que ficaram com 34×40 em vez de 34×30 para o toldo não esconder o rosto do vendedor;
     - o bardo, com 6 quadros: parado e tocando.
 - **Testes:** 4 novos (`tests/weather.test.ts`: o clima do mesmo dia, os dias dos eventos, a neve que acumula e derrete, a agenda da praça). `relief.test.ts` alcança o cofre na nova posição. São 268 no total.
+- **Retrato:** o balanço de 40 sementes deu igual ao da F6a, porque nada da F6b mexe no jogo.
+- **Conserto pedido no meio da fase (2026-10-23):** no celular, a barra de fragmentos do amuleto mostrava "0/5" cortado embaixo, porque a barra fina não tem altura para texto.
+  - A barra fina não desenha mais texto; ele vira a dica do mouse.
+  - Nos fragmentos o número fica no rótulo de cima. A conservação dos prédios voltou à barra de altura normal.
 
 #### 9.7 Prólogo animado (depois do M6)
 
@@ -2318,10 +2322,54 @@ Não precisa de rodada de balanço, porque a simulação não muda.
   - a flecha, a chuva de estrelas, o anel de fogo e o meteoro;
   - a coluna de luz e as duas curas;
   - os três estilos de monstro nas Catacumbas, na Forja, no Coração e na Fossa, e os chefes dessas quatro.
-- **Retrato:** o balanço de 40 sementes deu igual ao da F6a, porque nada da F6b mexe no jogo.
-- **Conserto pedido no meio da fase (2026-10-23):** no celular, a barra de fragmentos do amuleto mostrava "0/5" cortado embaixo, porque a barra fina não tem altura para texto.
-  - A barra fina não desenha mais texto; ele vira a dica do mouse.
-  - Nos fragmentos o número fica no rótulo de cima. A conservação dos prédios voltou à barra de altura normal.
+
+**Vida e morte esperam o golpe chegar (pedido de 2026-11-05):**
+
+Problema: a barra de vida, a queda do monstro, a troca de fase do chefe e o quadro do herói seguiam a simulação na hora, e o golpe desenhado chegava depois. Medido numa luta, a 1×, entre o dano valer e o golpe chegar:
+
+| Golpe | Atraso |
+|---|---|
+| Corpo a corpo | 0,12 s (até 0,27 s com vários golpes juntos) |
+| Luz do clérigo | 0,25 s |
+| Flecha | 0,35 a 0,53 s |
+| Orbe dos monstros | 0,35 a 0,57 s |
+| Bola de fogo | 0,47 a 0,62 s |
+| Crítico grande | mais o tempo do efeito (o meteoro soma 0,67 s) |
+
+A 2× e a 4× o atraso cai, porque o corredor anda na raiz da velocidade, mas não some. A fila de golpes não acumula: no máximo 5 na fila, que esvaziam em menos de um segundo.
+
+Regra: a tela mostra o dano quando o golpe chega (o `land`), e não quando a simulação o aplica. A simulação não muda.
+- **Golpe a caminho:** cada golpe que entra na fila do corredor fica marcado no alvo até chegar. A cura não entra, porque aparece na hora.
+- **Enquanto há golpe a caminho no alvo:**
+  - a barra de vida dele fica parada;
+  - ele não cai, e o chefe não troca de fase nem sacode a câmera;
+  - no quadro do grupo (`LaneCard`), o herói mantém a vida que o corredor mostra, sem "Caiu".
+- **Quando o golpe chega:** a barra desce o dano dele. Sem mais golpes a caminho, ela volta a seguir a simulação, e a morte vem com o golpe que matou.
+- **Cura no meio:** a cura recebida sobe a barra parada.
+- **Segurança:** um golpe que não chegar em 3 s (de relógio do corredor) é esquecido, e a tela volta à simulação.
+- **Os golpes que sobram:** com mais de 12 golpes num pulso, os mais antigos já não são desenhados. Esses valem na hora, como antes.
+
+**Pronto quando:**
+- medido de novo na mesma luta, a barra e a queda acompanham o golpe em todos os tipos;
+- há testes para a barra parada, a morte que espera, o fim da espera e a segurança de 3 s;
+- os testes e o build passam.
+
+**Como ficou (2026-11-05):**
+- **No corredor** (`src/render/lane/renderer.ts`):
+  - os golpes novos entram na fila (`intake`) antes de a vida ser copiada da simulação, para a barra já esperar no mesmo quadro;
+  - a fila toca o que chegou (`drain`) depois disso;
+  - `inFlight` guarda cada golpe a caminho com a hora em que entrou, `holding(uid)` diz se o alvo espera um golpe, e o `land` tira o golpe da conta.
+- **Quadro do grupo:** com o herói à vista, o quadro usa sempre a vida e a queda do corredor (`lanes.shown`), e não só durante a espera. Assim ele não pisca quando o HTML redesenha entre o passo da simulação e o quadro do corredor. Ele redesenha a cada passo da simulação, então pode ficar até um passo atrás do corredor.
+- **Dano sem golpe desenhado** (armadilha, altar amaldiçoado, veneno): vale na hora, como antes.
+- **Testes:** 3 novos no `tests/lane.test.ts` (a barra parada e depois a simulação, a morte que espera o golpe e a segurança de 3 s). São 277 no total.
+- **Medido de novo** na mesma luta, avançada quadro a quadro, a 1×, 2× e 4×:
+
+  | | Com o golpe | Sem golpe |
+  |---|---|---|
+  | Mortes | 57 | 0 |
+  | Quedas de vida | 289 | 4, em heróis, sem golpe a caminho (dano sem golpe desenhado) |
+
+  - Nas amostras com golpe a caminho, o quadro do grupo nunca mostrou a vida da simulação.
 
 ### 10. Decisões em aberto
 

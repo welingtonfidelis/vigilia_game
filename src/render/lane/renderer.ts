@@ -269,6 +269,9 @@ const SHOT_SOUND: Record<'arrow' | 'fire' | 'bolt' | 'dark', LaneSound> = { arro
 /** Quanto o grupo leva para sumir de vista ao voltar para a vila (s do relógio de efeitos). */
 const EXIT_TIME = 1.6;
 
+/** Depois disso um golpe a caminho é esquecido, e a vida volta à simulação (s do relógio de efeitos). */
+const HOLD_LIMIT = 3;
+
 export class LaneRenderer {
   private ctx!: CanvasRenderingContext2D;
   private canvas: HTMLCanvasElement | null = null;
@@ -305,6 +308,12 @@ export class LaneRenderer {
   private queue: { at: number; ev: CombatEvent }[] = [];
   private cursor: EventCursor = { combat: null, last: 0 };
   private lastCombat: unknown = null;
+  /**
+   * Golpes que já valeram na simulação e ainda não chegaram na tela, com a hora em que
+   * entraram na fila. Enquanto o alvo tem um, a vida e a morte dele esperam (§9.9).
+   */
+  private inFlight = new Map<CombatEvent, number>();
+  private flightCombat: unknown = null;
   /** O chefe desta luta já passou para a fase 2 (a câmera treme uma vez). */
   private phase2Seen = false;
   private shakeUntil = 0;
@@ -386,9 +395,11 @@ export class LaneRenderer {
     const rooms = partyRooms(world, party);
     this.syncFloor(party);
     this.walk(party, rooms, world.tick, dt * speed);
+    // Os golpes novos entram antes de copiar a vida, para a barra já esperar por eles.
+    this.intake(party);
     this.syncHeroes(world, party);
     this.syncEnemies(world, party);
-    this.ingest(party);
+    this.drain(party);
     this.step(dt * Math.sqrt(speed));
     this.reveal = Math.max(this.reveal, revealX(party, rooms));
     const length = laneLength(rooms.length);
@@ -491,7 +502,7 @@ export class LaneRenderer {
       actor.y += (ROW_Y[slot.row] - actor.y) * 0.2;
       actor.facing = this.facing;
       const unit = units.get(hero.id);
-      actor.hp = unit ? unit.hp : hero.hp;
+      if (!this.holding(unit?.uid)) actor.hp = unit ? unit.hp : hero.hp;
       actor.maxHp = unit ? unit.maxHp : heroStats(world, hero).maxHp;
     }
     // Quem saiu do grupo: morreu (vira corpo) ou fugiu (corre de volta e some).
@@ -499,7 +510,8 @@ export class LaneRenderer {
       if (members.some((h) => h.id === id)) continue;
       const hero = world.heroes.find((h) => h.id === id);
       if (hero?.status === 'dead' || party.dead.includes(id)) {
-        if (actor.dying === null) actor.dying = this.fx;
+        // Cai com o golpe que matou (o land), se ele ainda está a caminho.
+        if (actor.dying === null && !this.holding(units.get(id)?.uid)) actor.dying = this.fx;
       } else if (actor.leaving === null) {
         actor.leaving = this.fx;
         actor.facing = -1;
@@ -561,8 +573,10 @@ export class LaneRenderer {
         this.wantStage(actor);
         this.enemies.set(unit.uid, actor);
       }
+      // Com golpe a caminho, a vida, a queda e a fase do chefe esperam ele chegar.
+      const held = this.holding(unit.uid);
       // A fase 2 do chefe troca o desenho e sacode a câmera.
-      if (boss) {
+      if (boss && !held) {
         actor.sprite = enemySource(world, party, unit) ?? actor.sprite;
         if (!this.phase2Seen && unit.alive && unit.hp <= unit.maxHp * 0.5) {
           this.phase2Seen = true;
@@ -571,14 +585,14 @@ export class LaneRenderer {
         }
       }
       actor.homeX = slot.x;
-      actor.hp = Math.max(0, unit.hp);
+      if (!held) actor.hp = Math.max(0, unit.hp);
       actor.maxHp = unit.maxHp;
       actor.nemesis = unit.nemesisId !== undefined ? unit.name : undefined;
       // Quem fugiu na névoa (M6 F2) vira as costas e some; quem morreu cai.
       if (!unit.alive && unit.fled && actor.leaving === null && actor.dying === null) {
         actor.leaving = this.fx;
         actor.facing = 1;
-      } else if (!unit.alive && !unit.fled && actor.dying === null) actor.dying = this.fx;
+      } else if (!unit.alive && !unit.fled && actor.dying === null && !held) actor.dying = this.fx;
     });
   }
 
@@ -615,11 +629,46 @@ export class LaneRenderer {
 
   // ── Golpes ────────────────────────────────────────────────────────────
 
-  private ingest(party: Party): void {
+  /** Põe os golpes novos da simulação na fila e marca cada alvo como esperando o golpe. */
+  private intake(party: Party): void {
+    // Luta nova: os números de unidade recomeçam, e um golpe antigo não pode segurar ninguém.
+    if (party.combat !== this.flightCombat) {
+      this.inFlight.clear();
+      this.flightCombat = party.combat;
+    }
     const events = takeEvents(this.cursor, party.combat);
     // Vários golpes no mesmo pulso viram uma rajada curta, não um bloco só.
     const base = Math.max(this.fx, this.queue[this.queue.length - 1]?.at ?? 0);
-    events.slice(-12).forEach((ev, i) => this.queue.push({ at: base + i * 0.07, ev }));
+    events.slice(-12).forEach((ev, i) => {
+      this.queue.push({ at: base + i * 0.07, ev });
+      // A cura aparece na hora; o resto só vale na tela quando chega.
+      if (ev.kind !== 'heal') this.inFlight.set(ev, this.fx);
+    });
+  }
+
+  /** Há golpe a caminho deste alvo (os esquecidos saem da conta). */
+  private holding(uid: number | undefined): boolean {
+    if (uid === undefined) return false;
+    let found = false;
+    for (const [ev, at] of this.inFlight) {
+      if (this.fx - at > HOLD_LIMIT) this.inFlight.delete(ev);
+      else if (ev.to === uid) found = true;
+    }
+    return found;
+  }
+
+  /**
+   * Como o corredor mostra um herói agora: a vida da barra e se ele já caiu. O quadro do
+   * grupo usa isso para andar junto com o golpe (§9.9); null se o herói não está à vista.
+   */
+  shown(heroId: number): { hp: number; down: boolean } | null {
+    const actor = this.heroes.get(heroId);
+    if (!actor || actor.leaving !== null) return null;
+    return { hp: actor.hp, down: actor.dying !== null };
+  }
+
+  /** Toca os golpes da fila cuja hora chegou. */
+  private drain(party: Party): void {
     const unitOf = (uid: number) => party.combat?.units.find((u) => u.uid === uid);
     while (this.queue.length > 0 && this.queue[0]!.at <= this.fx) {
       const { ev } = this.queue.shift()!;
@@ -630,7 +679,10 @@ export class LaneRenderer {
   private play(ev: CombatEvent, targetUnit: Unit | undefined): void {
     const from = this.actorByUid(ev.from);
     const to = this.actorByUid(ev.to);
-    if (!to) return;
+    if (!to) {
+      this.inFlight.delete(ev);
+      return;
+    }
     if (ev.kind === 'heal') {
       if (from) this.attack(from, 0.35);
       this.sound('heal');
@@ -638,6 +690,8 @@ export class LaneRenderer {
       const heal = this.attackOf(from)?.heal?.fx ?? 'healing-bloom';
       if (hasPfx(heal)) this.pfx.push({ id: heal, x: to.x, y: to.y + 1, start: this.fx, flip: false, back: true });
       this.floatText(to, `+${Math.round(ev.amount)}`, '#7fd37a', false);
+      // A barra parada à espera de um golpe sobe a cura.
+      if (this.holding(ev.to)) to.hp = Math.min(to.maxHp, to.hp + ev.amount);
       return;
     }
     if (ev.kind === 'blast') {
@@ -764,6 +818,8 @@ export class LaneRenderer {
 
   /** O golpe chegou: som, piscada, recuo, número, sangue e, se matou, a morte e o ouro. */
   private land(to: Actor, ev: CombatEvent, unit: Unit | undefined, fromX: number): void {
+    // A barra desce o dano agora; sem mais golpes a caminho, volta a seguir a simulação.
+    if (this.inFlight.delete(ev)) to.hp = Math.max(0, to.hp - ev.amount);
     const crit = ev.crit;
     this.sound(crit ? 'crit' : 'slash');
     if (ev.kill && to.side === 'enemy') this.sound('kill');
