@@ -18,6 +18,11 @@ A arte é toda própria e tem duas versões. Escolha em **Menu → Arte**; a tro
 |---|---|
 | ![Praça em 16-bit](docs/img/arte-16bit.jpg) | ![Praça em 32-bit](docs/img/arte-32bit.jpg) |
 
+Os efeitos de combate do corredor (bola de fogo, luz do clérigo, orbe dos monstros, crítico,
+moedas e a flor da cura) vêm do [pixelfx](https://github.com/patch-gg/pixelfx), sob a licença MIT.
+As folhas são geradas por `npm run pfx`, e a licença e os créditos estão em
+`public/assets/vigilia/pfx/`.
+
 Documentação completa, arquitetura, GDD, arte e histórico de decisões:
 **[docs/VIGILIA.md](docs/VIGILIA.md)**.
 

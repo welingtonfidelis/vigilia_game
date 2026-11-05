@@ -10,8 +10,10 @@
 //   - golpes, partículas e números seguem um relógio mais calmo (raiz da velocidade),
 //     para continuarem legíveis em 4×. Na pausa, os dois param.
 
-import { CLASSES, heroStats, partyRooms, TICKS_PER_SECOND } from '../../sim/index.ts';
-import type { CombatEvent, Hero, Party, Room, Unit, World } from '../../sim/index.ts';
+import { BIOMES, CLASSES, heroStats, partyRooms, TICKS_PER_SECOND } from '../../sim/index.ts';
+import type { ClassId, CombatEvent, Hero, Party, Room, Unit, World } from '../../sim/index.ts';
+import { BOSS_STRIKE, CLASS_ATTACKS, MONSTER_STYLE, STYLE_STRIKE, stageOf, styleFx, type AttackStage, type Strike } from '../../data/attacks.ts';
+import { monsterBase } from '../assets.ts';
 import { artFile } from '../art32.ts';
 import { packAsset, packUrl, type PackAsset } from '../pack.ts';
 import {
@@ -35,6 +37,10 @@ import {
   type EventCursor,
 } from './model.ts';
 import { enemySource, heroSource, image, type Anim, type SpriteSource } from './sprites.ts';
+import { drawPfx, hasPfx, pfxHit, pfxSeconds, preloadPfx, wantPfx, type PfxId } from './pfx.ts';
+
+/** O crítico de sempre: estouro de luz no alvo. */
+const CRIT_STRIKE: Strike = { fx: 'crit-hit', anchor: 'alvo' };
 
 /** O que fica na sala de cada encontro (M6 F6): arte nova, um enfeite da vila ou um morador. */
 const ENCOUNTER_LOOKS: Record<string, { prop?: string; villager?: string }> = {
@@ -186,6 +192,10 @@ interface Actor {
   projectile: 'arrow' | 'fire' | 'bolt' | 'dark';
   /** Nome da nêmesis (M6 F2): aura vermelha e o nome em cima. */
   nemesis?: string;
+  /** Herói, rival do torneio ou eco: classe e nível, para o ataque do estágio (§9.9). */
+  hero?: { classId: ClassId; level: number };
+  /** Monstro corpo a corpo ou chefe: o golpe próprio (§9.9). */
+  strike?: Strike;
 }
 
 interface Corpse {
@@ -197,6 +207,8 @@ interface Corpse {
 
 interface Projectile {
   kind: Actor['projectile'];
+  /** Folha do pixelfx no lugar do desenho da classe (a flecha do arqueiro no II e no III). */
+  pfx?: PfxId;
   x0: number;
   y0: number;
   x1: number;
@@ -286,6 +298,10 @@ export class LaneRenderer {
   private projectiles: Projectile[] = [];
   private floats: FloatText[] = [];
   private sparks: Spark[] = [];
+  /** Efeitos do pixelfx com o ponto de apoio no corredor; `back` fica atrás dos personagens. */
+  private pfx: { id: PfxId; x: number; y: number; start: number; flip: boolean; back: boolean }[] = [];
+  /** Até quando um efeito grande de crítico ocupa o corredor (só um de cada vez). */
+  private bigUntil = 0;
   private queue: { at: number; ev: CombatEvent }[] = [];
   private cursor: EventCursor = { combat: null, last: 0 };
   private lastCombat: unknown = null;
@@ -307,6 +323,7 @@ export class LaneRenderer {
 
   /** Passa a desenhar neste canvas. A câmera pula direto para o grupo. */
   attach(canvas: HTMLCanvasElement): void {
+    preloadPfx();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d')!;
     this.camX = Number.NaN;
@@ -466,6 +483,10 @@ export class LaneRenderer {
         actor.projectile = hero.classId === 'piromante' ? 'fire' : hero.classId === 'clerigo' ? 'bolt' : 'arrow';
         this.heroes.set(hero.id, actor);
       }
+      if (actor.hero?.level !== hero.level) {
+        actor.hero = { classId: hero.classId, level: hero.level };
+        this.wantStage(actor);
+      }
       actor.homeX = homeX;
       actor.y += (ROW_Y[slot.row] - actor.y) * 0.2;
       actor.facing = this.facing;
@@ -525,7 +546,19 @@ export class LaneRenderer {
         if (rival) {
           actor.ranged = RANGED_ROLES.has(CLASSES[rival.classId].role);
           actor.projectile = rival.classId === 'piromante' ? 'fire' : rival.classId === 'clerigo' ? 'bolt' : 'arrow';
+          actor.hero = { classId: rival.classId, level: rival.level };
+        } else if (unit.name.startsWith('Eco de ')) {
+          // O eco ataca com o golpe que tinha em vida.
+          const lost = world.heroes.find((h) => h.name === unit.name.slice('Eco de '.length));
+          if (lost) actor.hero = { classId: lost.classId, level: lost.level };
+        } else if (boss) {
+          actor.strike = BOSS_STRIKE[BIOMES[party.biome]?.boss.id ?? ''];
+        } else if (!actor.ranged) {
+          const style = MONSTER_STYLE[monsterBase(world, unit, party.biome).asset.replace(/^char\/monster\//, '')];
+          if (style) actor.strike = { fx: styleFx(style, party.biome), anchor: STYLE_STRIKE[style].anchor };
         }
+        wantPfx(actor.strike?.fx);
+        this.wantStage(actor);
         this.enemies.set(unit.uid, actor);
       }
       // A fase 2 do chefe troca o desenho e sacode a câmera.
@@ -601,7 +634,9 @@ export class LaneRenderer {
     if (ev.kind === 'heal') {
       if (from) this.attack(from, 0.35);
       this.sound('heal');
-      this.sparks.push({ id: 'fx/heal', x: to.x, y: to.y - 10, start: this.fx });
+      // A cura brota aos pés, atrás do herói (no II e no III do clérigo, um anel no chão).
+      const heal = this.attackOf(from)?.heal?.fx ?? 'healing-bloom';
+      if (hasPfx(heal)) this.pfx.push({ id: heal, x: to.x, y: to.y + 1, start: this.fx, flip: false, back: true });
       this.floatText(to, `+${Math.round(ev.amount)}`, '#7fd37a', false);
       return;
     }
@@ -615,6 +650,14 @@ export class LaneRenderer {
       this.impact(to, ev, targetUnit, to.x + 10);
       return;
     }
+    if (from.ranged && from.projectile === 'bolt') {
+      // O clérigo chama a luz em cima do alvo; o golpe acerta quando ela cai.
+      this.attack(from, 0.3);
+      this.sound(SHOT_SOUND.bolt);
+      this.pfx.push({ id: 'smite', x: to.x, y: to.y, start: this.fx, flip: false, back: false });
+      this.later(0.24, () => this.impact(to, ev, targetUnit, from.x, from));
+      return;
+    }
     if (from.ranged) {
       this.attack(from, 0.3);
       this.sound(SHOT_SOUND[from.projectile]);
@@ -623,15 +666,17 @@ export class LaneRenderer {
       const y0 = from.y - (from.sprite?.height ?? 20) * 0.55;
       const x1 = to.x;
       const y1 = to.y - (to.sprite?.height ?? 20) * 0.5;
+      const own = from.projectile === 'arrow' ? this.attackOf(from)?.projectile : undefined;
       this.projectiles.push({
         kind: from.projectile,
+        pfx: own && hasPfx(own) ? own : undefined,
         x0,
         y0,
         x1,
         y1,
         start: this.fx + 0.08,
         dur: Math.max(0.12, Math.abs(x1 - x0) / 280),
-        hit: () => this.impact(to, ev, targetUnit, from.x),
+        hit: () => this.impact(to, ev, targetUnit, from.x, from),
       });
       return;
     }
@@ -640,7 +685,7 @@ export class LaneRenderer {
     const reach = Math.sign(gap) * Math.max(0, Math.min(from.boss ? 52 : 40, Math.abs(gap) - 12));
     from.lunge = { start: this.fx, dur: 0.32, dx: reach };
     this.attack(from, 0.32);
-    this.later(0.11, () => this.impact(to, ev, targetUnit, from.x));
+    this.later(0.11, () => this.impact(to, ev, targetUnit, from.x, from));
   }
 
   private attack(actor: Actor, dur: number): void {
@@ -654,19 +699,81 @@ export class LaneRenderer {
     this.pending.push({ at: this.fx + delay, run });
   }
 
-  private impact(to: Actor, ev: CombatEvent, unit: Unit | undefined, fromX: number): void {
-    this.sound(ev.crit ? 'crit' : 'slash');
+  /** Ataque do estágio de um herói, rival ou eco (§9.9); monstros não têm. */
+  private attackOf(actor: Actor | undefined): AttackStage | undefined {
+    return actor?.hero ? CLASS_ATTACKS[actor.hero.classId][stageOf(actor.hero.level)] : undefined;
+  }
+
+  /** Começa a carregar as folhas do estágio atual de quem entrou no corredor. */
+  private wantStage(actor: Actor): void {
+    const a = this.attackOf(actor);
+    if (!a) return;
+    for (const st of [a.hit, a.hurt, a.heal, ...(a.crit ?? [])]) wantPfx(st?.fx);
+    wantPfx(a.projectile);
+  }
+
+  /**
+   * Toca um golpe do pixelfx: o de quem bate sai encostado no alvo, virado para ele, como se o
+   * golpe chegasse ali; o do alvo, nele. `dir` é o lado para onde o golpe vai. O golpe comum
+   * começa adiantado, para acertar junto com o dano; o efeito grande de crítico começa agora,
+   * e a função devolve quanto o dano deve esperar por ele. Com outro grande ainda na tela, sai
+   * o crítico de sempre.
+   */
+  private strike(st: Strike, to: Actor, dir: number): number {
+    let id: string = st.fx;
+    if (st.big) {
+      if (this.fx < this.bigUntil) id = CRIT_STRIKE.fx;
+      else if (hasPfx(id)) this.bigUntil = this.fx + pfxSeconds(id);
+    }
+    if (!hasPfx(id)) return 0;
+    const atAttacker = st.anchor === 'atacante' && id !== CRIT_STRIKE.fx;
+    const x = atAttacker ? to.x - dir * 16 : to.x;
+    // O pixelfx desenha para um boneco de 38 px, que aqui fica menor que o nosso: o golpe sobe um
+    // pouco, para a lâmina passar no meio do corpo do alvo e não nos pés.
+    const y = to.y - (atAttacker ? 8 : 4);
+    const wait = st.big && id === st.fx ? pfxHit(id) : 0;
+    this.pfx.push({ id, x, y, start: this.fx - (wait > 0 ? 0 : pfxHit(id)), flip: dir < 0, back: false });
+    return wait;
+  }
+
+  private impact(to: Actor, ev: CombatEvent, unit: Unit | undefined, fromX: number, from?: Actor): void {
+    const crit = ev.crit;
+    // A arena do torneio não tem efeito próprio: usa o das Catacumbas.
+    const roman = packAsset(`fx/${this.roman()}/slash`) ? this.roman() : 'I';
+    const dir = Math.sign(to.x - fromX) || 1;
+    const hurt = this.attackOf(to)?.hurt;
+    const melee = from !== undefined && !from.ranged;
+    const own = melee ? (this.attackOf(from)?.hit ?? from.strike) : undefined;
+    let wait = 0;
+    if (crit) {
+      // Crítico: o do estágio de quem bate (heróis), senão o estouro de sempre.
+      for (const st of this.attackOf(from)?.crit ?? [CRIT_STRIKE]) wait = Math.max(wait, this.strike(st, to, dir));
+    } else if (hurt) {
+      // O guardião no III apara no escudo de luz, virado para quem bateu.
+      this.strike(hurt, to, -dir);
+    } else if (own) {
+      this.strike(own, to, dir);
+    } else {
+      // O golpe do ato: herói no I, projéteis, retaguarda e a explosão dos elites.
+      this.sparks.push({ id: `fx/${roman}/${to.side === 'enemy' ? 'slash' : 'impact'}`, x: to.x, y: to.y - (to.sprite?.height ?? 20) * 0.5, start: this.fx });
+    }
+    // O dano aparece quando o golpe acerta (o meteoro cai, as estrelas chegam).
+    if (wait > 0) this.later(wait, () => this.land(to, ev, unit, fromX));
+    else this.land(to, ev, unit, fromX);
+  }
+
+  /** O golpe chegou: som, piscada, recuo, número, sangue e, se matou, a morte e o ouro. */
+  private land(to: Actor, ev: CombatEvent, unit: Unit | undefined, fromX: number): void {
+    const crit = ev.crit;
+    this.sound(crit ? 'crit' : 'slash');
     if (ev.kill && to.side === 'enemy') this.sound('kill');
     to.flash = 0.09;
-    to.knock = Math.sign(to.x - fromX || 1) * (ev.crit ? 5 : 3);
+    to.knock = Math.sign(to.x - fromX || 1) * (crit ? 5 : 3);
     to.hitUntil = this.fx + 0.22;
-    const crit = ev.crit;
     this.floatText(to, `${Math.max(1, Math.round(ev.amount))}${crit ? '!' : ''}`, crit ? '#ffd24a' : '#ffffff', crit);
     const palette = to.side === 'hero' ? HERO_BLOOD : BLOOD[this.roman()] ?? HERO_BLOOD;
     this.burst(to.x, to.y - (to.sprite?.height ?? 20) * 0.5, palette, crit ? 9 : 5, to.y);
-    // A arena do torneio não tem efeito próprio: usa o das Catacumbas.
-    const roman = packAsset(`fx/${this.roman()}/slash`) ? this.roman() : 'I';
-    this.sparks.push({ id: `fx/${roman}/${to.side === 'enemy' ? 'slash' : 'impact'}`, x: to.x, y: to.y - (to.sprite?.height ?? 20) * 0.5, start: this.fx });
+    if (ev.kill && to.side === 'enemy' && unit && unit.gold > 0) this.later(0.25, () => this.pfx.push({ id: 'coin-drop', x: to.x, y: to.y, start: this.fx, flip: false, back: false }));
     if (ev.kill) {
       if (to.dying === null) to.dying = this.fx;
       if (to.side === 'enemy' && unit && unit.gold > 0) {
@@ -808,11 +915,13 @@ export class LaneRenderer {
     for (const c of this.corpses) this.drawCorpse(c);
     const actors = [...this.heroes.values(), ...this.enemies.values()].sort((a, b) => a.y - b.y);
     for (const a of actors) this.drawShadow(a);
+    this.drawPfxLayer(true);
     for (const a of actors) this.drawActor(a);
     for (const a of actors) this.drawHp(a);
     this.drawNemesisNames(actors);
     this.drawProjectiles();
     this.drawSparks();
+    this.drawPfxLayer(false);
     for (const p of this.particles) {
       ctx.fillStyle = p.color;
       ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
@@ -1092,6 +1201,16 @@ export class LaneRenderer {
       // Um arco leve: flechas sobem um pouco antes de descer.
       const y = p.y0 + (p.y1 - p.y0) * k - Math.sin(k * Math.PI) * (p.kind === 'arrow' ? 6 : 2);
       const dir = Math.sign(p.x1 - p.x0) || 1;
+      // Bola de fogo do piromante, orbe dos monstros e a flecha do arqueiro do II em diante (pixelfx).
+      if (p.pfx) {
+        drawPfx(ctx, p.pfx, this.fx - p.start, x, y, { flip: dir < 0 });
+        continue;
+      }
+      if (p.kind === 'fire' || p.kind === 'dark') {
+        if (p.kind === 'fire') drawPfx(ctx, 'fireball', this.fx - p.start, x, y, { flip: dir < 0 });
+        else drawPfx(ctx, 'void-orb', this.fx - p.start, x, y, { anchor: 'center' });
+        continue;
+      }
       if (p.kind === 'arrow' && arrow) {
         // A flecha do pack aponta para a direita; inclina com o arco do voo.
         const [w, h] = arrow.asset.size ?? [8, 3];
@@ -1118,6 +1237,11 @@ export class LaneRenderer {
       ctx.fillStyle = core;
       ctx.fillRect(Math.round(x) - 1, Math.round(y) - 1, 3, 3);
     }
+  }
+
+  /** Efeitos do pixelfx de uma camada (atrás ou na frente dos personagens); os acabados saem. */
+  private drawPfxLayer(back: boolean): void {
+    this.pfx = this.pfx.filter((e) => e.back !== back || drawPfx(this.ctx, e.id, this.fx - e.start, e.x, e.y, { flip: e.flip }));
   }
 
   private drawSparks(): void {

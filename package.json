@@ -13,10 +13,12 @@
     "chronicle": "node tools/chronicle.ts",
     "deaths": "node tools/deaths.ts",
     "lords": "node tools/lords.ts",
-    "pack32": "node tools/pack32.ts"
+    "pack32": "node tools/pack32.ts",
+    "pfx": "node tools/pfx.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "pixelfx": "github:patch-gg/pixelfx#a84159688af3ca37a4be05a0d422b94451b2e24e",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.5"

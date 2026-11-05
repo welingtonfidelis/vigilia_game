@@ -9,6 +9,7 @@ import { useGame } from '../components.tsx';
 import { addReportToHistory, clearReportHistory, loadReportHistory } from '../report-history.ts';
 import { LaneCard } from './LaneCard.tsx';
 import { highlightsFor, playHighlight, type Highlight } from '../../render/lane/replay.ts';
+import { CLASS_ATTACKS, stageOf } from '../../data/attacks.ts';
 
 const OUTCOMES: Record<string, string> = {
   conquista: 'Conquista',
@@ -312,7 +313,9 @@ function BattleReport(props: { report: DungeonReport; world: ReturnType<typeof u
           <ul class="report-heroes">
             {report.leveled.map((l) => {
               const hero = heroById(world, l.heroId);
-              return <li key={l.heroId}>{hero ? <HeroPortrait hero={hero} variant="detail" /> : <span class="report-portrait-empty">↑</span>}<span>{l.name}<small>nível {l.from} → {l.to}{l.xpGain > 0 ? ` · +${fmt(l.xpGain)} XP` : ''}</small></span></li>;
+              // Passou de estágio (§9.9): o ataque novo vai junto.
+              const learned = hero && stageOf(l.to) > stageOf(l.from) ? CLASS_ATTACKS[hero.classId][stageOf(l.to)].name : null;
+              return <li key={l.heroId}>{hero ? <HeroPortrait hero={hero} variant="detail" /> : <span class="report-portrait-empty">↑</span>}<span>{l.name}<small>nível {l.from} → {l.to}{l.xpGain > 0 ? ` · +${fmt(l.xpGain)} XP` : ''}{learned ? ` · aprendeu ${learned}` : ''}</small></span></li>;
             })}
           </ul>
         )}

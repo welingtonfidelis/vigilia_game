@@ -2151,6 +2151,173 @@ Pedido de 2026-10-24. Um resumo animado da história da vila (§3.1, `src/data/s
 - **Estado:** `ui.prologue` (cena atual e de onde veio), `ui.launchPrologue` (ligado pelo `main.tsx`), `ui.prologueControl` (da cena) e `ui.sfx` (para a cena tocar efeitos). Fora do Phaser, o `body` ganha a classe `prologo` e o topo some.
 - **Arte nova:** `art32/prologo32.py`, com prévias da abadia de dia, de noite e em ruína, do olho e do monge.
 - **Testado** no navegador: computador (1024×768) e celular em pé (390×844); pelo Menu, no jogo novo (título → toque → Esc → boas-vindas) e até o fim (a vila volta, o topo reaparece e o jogo despausa). O som não foi ouvido (o painel do navegador não tem áudio).
+
+#### 9.8 Efeitos do corredor com o pixelfx
+
+Pedido de 2026-11-05, depois de um teste lado a lado no mesmo combate. O [pixelfx](https://github.com/patch-gg/pixelfx) (MIT) é uma biblioteca de efeitos de pixel art feitos em código: cada efeito roda uma simulação e desenha cor e luz. O corredor trocou o que era mais pobre:
+
+| Momento | Antes | Agora |
+|---|---|---|
+| Ataque do piromante | quadradinho laranja de 3 px voando | `fire/fireball`: bola de fogo com rastro de chamas e fumaça |
+| Ataque do clérigo | quadradinho claro de 3 px | `holy/smite`: a luz cai sobre o alvo, com clarão e onda no chão; o golpe acerta quando ela cai (0,24 s) |
+| Magia dos monstros da retaguarda | quadradinho roxo | `shadow/void-orb`: orbe escuro com redemoinho, na metade do tamanho |
+| Golpe crítico (de quem for) | o golpe do ato | `impacts/crit-hit`: estouro de luz, anel quebrando e faíscas |
+| Cura | brilho verde curto | `nature/healing-bloom`: uma flor brota aos pés do herói, atrás dele, e solta as pétalas |
+| Monstro morto que deixa ouro | só o "+N ouro" | `spawn/coin-drop`: fumaça e moedas que quicam no chão |
+
+Os golpes comuns continuam com o efeito de cada ato, e a flecha do arqueiro continua a do pack.
+
+**Como é feito:**
+- **Folhas pré-renderizadas:** `npm run pfx` (`tools/pfx.ts`) roda cada efeito com o pixelfx, que entra como dependência de desenvolvimento fixada num commit (não vai para o jogo). O script tira os quadros vazios do fim e as margens vazias, grava a 15–24 quadros por segundo (o efeito simula a 120 Hz por dentro) e escreve o índice `src/render/lane/pfx-index.ts`. As folhas ficam em `public/assets/vigilia/pfx/`, com 1,2 MB no total.
+- **Escala:** o pixelfx desenha no tamanho de um boneco de 24×38 px. O corredor desenha cada pixel dele como meio pixel da 16-bit, a mesma densidade da arte 32-bit; o orbe sai da folha já na metade.
+- **No corredor:** `src/render/lane/pfx.ts` desenha o quadro do tempo de cada efeito pelo ponto de apoio (os pés, o golpe ou a cabeça do projétil) e carrega as folhas quando o corredor abre. A cura fica numa camada atrás dos personagens; os outros vão na frente.
+- **Créditos:** a licença MIT e o NOTICE do pixelfx (que cita o código adaptado de Hugo Duprez e do Hollow Crown, também MIT) ficam ao lado das folhas, e o README cita a biblioteca.
+- **Testes:** `tests/pfx.test.ts` confere que cada folha existe, cabe os quadros do índice e vai com a licença.
+
+**Para trocar ou acrescentar um efeito:** mudar a receita em `tools/pfx.ts` (efeito, quadros por segundo, paleta, redução) e rodar `npm run pfx`; a galeria do pixelfx mostra os 244 efeitos.
+
+#### 9.9 Ataques que mudam com o nível e golpes dos monstros
+
+Pedido de 2026-11-05: conforme o herói sobe de nível, o ataque dele muda de cara, com os efeitos do pixelfx (9.8). Os monstros corpo a corpo e os chefes também ganham golpes próprios, por estilo e bioma (mais abaixo). **É só visual:** dano, chance de crítico, cura e duração das lutas continuam iguais, a simulação não muda e o save também não. O estágio sai do nível na hora de desenhar.
+
+**Os três estágios** saem do nível do herói (o "Nv" da ficha). Os cortes vêm de 6 sementes × 80 anos com o prefeito automático:
+
+| Estágio | Níveis | Quando aparece |
+|---|---|---|
+| I | 1 a 14 | o começo; a mediana dos heróis passa do 15 por volta do ano 10 |
+| II | 15 a 34 | a maioria entre os anos 10 e 40 |
+| III | 35 ou mais | os melhores por volta dos anos 25–30 (p90 no ano 30: nível 34); a mediana no ano 40 é 33, e no ano 80, 60 |
+
+Recrutas que chegam tarde já entram mais altos (o nível inicial cresce com o abismo), então podem começar no II.
+
+**Por classe.** "Comum" é o golpe de todo dia; "crítico" é o golpe crítico, que hoje usa o `impacts/crit-hit` para todos. Os efeitos grandes ficam só no crítico, para o corredor não virar fogos de artifício com três grupos na tela.
+
+| Classe | Estágio | Nome do ataque | Comum | Crítico | Extra |
+|---|---|---|---|---|---|
+| Guardião | I | Golpe de espada | o golpe do ato (como hoje) | `crit-hit` | — |
+| | II | Corte Crescente | `melee/sword-slash` na frente dele | `crit-hit` | — |
+| | III | Giro da Muralha | `melee/spin-slash` | `crit-hit` | ao apanhar, `impacts/shield-block` à frente dele |
+| Lanceiro | I | Golpe de lança | o golpe do ato | `crit-hit` | — |
+| | II | Estocada | `melee/thrust` | `crit-hit` | — |
+| | III | Varredura | `melee/spear-sweep` | `melee/thrust` + `crit-hit` | — |
+| Selvagem | I | Golpe de machado | o golpe do ato | `crit-hit` | — |
+| | II | Corte em X | `melee/double-slash` | `crit-hit` | — |
+| | III | Talho Pesado | `melee/heavy-cleave` | `crit-hit` | — |
+| Arqueiro | I | Flecha | a flecha do pack (como hoje) | `crit-hit` | — |
+| | II | Flecha Assobiante | `projectiles/arrow` (com rastro) | `crit-hit` | — |
+| | III | Chuva de Estrelas | `projectiles/arrow` | `arcane/star-fall` sobre o alvo | — |
+| Piromante | I | Bola de Fogo | `fireball` (como hoje) | `crit-hit` | — |
+| | II | Anel de Fogo | `fireball` | `fire/fire-ring` no alvo | — |
+| | III | Meteoro | `fireball` | `fire/meteor` no alvo (cortado em uns 2 s) | — |
+| Clérigo | I | Luz do Alto | `smite` (como hoje) | `crit-hit` | cura: `healing-bloom` |
+| | II | Bênção da Luz | `smite` | `crit-hit` | cura: `holy/heal-aoe` (anel no chão) |
+| | III | Coluna de Luz | `smite` | `holy/holy-pillar` no alvo (cortado) | cura: `holy/heal-aoe` |
+
+**Golpes dos monstros (corpo a corpo).** Hoje o herói atingido mostra o efeito de impacto do ato. Ele passa a ser um de três estilos, conforme o corpo do monstro, recolorido com a paleta do bioma. A quantidade de efeitos na tela não muda, porque um efeito troca pelo outro.
+
+| Estilo | Efeito | Onde sai | Monstros |
+|---|---|---|---|
+| Garra | `melee/claw-swipe` (três riscos de garra) | no herói atingido | rato, enguia, cão de brasa, zangão, mariposa, água-viva, caranguejo, aranha de engrenagem, chacal, escorpião, sombra faminta |
+| Arma | `melee/sword-slash` (meia-lua) | na frente do monstro, virado para o herói | esqueleto, mineiro, sereia, cavaleiro salobro, arauto do fundo, autômato, múmia |
+| Pancada | `impacts/blunt-hit` (baque com poeira) | no herói atingido | golem, esporento, brotado, ferreiro cinzento, casulo, fornalha |
+
+A retaguarda (acólito, aranha, sacerdote, escravo da forja, lamento, peixe-lanterna) continua com o orbe. A explosão dos elites "explosivo" continua com as faíscas de hoje. As variantes funda e do núcleo, os elites e as nêmesis usam o estilo do monstro de base. Os ecos (heróis mortos que voltam do lado dos monstros) atacam com o golpe da classe e do estágio que tinham em vida.
+
+**Paleta de cada bioma** (do escuro ao claro), tirada das paletas dos atos (seção 5.3) e das dimensões novas:
+
+| Bioma | Paleta |
+|---|---|
+| Catacumbas | osso e âmbar de vela: `#2a2016` `#5a4630` `#a08a64` `#e0cfa0` `#fff4d8` |
+| Minas Inundadas | ferrugem e azul-petróleo: `#0e2228` `#1f4a52` `#3f7f86` `#9fd0cc` `#eafcff` |
+| Jardim de Fungos | violeta e verde de esporo: `#1a0f24` `#3a2a5a` `#5fae5a` `#b8f07a` `#f4ffe0` |
+| Cidade Afogada | ciano e pérola: `#0b2028` `#1d5058` `#3fa0a0` `#a8e8e0` `#f4ffff` |
+| Forja Abissal | brasa: `#2a0a06` `#6a1c0c` `#c8461e` `#ff9a40` `#fff0b0` |
+| Coração do Abismo | carmesim e violeta: `#1a0614` `#4a0f3a` `#9a2a6a` `#e06ab0` `#ffe0f4` |
+| Colmeia Pálida | cera pálida: `#2a2620` `#5a5446` `#a8a088` `#e8e0c8` `#ffffff` |
+| Fossa Cantante | azul abissal: `#060c24` `#14286a` `#2a5ab0` `#7ab0f0` `#e8f4ff` |
+| Cidadela de Engrenagens | bronze: `#1e140a` `#4a3418` `#8a6a2a` `#d8b060` `#fff0c0` |
+| Deserto de Ossos | areia e osso: `#2a1e10` `#6a5030` `#b8945a` `#ecd8a0` `#fffbe8` |
+
+**Chefes e Senhores.** Cada um ganha um golpe próprio, com a paleta do bioma dele, no lugar do impacto do ato. As fases 2 continuam como são.
+
+| Chefe | Golpe |
+|---|---|
+| O Guardião das Urnas | `melee/heavy-cleave` |
+| A Couraça Submersa | `melee/hammer-smash` |
+| A Mãe-Bolor | `melee/whip-crack` (chicote de raiz) |
+| O Arcebispo Sem Fôlego | `melee/scythe-reap` |
+| O Martelo Que Não Dorme | `melee/hammer-smash` |
+| Aquilo que Vigia | `melee/scythe-reap` |
+| A Rainha dos Esporos | `melee/claw-swipe` |
+| O Coro Submerso | `melee/whip-crack` (tentáculo) |
+| O Colosso de Ferro-negro | `melee/hammer-smash` |
+| O Rei dos Ossuários | `melee/heavy-cleave` |
+
+**Folhas dos monstros:**
+- são 30 (3 estilos × 10 biomas) e mais 10 dos chefes;
+- no disco, uns 4 MB;
+- cada corredor só carrega as do seu bioma: três golpes e o do chefe, uns 400 KB.
+
+**Como desenhar:**
+- **Golpe corpo a corpo:** o efeito sai na frente do atacante, virado para o alvo, no instante em que a investida chega (o mesmo do impacto de hoje). O alvo continua piscando e recuando, e o efeito do ato some para quem está no estágio II ou III (para não aparecerem dois golpes).
+- **Escala:** a mesma dos outros efeitos (meio pixel da 16-bit por pixel do pixelfx). O pixelfx desenha para um boneco de 38 px, que nessa escala fica com uns 2/3 do nosso herói; o ponto de apoio sobe para a altura da mão do nosso boneco. Se o arco ficar pequeno demais no teste, a receita da folha muda.
+- **Limite de efeitos grandes:** só um efeito de crítico grande (estrelas, anel de fogo, meteoro, coluna de luz) por corredor de cada vez; com um ainda na tela, o crítico novo usa o `crit-hit`.
+- **Efeito sozinho:** cada folha sai sem o boneco cinza do pixelfx (efeitos que pintam o corpo ficam de fora, como o `holy/heal` ficou no 9.8). O teste confere quadro a quadro.
+- **Folhas:** são 12 novas, geradas pelo `tools/pfx.ts`, com 12 a 20 quadros por segundo e os efeitos longos cortados. Meta: no máximo 3 MB a mais. Cada corredor carrega só as folhas dos estágios dos heróis que estão nele.
+
+**Na interface:**
+- **Ficha do herói:** uma linha "Ataque: Corte Crescente", e embaixo "No nível 35: Giro da Muralha" (some no estágio III).
+- **Relatório da expedição:** em "Subiram de nível", quem passou de estágio ganha "aprendeu Corte Crescente" ao lado de "nível 14 → 15".
+- **Melhores momentos e duelos do torneio:** usam o nível que o herói tinha na luta (já vai no clone gravado).
+
+**Código:**
+- `src/data/attacks.ts` guarda, por classe e estágio, o nome e os ids dos efeitos (comum, crítico e extra), e também `STAGE_LEVELS = [1, 15, 35]` e `stageOf(level)`. Guarda ainda o estilo de cada monstro (`MONSTER_STYLE`), o golpe de cada chefe e a paleta de cada bioma.
+- O corredor (`renderer.ts`) escolhe o efeito pelo estágio do herói.
+- O `tools/pfx.ts` ganha as receitas novas.
+- O `tools/pfx.ts` gera uma folha por estilo e bioma (`claw-swipe-iii`, por exemplo) e uma por chefe.
+- **Testes:**
+  - cada classe tem os três estágios;
+  - todo id citado existe no índice do pixelfx;
+  - os limites do `stageOf` (14 → I, 15 → II, 34 → II, 35 → III);
+  - todo monstro corpo a corpo dos 10 biomas tem estilo, e todo chefe tem golpe;
+  - os 10 biomas têm paleta.
+
+**Pronto quando:**
+- os seis heróis, nos três estágios, aparecem num replay montado (comum e crítico), em 32-bit, em 16-bit e no celular;
+- um monstro de cada estilo e um chefe aparecem no replay em pelo menos três biomas, com a paleta de cada um;
+- nenhuma folha traz o boneco do pixelfx;
+- os heróis somam até 3 MB novos, e cada corredor carrega no máximo uns 400 KB de golpes de monstros;
+- os testes e o build passam.
+
+Não precisa de rodada de balanço, porque a simulação não muda.
+
+**Escolhas feitas por padrão (fáceis de trocar):**
+- os cortes 15 e 35;
+- os nomes dos ataques;
+- crítico grande só no estágio III (no II só para o piromante);
+- o escudo do guardião ao apanhar;
+- o estilo de cada monstro, as paletas dos biomas e o golpe de cada chefe;
+- o aviso do estágio novo só no relatório e na ficha, sem entrada na crônica (ela vai no save).
+
+**Como ficou (2026-11-05):**
+- **Igual à spec**, com dois nomes trocados para cada estágio mudar alguma coisa: o II do piromante é o **Anel de Fogo**, e o II do clérigo é a **Bênção da Luz**, com a cura num anel no chão (no I continua a flor).
+- **Golpe de quem bate:** a investida nem sempre chega perto do alvo (vai no máximo 40 px), então o golpe sai encostado no alvo, 16 px antes dele e virado para ele, como se tivesse chegado. Ele sobe 8 px, para a lâmina passar no meio do corpo e não nos pés.
+- **Tempo do acerto:** cada folha guarda quando o efeito acerta (`hit` no índice; vem dos tempos de golpe do pixelfx, ou é marcado à mão no meteoro, 0,67 s, nas estrelas, 0,3 s, e na coluna de luz, 0,4 s).
+  - O golpe comum começa adiantado, para acertar junto com o dano; o Talho Pesado perde a preparação de 0,33 s.
+  - O efeito grande de crítico começa na hora, e o dano (número, piscada, recuo, sangue, morte e ouro) espera ele acertar: o meteoro cai e só então aparece o "40!".
+  - No código, `impact` toca os efeitos e `land` é a chegada do golpe.
+- **Pancada:** a poeira clara do `blunt-hit` cobria os heróis e desbotava a cena. Ela agora sai na cor escura do bioma e o efeito é cortado em 0,5 s.
+- **Folhas:**
+  - 60 no total, com 5,8 MB em disco: os heróis acrescentaram uns 2,8 MB, e cada bioma tem uns 90 KB de golpes, mais o do chefe.
+  - O corredor carrega de início só os 6 efeitos de sempre. Os outros entram quando aparece quem usa: o estágio de cada herói, o estilo de cada monstro e o golpe do chefe.
+  - Fora do navegador (testes, corredor de fundo) nada é carregado.
+- **Testes:** `tests/attacks.test.ts` (estágios, nomes, ids no índice, estilo de todo monstro corpo a corpo, golpe de todo chefe, paletas). São 274 no total.
+- **Conferido** num replay montado, avançado quadro a quadro:
+  - as seis classes nos três estágios, com golpe comum e crítico;
+  - o guardião aparando no escudo;
+  - a flecha, a chuva de estrelas, o anel de fogo e o meteoro;
+  - a coluna de luz e as duas curas;
+  - os três estilos de monstro nas Catacumbas, na Forja, no Coração e na Fossa, e os chefes dessas quatro.
 - **Retrato:** o balanço de 40 sementes deu igual ao da F6a, porque nada da F6b mexe no jogo.
 - **Conserto pedido no meio da fase (2026-10-23):** no celular, a barra de fragmentos do amuleto mostrava "0/5" cortado embaixo, porque a barra fina não tem altura para texto.
   - A barra fina não desenha mais texto; ele vira a dica do mouse.
@@ -2163,7 +2330,7 @@ Todas decididas.
 1. **Stack:** decidido em 2026-10-19: **web/TypeScript** (Vite, Phaser e Preact), no lugar do Godot 4.
 2. **Ambientação** (é o diferencial frente à versão oficial): decidido em 2026-10-19: **fantasia sombria original**, a vila "Vigília" na borda de um abismo sob uma abadia antiga. A outra opção era o folclore brasileiro (vila mineradora colonial, com Corpo-seco, Mula-sem-cabeça, Boitatá e Mapinguari), que exigiria pesquisa cultural cuidadosa.
 3. **Objetivo:** decidido em 2026-10-23: **projeto pessoal, sem uso comercial**. O jogo fica de graça no GitHub Pages.
-4. **Arte:** **arte própria**, de geradores Python. Desde a arte 32-bit (PR #3) o jogo não usa asset de terceiros.
+4. **Arte:** **arte própria**, de geradores Python. Desde a arte 32-bit (PR #3) o jogo não usa asset de terceiros, com uma exceção desde 2026-11-05: os efeitos de combate do corredor saem do pixelfx (MIT, seção 9.8).
 5. **Tom:** decidido em 2026-10-23: **abrigo no escuro**, com o abismo cruel e a vila como abrigo quente (pilar 6, seção 3.1).
 
 ---

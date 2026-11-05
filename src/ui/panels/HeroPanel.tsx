@@ -30,6 +30,7 @@ import {
   houseOfHero,
 } from '../../sim/index.ts';
 import { Crest } from '../Crest.tsx';
+import { CLASS_ATTACKS, STAGE_LEVELS, stageOf } from '../../data/attacks.ts';
 import type { GiftKind, Hero, InjuryKind, RetiredRole, World } from '../../sim/index.ts';
 import { Bar, HeroLink, PanelShell, Stat, useCommand, useGame } from '../components.tsx';
 import { ArmorIcon, HeroPortrait, WeaponIcon } from '../PixelSprite.tsx';
@@ -262,6 +263,25 @@ function RenameField(props: { hero: Hero }) {
   );
 }
 
+/** O ataque do estágio do herói (§9.9) e o próximo, com o nível em que ele chega. */
+function AttackLine(props: { hero: Hero }) {
+  const { hero } = props;
+  const stage = stageOf(hero.level);
+  const attacks = CLASS_ATTACKS[hero.classId];
+  const next = stage < 2 ? attacks[stage + 1] : undefined;
+  return (
+    <p class="hero-attack">
+      Ataque: <strong>{attacks[stage].name}</strong>
+      {next && (
+        <small>
+          {' '}
+          · no nível {STAGE_LEVELS[stage + 1]}: {next.name}
+        </small>
+      )}
+    </p>
+  );
+}
+
 export function HeroPanel(props: { heroId: number }) {
   const { world, ui } = useGame();
   const command = useCommand();
@@ -319,6 +339,7 @@ export function HeroPanel(props: { heroId: number }) {
           </p>
         )}
       </div>
+      {!hero.death && <AttackLine hero={hero} />}
       {hero.vengeful && <p class="tag bad">Em fúria vingativa: ignora o sino de retirada.</p>}
       {griefFor && hero.grief > 0 && (
         <p class="tag grief">

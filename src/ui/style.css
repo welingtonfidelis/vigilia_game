@@ -3599,3 +3599,7 @@ body.prologo #hud { display: none; }
   0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
 }
+
+/* Ataque do estágio na ficha do herói (§9.9). */
+.hero-attack { margin: 0.35rem 0; font-size: 0.86rem; color: var(--muted); }
+.hero-attack strong { color: var(--gold); font-family: var(--serif); font-weight: normal; }
